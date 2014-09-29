@@ -1,0 +1,1117 @@
+
+///////////////////////////////////////////////////////////////
+/// Allow the Processing sketch to be controlled using MIDI ///
+///////////////////////////////////////////////////////////////
+
+import themidibus.*;         //Import MIDI library
+
+
+//MIDI configuration :
+final int CHANNEL_KEYBOARD           = 0;      //MIDI Channel 1
+final int CHANNEL_SEMIAUTOMODE       = 1;      //MIDI Channel 2
+final int CHANNEL_AUTOMODE           = 2;      //MIDI Channel 3
+final int CHANNEL_MANUALMODE_1       = 3;      //MIDI Channel 4
+final int CHANNEL_MANUALMODE_2       = 4;      //MIDI Channel 5
+final int CHANNEL_MANUALMODE_3       = 5;      //MIDI Channel 6
+final int CHANNEL_MANUALMODE_4       = 6;      //MIDI Channel 7
+
+//Pitches for messages coming from the keyboard
+final int PITCH_P1_LEFT              = 0;
+final int PITCH_P1_RIGHT             = 2;
+final int PITCH_P2_LEFT              = 22;
+final int PITCH_P2_RIGHT             = 23;
+
+//Pitches for messages coming from the pads + knobs
+//These parameters must not be declared as final : they may be reconfigured later on 
+int PITCH_PAD_KILL_LED_PANELS  = 40;
+int PITCH_PAD_STROBE_4TH       = 36;
+int PITCH_PAD_STROBE_8TH       = 37;
+int PITCH_PAD_STROBE_16TH      = 41;
+int PITCH_PAD_STROBE_32ND      = 42;
+int PITCH_PAD_STROBE_64TH      = 38;
+int PITCH_KNOB_BRIGHTNESS      = -1;      //Might be used again in the future, but for now, is pretty useless
+int PITCH_KNOB_BLACKOUT        = 1;
+int PITCH_KNOB_WHITEOUT        = 2;
+int PITCH_KNOB_SHREDDER        = 5;
+int PITCH_KNOB_COLORCHANGE     = 3;
+int PITCH_KNOB_WHITEJAMAMONO   = -1;      //Not very fun as an animation, don't use it
+int PITCH_KNOB_WHITENOISE      = 7;
+
+//Pitches for messages coming from Maschine - Automatic mode
+final int PITCH_NEW_SCENE_FIRST_BEAT = 0;
+final int PITCH_FIRST_BEAT           = 1;
+final int PITCH_REGULAR_BEAT         = 2;
+final int PITCH_COLORSET_RED         = 4;
+final int PITCH_COLORSET_BLUE        = 5;
+final int PITCH_COLORSET_BLACK       = 6;
+final int PITCH_COLORSET_FREE        = 7;
+final int PITCH_INTENSITY_LOW        = 8;
+final int PITCH_INTENSITY_MEDIUM     = 9;
+final int PITCH_INTENSITY_HIGH       = 10;
+final int PITCH_INTENSITY_HARDCORE   = 11;
+final int PITCH_SET_AUTOMODE_OFF     = 14;
+final int PITCH_SET_AUTOMODE_ON      = 15;
+
+//Pitches for messages coming from Maschine - Manual mode
+final int PITCH_SET_SEMIAUTO_MODE    = -18;
+final int PITCH_CHANGE_STROBO_FRONT  = 100;
+final int PITCH_START_STROBO_FRONT   = 101;
+final int PITCH_STOP_STROBO_FRONT    = 102;
+final int PITCH_GENERAL_STROBO_FRONT = 103;
+final int PITCH_GENERAL_STROBO_BACK  = 104;
+final int PITCH_ENABLE_MAN_INPUT     = 110;
+final int PITCH_DISABLE_MAN_INPUT    = 111;
+final int PITCH_CUSTOM_DEVICE_BANK1  = 118;
+final int PITCH_CUSTOM_DEVICE_BANK2  = 119;
+final int PITCH_CUSTOM_DEVICE_BANK3  = 120;
+final int PITCH_DISPLAY_EFFECT       = 121;
+final int PITCH_LOAD_ANIMATION_BANK1 = 123;
+final int PITCH_LOAD_ANIMATION_BANK2 = 124;
+final int PITCH_LOAD_ANIMATION_BANK3 = 125;
+final int PITCH_LOAD_ANIMATION_BANK4 = 122;
+final int PITCH_LOAD_IMAGE_BANK1     = 126;
+final int PITCH_CHANGE_OUTPUTMAPPING = 127;
+
+
+// Allow LED Panel remapping using the keyboard
+// Use case : this boolean is set to true using the Maschine
+// Once it is on, listen to the keyboard input : record NUMBER_OF_PANELS notes (with a different pitch)
+// The mapping is then set using the input order and the pitch of the notes
+// Ex : keyboard [ C5 E5 G#5 D5 F5 ] -> panel mapping [1 3 5 2 4]
+boolean authorizePanelRemappingUsingKeyboard = false;
+int[] manualLEDPanelRemappingNoteArray;
+int manualLEDPanelRemappingNoteCounter = 0;
+
+void midiInit() {
+  outputLog.println("--- Initializing MIDI Control ---");
+  MidiBus.list(); 
+  //Arguments to create the MidiBus : Parent Class, IN device, OUT device, NAME
+  myMainBus = new MidiBus(this, MIDI_BUS_MAIN_INPUT, MIDI_BUS_MAIN_INPUT, MIDI_BUS_MAIN_INPUT);
+  outputLog.println("Configuration --- Main Input MIDI device : " + MIDI_BUS_MAIN_INPUT);
+  try {myControllerBus = new MidiBus(this, MIDI_BUS_CONTROLLER_INPUT, MIDI_BUS_CONTROLLER_INPUT, MIDI_BUS_CONTROLLER_INPUT);}
+  catch (Exception e) {println("Problem during initialization of controller MIDI input port : " + e);}
+  outputLog.println("Configuration --- Controller Input MIDI device : " + MIDI_BUS_CONTROLLER_INPUT);
+  
+  try {myKeyboardBus = new MidiBus(this, MIDI_BUS_KEYBOARD_INPUT, MIDI_BUS_KEYBOARD_INPUT, MIDI_BUS_KEYBOARD_INPUT);}
+  catch (Exception e) {println("Problem during initialization of controller MIDI input port : " + e);}
+  outputLog.println("Configuration --- Keyboard Input MIDI device : " + MIDI_BUS_KEYBOARD_INPUT);
+
+  outputLog.println("--- MIDI initialization over ---");
+}
+
+
+/////////////////////////////////////////////////
+//////////////       NOTE ON       //////////////
+/////////////////////////////////////////////////
+
+void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_name) {
+  if (initComplete == true) {
+    // Receive a noteOn
+    if (bus_name == MIDI_BUS_CONTROLLER_INPUT || bus_name == MIDI_BUS_KEYBOARD_INPUT) {
+      //Drumpad sub-keyboard - couldn't use a switch here because the pitches are not declared as finals 
+      if (pitch == PITCH_P1_LEFT)                  {p1Left(channel, pitch, velocity);}
+      else if (pitch == PITCH_P1_RIGHT)            {p1Right(channel, pitch, velocity);}
+      else if (pitch == PITCH_P2_LEFT)             {p2Left(channel, pitch, velocity);}
+      else if (pitch == PITCH_P2_RIGHT)            {p2Right(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_KILL_LED_PANELS) {activateKillLedPanel(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_STROBE_4TH)      {activatePadStrobe4th(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_STROBE_8TH)      {activatePadStrobe8th(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_STROBE_16TH)     {activatePadStrobe16th(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_STROBE_32ND)     {activatePadStrobe32nd(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_STROBE_64TH)     {activatePadStrobe64th(channel, pitch, velocity);}
+      
+      //Custom function : Remapping using the keyboard, recor 
+      if (authorizePanelRemappingUsingKeyboard == true) {
+        //Do not allow the same panel to be mapped to two different outputs
+        boolean pitchAlreadyInArray = false;
+        for (int element: manualLEDPanelRemappingNoteArray) {
+          if (pitch == element) {
+            pitchAlreadyInArray = true;
+          }
+        }
+        
+        if (manualLEDPanelRemappingNoteCounter == 0) {
+          manualLEDPanelRemappingNoteArray[manualLEDPanelRemappingNoteCounter] = pitch;
+          manualLEDPanelRemappingNoteCounter += 1;
+          imagenumber = 0 - manualLEDPanelRemappingNoteCounter - 1;
+        }
+        else if (pitchAlreadyInArray == false) {
+          manualLEDPanelRemappingNoteArray[manualLEDPanelRemappingNoteCounter] = pitch;
+          manualLEDPanelRemappingNoteCounter += 1;
+          imagenumber = 0 - manualLEDPanelRemappingNoteCounter - 1;
+        }
+        
+        if (manualLEDPanelRemappingNoteCounter == NUMBER_OF_PANELS) {
+          finalizeLEDPanelRemappingProcedure();
+          imagenumber = 0;
+        }
+        
+      }
+    }
+    
+    if (channel == CHANNEL_MANUALMODE_1 || channel == CHANNEL_MANUALMODE_2 || channel == CHANNEL_MANUALMODE_3 || channel == CHANNEL_MANUALMODE_4) {
+      //Release automatic mode in case of explicit input
+      //This mode corresponds to a MPC-like controller selecting manually animations
+      AUTOMATIC_MODE = false;
+      setManualAnimation(channel, pitch);
+    }
+    if (channel == CHANNEL_AUTOMODE) {
+      switch (pitch) {
+        //Maschine input
+        case PITCH_NEW_SCENE_FIRST_BEAT: receiveBeatMessage(channel, pitch, velocity);break;                      //Maschine Pad 1
+        case PITCH_FIRST_BEAT:           receiveBeatMessage(channel, pitch, velocity);break;                      //Maschine Pad 2
+        case PITCH_REGULAR_BEAT:         receiveBeatMessage(channel, pitch, velocity);break;                      //Maschine Pad 3
+        case PITCH_COLORSET_RED:         receiveColorMessage(channel, pitch, velocity);break;                     //Maschine Pad 5
+        case PITCH_COLORSET_BLUE:        receiveColorMessage(channel, pitch, velocity);break;                     //Maschine Pad 6
+        case PITCH_COLORSET_BLACK:       receiveColorMessage(channel, pitch, velocity);break;                     //Maschine Pad 7
+        case PITCH_COLORSET_FREE:        receiveColorMessage(channel, pitch, velocity);break;                     //Maschine Pad 8
+        case PITCH_INTENSITY_LOW:        receiveIntensityMessage(channel, pitch, velocity);break;                 //Maschine Pad 9
+        case PITCH_INTENSITY_MEDIUM:     receiveIntensityMessage(channel, pitch, velocity);break;                 //Maschine Pad 10
+        case PITCH_INTENSITY_HIGH:       receiveIntensityMessage(channel, pitch, velocity);break;                 //Maschine Pad 11
+        case PITCH_INTENSITY_HARDCORE:   receiveIntensityMessage(channel, pitch, velocity);break;                 //Maschine Pad 12
+        case PITCH_SET_AUTOMODE_OFF:     setAutomaticMode(channel, pitch, velocity);break;                        //Maschine Pad 15
+        case PITCH_SET_AUTOMODE_ON:      setAutomaticMode(channel, pitch, velocity);break;                        //Maschine Pad 16
+      }
+    }
+      
+    if (channel == CHANNEL_SEMIAUTOMODE) {
+      //Release automatic mode in case of explicit input
+      AUTOMATIC_MODE = false;
+      switch (pitch) {
+        //Manual input
+        case PITCH_SET_SEMIAUTO_MODE:    setAutomaticMode(channel, pitch, velocity);break;                        //UNUSED
+        case PITCH_CHANGE_STROBO_FRONT:  changeStrobe(channel, pitch, velocity);break;                            //E7    - Classic way to use the stroboscope
+        case PITCH_START_STROBO_FRONT:   startStrobe(velocity);break;                                             //F7    - Classic way to use the stroboscope
+        case PITCH_STOP_STROBO_FRONT:    stopStrobe();break;                                                      //F#7   - Classic way to use the stroboscope
+        case PITCH_GENERAL_STROBO_FRONT: startStrobe_Front(velocity);break;                                       //G7    - New way to use the stroboscope : noteOff releases the strobe
+        case PITCH_GENERAL_STROBO_BACK:  startStrobe_Back(velocity);break;                                        //G#7   - New way to use the stroboscope : noteOff releases the strobe
+        
+        case PITCH_ENABLE_MAN_INPUT:     enableManualInput();break;                                               //D8
+        case PITCH_DISABLE_MAN_INPUT:    disableManualInput();break;                                              //D#8
+        case PITCH_CUSTOM_DEVICE_BANK1:  loadCustomDeviceAnimation1(channel, pitch, velocity);break;              //A#8   - Load an animation for the custom devices
+        case PITCH_CUSTOM_DEVICE_BANK2:  loadCustomDeviceAnimation2(channel, pitch, velocity);break;              //B8
+        case PITCH_CUSTOM_DEVICE_BANK3:  loadCustomDeviceAnimation3(channel, pitch, velocity);break;              //C9
+        case PITCH_DISPLAY_EFFECT:       activateAdditionalEffect(velocity);break;                                //C#9
+        case PITCH_LOAD_ANIMATION_BANK1: loadAnimation1(channel, pitch, velocity);break;                          //D#9
+        case PITCH_LOAD_ANIMATION_BANK2: loadAnimation2(channel, pitch, velocity);break;                          //E9
+        case PITCH_LOAD_ANIMATION_BANK3: loadAnimation3(channel, pitch, velocity);break;                          //F9
+        case PITCH_LOAD_ANIMATION_BANK4: loadAnimation4(channel, pitch, velocity);break;                          //D9
+        case PITCH_LOAD_IMAGE_BANK1:     loadImage1(channel, pitch, velocity);break;                              //F#9
+        case PITCH_CHANGE_OUTPUTMAPPING: activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
+        default: break;
+      }
+    }
+  }
+}
+
+void p1Left(int channel, int pitch, int velocity) {
+  //P1_LEFT 
+  command_p1_left = true;
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_LEFT");
+}
+
+void p1Right(int channel, int pitch, int velocity) {
+  //P1_RIGHT
+  command_p1_right = true;
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_RIGHT");
+}
+
+void p2Left(int channel, int pitch, int velocity) {
+  //P2_LEFT
+  command_p2_left = true;
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_LEFT");
+}
+
+void p2Right(int channel, int pitch, int velocity) {
+  //P2_RIGHT
+  command_p2_right = true; 
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_RIGHT");
+}
+
+void activateKillLedPanel(int channel, int pitch, int velocity) {
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_KILL_LEDPANEL");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setKillLedPanel = true;
+  }
+  if (authorizeKillLedPanelManualMode == true) {
+    setKillLedPanelManualMode = true;
+    if (authorizeDMXStrobe == true) {
+      //To be tested : could be interesting to bring back the previous strobe, but it could also be dangerous... the Kill button could serve as a strobe kill switch
+      //if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true) == false) {
+      //  previousFrontStrobeState = drawStrobe_Front;
+      //  previousFrontStrobePreset = strobepreset_front;
+      //}
+      strobepreset_front = 0;
+      stopStrobe_Front();
+    }
+  }
+}
+
+void activatePadStrobe4th(int channel, int pitch, int velocity) {
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_4TH");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setStrobeAutoMode4th = true;
+    registeredTempo = frameRate;
+  }
+  if (authorizeStrobeManualMode4th == true) {
+    if (authorizePanelStrobe == true) {
+      setStrobeManualMode4th = true;
+    }
+    if (authorizeDMXStrobe == true) {
+      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+        previousFrontStrobeState = drawStrobe_Front;
+        previousFrontStrobePreset = strobepreset_front;
+      }
+      strobepreset_front = 40;
+      startStrobe(strobepreset_front);
+    }
+    registeredTempo = frameRate;
+  }
+}
+
+void activatePadStrobe8th(int channel, int pitch, int velocity) {
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_8TH");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setStrobeAutoMode8th = true;
+    registeredTempo = frameRate;
+  }
+  if (authorizeStrobeManualMode8th == true) {
+    if (authorizePanelStrobe == true) {
+      registeredTempo = frameRate;
+    }
+    if (authorizeDMXStrobe == true) {
+      if ((setStrobeManualMode4th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+        previousFrontStrobeState = drawStrobe_Front;
+        previousFrontStrobePreset = strobepreset_front;
+      }
+      strobepreset_front = 60;
+      startStrobe(strobepreset_front);
+    }
+    setStrobeManualMode8th = true;
+  }
+}
+
+void activatePadStrobe16th(int channel, int pitch, int velocity) {
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_16TH");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setStrobeAutoMode16th = true;
+    registeredTempo = frameRate;
+  }
+  if (authorizeStrobeManualMode16th == true) {
+    if (authorizePanelStrobe == true) {
+      registeredTempo = frameRate;
+    }
+    if (authorizeDMXStrobe == true) {
+      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+        previousFrontStrobeState = drawStrobe_Front;
+        previousFrontStrobePreset = strobepreset_front;
+      }
+      strobepreset_front = 80;
+      startStrobe(strobepreset_front);
+    }
+    setStrobeManualMode16th = true;
+  }
+}
+
+void activatePadStrobe32nd(int channel, int pitch, int velocity) {
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_32ND");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setStrobeAutoMode32nd = true;
+    registeredTempo = frameRate;
+  }
+  if (authorizeStrobeManualMode32nd == true) {
+    if (authorizePanelStrobe == true) {
+      registeredTempo = frameRate;
+    }
+    if (authorizeDMXStrobe == true) {
+      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode64th == true) == false) {
+        previousFrontStrobeState = drawStrobe_Front;
+        previousFrontStrobePreset = strobepreset_front;
+      }
+      strobepreset_front = 100;
+      startStrobe(strobepreset_front);
+    }
+    setStrobeManualMode32nd = true;
+  }
+}
+
+void activatePadStrobe64th(int channel, int pitch, int velocity) {
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_64TH");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setStrobeAutoMode64th = true;
+    registeredTempo = frameRate;
+  }
+  if (authorizeStrobeManualMode64th == true) {
+    if (authorizePanelStrobe == true) {
+      registeredTempo = frameRate;
+    }
+    if (authorizeDMXStrobe == true) {
+      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true) == false) {
+        previousFrontStrobeState = drawStrobe_Front;
+        previousFrontStrobePreset = strobepreset_front;
+        previousBackStrobeState = drawStrobe_Back;
+        previousBackStrobePreset = strobepreset_back;
+      }
+      strobepreset_front = 100;
+      strobepreset_back = 100;
+      startStrobe(strobepreset_front);
+      startStrobe_Back(strobepreset_back);
+    }
+    setStrobeManualMode64th = true;
+  }
+}
+
+void changeStrobe(int channel, int pitch, int velocity) {
+  //CHANGE_STROBE
+  strobepreset_front = velocity;
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Change front stroboscope speed/brightness to preset " + strobepreset_front);
+  
+  // if the velocity is out of the table's bounds, prevent a crash
+  if (strobepreset_front >= strobelist.length)
+  {
+    strobepreset_front = 1;
+    outputLog.println("Velocity is out of bounds, setting default speed preset"); 
+  }
+
+  // if the stroboscope is already active, update the preset
+  if (drawStrobe_Front == 1) {
+    myDMX.setStrobePreset_Front(strobepreset_front);
+  }
+  
+}
+
+//Old method to call the front stroboscope, still works, but the more up-to-date startStrobe_Front should be used
+void startStrobe(int velocity) {
+  //START_STROBE
+  drawStrobe_Front = 1;
+  outputLog.println("Note On received: Start front stroboscope with speed/brightness preset " + strobepreset_front);
+  
+}
+
+//Old method to call the front stroboscope, still works, but the more up-to-date stopStrobe_Front should be used
+void stopStrobe() {
+  //STOP_STROBE
+  drawStrobe_Front = 0;
+  outputLog.println("Note On received: Corresponding message : Stop front stroboscope");
+
+}
+
+
+
+void setAutomaticMode(int channel, int pitch, int velocity) {
+  //Set automode to true using channel 2 Maschine messages
+  if (channel == CHANNEL_SEMIAUTOMODE) {
+    if (pitch == PITCH_SET_SEMIAUTO_MODE) {
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Set Automatic Mode OFF");
+      AUTOMATIC_MODE = false;
+    }
+  }
+
+  if (channel == CHANNEL_AUTOMODE) {     
+    if (pitch == PITCH_SET_AUTOMODE_OFF) {
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Set Automatic Mode OFF");
+      AUTOMATIC_MODE = false;
+    }
+
+    
+    if (pitch == PITCH_SET_AUTOMODE_ON) {
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Set Automatic Mode ON");
+      AUTOMATIC_MODE = true;
+    }
+  }    
+}
+  
+void receiveBeatMessage(int channel, int pitch, int velocity) {
+  if (channel == CHANNEL_AUTOMODE) {
+    //Useful for debug
+    //println("Receive Beat = " + automaticSequencer.beatCounter);
+    
+    if (pitch == PITCH_NEW_SCENE_FIRST_BEAT) {
+      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Beat message / Scene first beat");
+    }
+    else if (pitch == PITCH_FIRST_BEAT) {
+      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Beat message / first beat"); 
+    }
+    else if (pitch == PITCH_REGULAR_BEAT) {
+      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Beat message / normal beat");   
+    }
+    
+    automaticSequencer.processBeatMessage(pitch);
+  }
+  
+}
+
+
+void receiveIntensityMessage(int channel, int pitch, int velocity) {
+  if (channel == CHANNEL_AUTOMODE) {
+    if (pitch == PITCH_INTENSITY_LOW) {
+      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : General Intensity Level - Low");
+    }
+    else if (pitch == PITCH_INTENSITY_MEDIUM) {
+      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : General Intensity Level - Medium"); 
+    }
+    else if (pitch == PITCH_INTENSITY_HIGH) {
+      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : General Intensity Level - High");   
+    }
+    
+    automaticSequencer.processIntensityMessage(pitch);
+  }
+  
+}
+
+
+void receiveColorMessage(int channel, int pitch, int velocity) {
+  if (channel == CHANNEL_AUTOMODE) {
+    if (pitch == PITCH_COLORSET_FREE) {
+      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Colorset - Free");
+    }
+    else if (pitch == PITCH_COLORSET_RED) {
+      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Colorset - Red"); 
+    }
+    else if (pitch == PITCH_COLORSET_BLACK) {
+      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Colorset - Black and White");   
+    }
+    else if (pitch == PITCH_COLORSET_BLUE) {
+      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Colorset - Blue");   
+    }
+
+    automaticSequencer.processColorChangeMessage(pitch);
+  }
+
+}
+
+
+void activateAdditionalEffect(int velocity) {
+  effectToBeDrawn = true;
+  currentEffectNumber = velocity;
+  effectNumberToDeactivateEffects = velocity;
+}
+
+void deactivateAdditionalEffect(int velocity) {
+  effectToBeDrawn = false;
+}
+
+void loadCustomDeviceAnimation1(int channel, int pitch, int velocity) {
+  customDeviceAnimation(velocity);
+}
+
+void loadCustomDeviceAnimation2(int channel, int pitch, int velocity) {
+  customDeviceAnimation(velocity + 127);
+}
+
+void loadCustomDeviceAnimation3(int channel, int pitch, int velocity) {
+  customDeviceAnimation(velocity + 254);
+}
+
+
+void loadAnimation1(int channel, int pitch, int velocity) {
+  //LOAD_SEQUENCE
+  drawImage = 0;
+  drawAnimation = 1;
+  
+  //Reset the flag to prevent any nullpointer exception
+  setupcomplete = false;
+  
+  //Update the animation number
+  animationnumber = velocity;
+  
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load animation number " + animationnumber);
+  
+  //Execute specific actions related to this particular animation
+  specificActions();    
+}
+
+void loadAnimation2(int channel, int pitch, int velocity) {
+  //LOAD_SEQUENCE2
+  drawImage = 0;
+  drawAnimation = 1;
+  
+  //Reset the flag to prevent any nullpointer exception
+  setupcomplete = false;
+  
+  //Update the animation number
+  animationnumber = velocity + 127;
+  
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load animation number " + animationnumber);
+  
+  //Execute specific actions related to this particular animation
+  specificActions();
+}
+
+void loadAnimation3(int channel, int pitch, int velocity) {
+  //LOAD_SEQUENCE3
+  drawImage = 0;
+  drawAnimation = 1;
+  
+  //Reset the flag to prevent any nullpointer exception
+  setupcomplete = false;
+  
+  //Update the animation number
+  animationnumber = velocity + 254;
+  
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load animation number " + animationnumber);
+  
+  //Execute specific actions related to this particular animation
+  specificActions();
+}
+
+void loadAnimation4(int channel, int pitch, int velocity) {
+  //LOAD_SEQUENCE4 1 382
+  drawImage = 0;
+  drawAnimation = 1;
+  
+  //Reset the flag to prevent any nullpointer exception
+  setupcomplete = false;
+  
+  //Update the animation number
+  animationnumber = velocity + 381;
+  
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load animation number " + animationnumber);
+  
+  //Execute specific actions related to this particular animation
+  specificActions();
+}
+
+void loadImage1(int channel, int pitch, int velocity) {
+  //LOAD_IMAGE_BANK1
+  drawImage = 1;
+  drawAnimation = 0;
+
+  //No need to reset the flag
+  setupcomplete = true;
+
+  //Get the first value as an string
+  imagenumber = velocity;
+
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load image number " + imagenumber);      
+}
+
+void activateKeyboardLEDPanelMapping() {
+  //Without this reset, no common base exists to say "this is the nth panel"
+  resetLEDPanelMapping();
+  
+  manualLEDPanelRemappingNoteArray = new int[NUMBER_OF_PANELS];
+  for (int i=0;i<NUMBER_OF_PANELS;i++) { manualLEDPanelRemappingNoteArray[i] = -1; }
+    
+  manualLEDPanelRemappingNoteCounter = 0;
+  authorizePanelRemappingUsingKeyboard = true;
+  
+  //Display an image lighting only the current panel to map to inform the user 
+  drawImage = 1;
+  drawAnimation = 0;
+  imagenumber = -1;
+}
+
+void finalizeLEDPanelRemappingProcedure() {
+  
+  int[] sortedNoteList = sort(manualLEDPanelRemappingNoteArray);
+  int[] sortedArray = new int[sortedNoteList.length];
+  
+  for (int i=0; i<sortedNoteList.length; i++) {
+    for (int panelNb=0; panelNb<manualLEDPanelRemappingNoteArray.length; panelNb++) {
+      if (sortedNoteList[i] == manualLEDPanelRemappingNoteArray[panelNb]) {
+        sortedArray[i] = panelNb;
+      }
+    }
+  }
+    
+  // Most critical part : update the panelNumber directly inside the Output objects !
+  for (int i=0; i<outputDevices.length; i++) {
+    outputDevices[i].panelNumber = sortedArray[i];
+    screen_order_configuration[i] = sortedArray[i];
+  }
+  
+  manualLEDPanelRemappingNoteCounter = 0;
+  authorizePanelRemappingUsingKeyboard = false;
+  
+  //Make the configuration change persistant
+  writeScreenOrderInConfigurationFile();
+}
+
+//Reset the output order of the panels back to their original pre-conf value
+void resetLEDPanelMapping() {
+  for (int i=0; i<outputDevices.length; i++) {
+    outputDevices[i].panelNumber = i;
+  }
+}
+
+
+
+void startStrobe_Front(int velocity) {
+  drawStrobe_Front = 1;
+  myDMX.setStrobePreset_Front(velocity);
+ 
+}
+
+void startStrobe_Back(int velocity) {
+  drawStrobe_Back = 1;
+  myDMX.setStrobePreset_Back(velocity);
+ 
+}
+
+
+//////////////////////////////////////////////////
+//////////////       NOTE OFF       //////////////
+//////////////////////////////////////////////////
+
+
+void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_name) {
+    
+  // Receive a noteOff
+  if (initComplete == true) {
+    if (bus_name == MIDI_BUS_CONTROLLER_INPUT || bus_name == MIDI_BUS_KEYBOARD_INPUT) {
+      if (pitch == PITCH_P1_LEFT)                  {p1LeftStop(channel, pitch, velocity);}
+      else if (pitch == PITCH_P1_RIGHT)            {p1RightStop(channel, pitch, velocity);}
+      else if (pitch == PITCH_P2_LEFT)             {p2LeftStop(channel, pitch, velocity);}
+      else if (pitch == PITCH_P2_RIGHT)            {p2RightStop(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_KILL_LED_PANELS) {deactivateKillLedPanel(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_STROBE_4TH)      {deactivatePadStrobe4th(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_STROBE_8TH)      {deactivatePadStrobe8th(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_STROBE_16TH)     {deactivatePadStrobe16th(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_STROBE_32ND)     {deactivatePadStrobe32nd(channel, pitch, velocity);}
+      else if (pitch == PITCH_PAD_STROBE_64TH)     {deactivatePadStrobe64th(channel, pitch, velocity);}
+    }
+    
+    //Semi-automatic mode - Release for DMX actions, or for effects
+    if (channel == CHANNEL_SEMIAUTOMODE) {
+      //Release automatic mode in case of explicit input
+      AUTOMATIC_MODE = false;
+      switch (pitch) {
+        case PITCH_GENERAL_STROBO_FRONT: stopStrobe_Front();break;                                               //G7    - New way to use the stroboscope : noteOff releases the strobe
+        case PITCH_GENERAL_STROBO_BACK:  stopStrobe_Back();break;                                                //G#7   - New way to use the stroboscope : noteOff releases the strobe
+        case PITCH_DISPLAY_EFFECT:       deactivateAdditionalEffect(velocity);break;                             //C9    - Reset the effect
+      }
+    }
+    
+    //Manual mode : release the animation in case of momentary animations
+    if (channel == CHANNEL_MANUALMODE_1 || channel == CHANNEL_MANUALMODE_2 || channel == CHANNEL_MANUALMODE_3 || channel == CHANNEL_MANUALMODE_4) {
+      
+      int animationToBePlayed = 1;
+      int behaviour = 1;
+      for (int[] pad: manualMode_InputTranslationList) {
+        if (pad[0] == channel && pad[1] == pitch) {
+          animationToBePlayed = pad[2];
+          behaviour = pad[3];
+          break;
+        }
+      }
+      
+      //The command aims to change the LED panels
+      if (animationToBePlayed >0) {
+        if (expectingNoteOffForRelease == true) {
+          if (noteOffToResetAnimation == pitch) {
+            noteOffRevertToPreviousAnimation();
+          }
+        }        
+      }
+      //The command is an order for DMX equipments
+      else {
+        if (pitch == noteOffToResetDMX) {
+          strobepreset_front = 0;
+          myDMX.stopStrobe_Front();
+        }
+      }
+    }
+  }
+}
+
+void stopStrobe_Front() {
+  drawStrobe_Front = 0;
+  myDMX.stopStrobe_Front();
+  
+}
+
+void stopStrobe_Back() {
+  drawStrobe_Back = 0;
+  myDMX.stopStrobe_Back();
+ 
+}
+
+void p1LeftStop(int channel, int pitch, int velocity) {          //Pitch == 0
+  command_p1_left = false;
+  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_LEFT_STOP");
+}
+
+void p1RightStop(int channel, int pitch, int velocity) {         //Pitch == 2
+  command_p1_right = false;
+  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_RIGHT_STOP");
+}
+
+void p2LeftStop(int channel, int pitch, int velocity) {          //Pitch == 23
+  command_p2_left = false;
+  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_LEFT_STOP");
+}
+
+void p2RightStop(int channel, int pitch, int velocity) {         //Pitch == 24
+  command_p2_right = false;
+  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_RIGHT_STOP");
+}
+
+
+void deactivateKillLedPanel(int channel, int pitch, int velocity) {
+  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_KILL_LEDPANEL");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setKillLedPanel = false;
+  }
+  if (authorizeKillLedPanelManualMode == true) {
+    setKillLedPanelManualMode = false;
+  }
+}
+
+
+void deactivatePadStrobe4th(int channel, int pitch, int velocity) {
+  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_4TH");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setStrobeAutoMode4th = false;
+    frameRate(registeredTempo);
+    stroboAutoPadNoteOff = false;
+  }
+  if (authorizeStrobeManualMode4th == true) {
+    if (authorizePanelStrobe == true) {
+      frameRate(registeredTempo);
+    }
+    if (authorizeDMXStrobe == true) {
+      if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+        drawStrobe_Front = previousFrontStrobeState;
+        strobepreset_front = previousFrontStrobePreset;
+        
+        if (drawStrobe_Front == 0) {
+          stopStrobe_Front();
+        }
+        else {
+          startStrobe(strobepreset_front);
+        }
+      }
+    }
+    setStrobeManualMode4th = false;
+  }
+}
+
+void deactivatePadStrobe8th(int channel, int pitch, int velocity) {
+  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_8TH");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setStrobeAutoMode8th = false;
+    frameRate(registeredTempo);
+    stroboAutoPadNoteOff = false;
+  }
+  if (authorizeStrobeManualMode8th == true) {
+    if (authorizePanelStrobe == true) {
+      frameRate(registeredTempo);
+    }
+    if (authorizeDMXStrobe == true) {
+      if ((setStrobeManualMode4th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+        drawStrobe_Front = previousFrontStrobeState;
+        strobepreset_front = previousFrontStrobePreset;
+        
+        if (drawStrobe_Front == 0) {
+          stopStrobe_Front();
+        }
+        else {
+          startStrobe(strobepreset_front);
+        }
+      }
+    }
+    setStrobeManualMode8th = false;
+  }
+}
+
+void deactivatePadStrobe16th(int channel, int pitch, int velocity) {
+  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_16TH");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setStrobeAutoMode16th = false;
+    frameRate(registeredTempo);
+    stroboAutoPadNoteOff = false;
+  }
+  if (authorizeStrobeManualMode16th == true) {
+    if (authorizePanelStrobe == true) {
+      frameRate(registeredTempo);
+    }
+    if (authorizeDMXStrobe == true) {
+      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+        drawStrobe_Front = previousFrontStrobeState;
+        strobepreset_front = previousFrontStrobePreset;
+        
+        if (drawStrobe_Front == 0) {
+          stopStrobe_Front();
+        }
+        else {
+          startStrobe(strobepreset_front);
+        }
+      }
+    }
+    setStrobeManualMode16th = false;
+  }
+}
+
+void deactivatePadStrobe32nd(int channel, int pitch, int velocity) {
+  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_32ND");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setStrobeAutoMode32nd = false;
+    frameRate(registeredTempo);
+    stroboAutoPadNoteOff = false;
+  }
+  if (authorizeStrobeManualMode32nd == true) {
+    if (authorizePanelStrobe == true) {
+      frameRate(registeredTempo);
+    }
+    if (authorizeDMXStrobe == true) {
+      if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode4th == true || setStrobeManualMode64th == true) == false) {
+        drawStrobe_Front = previousFrontStrobeState;
+        strobepreset_front = previousFrontStrobePreset;
+        
+        if (drawStrobe_Front == 0) {
+          stopStrobe_Front();
+        }
+        else {
+          startStrobe(strobepreset_front);
+        }
+      }
+    }
+    setStrobeManualMode32nd = false;
+  }
+}
+
+void deactivatePadStrobe64th(int channel, int pitch, int velocity) {
+  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_64TH");
+  if (AUTOMATIC_MODE == true) {
+    automaticSequencer.setStrobeAutoMode64th = false;
+    frameRate(registeredTempo);
+    stroboAutoPadNoteOff = false;
+  }
+  if (authorizeStrobeManualMode32nd == true) {
+    if (authorizePanelStrobe == true) {
+      frameRate(registeredTempo);
+    }
+    if (authorizeDMXStrobe == true) {
+      if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode4th == true || setStrobeManualMode32nd == true) == false) {
+        drawStrobe_Front = previousFrontStrobeState;
+        strobepreset_front = previousFrontStrobePreset;
+        drawStrobe_Back = previousBackStrobeState;
+        strobepreset_back = previousBackStrobePreset;
+        
+        if (drawStrobe_Front == 0) {
+          stopStrobe_Front();
+        }
+        else {
+          startStrobe(strobepreset_front);
+        }
+        
+        if (drawStrobe_Back == 0) {
+          stopStrobe_Back();
+        }
+        else {
+          startStrobe_Back(strobepreset_back);
+        }
+      }
+    }
+    setStrobeManualMode64th = false;
+  }
+}
+
+/////////////////////////////////////////////////
+//////////////  CONTROLLER CHANGE  //////////////
+/////////////////////////////////////////////////
+
+// Receive a controllerChange  
+void controllerChange(int channel, int number, int value, long timestamp, String bus_name) {
+  if (bus_name == MIDI_BUS_CONTROLLER_INPUT || bus_name == MIDI_BUS_KEYBOARD_INPUT) {    //Filter the panic all-notes-off messages sent to other channels
+    if (number == PITCH_KNOB_BRIGHTNESS)         {changeBrightness(channel, number, value);}          //Modulation wheel : change global brightness
+    else if (number == PITCH_KNOB_BLACKOUT)      {setBlackOutAutoMode(channel, number, value);}       //Low-pass filter knob : blackout
+    else if (number == PITCH_KNOB_WHITEOUT)      {setWhiteOutAutoMode(channel, number, value);}       //Hi-pass filter knob : whiteout
+    else if (number == PITCH_KNOB_SHREDDER)      {setShredderAutoMode(channel, number, value);}       //Repeat knob : depending on the value, set splitter or shredder on
+    else if (number == PITCH_KNOB_COLORCHANGE)   {setColorChangeAutoMode(channel, number, value);}    //Color change : when the phaser is set, tint the screen with a cycling color
+    else if (number == PITCH_KNOB_WHITEJAMAMONO) {setWhiteJamaMonoAutoMode(channel, number, value);}  //WhiteJamaMono : when the pitch shift is set, a white rectangle enters the screen
+    else if (number == PITCH_KNOB_WHITENOISE)    {setWhiteNoiseAutoMode(channel, number, value);}     //White noise : pixelize the output accordingly to the input value 
+  }
+}
+
+void changeBrightness(int channel, int number, int value) {
+  //CHANGE_BRIGHTNESS
+  outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : CHANGE_BRIGHTNESS");
+  brightness = value / 127.0;
+}
+
+void setBlackOutAutoMode(int channel, int number, int value) {
+  if (AUTOMATIC_MODE == true) {
+    if (value == 0) {
+      automaticSequencer.setBlackOutAutomode = false;
+      automaticSequencer.blackoutPower = 0;
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_BLACKOUT_OFF");
+    }
+    else {
+      automaticSequencer.setBlackOutAutomode = true;
+      automaticSequencer.blackoutPower = value;
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_BLACKOUT_ON");
+    }
+  }
+  else {
+    if (authorizeBlackOutManualMode == true) {
+      if (value == 0) {
+        setBlackOutManualMode = false;
+        blackoutPowerManualMode = 0;
+      }
+      else {
+        setBlackOutManualMode = true;
+        blackoutPowerManualMode = value;
+      }
+    }
+  }
+}
+
+void setWhiteOutAutoMode(int channel, int number, int value) {
+  if (AUTOMATIC_MODE == true) {
+    if (value == 0) {
+      automaticSequencer.setWhiteOutAutomode = false;
+      automaticSequencer.whiteoutPower = 0;
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEOUT_OFF");
+    }
+    else {
+      automaticSequencer.setWhiteOutAutomode = true;
+      automaticSequencer.whiteoutPower = value;
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEOUT_ON");
+    }
+  }
+  else {
+    if (authorizeWhiteOutManualMode == true) {
+      if (value == 0) {
+        setWhiteOutManualMode = false;
+        whiteoutPowerManualMode = 0;
+      }
+      else {
+        setWhiteOutManualMode = true;
+        whiteoutPowerManualMode = value;
+      }
+    }
+  }
+}
+
+void setShredderAutoMode(int channel, int number, int value) {
+  if (AUTOMATIC_MODE == true) {
+    if (value == 0) {
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_SHREDDER_OFF");
+      
+      //The shredder was active : the animation needs to be reinitialised
+      if (automaticSequencer.setShredderAutoMode == true) {
+        automaticSequencer.animationShouldBeReinitialized = true;
+      }
+      
+      automaticSequencer.setShredderAutoMode = false; 
+      automaticSequencer.shredderPower = 0;
+    }
+    else {
+      automaticSequencer.setShredderAutoMode = true; 
+      automaticSequencer.shredderPower = value;
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_SHREDDER_ON");
+    }
+  }
+  else {
+    if (authorizeShredderManualMode == true) {
+      if (value == 0) {
+        setShredderManualMode = false;
+        shredderPowerManualMode = 0;
+        //Reinit
+        specificActions();
+      }
+      else {
+        setShredderManualMode = true;
+        shredderPowerManualMode = value;
+      }
+    }
+  }
+}
+
+
+void setColorChangeAutoMode(int channel, int number, int value) {
+  if (AUTOMATIC_MODE == true) {
+    if (value == 0) {
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_COLORCHANGE_OFF");
+      automaticSequencer.setColorChangeAutoMode = false;
+      automaticSequencer.colorChangePower = 0;
+    }
+    else {
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_COLORCHANGE_ON");
+      automaticSequencer.setColorChangeAutoMode = true;
+      automaticSequencer.colorChangePower = value;
+    }
+  }
+  else {
+    if (authorizeColorChangeManualMode == true) {
+      if (value == 0) {
+        setColorChangeManualMode = false;
+        colorChangePowerManualMode = 0;
+      }
+      else {
+        setColorChangeManualMode = true;
+        colorChangePowerManualMode = value;
+      }
+    }
+  }
+}
+
+void setWhiteJamaMonoAutoMode(int channel, int number, int value) {
+  if (AUTOMATIC_MODE == true) {
+    if (value == 0) {
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEJAMAMONO_OFF");
+      automaticSequencer.setWhiteJamaMonoAutoMode = false;
+      automaticSequencer.whiteJamaMonoPower = 0;
+    }
+    else {
+      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEJAMAMONO_ON");
+      automaticSequencer.setWhiteJamaMonoAutoMode = true;
+      automaticSequencer.whiteJamaMonoPower = value;
+    }
+  }
+  else {
+    if (authorizeWhiteJamaMonoManualMode == true) {
+      if (value == 0) {
+        setWhiteJamaMonoManualMode = false;
+        whiteJamaMonoPowerManualMode = 0;
+      }
+      else {
+        setWhiteJamaMonoManualMode = true;
+        whiteJamaMonoPowerManualMode = value;
+      }
+    }
+  }
+}
+
+void setWhiteNoiseAutoMode(int channel, int number, int value) {
+  if (authorizeWhiteNoiseManualMode == true) {
+    if (value == 0) {
+      setWhiteNoiseManualMode = false;
+      whiteNoisePowerManualMode = 0;
+    }
+    else {
+      setWhiteNoiseManualMode = true;
+      whiteNoisePowerManualMode = value;
+    }
+  }
+
+}
+
+
+////////////////////////////////////////////
+// ENABLE / DISABLE ADDITIONAL MIDI INPUT //
+////////////////////////////////////////////
+
+void disableManualInput(){
+  authorizeStrobeManualMode4th     = false;
+  authorizeStrobeManualMode8th     = false;
+  authorizeStrobeManualMode16th    = false;
+  authorizeStrobeManualMode32nd    = false;
+  authorizeStrobeManualMode64th    = false;
+  authorizeColorChangeManualMode   = false;
+  authorizeWhiteJamaMonoManualMode = false;
+  authorizeWhiteNoiseManualMode    = true;
+}
+
+void enableManualInput(){
+  authorizeStrobeManualMode4th     = true;
+  authorizeStrobeManualMode8th     = true;
+  authorizeStrobeManualMode16th    = true;
+  authorizeStrobeManualMode32nd    = true;
+  authorizeStrobeManualMode64th    = true;
+  authorizeColorChangeManualMode   = true;
+  authorizeWhiteJamaMonoManualMode = false;
+  authorizeWhiteNoiseManualMode    = true;
+}
