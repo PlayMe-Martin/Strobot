@@ -484,6 +484,10 @@ void specificActions() {
       rectMode(CORNER);
       frameRate(50);
       noStroke();
+      if (panelFillListInit == false) {
+        panelFillList = new ArrayList<PanelFillClass>();
+        panelFillListInit = true;
+      }
       panelfill_draw = true;
       if (NUMBER_OF_PANELS == 3) {
         panelFillList.add(new PanelFillClass(0*(width/NUMBER_OF_PANELS), height, 0));
@@ -498,6 +502,12 @@ void specificActions() {
       rectMode(CORNER);
       frameRate(50);
       noStroke();
+      
+      if (panelFillListInit == false) {
+        panelFillList = new ArrayList<PanelFillClass>();
+        panelFillListInit = true;
+      }
+      
       panelfill_draw = true;
       
       if (NUMBER_OF_PANELS == 3) {
@@ -512,7 +522,14 @@ void specificActions() {
       rectMode(CORNER);
       frameRate(50);
       noStroke();
+      
+      if (panelFillListInit == false) {
+        panelFillList = new ArrayList<PanelFillClass>();
+        panelFillListInit = true;
+      }
+      
       panelfill_draw = true;
+      
       if (NUMBER_OF_PANELS == 3) {
         panelFillList.add(new PanelFillClass(2*(width/NUMBER_OF_PANELS), height, 2));
       }

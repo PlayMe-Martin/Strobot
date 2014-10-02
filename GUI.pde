@@ -28,7 +28,10 @@ ArrayList<PanelSimulator> gui_panelSimulatorList;
 ArrayList<RackLight> gui_rackLightList;
 ArrayList<LEDTube> gui_LEDTubeList;
 
-int gui_backgroundBrightness       = 45;
+final int gui_width                      = 900;
+final int gui_height                     = 750;
+
+int gui_backgroundBrightness             = 45;
 final int gui_simulatorPosX              = 10;
 final int gui_simulatorPosY              = 100;
 final int gui_simulatorWidth             = 576;
@@ -116,7 +119,7 @@ void setup_gui() {
   
   cp5 = new ControlP5(this);
   // Create a controlFrame by using addControlFrame, this creates a new separate frame
-  controlFrame = addControlFrame("PlayMeLightSetup - Controls", 900, 750);
+  controlFrame = addControlFrame("Strobot - Controls", gui_width, gui_height);
   
 }
 
@@ -150,7 +153,10 @@ public class ControlFrame extends PApplet {
   controlP5.Toggle changeLEDPanelMappingToggle;
   ArrayList<Bang> changeLEDPanelMappingBangList;
   controlP5.Textlabel resetExpectedTextLabel;
-  controlP5.Button add_FrontStrobo;
+  controlP5.Button add_FrontLeftStrobo;
+  controlP5.Button add_FrontRightStrobo;
+  controlP5.Button add_LEDTube;
+  controlP5.Button add_RackLight;
   controlP5.Button add_BackStrobo;
  
   controlP5.CheckBox LEDPanelAnimations_animationListCheckBox;
@@ -360,20 +366,46 @@ public class ControlFrame extends PApplet {
        ;
     offsetY += textfieldHeight + 2*spacingRow;
     
-    for (int i=0; i<DMXList_FrontStroboscopes.size(); i++) {
-      DMX_Stroboscope stroboscope = DMXList_FrontStroboscopes.get(i);
+    for (int i=0; i<DMXList_FrontLeftStroboscopes.size(); i++) {
+      DMX_Stroboscope stroboscope = DMXList_FrontLeftStroboscopes.get(i);
       String fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + ")";
-      cp5.addTextfield("Front Strobe " + i)
+      cp5.addTextfield("Left Strobe " + i)
          .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
          .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
          .setValue(fieldValue)
          .setFont(minimlFont)
-         .setCaptionLabel("Front Strobe " + (i+1) + " :    ")
+         .setCaptionLabel("Left Strobe " + (i+1) + " :    ")
          .setAutoClear(false)
          .moveTo(hardwareInfo)
          .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
          ;
-      cp5.addToggle("Test FrontStroboscope " + i)
+      cp5.addToggle("Test FrontLeftStroboscope " + i)
+         .setValue(0)
+         .setLabelVisible(false)
+         .setPosition(accordionWidth - 2*textfieldHeight, offsetY)
+         .setSize(2*textfieldHeight - leftOffset, textfieldHeight)
+         .setColorForeground(color(4,104,154))
+         .setColorActive(color(0,180,234))
+         .setColorActive(color(120,0,0))
+         .moveTo(hardwareInfo)
+         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
+         ;
+      offsetY += textfieldHeight + spacingRow;
+    }
+    for (int i=0; i<DMXList_FrontRightStroboscopes.size(); i++) {
+      DMX_Stroboscope stroboscope = DMXList_FrontRightStroboscopes.get(i);
+      String fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + ")";
+      cp5.addTextfield("Right Strobe " + i)
+         .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
+         .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
+         .setValue(fieldValue)
+         .setFont(minimlFont)
+         .setCaptionLabel("Right Strobe " + (i+1) + " :    ")
+         .setAutoClear(false)
+         .moveTo(hardwareInfo)
+         .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
+         ;
+      cp5.addToggle("Test FrontRightStroboscope " + i)
          .setValue(0)
          .setLabelVisible(false)
          .setPosition(accordionWidth - 2*textfieldHeight, offsetY)
@@ -414,9 +446,9 @@ public class ControlFrame extends PApplet {
     }
     
     
-    add_FrontStrobo = cp5.addButton("Add Front Strobe")
+    add_FrontLeftStrobo = cp5.addButton("Add Front Left Strobe")
                          .setValue(0)
-                         .setCaptionLabel("Add Front Strobe")
+                         .setCaptionLabel("Add Front Left Strobe")
                          .setPosition(leftOffset, DMXTextLabelPosY + 2*textfieldHeight + 2*spacingRow)
                          .setSize(toggleWidth, toggleHeight)
                          .setColorBackground(color(110,0,0))
@@ -424,11 +456,22 @@ public class ControlFrame extends PApplet {
                          .setColorActive(color(190,0,0))
                          .moveTo(hardwareInfo)
                          ;
-    add_FrontStrobo.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    add_FrontLeftStrobo.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    add_FrontRightStrobo = cp5.addButton("Add Front Right Strobe")
+                         .setValue(0)
+                         .setCaptionLabel("Add Front Right Strobe")
+                         .setPosition(leftOffset, DMXTextLabelPosY + 3*textfieldHeight + 3*spacingRow)
+                         .setSize(toggleWidth, toggleHeight)
+                         .setColorBackground(color(110,0,0))
+                         .setColorForeground(color(150,0,0))
+                         .setColorActive(color(190,0,0))
+                         .moveTo(hardwareInfo)
+                         ;
+    add_FrontRightStrobo.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
     add_BackStrobo = cp5.addButton("Add Back Strobe")
                          .setValue(0)
                          .setCaptionLabel("Add Back Strobe")
-                         .setPosition(leftOffset, DMXTextLabelPosY + 3*textfieldHeight + 3*spacingRow)
+                         .setPosition(leftOffset, DMXTextLabelPosY + 4*textfieldHeight + 4*spacingRow)
                          .setSize(toggleWidth, toggleHeight)
                          .setColorBackground(color(110,0,0))
                          .setColorForeground(color(150,0,0))
@@ -511,7 +554,7 @@ public class ControlFrame extends PApplet {
       offsetY += textfieldHeight + spacingRow;
     }
 
-    add_FrontStrobo = cp5.addButton("Add LED Tube")
+    add_LEDTube = cp5.addButton("Add LED Tube")
                          .setValue(0)
                          .setCaptionLabel("Add LED Tube")
                          .setPosition(leftOffset, CustomDevicesTextLabelPosY + 2*textfieldHeight + 2*spacingRow)
@@ -521,8 +564,8 @@ public class ControlFrame extends PApplet {
                          .setColorActive(color(190,0,0))
                          .moveTo(hardwareInfo)
                          ;
-    add_FrontStrobo.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
-    add_BackStrobo = cp5.addButton("Add Rack Light")
+    add_LEDTube.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    add_RackLight = cp5.addButton("Add Rack Light")
                          .setValue(0)
                          .setCaptionLabel("Add Rack Light")
                          .setPosition(leftOffset, CustomDevicesTextLabelPosY + 3*textfieldHeight + 3*spacingRow)
@@ -532,7 +575,7 @@ public class ControlFrame extends PApplet {
                          .setColorActive(color(190,0,0))
                          .moveTo(hardwareInfo)
                          ;
-    add_BackStrobo.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    add_RackLight.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
 
     //Hidden label which appears only when changes requiring a restart are needed
     resetExpectedTextLabel = cp5.addTextlabel("Reset Expected")
@@ -651,7 +694,8 @@ public class ControlFrame extends PApplet {
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_CHANGE_STROBO_FRONT  + " | " + getStringFromNoteInt(PITCH_CHANGE_STROBO_FRONT ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_START_STROBO_FRONT   + " | " + getStringFromNoteInt(PITCH_START_STROBO_FRONT  ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_STOP_STROBO_FRONT    + " | " + getStringFromNoteInt(PITCH_STOP_STROBO_FRONT   ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_FRONT + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_FRONT) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_FRONT_LEFT + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_FRONT_LEFT) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_FRONT_RIGHT + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_FRONT_RIGHT) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_BACK  + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_BACK ) + "\n" +
                                   "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_ENABLE_MAN_INPUT     + " | " + getStringFromNoteInt(PITCH_ENABLE_MAN_INPUT    ) + "\n" +
@@ -1311,23 +1355,41 @@ public class ControlFrame extends PApplet {
   }
   
   // buttonOK will be triggered when pressing the OK button of the messageBox.
-  void buttonOK_FrontStrobe(int theValue) {
-    GUIMessageBoxString = ((Textfield)cp5.controller("inputbox_FrontStrobe")).getText();
+  void buttonOK_FrontLeftStrobe(int theValue) {
+    GUIMessageBoxString = ((Textfield)cp5.controller("inputbox_FrontLeftStrobe")).getText();
     GUIMessageBoxResult = theValue;
-    gui_parseMessageBoxFrontStrobe(GUIMessageBoxString);
+    gui_parseMessageBoxFrontLeftStrobe(GUIMessageBoxString);
+    GUIMessageBox.hide();
+  }
+  
+  void buttonOK_FrontRightStrobe(int theValue) {
+    GUIMessageBoxString = ((Textfield)cp5.controller("inputbox_FrontRightStrobe")).getText();
+    GUIMessageBoxResult = theValue;
+    gui_parseMessageBoxFrontRightStrobe(GUIMessageBoxString);
     GUIMessageBox.hide();
   }
   
   // function buttonCancel will be triggered when pressing the Cancel button of the messageBox.
-  void buttonCancel_FrontStrobe(int theValue) {
+  void buttonCancel_FrontLeftStrobe(int theValue) {
+    GUIMessageBoxResult = theValue;
+    GUIMessageBox.hide();
+  }
+  
+  void buttonCancel_FrontRightStrobe(int theValue) {
     GUIMessageBoxResult = theValue;
     GUIMessageBox.hide();
   }
   
   // inputbox is called whenever RETURN has been pressed in textfield-controller inputbox 
-  void inputbox_FrontStrobe(String theString) {
+  void inputbox_FrontLeftStrobe(String theString) {
     GUIMessageBoxString = theString;
-    gui_parseMessageBoxFrontStrobe(GUIMessageBoxString);    
+    gui_parseMessageBoxFrontLeftStrobe(GUIMessageBoxString);    
+    GUIMessageBox.hide();
+  }
+  
+  void inputbox_FrontRightStrobe(String theString) {
+    GUIMessageBoxString = theString;
+    gui_parseMessageBoxFrontRightStrobe(GUIMessageBoxString);    
     GUIMessageBox.hide();
   }
 
@@ -1379,15 +1441,30 @@ public class ControlFrame extends PApplet {
     GUIMessageBox.hide();
   }
   
-  void gui_parseMessageBoxFrontStrobe(String result) {
+  void gui_parseMessageBoxFrontLeftStrobe(String result) {
     int[] parsedResult = gui_parseStringGenericDMX(result, 3);
+    println(result);
     if (parsedResult[2] < 0) {
-      DMXList_FrontStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1]));
-      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+")");
+      DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1]));
+      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT LEFT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+")");
     }
     else {
-      DMXList_FrontStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1], parsedResult[2]));
-      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+" | "+parsedResult[2]+")");
+      DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1], parsedResult[2]));
+      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT LEFT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+" | "+parsedResult[2]+")");
+    }
+    
+    resetExpectedTextLabel.setVisible(true);
+    createConfigFile();
+  }
+  void gui_parseMessageBoxFrontRightStrobe(String result) {
+    int[] parsedResult = gui_parseStringGenericDMX(result, 3);
+    if (parsedResult[2] < 0) {
+      DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1]));
+      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT RIGHT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+")");
+    }
+    else {
+      DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1], parsedResult[2]));
+      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT RIGHT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+" | "+parsedResult[2]+")");
     }
     
     resetExpectedTextLabel.setVisible(true);
@@ -1437,7 +1514,7 @@ public class ControlFrame extends PApplet {
     createConfigFile();
   }
   
-  
+  //Parse strings like "(2,3,5)", to return {2,3,5}
   int[] gui_parseStringGenericDMX(String string, int numberOfChannels) {
     
     int[] result = new int[numberOfChannels];
@@ -1518,10 +1595,16 @@ public class ControlFrame extends PApplet {
       ////////////////////
       // DMX events
       
-      else if (theEvent.getName() == "Add Front Strobe") {
+      else if (theEvent.getName() == "Add Front Left Strobe") {
         String [] explanation = {"Input new DMX device's channel info using the following syntax : (Speed, Brightness, FlashLength)",
                                  "For example, for a 2-channel front stroboscope working on channels 4 and 5, input: (4,5,-1)"};
-        createMessageBox("FrontStrobe", explanation);
+        createMessageBox("FrontLeftStrobe", explanation);
+        //The Reset flag is raised in case of successful parsing
+      }
+      else if (theEvent.getName() == "Add Front Right Strobe") {
+        String [] explanation = {"Input new DMX device's channel info using the following syntax : (Speed, Brightness, FlashLength)",
+                                 "For example, for a 2-channel front stroboscope working on channels 4 and 5, input: (4,5,-1)"};
+        createMessageBox("FrontRightStrobe", explanation);
         //The Reset flag is raised in case of successful parsing
       }
       else if (theEvent.getName() == "Add Back Strobe") {
@@ -1531,13 +1614,13 @@ public class ControlFrame extends PApplet {
         //The Reset flag is raised in case of successful parsing
       }
       
-      else if (theEvent.getName().contains("Front Strobe ")) {
+      else if (theEvent.getName().contains("Front Left Strobe ")) {
         int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
         //Check if the user wants to delete the device
 
         if (cp5.getController(theEvent.getName()).getStringValue().equals("(0,0,0)")) {
-          DMXList_FrontStroboscopes.remove(DMXList_FrontStroboscopes.get(devNumber));
-          outputLog.println("IMPORTANT : Removed front stroboscope device #" + devNumber);
+          DMXList_FrontLeftStroboscopes.remove(DMXList_FrontLeftStroboscopes.get(devNumber));
+          outputLog.println("IMPORTANT : Removed front left stroboscope device #" + devNumber);
           resetExpectedTextLabel.setVisible(true);
           createConfigFile();
           
@@ -1554,10 +1637,45 @@ public class ControlFrame extends PApplet {
             if (i == -1) {voidOccurence += 1;}
           }
           if (voidOccurence <= 1) {
-            DMXList_FrontStroboscopes.get(devNumber).DMXAddress_stroboscopeSpeed        = parseResult[0];
-            DMXList_FrontStroboscopes.get(devNumber).DMXAddress_stroboscopeBrightness   = parseResult[1];
-            DMXList_FrontStroboscopes.get(devNumber).DMXAddress_stroboscopeFlashLength  = parseResult[2];
-            outputLog.println("IMPORTANT : Modified front stroboscope device #" + devNumber + " with the values : " + parseResult[0] + "," + parseResult[1] + "," + parseResult[2]);
+            DMXList_FrontLeftStroboscopes.get(devNumber).DMXAddress_stroboscopeSpeed        = parseResult[0];
+            DMXList_FrontLeftStroboscopes.get(devNumber).DMXAddress_stroboscopeBrightness   = parseResult[1];
+            DMXList_FrontLeftStroboscopes.get(devNumber).DMXAddress_stroboscopeFlashLength  = parseResult[2];
+            outputLog.println("IMPORTANT : Modified front left stroboscope device #" + devNumber + " with the values : " + parseResult[0] + "," + parseResult[1] + "," + parseResult[2]);
+            resetExpectedTextLabel.setVisible(true);
+            createConfigFile();
+            
+            //Rebuild the GUI !
+            createGeneralInfoAccordion();
+          }
+        }
+      }
+      else if (theEvent.getName().contains("Front Right Strobe ")) {
+        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
+        //Check if the user wants to delete the device
+
+        if (cp5.getController(theEvent.getName()).getStringValue().equals("(0,0,0)")) {
+          DMXList_FrontRightStroboscopes.remove(DMXList_FrontRightStroboscopes.get(devNumber));
+          outputLog.println("IMPORTANT : Removed front right stroboscope device #" + devNumber);
+          resetExpectedTextLabel.setVisible(true);
+          createConfigFile();
+          
+          //Rebuild the GUI !
+          createGeneralInfoAccordion();
+        }
+        //The user only wants to change the DMX settings
+        else {
+          int[] parseResult = gui_parseStringGenericDMX(cp5.getController(theEvent.getName()).getStringValue(), 3);
+
+          //Check if the values returned are coherent - ie do not contain more than once "-1"
+          int voidOccurence = 0;
+          for (int i: parseResult) {
+            if (i == -1) {voidOccurence += 1;}
+          }
+          if (voidOccurence <= 1) {
+            DMXList_FrontRightStroboscopes.get(devNumber).DMXAddress_stroboscopeSpeed        = parseResult[0];
+            DMXList_FrontRightStroboscopes.get(devNumber).DMXAddress_stroboscopeBrightness   = parseResult[1];
+            DMXList_FrontRightStroboscopes.get(devNumber).DMXAddress_stroboscopeFlashLength  = parseResult[2];
+            outputLog.println("IMPORTANT : Modified front left stroboscope device #" + devNumber + " with the values : " + parseResult[0] + "," + parseResult[1] + "," + parseResult[2]);
             resetExpectedTextLabel.setVisible(true);
             createConfigFile();
             
@@ -1727,17 +1845,30 @@ public class ControlFrame extends PApplet {
       
       /////////////////////////
       // Device test : using the corresponding buttons, light up the devices to check proper connection
+      // For DMX devices, it's normal the simulator won't light up
       
-      else if (theEvent.getName().contains("Test FrontStroboscope ")) {
+      else if (theEvent.getName().contains("Test FrontLeftStroboscope ")) {
         int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
         float toggleValue =  cp5.getController(theEvent.getName()).getValue();
         if (toggleValue == 1.0) {
           //Start the corresponding stroboscope, full power
-          DMXList_FrontStroboscopes.get(devNumber).startDMX(100);
+          DMXList_FrontLeftStroboscopes.get(devNumber).startDMX(100);
         }
         else {
           //Stop it once we're done
-          DMXList_FrontStroboscopes.get(devNumber).stopDMX();
+          DMXList_FrontLeftStroboscopes.get(devNumber).stopDMX();
+        }
+      }
+      else if (theEvent.getName().contains("Test FrontRightStroboscope ")) {
+        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
+        float toggleValue =  cp5.getController(theEvent.getName()).getValue();
+        if (toggleValue == 1.0) {
+          //Start the corresponding stroboscope, full power
+          DMXList_FrontRightStroboscopes.get(devNumber).startDMX(100);
+        }
+        else {
+          //Stop it once we're done
+          DMXList_FrontRightStroboscopes.get(devNumber).stopDMX();
         }
       }
       else if (theEvent.getName().contains("Test BackStroboscope ")) {
@@ -1940,4 +2071,3 @@ String[] createCustomDeviceAnimationListFilter(float[] checkBoxArrayvalue) {
   }
   return filter;
 }
-

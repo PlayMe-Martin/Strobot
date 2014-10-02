@@ -12,7 +12,7 @@
     <link rel="icon"                                                                            
       type="image/png"                                                                          
       href="img/favicon.png">                                                                   
-    <link rel="stylesheet" type="text/css" href="PlayMeLightSetup_AnimationViewer.css" />   
+    <link rel="stylesheet" type="text/css" href="Strobot_AnimationViewer.css" />   
     <link href='http://fonts.googleapis.com/css?family=Exo+2' rel='stylesheet' type='text/css'>   
     <script src="js/processing-1.4.1.min.js"></script>                                          
   </head>                                                                                         
@@ -25,7 +25,7 @@
         <h1><img src="../data/PlayMe.png" height="90px" width="90px" class="floatingimage" alt="Hell yeah" /> Live Setup - Animation helper tool</h1>                       
         <p>This PHP application is to be used along with a PHP server<br/>If not already installed, download MAMP (OSX) or WAMP (Windows), and run your own local Apache server.</p>  
         <p></p>                                                                                                                                                                       
-        <form action="PlayMeLightSetup_AnimationViewer.php" method="post">   
+        <form action="Strobot_AnimationViewer.php" method="post">   
             Filter animations according to the following tags :<br />            
                                                                                  
             <p>                                                                  

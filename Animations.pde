@@ -3337,7 +3337,8 @@ void draw_tetris() {
       text("G A M E", width/2, height/3 - 4);
       text("O V E R", width/2, 2*height/3 + 4);
       if (debug_without_dmx == false) {
-        myDMX.setStrobePreset_Front(10);  //Start the stroboscope
+        myDMX.setStrobePreset_FrontLeft(10);  //Start the stroboscope
+        myDMX.setStrobePreset_FrontRight(10);  //Start the stroboscope
       }
       
       if (command_p1_left | command_p1_right | command_p2_left | command_p2_right)
@@ -3351,7 +3352,8 @@ void draw_tetris() {
       text("SCORE", width/2, height/3 - 4);
       text(lines, width/2, 2*height/3 + 4);
       if (debug_without_dmx == false) {
-        myDMX.stopStrobe_Front();
+        myDMX.stopStrobe_FrontLeft();
+        myDMX.stopStrobe_FrontRight();
       }
       if (command_p1_left | command_p1_right | command_p2_left | command_p2_right)
       {

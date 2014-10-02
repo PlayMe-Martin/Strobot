@@ -16,6 +16,150 @@ import java.awt.*;
 import java.awt.image.*;
 
 
+////////////////////////////////////////////
+//   Render the animations to gif files   //
+//Control the animations with the keyboard//
+////////////////////////////////////////////
+
+//Controls :
+//BACKSPACE (DEL) : set active the gif recording process - can only be set during the Init
+//TAB : set inactive the gif recording process
+//RIGHT/LEFT : next/previous animation, start recording
+//ENTER : close the gif file for the current animation
+
+//Utility parameter : useful to cycle through the animations using the left and right keys. To be updated each time a new animation is added
+final int totalNumberOfAnimations = 385;
+
+void keyPressed()
+{
+  if (keyCode == BACKSPACE) {
+    if (drawImage == 1 && imagenumber == 0) {
+      outputLog.println("Setting GIF Recording mode to ON");
+      selectFolder("Select a folder to save the GIF files:", "folderSelected");
+      setGifRecording = true;
+    }
+  }
+  if (keyCode == TAB) {
+    setGifRecording = false;
+    outputLog.println("Setting GIF Recording mode to OFF");
+  }
+  if (keyCode == ENTER || keyCode == RETURN) {
+    if (animationnumber != 0) {
+      if (setGifRecording = true && gifRecordingActive == true) {
+        gifRecorder.start(ROOTDIR + "/Strobot" + animationnumber + ".gif");
+        for (int i=0;i<gifRecordingFrameRate.size();i++) {
+          try {
+            gifRecorder.setDelay(int(1000/frameRate));
+            PImage image = loadImage("tmp/animation" + animationnumber + "-" + formatNumber(i) + ".jpeg");
+            BufferedImage buffer = (BufferedImage) image.getNative();    //Convert PImage to BufferedImage
+            gifRecorder.addFrame(buffer);
+          }
+          catch (Exception e) {println(e);}      
+        }
+        gifRecorder.finish();  //Flush all data
+        gifRecordingActive = false;
+      }
+      outputLog.println("Writing GIF file for animation " + animationnumber + "...");
+    }
+  }
+  if (key == CODED) {
+    if (keyCode == RIGHT) {
+      if (keyRegistered == false) {
+        //Reset the flag to prevent any nullpointer exception
+        setupcomplete = false;
+        
+        //Go to the next animation
+        drawAnimation = 1;
+        drawImage = 0;
+        if (animationnumber == 99) {
+          animationnumber = 102;
+        }
+        else {
+          if (animationnumber < totalNumberOfAnimations) {
+            animationnumber += 1;
+          }
+          else { 
+            animationnumber = 1;
+          }
+        }
+        specificActions();
+        
+        if (animationnumber != 0) {
+          if (setGifRecording = true) {
+            gifRecordingActive = true;
+            gifRecordingFrameNumber = 0;
+            gifRecordingFrameRate = new ArrayList();
+          }
+        }
+      }
+    }
+    if (keyCode == LEFT) {
+      if (keyRegistered == false) {
+        //Reset the flag to prevent any nullpointer exception
+        setupcomplete = false;
+  
+        //Go to the previous animation
+        drawAnimation = 1;
+        drawImage = 0;
+        if (animationnumber > 1) {
+          animationnumber -= 1;
+        }
+        else {
+          animationnumber = totalNumberOfAnimations;
+        }
+        specificActions();
+        
+        if (animationnumber != 0) {
+          if (setGifRecording = true) {
+            gifRecordingActive = true;
+            gifRecordingFrameNumber = 0;
+            gifRecordingFrameRate = new ArrayList();
+          }
+        }
+      }
+    }
+  }
+}
+
+
+void folderSelected(File selection) {
+  if (selection == null) {
+    outputLog.println("Gif recording was cancelled");
+    setGifRecording = false;
+  } else {
+    outputLog.println("User selected GIF folder : " + selection.getAbsolutePath());
+    ROOTDIR = selection.getAbsolutePath();
+  }
+}
+
+String formatNumber(int input) {
+  String output = "";
+  if (input < 10) {
+     output = "00000" + str(input);
+  }
+  else if (input < 100) {
+     output = "0000" + str(input);
+  }
+  else if (input < 1000) {
+     output = "000" + str(input);
+  }
+  else if (input < 10000) {
+     output = "00" + str(input);
+  }
+  else if (input < 100000) {
+     output = "0" + str(input);
+  }
+  else if (input < 1000000) {
+     output = str(input);
+  }
+  else {
+    outputLog.println("Error - input value is too high"); 
+  }
+  
+  return output;
+}
+
+
 public class AnimatedGifEncoder {
 
   protected int width; // image size

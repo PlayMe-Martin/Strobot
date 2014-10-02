@@ -1,11 +1,11 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////// PlayMe TripleFuck LED panels - Processing sketch part of the PlayMe live lighting setup /////////
+/////////          Strobot - Processing application part of the PlayMe live lighting setup        /////////
 /////////                                 Martin Di Rollo - 2013                                  /////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////Main file of the program, contains the configuration, as well as setup and draw functions/////////
+///////// Main file of the program - contains the initial config, as well as setup and draw loops /////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -13,7 +13,7 @@
 /*
 /////////////////////////////////////////////    -  User manual  -    /////////////////////////////////////
 
-This program allows to control a LED matrix synced to MIDI commands.
+This program allows to control a LED matrix, DMX devices and RF-controlled devices synced to MIDI commands.
 This program has two modes : automatic and manual. Manual mode allows to create very specific animations,
 and leave very little chance in the selection of the different animations.
 The easiest way to use this program is manual mode is either :
@@ -21,13 +21,16 @@ The easiest way to use this program is manual mode is either :
 - within Maschine, do the same as with Ableton, create a pattern, and link it to a scene
 -> Configure the sequencer's MIDI to be output to the IAC virtual MIDI bus (OSX), this will allow this
    program to receive these MIDI commands.
+Of course, a similar method can be applied for any other DAW
    
-In semi-automatic mode, specific MIDI notes control each animation, using MIDI channel 3 :
-E7  (MIDI 100) : Change the front stroboscope's speed/intensity (without starting it if it's not active)
-F7  (MIDI 101) : Start the front stroboscope
+In semi-automatic mode, specific MIDI notes control each animation.
+The notes itself can be configured from within the GUI. The default config allows the following actions :
+E7  (MIDI 100) : Change both front stroboscopes' speed/intensity (without starting it if it's not active)
+F7  (MIDI 101) : Start both front stroboscope
 F#7 (MIDI 102) : Stop the front stroboscope
-G7  (MIDI 103) : Start the front stroboscope, stop it upon releasing the note
-G#7 (MIDI 104) : Start the back stroboscope, stop it upon releasing the note
+G7  (MIDI 103) : Start the left front stroboscope, stop it upon releasing the note
+G#7 (MIDI 104) : Start the left front stroboscope, stop it upon releasing the note
+A7  (MIDI 105) : Start the back stroboscope, stop it upon releasing the note
 F9  (MIDI 122) : Change LED panel animation - bank 4
 D#9 (MIDI 123) : Change LED panel animation - bank 1
 E9  (MIDI 124) : Change LED panel animation - bank 2
@@ -105,12 +108,9 @@ boolean debug_without_custom_devices = false;
 String DMX_MICROCONTROLLER_NAME = "tty.usbmodem12341";
 String CUSTOMDEVICES_MICROCONTROLLER_NAME = "tty.usbserial-A961L7NJ";
 
-/////////////////////////////////////////////////////
-//Define the configuration of the LED matrix here !//
-/////////////////////////////////////////////////////
-
-//Set to True to execute the sketch in debug mode, without the LED panels' Teensy3 connected
-boolean debug_without_panels = false;
+//////////////////////////////////////////////////////
+//Define the initial config of the LED matrix here !//
+//////////////////////////////////////////////////////
 
 final static int PANEL_RESOLUTION_X = 8;        //Resolution for each individual panel - width
 final static int PANEL_RESOLUTION_Y = 16;       //Resolution for each individual panel - height 
@@ -123,10 +123,6 @@ int NUMBER_OF_PANELS = 5;                       //Number of panels - TBIL : auto
 String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
 //String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem170381", "/dev/tty.usbmodem265461", "/dev/tty.usbmodem479061", "/dev/tty.usbmodem479101"};
 String[] TEENSY_SERIAL_PORT_LIST_5 = {"tty.usbmodem113361", "tty.usbmodem479101", "tty.usbmodem265461", "tty.usbmodem479061", "tty.usbmodem479101"};
-
-
-
-
 
 //Define the Gamma value to be used for the panels - recommended for WS2801 modules : gamma_25
 final String panelGamma = "gamma_25";
@@ -157,20 +153,18 @@ final int[] MANUAL_MAPPING = {127, 126, 125, 124, 123, 122, 121, 120,
 final String RESIZE_OPTION = "QUALITY";
 
 //Choose the device from which Processing should receive MIDI commands
-//Standard choice : IEC bus to receive internal MIDI messages from Ableton Live -> "Bus 1"
-String MIDI_BUS_MAIN_INPUT = "Bus 1";
+//Standard choice : IEC bus to receive internal MIDI messages from the DAW -> "Bus 1"
+String MIDI_BUS_MAIN_INPUT       = "Bus 1";
 String MIDI_BUS_CONTROLLER_INPUT = "LPD8";
-String MIDI_BUS_KEYBOARD_INPUT = "LPK25";
-//Choose the device to which Processing should send the debug output DMX messages (to be processed by the stroboscope simulator)
-String MIDI_BUS_DMX_DEBUG = "Bus 3";
+String MIDI_BUS_KEYBOARD_INPUT   = "LPK25";
 
-//Used to changed on the fly the panel order, using MIDI commands
+//Used to changed on the fly the panel order (LED remapping), using MIDI commands
 int[] screen_order_configuration = new int [NUMBER_OF_PANELS];
 
 /////////////////////////////////////////////////////
-//--Should also be configured :
-//--Manual mode pad/animation mapping--
-//  This can be set up in the ManualModeConfig file
+//--Should also be configured :                    //
+//--Manual mode pad/animation mapping--            //
+// This can be set up in the ManualModeConfig file //
 /////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////
@@ -226,9 +220,15 @@ MidiBus myKeyboardBus;
 //Control the brightness of the LED panels - 1 for full brightness
 float brightness = 1;
 
+//Set to True to execute the sketch in debug mode, without the LED panels' Teensy3 connected
+//This variable is set to true when trying to change the number of panels from inside the GUI, until the program is reset
+boolean debug_without_panels = false;
+
 //Variables used to light up the stroboscope
-int drawStrobe_Front = 0;
-int strobepreset_front = 0;
+int drawStrobe_FrontLeft = 0;
+int strobepreset_frontleft = 0;
+int drawStrobe_FrontRight = 0;
+int strobepreset_frontright = 0;
 int drawStrobe_Back = 0;
 int strobepreset_back = 0;
 
@@ -254,15 +254,8 @@ void setup()
 {
   //Create a log file, where all system output shall be redirected to
   try {
-    outputLog = createWriter("PlayMeLightSetup_Logfile.txt");
-    outputLog.println("///////////////////////////////////////////");
-    outputLog.println("//PlayMe Light Setup - Output logger file//");
-    outputLog.println("///////////////////////////////////////////");
-    outputLog.println("");
-    outputLog.println("");
-    outputLog.println("// All information output by the application shall be stored in this log file //");
-    outputLog.println("");
-    outputLog.flush();
+    create_logfileHeader();
+
   }
   catch (Exception e) {
     println("Couldn't create logger file : " + e); 
@@ -476,7 +469,10 @@ void setup()
   //Initialize GIF Recording object, set the GIF to loop
   gifRecorder = new AnimatedGifEncoder();
   gifRecorder.setRepeat(0);
-    
+  
+  //Set the window location to be next to the GUI
+  setLocation(gui_width, 0);
+  
   //Initialize the GUI
   setup_gui();
   
@@ -486,7 +482,12 @@ void setup()
   customDeviceAnimation(4);
   
 }
- 
+
+////////////////////////////////////////////////////////////////////////////
+//                        Main loop of the program                        //
+// The cyclic image generation and LED output buffer updates is done here //
+////////////////////////////////////////////////////////////////////////////
+
 void draw()
 {  
   if (setupcomplete == true) 
@@ -497,7 +498,7 @@ void draw()
       if (AUTOMATIC_MODE == false) {
         if (authorizeGeneralManualMode == true) {
           if (setShredderManualMode == true) {
-             //The shredder effect is a bit particular, and requires the main animation not to be drawn
+             // Some effects, like the shredder, are a bit particular, and require the main animation not to be drawn
              actionControlled_preSpecificDraw();
           }
           else {
@@ -551,147 +552,15 @@ void draw()
   }
 }
 
-
-
-////////////////////////////////////////////
-//   Render the animations to gif files   //
-//Control the animations with the keyboard//
-////////////////////////////////////////////
-//Controls :
-//BACKSPACE (DEL) : set active the gif recording process - can only be set during the Init
-//TAB : set inactive the gif recording process
-//RIGHT/LEFT : next/previous animation, start recording
-//ENTER : close the gif file for the current animation
-
-//Utility parameter : useful to cycle through the animations using the left and right keys. To be updated each time a new animation is added
-final int totalNumberOfAnimations = 385;
-
-void keyPressed()
-{
-  if (keyCode == BACKSPACE) {
-    if (drawImage == 1 && imagenumber == 0) {
-      outputLog.println("Setting GIF Recording mode to ON");
-      selectFolder("Select a folder to save the GIF files:", "folderSelected");
-      setGifRecording = true;
-    }
-  }
-  if (keyCode == TAB) {
-    setGifRecording = false;
-    outputLog.println("Setting GIF Recording mode to OFF");
-  }
-  if (keyCode == ENTER || keyCode == RETURN) {
-    if (animationnumber != 0) {
-      if (setGifRecording = true && gifRecordingActive == true) {
-        gifRecorder.start(ROOTDIR + "/PlayMeLightSetup" + animationnumber + ".gif");
-        for (int i=0;i<gifRecordingFrameRate.size();i++) {
-          try {
-            gifRecorder.setDelay(int(1000/frameRate));
-            PImage image = loadImage("tmp/animation" + animationnumber + "-" + formatNumber(i) + ".jpeg");
-            BufferedImage buffer = (BufferedImage) image.getNative();    //Convert PImage to BufferedImage
-            gifRecorder.addFrame(buffer);
-          }
-          catch (Exception e) {println(e);}      
-        }
-        gifRecorder.finish();  //Flush all data
-        gifRecordingActive = false;
-      }
-      outputLog.println("Writing GIF file for animation " + animationnumber + "...");
-    }
-  }
-  if (key == CODED) {
-    if (keyCode == RIGHT) {
-      if (keyRegistered == false) {
-        //Reset the flag to prevent any nullpointer exception
-        setupcomplete = false;
-        
-        //Go to the next animation
-        drawAnimation = 1;
-        drawImage = 0;
-        if (animationnumber == 99) {
-          animationnumber = 102;
-        }
-        else {
-          if (animationnumber < totalNumberOfAnimations) {
-            animationnumber += 1;
-          }
-          else { 
-            animationnumber = 1;
-          }
-        }
-        specificActions();
-        
-        if (animationnumber != 0) {
-          if (setGifRecording = true) {
-            gifRecordingActive = true;
-            gifRecordingFrameNumber = 0;
-            gifRecordingFrameRate = new ArrayList();
-          }
-        }
-      }
-    }
-    if (keyCode == LEFT) {
-      if (keyRegistered == false) {
-        //Reset the flag to prevent any nullpointer exception
-        setupcomplete = false;
-  
-        //Go to the previous animation
-        drawAnimation = 1;
-        drawImage = 0;
-        if (animationnumber > 1) {
-          animationnumber -= 1;
-        }
-        else {
-          animationnumber = totalNumberOfAnimations;
-        }
-        specificActions();
-        
-        if (animationnumber != 0) {
-          if (setGifRecording = true) {
-            gifRecordingActive = true;
-            gifRecordingFrameNumber = 0;
-            gifRecordingFrameRate = new ArrayList();
-          }
-        }
-      }
-    }
-  }
-
-}
-
-
-void folderSelected(File selection) {
-  if (selection == null) {
-    outputLog.println("Gif recording was cancelled");
-    setGifRecording = false;
-  } else {
-    outputLog.println("User selected GIF folder : " + selection.getAbsolutePath());
-    ROOTDIR = selection.getAbsolutePath();
-  }
-}
-
-String formatNumber(int input) {
-  String output = "";
-  if (input < 10) {
-     output = "00000" + str(input);
-  }
-  else if (input < 100) {
-     output = "0000" + str(input);
-  }
-  else if (input < 1000) {
-     output = "000" + str(input);
-  }
-  else if (input < 10000) {
-     output = "00" + str(input);
-  }
-  else if (input < 100000) {
-     output = "0" + str(input);
-  }
-  else if (input < 1000000) {
-     output = str(input);
-  }
-  else {
-    outputLog.println("Error - input value is too high"); 
-  }
-  
-  return output;
+void create_logfileHeader() {
+    outputLog = createWriter("Strobot_logfile.txt");
+    
+    outputLog.println("///////////////////////////////////////////");
+    outputLog.println("//PlayMe Light Setup - Output logger file//");
+    outputLog.println("///////////////////////////////////////////");
+    outputLog.println("");
+    outputLog.println("");
+    outputLog.println("// All information output by the application shall be stored in this log file //");
+    outputLog.println("");
+    outputLog.flush();
 }

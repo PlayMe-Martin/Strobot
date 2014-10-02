@@ -1381,7 +1381,8 @@ class DMXFutureActionsList {
   }  
   
   void stopStroboscope() {
-    myDMX.stopStrobe_Front();
+    myDMX.stopStrobe_FrontLeft();
+    myDMX.stopStrobe_FrontRight();
   }
   
 }
@@ -1479,25 +1480,25 @@ class StroboAction {
   
   void playStroboAction(int preset) {      //Will have to be checked, depends on the assumption that the strobe's DMX channels are speed/brightness
     switch (preset) {       //This function may be made bigger, depending on the needs regarding the precision of the stroboscope's controls in Auto Mode
-      case STROBO_OFF:               myDMX.stopStrobe_Front(); break;
-      case STROBO_SLOW_VERYWEAK:     myDMX.setStrobePreset_Front(23); break;
-      case STROBO_REGULAR_VERYWEAK:  myDMX.setStrobePreset_Front(63); break;
-      case STROBO_FAST_VERYWEAK:     myDMX.setStrobePreset_Front(93); break;
-      case STROBO_SLOW_WEAK:         myDMX.setStrobePreset_Front(24); break;
-      case STROBO_REGULAR_WEAK:      myDMX.setStrobePreset_Front(64); break;
-      case STROBO_FAST_WEAK:         myDMX.setStrobePreset_Front(94); break;
-      case STROBO_SLOW_LOWMEDIUM:    myDMX.setStrobePreset_Front(26); break;
-      case STROBO_REGULAR_LOWMEDIUM: myDMX.setStrobePreset_Front(66); break;
-      case STROBO_FAST_LOWMEDIUM:    myDMX.setStrobePreset_Front(95); break;
-      case STROBO_SLOW_MEDIUM:       myDMX.setStrobePreset_Front(28); break;
-      case STROBO_REGULAR_MEDIUM:    myDMX.setStrobePreset_Front(68); break;
-      case STROBO_FAST_MEDIUM:       myDMX.setStrobePreset_Front(97); break;
-      case STROBO_SLOW_HIMEDIUM:     myDMX.setStrobePreset_Front(29); break;
-      case STROBO_REGULAR_HIMEDIUM:  myDMX.setStrobePreset_Front(69); break;
-      case STROBO_FAST_HIMEDIUM:     myDMX.setStrobePreset_Front(98); break;
-      case STROBO_SLOW_STRONG:       myDMX.setStrobePreset_Front(30); break;
-      case STROBO_REGULAR_STRONG:    myDMX.setStrobePreset_Front(70); break;
-      case STROBO_FAST_STRONG:       myDMX.setStrobePreset_Front(99); break;
+      case STROBO_OFF:               myDMX.stopStrobe_FrontLeft(); break;
+      case STROBO_SLOW_VERYWEAK:     myDMX.setStrobePreset_FrontLeft(23); break;
+      case STROBO_REGULAR_VERYWEAK:  myDMX.setStrobePreset_FrontLeft(63); break;
+      case STROBO_FAST_VERYWEAK:     myDMX.setStrobePreset_FrontLeft(93); break;
+      case STROBO_SLOW_WEAK:         myDMX.setStrobePreset_FrontLeft(24); break;
+      case STROBO_REGULAR_WEAK:      myDMX.setStrobePreset_FrontLeft(64); break;
+      case STROBO_FAST_WEAK:         myDMX.setStrobePreset_FrontLeft(94); break;
+      case STROBO_SLOW_LOWMEDIUM:    myDMX.setStrobePreset_FrontLeft(26); break;
+      case STROBO_REGULAR_LOWMEDIUM: myDMX.setStrobePreset_FrontLeft(66); break;
+      case STROBO_FAST_LOWMEDIUM:    myDMX.setStrobePreset_FrontLeft(95); break;
+      case STROBO_SLOW_MEDIUM:       myDMX.setStrobePreset_FrontLeft(28); break;
+      case STROBO_REGULAR_MEDIUM:    myDMX.setStrobePreset_FrontLeft(68); break;
+      case STROBO_FAST_MEDIUM:       myDMX.setStrobePreset_FrontLeft(97); break;
+      case STROBO_SLOW_HIMEDIUM:     myDMX.setStrobePreset_FrontLeft(29); break;
+      case STROBO_REGULAR_HIMEDIUM:  myDMX.setStrobePreset_FrontLeft(69); break;
+      case STROBO_FAST_HIMEDIUM:     myDMX.setStrobePreset_FrontLeft(98); break;
+      case STROBO_SLOW_STRONG:       myDMX.setStrobePreset_FrontLeft(30); break;
+      case STROBO_REGULAR_STRONG:    myDMX.setStrobePreset_FrontLeft(70); break;
+      case STROBO_FAST_STRONG:       myDMX.setStrobePreset_FrontLeft(99); break;
 
       default: break;
     }
@@ -1505,7 +1506,8 @@ class StroboAction {
   }
   
   void stopStroboAction() {
-    myDMX.stopStrobe_Front();
+    myDMX.stopStrobe_FrontLeft();
+    myDMX.stopStrobe_FrontRight();
   }
   
 }
