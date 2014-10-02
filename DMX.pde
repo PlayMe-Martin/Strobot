@@ -7,7 +7,8 @@
 DMX myDMX;
 
 //Create lists of DMX equipments
-ArrayList<DMX_Stroboscope> DMXList_FrontStroboscopes;
+ArrayList<DMX_Stroboscope> DMXList_FrontLeftStroboscopes;
+ArrayList<DMX_Stroboscope> DMXList_FrontRightStroboscopes;
 ArrayList<DMX_Stroboscope> DMXList_BackStroboscopes;
 ArrayList<DMX_PAR> DMXList_PARs;
 
@@ -62,14 +63,26 @@ public class DMX{
     }
   } 
   
-  void setStrobePreset_Front(int preset) {
-    for (DMX_Stroboscope stroboscope: DMXList_FrontStroboscopes) {
+  void setStrobePreset_FrontLeft(int preset) {
+    for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
       stroboscope.startDMX(preset);
     }
   }
   
-  void stopStrobe_Front()  {
-    for (DMX_Stroboscope stroboscope: DMXList_FrontStroboscopes) {
+  void stopStrobe_FrontLeft()  {
+    for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
+      stroboscope.stopDMX();
+    }
+  }
+  
+  void setStrobePreset_FrontRight(int preset) {
+    for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
+      stroboscope.startDMX(preset);
+    }
+  }
+  
+  void stopStrobe_FrontRight()  {
+    for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
       stroboscope.stopDMX();
     }
   }
@@ -174,16 +187,19 @@ class DMX_PAR {
 }
 
 void init_defaultDMXDevices() {
-  DMXList_FrontStroboscopes = new ArrayList<DMX_Stroboscope>();
-  DMXList_BackStroboscopes  = new ArrayList<DMX_Stroboscope>();
-  DMXList_PARs              = new ArrayList<DMX_PAR>();
+  DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
+  DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
+  DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
+  DMXList_PARs                   = new ArrayList<DMX_PAR>();
   
   //The default DMX devices consist of a single stroboscope, in 2-channel mode, and with the DMX addresses 1 and 2 for speed and brightness
-  DMXList_FrontStroboscopes.add(new DMX_Stroboscope(1, 2));
+  DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(1, 2));
+  DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
 }
 
 void empty_DMXDevices() {
-  DMXList_FrontStroboscopes = new ArrayList<DMX_Stroboscope>();
-  DMXList_BackStroboscopes  = new ArrayList<DMX_Stroboscope>();
-  DMXList_PARs              = new ArrayList<DMX_PAR>();
+  DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
+  DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
+  DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
+  DMXList_PARs                   = new ArrayList<DMX_PAR>();
 }

@@ -37,7 +37,7 @@ int PITCH_KNOB_COLORCHANGE     = 3;
 int PITCH_KNOB_WHITEJAMAMONO   = -1;      //Not very fun as an animation, don't use it
 int PITCH_KNOB_WHITENOISE      = 7;
 
-//Pitches for messages coming from Maschine - Automatic mode
+//Pitches for messages coming from the DAW - Automatic mode
 final int PITCH_NEW_SCENE_FIRST_BEAT = 0;
 final int PITCH_FIRST_BEAT           = 1;
 final int PITCH_REGULAR_BEAT         = 2;
@@ -52,25 +52,26 @@ final int PITCH_INTENSITY_HARDCORE   = 11;
 final int PITCH_SET_AUTOMODE_OFF     = 14;
 final int PITCH_SET_AUTOMODE_ON      = 15;
 
-//Pitches for messages coming from Maschine - Manual mode
-final int PITCH_SET_SEMIAUTO_MODE    = -18;
-final int PITCH_CHANGE_STROBO_FRONT  = 100;
-final int PITCH_START_STROBO_FRONT   = 101;
-final int PITCH_STOP_STROBO_FRONT    = 102;
-final int PITCH_GENERAL_STROBO_FRONT = 103;
-final int PITCH_GENERAL_STROBO_BACK  = 104;
-final int PITCH_ENABLE_MAN_INPUT     = 110;
-final int PITCH_DISABLE_MAN_INPUT    = 111;
-final int PITCH_CUSTOM_DEVICE_BANK1  = 118;
-final int PITCH_CUSTOM_DEVICE_BANK2  = 119;
-final int PITCH_CUSTOM_DEVICE_BANK3  = 120;
-final int PITCH_DISPLAY_EFFECT       = 121;
-final int PITCH_LOAD_ANIMATION_BANK1 = 123;
-final int PITCH_LOAD_ANIMATION_BANK2 = 124;
-final int PITCH_LOAD_ANIMATION_BANK3 = 125;
-final int PITCH_LOAD_ANIMATION_BANK4 = 122;
-final int PITCH_LOAD_IMAGE_BANK1     = 126;
-final int PITCH_CHANGE_OUTPUTMAPPING = 127;
+//Pitches for messages coming from the DAW - Manual mode
+final int PITCH_SET_SEMIAUTO_MODE          = -18;
+final int PITCH_CHANGE_STROBO_FRONT        = 100;
+final int PITCH_START_STROBO_FRONT         = 101;
+final int PITCH_STOP_STROBO_FRONT          = 102;
+final int PITCH_GENERAL_STROBO_FRONT_LEFT  = 103;
+final int PITCH_GENERAL_STROBO_FRONT_RIGHT = 104;
+final int PITCH_GENERAL_STROBO_BACK        = 105;
+final int PITCH_ENABLE_MAN_INPUT           = 110;
+final int PITCH_DISABLE_MAN_INPUT          = 111;
+final int PITCH_CUSTOM_DEVICE_BANK1        = 118;
+final int PITCH_CUSTOM_DEVICE_BANK2        = 119;
+final int PITCH_CUSTOM_DEVICE_BANK3        = 120;
+final int PITCH_DISPLAY_EFFECT             = 121;
+final int PITCH_LOAD_ANIMATION_BANK1       = 123;
+final int PITCH_LOAD_ANIMATION_BANK2       = 124;
+final int PITCH_LOAD_ANIMATION_BANK3       = 125;
+final int PITCH_LOAD_ANIMATION_BANK4       = 122;
+final int PITCH_LOAD_IMAGE_BANK1           = 126;
+final int PITCH_CHANGE_OUTPUTMAPPING       = 127;
 
 
 // Allow LED Panel remapping using the keyboard
@@ -179,25 +180,26 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
       AUTOMATIC_MODE = false;
       switch (pitch) {
         //Manual input
-        case PITCH_SET_SEMIAUTO_MODE:    setAutomaticMode(channel, pitch, velocity);break;                        //UNUSED
-        case PITCH_CHANGE_STROBO_FRONT:  changeStrobe(channel, pitch, velocity);break;                            //E7    - Classic way to use the stroboscope
-        case PITCH_START_STROBO_FRONT:   startStrobe(velocity);break;                                             //F7    - Classic way to use the stroboscope
-        case PITCH_STOP_STROBO_FRONT:    stopStrobe();break;                                                      //F#7   - Classic way to use the stroboscope
-        case PITCH_GENERAL_STROBO_FRONT: startStrobe_Front(velocity);break;                                       //G7    - New way to use the stroboscope : noteOff releases the strobe
-        case PITCH_GENERAL_STROBO_BACK:  startStrobe_Back(velocity);break;                                        //G#7   - New way to use the stroboscope : noteOff releases the strobe
+        case PITCH_SET_SEMIAUTO_MODE:          setAutomaticMode(channel, pitch, velocity);break;                        //UNUSED
+        case PITCH_CHANGE_STROBO_FRONT:        changeStrobe(channel, pitch, velocity);break;                            //E7    - Classic way to use the stroboscope
+        case PITCH_START_STROBO_FRONT:         startStrobe(velocity);break;                                             //F7    - Classic way to use the stroboscope
+        case PITCH_STOP_STROBO_FRONT:          stopStrobe();break;                                                      //F#7   - Classic way to use the stroboscope
+        case PITCH_GENERAL_STROBO_FRONT_LEFT:  startStrobe_FrontLeft(velocity);break;                                   //G7    - New way to use the stroboscope : noteOff releases the strobe
+        case PITCH_GENERAL_STROBO_FRONT_RIGHT: startStrobe_FrontRight(velocity);break;                                  //G#7   - New way to use the stroboscope : noteOff releases the strobe
+        case PITCH_GENERAL_STROBO_BACK:        startStrobe_Back(velocity);break;                                        //A7    - New way to use the stroboscope : noteOff releases the strobe
         
-        case PITCH_ENABLE_MAN_INPUT:     enableManualInput();break;                                               //D8
-        case PITCH_DISABLE_MAN_INPUT:    disableManualInput();break;                                              //D#8
-        case PITCH_CUSTOM_DEVICE_BANK1:  loadCustomDeviceAnimation1(channel, pitch, velocity);break;              //A#8   - Load an animation for the custom devices
-        case PITCH_CUSTOM_DEVICE_BANK2:  loadCustomDeviceAnimation2(channel, pitch, velocity);break;              //B8
-        case PITCH_CUSTOM_DEVICE_BANK3:  loadCustomDeviceAnimation3(channel, pitch, velocity);break;              //C9
-        case PITCH_DISPLAY_EFFECT:       activateAdditionalEffect(velocity);break;                                //C#9
-        case PITCH_LOAD_ANIMATION_BANK1: loadAnimation1(channel, pitch, velocity);break;                          //D#9
-        case PITCH_LOAD_ANIMATION_BANK2: loadAnimation2(channel, pitch, velocity);break;                          //E9
-        case PITCH_LOAD_ANIMATION_BANK3: loadAnimation3(channel, pitch, velocity);break;                          //F9
-        case PITCH_LOAD_ANIMATION_BANK4: loadAnimation4(channel, pitch, velocity);break;                          //D9
-        case PITCH_LOAD_IMAGE_BANK1:     loadImage1(channel, pitch, velocity);break;                              //F#9
-        case PITCH_CHANGE_OUTPUTMAPPING: activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
+        case PITCH_ENABLE_MAN_INPUT:           enableManualInput();break;                                               //D8
+        case PITCH_DISABLE_MAN_INPUT:          disableManualInput();break;                                              //D#8
+        case PITCH_CUSTOM_DEVICE_BANK1:        loadCustomDeviceAnimation1(channel, pitch, velocity);break;              //A#8   - Load an animation for the custom devices
+        case PITCH_CUSTOM_DEVICE_BANK2:        loadCustomDeviceAnimation2(channel, pitch, velocity);break;              //B8
+        case PITCH_CUSTOM_DEVICE_BANK3:        loadCustomDeviceAnimation3(channel, pitch, velocity);break;              //C9
+        case PITCH_DISPLAY_EFFECT:             activateAdditionalEffect(velocity);break;                                //C#9
+        case PITCH_LOAD_ANIMATION_BANK1:       loadAnimation1(channel, pitch, velocity);break;                          //D#9
+        case PITCH_LOAD_ANIMATION_BANK2:       loadAnimation2(channel, pitch, velocity);break;                          //E9
+        case PITCH_LOAD_ANIMATION_BANK3:       loadAnimation3(channel, pitch, velocity);break;                          //F9
+        case PITCH_LOAD_ANIMATION_BANK4:       loadAnimation4(channel, pitch, velocity);break;                          //D9
+        case PITCH_LOAD_IMAGE_BANK1:           loadImage1(channel, pitch, velocity);break;                              //F#9
+        case PITCH_CHANGE_OUTPUTMAPPING:       activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
         default: break;
       }
     }
@@ -236,13 +238,10 @@ void activateKillLedPanel(int channel, int pitch, int velocity) {
   if (authorizeKillLedPanelManualMode == true) {
     setKillLedPanelManualMode = true;
     if (authorizeDMXStrobe == true) {
-      //To be tested : could be interesting to bring back the previous strobe, but it could also be dangerous... the Kill button could serve as a strobe kill switch
-      //if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true) == false) {
-      //  previousFrontStrobeState = drawStrobe_Front;
-      //  previousFrontStrobePreset = strobepreset_front;
-      //}
-      strobepreset_front = 0;
-      stopStrobe_Front();
+      strobepreset_frontleft = 0;
+      strobepreset_frontright = 0;
+      stopStrobe_FrontLeft();
+      stopStrobe_FrontRight();
     }
   }
 }
@@ -259,11 +258,15 @@ void activatePadStrobe4th(int channel, int pitch, int velocity) {
     }
     if (authorizeDMXStrobe == true) {
       if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        previousFrontStrobeState = drawStrobe_Front;
-        previousFrontStrobePreset = strobepreset_front;
+        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
+        previousFrontLeftStrobePreset = strobepreset_frontleft;
+        previousFrontRightStrobeState = drawStrobe_FrontRight;
+        previousFrontRightStrobePreset = strobepreset_frontright;
       }
-      strobepreset_front = 40;
-      startStrobe(strobepreset_front);
+      strobepreset_frontleft = 40;
+      strobepreset_frontright = 40;
+      //Only need to call this function once
+      startStrobe(strobepreset_frontleft);
     }
     registeredTempo = frameRate;
   }
@@ -281,11 +284,14 @@ void activatePadStrobe8th(int channel, int pitch, int velocity) {
     }
     if (authorizeDMXStrobe == true) {
       if ((setStrobeManualMode4th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        previousFrontStrobeState = drawStrobe_Front;
-        previousFrontStrobePreset = strobepreset_front;
+        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
+        previousFrontLeftStrobePreset = strobepreset_frontleft;
+        previousFrontRightStrobeState = drawStrobe_FrontRight;
+        previousFrontRightStrobePreset = strobepreset_frontright;
       }
-      strobepreset_front = 60;
-      startStrobe(strobepreset_front);
+      strobepreset_frontleft = 60;
+      strobepreset_frontright = 60;
+      startStrobe(strobepreset_frontleft);
     }
     setStrobeManualMode8th = true;
   }
@@ -303,11 +309,14 @@ void activatePadStrobe16th(int channel, int pitch, int velocity) {
     }
     if (authorizeDMXStrobe == true) {
       if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        previousFrontStrobeState = drawStrobe_Front;
-        previousFrontStrobePreset = strobepreset_front;
+        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
+        previousFrontLeftStrobePreset = strobepreset_frontleft;
+        previousFrontRightStrobeState = drawStrobe_FrontRight;
+        previousFrontRightStrobePreset = strobepreset_frontright;
       }
-      strobepreset_front = 80;
-      startStrobe(strobepreset_front);
+      strobepreset_frontleft = 80;
+      strobepreset_frontright = 80;
+      startStrobe(strobepreset_frontleft);
     }
     setStrobeManualMode16th = true;
   }
@@ -325,11 +334,14 @@ void activatePadStrobe32nd(int channel, int pitch, int velocity) {
     }
     if (authorizeDMXStrobe == true) {
       if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode64th == true) == false) {
-        previousFrontStrobeState = drawStrobe_Front;
-        previousFrontStrobePreset = strobepreset_front;
+        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
+        previousFrontLeftStrobePreset = strobepreset_frontleft;
+        previousFrontRightStrobeState = drawStrobe_FrontRight;
+        previousFrontRightStrobePreset = strobepreset_frontright;
       }
-      strobepreset_front = 100;
-      startStrobe(strobepreset_front);
+      strobepreset_frontleft = 100;
+      strobepreset_frontright = 100;
+      startStrobe(strobepreset_frontleft);
     }
     setStrobeManualMode32nd = true;
   }
@@ -347,14 +359,17 @@ void activatePadStrobe64th(int channel, int pitch, int velocity) {
     }
     if (authorizeDMXStrobe == true) {
       if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true) == false) {
-        previousFrontStrobeState = drawStrobe_Front;
-        previousFrontStrobePreset = strobepreset_front;
+        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
+        previousFrontLeftStrobePreset = strobepreset_frontleft;
+        previousFrontRightStrobeState = drawStrobe_FrontRight;
+        previousFrontRightStrobePreset = strobepreset_frontright;
         previousBackStrobeState = drawStrobe_Back;
         previousBackStrobePreset = strobepreset_back;
       }
-      strobepreset_front = 100;
+      strobepreset_frontleft = 100;
+      strobepreset_frontright = 100;
       strobepreset_back = 100;
-      startStrobe(strobepreset_front);
+      startStrobe(strobepreset_frontleft);
       startStrobe_Back(strobepreset_back);
     }
     setStrobeManualMode64th = true;
@@ -362,36 +377,43 @@ void activatePadStrobe64th(int channel, int pitch, int velocity) {
 }
 
 void changeStrobe(int channel, int pitch, int velocity) {
-  //CHANGE_STROBE
-  strobepreset_front = velocity;
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Change front stroboscope speed/brightness to preset " + strobepreset_front);
+  //CHANGE_STROBE - change both front stroboscopes
+  strobepreset_frontleft = velocity;
+  strobepreset_frontright = velocity;
+  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Change both front stroboscope speed/brightness to preset " + strobepreset_frontleft);
   
   // if the velocity is out of the table's bounds, prevent a crash
-  if (strobepreset_front >= strobelist.length)
+  if (velocity >= strobelist.length)
   {
-    strobepreset_front = 1;
+    strobepreset_frontleft = 1;
+    strobepreset_frontright = 1;
     outputLog.println("Velocity is out of bounds, setting default speed preset"); 
   }
 
   // if the stroboscope is already active, update the preset
-  if (drawStrobe_Front == 1) {
-    myDMX.setStrobePreset_Front(strobepreset_front);
+  if (drawStrobe_FrontLeft == 1 || drawStrobe_FrontRight == 1) {
+    drawStrobe_FrontLeft  = 1;
+    drawStrobe_FrontRight = 1;
+    myDMX.setStrobePreset_FrontLeft(strobepreset_frontleft);
+    myDMX.setStrobePreset_FrontRight(strobepreset_frontright);
   }
   
 }
 
-//Old method to call the front stroboscope, still works, but the more up-to-date startStrobe_Front should be used
+//Old method to call the front stroboscope, still works, but the more up-to-date startStrobe_FrontRight/Left should be used
 void startStrobe(int velocity) {
   //START_STROBE
-  drawStrobe_Front = 1;
-  outputLog.println("Note On received: Start front stroboscope with speed/brightness preset " + strobepreset_front);
+  drawStrobe_FrontLeft = 1;
+  drawStrobe_FrontRight = 1;
+  outputLog.println("Note On received: Start front stroboscope with speed/brightness preset " + strobepreset_frontleft);
   
 }
 
 //Old method to call the front stroboscope, still works, but the more up-to-date stopStrobe_Front should be used
 void stopStrobe() {
   //STOP_STROBE
-  drawStrobe_Front = 0;
+  drawStrobe_FrontLeft = 0;
+  drawStrobe_FrontRight = 0;
   outputLog.println("Note On received: Corresponding message : Stop front stroboscope");
 
 }
@@ -637,9 +659,14 @@ void resetLEDPanelMapping() {
 
 
 
-void startStrobe_Front(int velocity) {
-  drawStrobe_Front = 1;
-  myDMX.setStrobePreset_Front(velocity);
+void startStrobe_FrontLeft(int velocity) {
+  drawStrobe_FrontLeft = 1;
+  myDMX.setStrobePreset_FrontLeft(velocity); 
+}
+
+void startStrobe_FrontRight(int velocity) {
+  drawStrobe_FrontRight = 1;
+  myDMX.setStrobePreset_FrontRight(velocity);
  
 }
 
@@ -677,9 +704,10 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
       //Release automatic mode in case of explicit input
       AUTOMATIC_MODE = false;
       switch (pitch) {
-        case PITCH_GENERAL_STROBO_FRONT: stopStrobe_Front();break;                                               //G7    - New way to use the stroboscope : noteOff releases the strobe
-        case PITCH_GENERAL_STROBO_BACK:  stopStrobe_Back();break;                                                //G#7   - New way to use the stroboscope : noteOff releases the strobe
-        case PITCH_DISPLAY_EFFECT:       deactivateAdditionalEffect(velocity);break;                             //C9    - Reset the effect
+        case PITCH_GENERAL_STROBO_FRONT_LEFT:  stopStrobe_FrontLeft();break;                               //G7    - New way to use the stroboscope : noteOff releases the strobe
+        case PITCH_GENERAL_STROBO_FRONT_RIGHT: stopStrobe_FrontRight();break;                              //G#7   - New way to use the stroboscope : noteOff releases the strobe
+        case PITCH_GENERAL_STROBO_BACK:        stopStrobe_Back();break;                                    //A7    - New way to use the stroboscope : noteOff releases the strobe
+        case PITCH_DISPLAY_EFFECT:             deactivateAdditionalEffect(velocity);break;                 //C9    - Reset the effect
       }
     }
     
@@ -704,21 +732,29 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
           }
         }        
       }
-      //The command is an order for DMX equipments
+      //The command is an order for DMX devices
       else {
         if (pitch == noteOffToResetDMX) {
-          strobepreset_front = 0;
-          myDMX.stopStrobe_Front();
+          strobepreset_frontleft = 0;
+          myDMX.stopStrobe_FrontLeft();
+          strobepreset_frontright = 0;
+          myDMX.stopStrobe_FrontRight();
+          strobepreset_back = 0;
+          myDMX.stopStrobe_Back();
         }
       }
     }
   }
 }
 
-void stopStrobe_Front() {
-  drawStrobe_Front = 0;
-  myDMX.stopStrobe_Front();
-  
+void stopStrobe_FrontLeft() {
+  drawStrobe_FrontLeft = 0;
+  myDMX.stopStrobe_FrontLeft();
+}
+
+void stopStrobe_FrontRight() {
+  drawStrobe_FrontRight = 0;
+  myDMX.stopStrobe_FrontRight();
 }
 
 void stopStrobe_Back() {
@@ -772,14 +808,20 @@ void deactivatePadStrobe4th(int channel, int pitch, int velocity) {
     }
     if (authorizeDMXStrobe == true) {
       if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        drawStrobe_Front = previousFrontStrobeState;
-        strobepreset_front = previousFrontStrobePreset;
+        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
+        strobepreset_frontleft = previousFrontLeftStrobePreset;
+        drawStrobe_FrontRight = previousFrontRightStrobeState;
+        strobepreset_frontright = previousFrontRightStrobePreset;
         
-        if (drawStrobe_Front == 0) {
-          stopStrobe_Front();
+        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
+          drawStrobe_FrontLeft  = 0;
+          drawStrobe_FrontRight = 0;
+          stopStrobe_FrontLeft();
+          stopStrobe_FrontRight();
         }
         else {
-          startStrobe(strobepreset_front);
+          startStrobe_FrontRight(strobepreset_frontright);
+          startStrobe_FrontLeft(strobepreset_frontleft);
         }
       }
     }
@@ -800,14 +842,20 @@ void deactivatePadStrobe8th(int channel, int pitch, int velocity) {
     }
     if (authorizeDMXStrobe == true) {
       if ((setStrobeManualMode4th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        drawStrobe_Front = previousFrontStrobeState;
-        strobepreset_front = previousFrontStrobePreset;
+        drawStrobe_FrontRight = previousFrontRightStrobeState;
+        strobepreset_frontright = previousFrontRightStrobePreset;
+        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
+        strobepreset_frontleft = previousFrontLeftStrobePreset;
         
-        if (drawStrobe_Front == 0) {
-          stopStrobe_Front();
+        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
+          drawStrobe_FrontLeft  = 0;
+          drawStrobe_FrontRight = 0;
+          stopStrobe_FrontLeft();
+          stopStrobe_FrontRight();
         }
         else {
-          startStrobe(strobepreset_front);
+          startStrobe_FrontRight(strobepreset_frontright);
+          startStrobe_FrontLeft(strobepreset_frontleft);
         }
       }
     }
@@ -828,14 +876,20 @@ void deactivatePadStrobe16th(int channel, int pitch, int velocity) {
     }
     if (authorizeDMXStrobe == true) {
       if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        drawStrobe_Front = previousFrontStrobeState;
-        strobepreset_front = previousFrontStrobePreset;
+        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
+        strobepreset_frontleft = previousFrontLeftStrobePreset;
+        drawStrobe_FrontRight = previousFrontRightStrobeState;
+        strobepreset_frontright = previousFrontRightStrobePreset;
         
-        if (drawStrobe_Front == 0) {
-          stopStrobe_Front();
+        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
+          drawStrobe_FrontLeft  = 0;
+          drawStrobe_FrontRight = 0;
+          stopStrobe_FrontLeft();
+          stopStrobe_FrontRight();
         }
         else {
-          startStrobe(strobepreset_front);
+          startStrobe_FrontRight(strobepreset_frontright);
+          startStrobe_FrontLeft(strobepreset_frontleft);
         }
       }
     }
@@ -856,14 +910,20 @@ void deactivatePadStrobe32nd(int channel, int pitch, int velocity) {
     }
     if (authorizeDMXStrobe == true) {
       if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode4th == true || setStrobeManualMode64th == true) == false) {
-        drawStrobe_Front = previousFrontStrobeState;
-        strobepreset_front = previousFrontStrobePreset;
+        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
+        strobepreset_frontleft = previousFrontLeftStrobePreset;
+        drawStrobe_FrontRight = previousFrontRightStrobeState;
+        strobepreset_frontright = previousFrontRightStrobePreset;
         
-        if (drawStrobe_Front == 0) {
-          stopStrobe_Front();
+        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
+          drawStrobe_FrontLeft  = 0;
+          drawStrobe_FrontRight = 0;
+          stopStrobe_FrontLeft();
+          stopStrobe_FrontRight();
         }
         else {
-          startStrobe(strobepreset_front);
+          startStrobe_FrontRight(strobepreset_frontright);
+          startStrobe_FrontLeft(strobepreset_frontleft);
         }
       }
     }
@@ -884,16 +944,22 @@ void deactivatePadStrobe64th(int channel, int pitch, int velocity) {
     }
     if (authorizeDMXStrobe == true) {
       if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode4th == true || setStrobeManualMode32nd == true) == false) {
-        drawStrobe_Front = previousFrontStrobeState;
-        strobepreset_front = previousFrontStrobePreset;
+        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
+        strobepreset_frontleft = previousFrontLeftStrobePreset;
+        drawStrobe_FrontRight = previousFrontRightStrobeState;
+        strobepreset_frontright = previousFrontRightStrobePreset;
         drawStrobe_Back = previousBackStrobeState;
         strobepreset_back = previousBackStrobePreset;
         
-        if (drawStrobe_Front == 0) {
-          stopStrobe_Front();
+        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
+          drawStrobe_FrontLeft  = 0;
+          drawStrobe_FrontRight = 0;
+          stopStrobe_FrontLeft();
+          stopStrobe_FrontRight();
         }
         else {
-          startStrobe(strobepreset_front);
+          startStrobe_FrontRight(strobepreset_frontright);
+          startStrobe_FrontLeft(strobepreset_frontleft);
         }
         
         if (drawStrobe_Back == 0) {

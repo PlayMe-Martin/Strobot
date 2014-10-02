@@ -115,8 +115,10 @@ void draw_simulator(int x, int y) {
   }
   auxControlFrame.updatePixels();
  
-  //Front stroboscopes
-  drawSimuFrontStroboscope(gui_simulatorWidth/2 + 10, gui_frontStrobePositionY);
+  //stroboscopes
+  drawSimuFrontLeftStroboscope(gui_simulatorWidth/5 + 7, gui_frontStrobePositionY);
+  drawSimuFrontRightStroboscope(4*gui_simulatorWidth/5 + 16, gui_frontStrobePositionY);
+  drawSimuBackStroboscope(gui_simulatorWidth/2 + 10, gui_frontStrobePositionY - 15);
   
   //Rack lights
   for (int i=0; i<gui_rackLightList.size(); i++) {
@@ -197,12 +199,12 @@ class PanelSimulator {
 
 // DMX equipments - simulator functions
 
-void drawSimuFrontStroboscope(int positionX, int positionY) {
+void drawSimuFrontLeftStroboscope(int positionX, int positionY) {
   auxControlFrame.fill(100);
   auxControlFrame.rect(positionX - strobe_sizeX/2,positionY,strobe_sizeX,strobe_sizeY);
-  if (drawStrobe_Front == 1) {
-    int simuSpeed = int(map(strobelist[strobepreset_front][0], 0, 255, 15, 2));
-    int simuBrightness = strobelist[strobepreset_front][1];
+  if (drawStrobe_FrontLeft == 1) {
+    int simuSpeed = int(map(strobelist[strobepreset_frontleft][0], 0, 255, 15, 2));
+    int simuBrightness = strobelist[strobepreset_frontleft][1];
     
     if (auxControlFrame.frameCount%simuSpeed == 0) {
       auxControlFrame.fill(simuBrightness);
@@ -217,9 +219,45 @@ void drawSimuFrontStroboscope(int positionX, int positionY) {
   auxControlFrame.rect(positionX - strobe_sizeX/2 + strobe_borderSize,positionY + strobe_borderSize,strobe_sizeX - strobe_borderSize*2,strobe_sizeY - strobe_borderSize*2);
 }
 
+void drawSimuFrontRightStroboscope(int positionX, int positionY) {
+  auxControlFrame.fill(100);
+  auxControlFrame.rect(positionX - strobe_sizeX/2,positionY,strobe_sizeX,strobe_sizeY);
+  if (drawStrobe_FrontRight == 1) {
+    int simuSpeed = int(map(strobelist[strobepreset_frontright][0], 0, 255, 15, 2));
+    int simuBrightness = strobelist[strobepreset_frontright][1];
+    
+    if (auxControlFrame.frameCount%simuSpeed == 0) {
+      auxControlFrame.fill(simuBrightness);
+    }
+    else {
+      auxControlFrame.fill(0);
+    }
+  }
+  else {
+    auxControlFrame.fill(0);
+  }
+  auxControlFrame.rect(positionX - strobe_sizeX/2 + strobe_borderSize,positionY + strobe_borderSize,strobe_sizeX - strobe_borderSize*2,strobe_sizeY - strobe_borderSize*2);
+}
 
-
-
+void drawSimuBackStroboscope(int positionX, int positionY) {
+  auxControlFrame.fill(100);
+  auxControlFrame.rect(positionX - strobe_sizeX/2,positionY,strobe_sizeX,strobe_sizeY);
+  if (drawStrobe_Back == 1) {
+    int simuSpeed = int(map(strobelist[strobepreset_back][0], 0, 255, 15, 2));
+    int simuBrightness = strobelist[strobepreset_back][1];
+    
+    if (auxControlFrame.frameCount%simuSpeed == 0) {
+      auxControlFrame.fill(simuBrightness);
+    }
+    else {
+      auxControlFrame.fill(0);
+    }
+  }
+  else {
+    auxControlFrame.fill(0);
+  }
+  auxControlFrame.rect(positionX - strobe_sizeX/2 + strobe_borderSize,positionY + strobe_borderSize,strobe_sizeX - strobe_borderSize*2,strobe_sizeY - strobe_borderSize*2);
+}
 
 ////////////////////////////////////////////////
 // Rack Lights

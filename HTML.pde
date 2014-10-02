@@ -7,7 +7,7 @@
 static PrintWriter phpOutputFile;
 
 void create_PHP_output() {
-  phpOutputFile = createWriter("HTML/PlayMeLightSetup_AnimationViewer.php");
+  phpOutputFile = createWriter("HTML/Strobot_AnimationViewer.php");
   print_playmeHeader();
   print_htmlHeader();
   print_htmlBody();
@@ -39,7 +39,7 @@ void print_htmlHeader() {
   phpOutputFile.println("    <link rel=\"icon\"                                                                            ");
   phpOutputFile.println("      type=\"image/png\"                                                                          ");
   phpOutputFile.println("      href=\"img/favicon.png\">                                                                   ");
-  phpOutputFile.println("    <link rel=\"stylesheet\" type=\"text/css\" href=\"PlayMeLightSetup_AnimationViewer.css\" />   ");
+  phpOutputFile.println("    <link rel=\"stylesheet\" type=\"text/css\" href=\"Strobot_AnimationViewer.css\" />   ");
   phpOutputFile.println("    <link href='http://fonts.googleapis.com/css?family=Exo+2' rel='stylesheet' type='text/css'>   ");
   phpOutputFile.println("    <script src=\"js/processing-1.4.1.min.js\"></script>                                          ");
   phpOutputFile.println("  </head>                                                                                         ");
@@ -139,7 +139,7 @@ void print_attributeform(String attribute) {
 }
 
 void print_formHeader() {
-  phpOutputFile.println("        <form action=\"PlayMeLightSetup_AnimationViewer.php\" method=\"post\">   ");
+  phpOutputFile.println("        <form action=\"Strobot_AnimationViewer.php\" method=\"post\">   ");
   phpOutputFile.println("            Filter animations according to the following tags :<br />            ");
   phpOutputFile.println("                                                                                 ");
   phpOutputFile.println("            <p>                                                                  ");
