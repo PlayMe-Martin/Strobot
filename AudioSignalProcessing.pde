@@ -7,6 +7,9 @@ import java.net.*;
 import java.io.*;
 import com.google.protobuf.*;
 
+ServerSocket timeInfoServer;
+Socket timeInfoServiceSocket;
+
 ServerSocket audioDataServer_Kick;
 ServerSocket audioDataServer_Snare;
 ServerSocket audioDataServer_Cymbals;
@@ -62,6 +65,7 @@ boolean impulse_Keys    = false;
 boolean impulse_Guitar  = false;
 
 // Port number must be greater than 1000
+int timeInfoPortNumber  = 7000;
 int audioDataPortNumber = 8000;
 int impulsePortNumber   = 9000;
 int backlog = 128;              //backlog : size of the serverSocket's waiting list for incoming connections
@@ -99,6 +103,7 @@ void initializeCircularBuffers() {
 void startAudioSignalMonitoringThread() {
   // Create the Java servers which will listen to the different SignalProcessor plugin instances
   try {
+    timeInfoServer          = new ServerSocket(timeInfoPortNumber, backlog);
     audioDataServer_Kick    = new ServerSocket(audioDataPortNumber + SIGNAL_ID_KICK, backlog);
     audioDataServer_Snare   = new ServerSocket(audioDataPortNumber + SIGNAL_ID_SNARE, backlog);
     audioDataServer_Cymbals = new ServerSocket(audioDataPortNumber + SIGNAL_ID_CYMBALS, backlog);
@@ -114,6 +119,7 @@ void startAudioSignalMonitoringThread() {
   }
   catch (Exception e) {outputLog.println("Couldn't create audioDataServer : " + e);}  
   // Create a separate thread which will listen forever to the audio plugins
+  thread("listenToIncomingTimeInfo");
   thread("listenToIncomingSignalLevels_Kick");
   thread("listenToIncomingImpulses_Kick");
   thread("listenToIncomingSignalLevels_Snare");
@@ -181,6 +187,53 @@ void listenToIncomingImpulses_Guitar() {
   listenToIncomingImpulses(SIGNAL_ID_GUITAR, impulseServer_Guitar, impulseServiceSocket_Guitar);
 }
 
+
+void listenToIncomingTimeInfo() {
+  try {    
+    // Create a new connection with the remote plugin
+    timeInfoServiceSocket = timeInfoServer.accept();
+    // Create a Datainputstream to hold the data received by the socket
+    DataInputStream timeInfoInput = new DataInputStream(timeInfoServiceSocket.getInputStream());
+    
+    println("Created time info server for " + signalID);
+    
+    // Infinite loop ! The train goes on and on... Every time some data is received, the following loops
+    while (true) {
+      // Read the available number of bytes
+      int lengthAvailable = timeInfoInput.available();
+      
+      if (lengthAvailable != 0) {
+//        byte[] buf = new byte[signalLevelMessageSize];
+//        //Read exactly as many bytes as needed (offset = 0)
+//        signalLevelInput.read(buf, 0, signalLevelMessageSize);
+//        try {
+//          SignalMessages.SignalLevel signalLevel = SignalMessages.SignalLevel.parseFrom(buf);
+//          processSignalLevelMessage(signalLevel);
+//        }
+//        catch (Exception e) {
+//          println("Couldn't parse a signalLevel message : " + e);
+//          println("Contents of the message : ");
+//          println(buf);
+//          println("----------------------------------");
+//          //Purge the current buffer
+//          try {
+//            //int lengthGarbage = signalLevelInput.available();
+//            //byte[] garbage = new byte[lengthGarbage];
+//            //signalLevelInput.readFully(garbage);
+//          }
+//          catch (Exception e2) { println("Couldn't purge the garbage inside the input buffer"); }
+//        }
+      }
+      // If no byte is available, sleep a little to avoid CPU overload 
+      else {
+        Thread.sleep(THREAD_SLEEP_TIME);
+      }
+    } 
+  }
+  catch (Exception e) {
+    println("Exception occured when creating the audio input data server : " + e);
+  }
+}
 
 void listenToIncomingSignalLevels(int signalID, ServerSocket audioDataServer, Socket audioDataServiceSocket) {
   try {    
