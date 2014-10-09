@@ -70,6 +70,7 @@ int audioDataPortNumber = 8000;
 int impulsePortNumber   = 9000;
 int backlog = 128;              //backlog : size of the serverSocket's waiting list for incoming connections
  
+final int timeInfoMessageSize = 24;
 final int signalLevelMessageSize = 7;
 final int impulseMessageSize = 2;
 
@@ -195,7 +196,7 @@ void listenToIncomingTimeInfo() {
     // Create a Datainputstream to hold the data received by the socket
     DataInputStream timeInfoInput = new DataInputStream(timeInfoServiceSocket.getInputStream());
     
-    println("Created time info server for " + signalID);
+    println("Created time info server");
     
     // Infinite loop ! The train goes on and on... Every time some data is received, the following loops
     while (true) {
@@ -203,26 +204,27 @@ void listenToIncomingTimeInfo() {
       int lengthAvailable = timeInfoInput.available();
       
       if (lengthAvailable != 0) {
-//        byte[] buf = new byte[signalLevelMessageSize];
-//        //Read exactly as many bytes as needed (offset = 0)
-//        signalLevelInput.read(buf, 0, signalLevelMessageSize);
-//        try {
-//          SignalMessages.SignalLevel signalLevel = SignalMessages.SignalLevel.parseFrom(buf);
-//          processSignalLevelMessage(signalLevel);
-//        }
-//        catch (Exception e) {
-//          println("Couldn't parse a signalLevel message : " + e);
-//          println("Contents of the message : ");
-//          println(buf);
-//          println("----------------------------------");
-//          //Purge the current buffer
-//          try {
-//            //int lengthGarbage = signalLevelInput.available();
-//            //byte[] garbage = new byte[lengthGarbage];
-//            //signalLevelInput.readFully(garbage);
-//          }
-//          catch (Exception e2) { println("Couldn't purge the garbage inside the input buffer"); }
-//        }
+
+        byte[] buf = new byte[timeInfoMessageSize];
+        //Read exactly as many bytes as needed (offset = 0)
+        timeInfoInput.read(buf, 0, timeInfoMessageSize);
+        try {
+          SignalMessages.TimeInfo timeInfo = SignalMessages.TimeInfo.parseFrom(buf);
+          processTimeInfoMessage(timeInfo);
+        }
+        catch (Exception e) {
+          println("Couldn't parse a timeInfo message : " + e);
+          println("Contents of the message : ");
+          println(buf);
+          println("----------------------------------");
+          //Purge the current buffer
+          try {
+            //int lengthGarbage = signalLevelInput.available();
+            //byte[] garbage = new byte[lengthGarbage];
+            //signalLevelInput.readFully(garbage);
+          }
+          catch (Exception e2) { println("Couldn't purge the garbage inside the input buffer"); }
+        }
       }
       // If no byte is available, sleep a little to avoid CPU overload 
       else {
@@ -337,6 +339,14 @@ void listenToIncomingImpulses(int signalID, ServerSocket impulseServer, Socket i
 
 
 ///////////////////////////////////////////////////////////////////////////////
+void processTimeInfoMessage(SignalMessages.TimeInfo timeInfo) {
+  println("------------------");
+//  println("IsPlaying : " + timeInfo.isPlaying);
+//  println("Tempo : " + timeInfo.tempo);
+//  println("Position : " + timeInfo.position);
+  
+}
+
 void processSignalLevelMessage(SignalMessages.SignalLevel signalLevel) {
   //Store the signal information in the correct ring buffer
   //println("SignalID : " + signalLevel.getSignalID() + "   SignalLevel : " + signalLevel.getSignalLevel());

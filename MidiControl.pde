@@ -660,17 +660,20 @@ void resetLEDPanelMapping() {
 
 
 void startStrobe_FrontLeft(int velocity) {
+  strobepreset_frontleft = velocity;
   drawStrobe_FrontLeft = 1;
   myDMX.setStrobePreset_FrontLeft(velocity); 
 }
 
 void startStrobe_FrontRight(int velocity) {
+  strobepreset_frontright = velocity;
   drawStrobe_FrontRight = 1;
   myDMX.setStrobePreset_FrontRight(velocity);
  
 }
 
 void startStrobe_Back(int velocity) {
+  strobepreset_back = velocity;
   drawStrobe_Back = 1;
   myDMX.setStrobePreset_Back(velocity);
  
