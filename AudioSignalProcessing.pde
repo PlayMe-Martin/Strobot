@@ -70,7 +70,7 @@ int audioDataPortNumber = 8000;
 int impulsePortNumber   = 9000;
 int backlog = 128;              //backlog : size of the serverSocket's waiting list for incoming connections
  
-final int timeInfoMessageSize = 24;
+final int timeInfoMessageSize = 12;
 final int signalLevelMessageSize = 7;
 final int impulseMessageSize = 2;
 
@@ -204,7 +204,7 @@ void listenToIncomingTimeInfo() {
       int lengthAvailable = timeInfoInput.available();
       
       if (lengthAvailable != 0) {
-
+        //println("lengthAvailable : " + lengthAvailable);
         byte[] buf = new byte[timeInfoMessageSize];
         //Read exactly as many bytes as needed (offset = 0)
         timeInfoInput.read(buf, 0, timeInfoMessageSize);
@@ -341,9 +341,9 @@ void listenToIncomingImpulses(int signalID, ServerSocket impulseServer, Socket i
 ///////////////////////////////////////////////////////////////////////////////
 void processTimeInfoMessage(SignalMessages.TimeInfo timeInfo) {
   println("------------------");
-//  println("IsPlaying : " + timeInfo.isPlaying);
-//  println("Tempo : " + timeInfo.tempo);
-//  println("Position : " + timeInfo.position);
+  println("IsPlaying : " + timeInfo.isPlaying);
+  println("Tempo : " + timeInfo.tempo);
+  println("Position : " + timeInfo.position);
   
 }
 
