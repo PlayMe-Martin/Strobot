@@ -104,7 +104,6 @@ void initializeCircularBuffers() {
 void startAudioSignalMonitoringThread() {
   // Create the Java servers which will listen to the different SignalProcessor plugin instances
   try {
-    timeInfoServer          = new ServerSocket(timeInfoPortNumber, backlog);
     audioDataServer_Kick    = new ServerSocket(audioDataPortNumber + SIGNAL_ID_KICK, backlog);
     audioDataServer_Snare   = new ServerSocket(audioDataPortNumber + SIGNAL_ID_SNARE, backlog);
     audioDataServer_Cymbals = new ServerSocket(audioDataPortNumber + SIGNAL_ID_CYMBALS, backlog);
@@ -117,10 +116,11 @@ void startAudioSignalMonitoringThread() {
     impulseServer_Bass      = new ServerSocket(impulsePortNumber + SIGNAL_ID_BASS, backlog);
     impulseServer_Keys      = new ServerSocket(impulsePortNumber + SIGNAL_ID_KEYS, backlog);
     impulseServer_Guitar    = new ServerSocket(impulsePortNumber + SIGNAL_ID_GUITAR, backlog);
+    timeInfoServer          = new ServerSocket(timeInfoPortNumber, backlog);
   }
   catch (Exception e) {outputLog.println("Couldn't create audioDataServer : " + e);}  
   // Create a separate thread which will listen forever to the audio plugins
-  thread("listenToIncomingTimeInfo");
+  
   thread("listenToIncomingSignalLevels_Kick");
   thread("listenToIncomingImpulses_Kick");
   thread("listenToIncomingSignalLevels_Snare");
@@ -133,6 +133,7 @@ void startAudioSignalMonitoringThread() {
   thread("listenToIncomingImpulses_Keys");
   thread("listenToIncomingSignalLevels_Guitar");
   thread("listenToIncomingImpulses_Guitar");
+  thread("listenToIncomingTimeInfo");
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -190,13 +191,16 @@ void listenToIncomingImpulses_Guitar() {
 
 
 void listenToIncomingTimeInfo() {
-  try {    
+  try {
+    
+    outputLog.println("Ready to initialize TimeInfo server");
+    
     // Create a new connection with the remote plugin
     timeInfoServiceSocket = timeInfoServer.accept();
     // Create a Datainputstream to hold the data received by the socket
     DataInputStream timeInfoInput = new DataInputStream(timeInfoServiceSocket.getInputStream());
     
-    println("Created time info server");
+    outputLog.println("Created time info server");
     
     // Infinite loop ! The train goes on and on... Every time some data is received, the following loops
     while (true) {
@@ -238,13 +242,15 @@ void listenToIncomingTimeInfo() {
 }
 
 void listenToIncomingSignalLevels(int signalID, ServerSocket audioDataServer, Socket audioDataServiceSocket) {
-  try {    
+  try {
+    
+    outputLog.println("Ready to initialize SignalLevel server for signalID " + signalID);
     // Create a new connection with the remote plugin
     audioDataServiceSocket = audioDataServer.accept();
     // Create a Datainputstream to hold the data received by the socket
     DataInputStream signalLevelInput = new DataInputStream(audioDataServiceSocket.getInputStream());
     
-    println("Created signal level server for " + signalID);
+    outputLog.println("Created signal level server for signalID " + signalID);
     
     // Infinite loop ! The train goes on and on... Every time some data is received, the following loops
     while (true) {
@@ -287,13 +293,16 @@ void listenToIncomingSignalLevels(int signalID, ServerSocket audioDataServer, So
 
 
 void listenToIncomingImpulses(int signalID, ServerSocket impulseServer, Socket impulseServiceSocket) {
-  try {    
+  try {
+    
+    outputLog.println("Ready to initialize Impulse server for signalID " + signalID);
+    
     // Create a new connection with the remote plugin
     impulseServiceSocket = impulseServer.accept();
     // Create a Datainputstream to hold the data received by the socket
     DataInputStream impulseInput = new DataInputStream(impulseServiceSocket.getInputStream());
     
-    println("Created impulse server for " + signalID);
+    outputLog.println("Created impulse server for signalID " + signalID);
 
     // Infinite loop ! The train goes on and on... Every time some data is received, the following loops
     while (true) {
@@ -340,16 +349,16 @@ void listenToIncomingImpulses(int signalID, ServerSocket impulseServer, Socket i
 
 ///////////////////////////////////////////////////////////////////////////////
 void processTimeInfoMessage(SignalMessages.TimeInfo timeInfo) {
-  println("------------------");
-  println("IsPlaying : " + timeInfo.isPlaying);
-  println("Tempo : " + timeInfo.tempo);
-  println("Position : " + timeInfo.position);
+//  println("------------------");
+//  println("IsPlaying : " + timeInfo.getIsPlaying());
+//  println("Tempo : " + timeInfo.getTempo());
+//  println("Position : " + timeInfo.getPosition());
   
 }
 
 void processSignalLevelMessage(SignalMessages.SignalLevel signalLevel) {
   //Store the signal information in the correct ring buffer
-  //println("SignalID : " + signalLevel.getSignalID() + "   SignalLevel : " + signalLevel.getSignalLevel());
+  println("SignalID : " + signalLevel.getSignalID() + "   SignalLevel : " + signalLevel.getSignalLevel());
   if (signalLevel.getSignalID() == SIGNAL_ID_KICK)          { audioInputBuffer_Kick.addAndRemoveLast(signalLevel.getSignalLevel()); }
   else if (signalLevel.getSignalID() == SIGNAL_ID_SNARE)    { audioInputBuffer_Snare.addAndRemoveLast(signalLevel.getSignalLevel()); }
   else if (signalLevel.getSignalID() == SIGNAL_ID_CYMBALS)  { audioInputBuffer_Cymbals.addAndRemoveLast(signalLevel.getSignalLevel()); }
