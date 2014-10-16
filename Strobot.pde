@@ -293,7 +293,7 @@ void setup()
   //Start the thread which will receive any protobuf audio data, coming from the different SignalProcessor plugin instances
   startAudioSignalMonitoringThread();
   
-  //Create a new PlayMeSequencer object, to allow for automatic animation selection
+  //Create a new PlayMeSequencer object, to allow for automatic animation selection using audio input
   automaticSequencer = new PlayMeSequencer();
   
   //Useful for debug : initialize the sketch with a specific animation

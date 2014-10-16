@@ -103,6 +103,11 @@ final long VERY_LONG_TIME_INIT_TIMESTAMP      =  3000000000000L;    //50 minutes
 
 
 class PlayMeSequencer {
+
+  boolean isPlaying = false;      //State of the host, is equal to true if playback is set to true
+  float currentBPM = 120.0;       //Current BPM of the host
+  float currentPosition = 0.0;    //Current position, in pulses-per-quarter-note (ie, 1:1:1 -> 0.0,  1:2:4 -> 1.75, 2:1:1 -> 4.0)
+
   
   //Arraylist of ints/timestamps containing the future animations to be played
   //This list works like a cue, the sequencer checks the current timestamp, and if an animation is scheduled to be played, the FutureAction object
