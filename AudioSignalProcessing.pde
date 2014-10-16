@@ -217,17 +217,12 @@ void listenToIncomingTimeInfo() {
           processTimeInfoMessage(timeInfo);
         }
         catch (Exception e) {
-          println("Couldn't parse a timeInfo message : " + e);
-          println("Contents of the message : ");
-          println(buf);
-          println("----------------------------------");
-          //Purge the current buffer
+          //Purge the current buffer in case of a badly formatted message
           try {
-            //int lengthGarbage = signalLevelInput.available();
-            //byte[] garbage = new byte[lengthGarbage];
-            //signalLevelInput.readFully(garbage);
+            byte[] garbage = new byte[timeInfoInput.available()];
+            timeInfoInput.readFully(garbage);
           }
-          catch (Exception e2) { println("Couldn't purge the garbage inside the input buffer"); }
+          catch (Exception e2) { outputLog.println("Couldn't purge the garbage inside the input buffer"); }
         }
       }
       // If no byte is available, sleep a little to avoid CPU overload 
@@ -266,15 +261,10 @@ void listenToIncomingSignalLevels(int signalID, ServerSocket audioDataServer, So
           processSignalLevelMessage(signalLevel);
         }
         catch (Exception e) {
-          println("Couldn't parse a signalLevel message : " + e);
-          println("Contents of the message : ");
-          println(buf);
-          println("----------------------------------");
-          //Purge the current buffer
+          //Purge the current buffer in case of a badly formatted message
           try {
-            //int lengthGarbage = signalLevelInput.available();
-            //byte[] garbage = new byte[lengthGarbage];
-            //signalLevelInput.readFully(garbage);
+            byte[] garbage = new byte[signalLevelInput.available()];
+            signalLevelInput.readFully(garbage);
           }
           catch (Exception e2) { println("Couldn't purge the garbage inside the input buffer"); }
         }
@@ -286,7 +276,7 @@ void listenToIncomingSignalLevels(int signalID, ServerSocket audioDataServer, So
     } 
   }
   catch (Exception e) {
-    println("Exception occured when creating the audio input data server : " + e);
+    outputLog.println("Exception occured when creating the audio input data server : " + e);
   }
 }
 
@@ -310,13 +300,6 @@ void listenToIncomingImpulses(int signalID, ServerSocket impulseServer, Socket i
       int lengthAvailable = impulseInput.available();
       
       if (lengthAvailable != 0) {
-        println(signalID + " -- " + lengthAvailable);
-//        byte[] buf = new byte[impulseMessageSize];
-//        println("lengthAvailable : " + lengthAvailable);
-//        println(buf);
-//        //Read exactly as many bytes as needed (offset = 0)
-//        impulseInput.read(buf, 0, impulseMessageSize);
-
         byte[] buf = new byte[lengthAvailable];
         impulseInput.readFully(buf);
 
@@ -325,14 +308,12 @@ void listenToIncomingImpulses(int signalID, ServerSocket impulseServer, Socket i
           processImpulseMessage(impulse);
         }
         catch (Exception e) {
-          println("Couldn't parse an impulse message : " + e);
-          //Purge the current buffer
+          //Purge the current buffer in case of a badly formatted message
           try {
-            int lengthGarbage = impulseInput.available();
-            byte[] garbage = new byte[lengthGarbage];
+            byte[] garbage = new byte[impulseInput.available()];
             impulseInput.readFully(garbage);
           }
-          catch (Exception e2) { println("Couldn't purge the garbage inside the input buffer"); }
+          catch (Exception e2) { outputLog.println("Couldn't purge the garbage inside the input buffer"); }
         }
       }
       // If no byte is available, sleep a little to avoid CPU overload 
@@ -342,18 +323,16 @@ void listenToIncomingImpulses(int signalID, ServerSocket impulseServer, Socket i
     } 
   }
   catch (Exception e) {
-    println("Exception occured when creating the audio input data server : " + e);
+    outputLog.println("Exception occured when creating the audio input data server : " + e);
   }
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 void processTimeInfoMessage(SignalMessages.TimeInfo timeInfo) {
-//  println("------------------");
-//  println("IsPlaying : " + timeInfo.getIsPlaying());
-//  println("Tempo : " + timeInfo.getTempo());
-//  println("Position : " + timeInfo.getPosition());
-  
+  automaticSequencer.isPlaying = timeInfo.getIsPlaying();
+  automaticSequencer.currentBPM = timeInfo.getTempo();
+  automaticSequencer.currentPosition = timeInfo.getPosition();
 }
 
 void processSignalLevelMessage(SignalMessages.SignalLevel signalLevel) {
