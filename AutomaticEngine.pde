@@ -3,52 +3,38 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
-Concept behind the AI:
-The automations shall use Maschine's scenes : in addition to the drum (or bass) pattern the scene has, an additional lights MIDI pattern 
-will be registered for all the impro scenes. This pattern will not contain specific animation information, like the long patterns used for 
-full songs, but more general commands, ie "I'd like something violent and red", "This is the current tempo", "Shift to a smooth blue ambience"
+The automatic engine relies on audio which may be sent by the DAW, using the SignalProcessor VST plugin.
+The plugin is to be put as an effect on each track with a special function :
+- Kick
+- Snare
+- Hats/Cymbals
+- Bass
+- Keys (high synths, leads, piano)
+- Guitar (even if in PlayMe's case, the guitar is not to be routed to the master output)
 
-The AI knows which animations fulfill these requirements, through the use of the registered attributes (which might have to be completed,
-depending on the needs of the AI. 
+The six plugin instances can send the following messages :
+- Signal level : an instant value of the track's output level, averaged on a user-defined buffer
+- Impulses : the plugin detects important changes in intensity, and associates them to beats, or impulses
+- TimeInfo : Transport informations, ie current position, BPM and whether playback is active. Only one instance should be set to send these messages, it's enough !
+These messages are received by the different threads in AudioSignalProcessing, and the variables they set are to be consumed by this class
 
-The AI is made of a PlayMeSequencer object, which is instanciated during application init. 
-
-/// User Manual ///
-Create a pattern in Maschine, and route its output to external MIDI. 
-If used inside Ableton, create a MIDI track getting MIDI data from Maschine's output, and configure this MIDI track's output to be the IAC driver (MIDI virtual bus)
-The easiest way to proceed is to create a group reserved to lights (or rather, the best would be two groups : one for manually programmed MIDI tracks, and one for automatic)
-The automatic could be layered the following way :
-All MIDI messages output on channel 2 (no interference with keyboard input)
-Each pad should have its base note set to a different root note (starting from bottom left, E0, F0, F#0, etc.), so that manual edition of these patterns from within Maschine could still be possible
-Each pattern MUST have at its beginning the following messages :
-- Automatic mode active
-- Tempo Sync 1st beat / Scene start (and the regular beat messages on all subsequent beats)
-- Intensity (to be chosen among four levels, low, medium, high and hardcore, hardcore being similar to medium but with increased stroboscope)
-- Color (Red, Blue, Colorful, Free)
-
-
-In this mode, the following messages can be treated :
-Pad 1 - Shift mode : shift to automatic mode (give general instructions to pilot the screen), or manual mode (execute only the actions input through the MIDI files)
-Pad 2 - Tempo sync : first beat + start of the pattern
-  Different velocities may indicate different functions :
-    ex : E0 - velocity > 100       : , scene intensity = velocity - 100 
-         E0 - velocity in [2,30] : first beat
-         E0 - velocity in [1]   : second, third or fourth beat
-- Device input : the external keyboard and pads must also be allowed to send commands
-    ex : lowpass filter -> kill the brightness
-         hipass filter -> screen whiteout
-         stutter pads -> tempo sync stroboscope
-         loop repeater fader -> shiftpixels, or shredpixels, depending on the velocity
-         etc.
-- Scene init : first beat of the scene, allows to sync important effects. Also necessary to make internal parameters evolve (color for instance)
-- Scene character : does this scene correspond to an agressive beat ? Or is it a laid back groove ?
-- Scene complexity : should the chosen animations be complex and evolving ? Or should it be an simple flasher (ex : only kick drum on all the beats) ?
-        This parameter should also be allowed to evolve in accordance to the other internal parameters
-
-The AI should also have the intelligence to detect and adopt this kind of behaviour :
-- when the lowpass filter is on (in particular if it's for a long time), the chosen animations should be relatively calm or slow
-- when the lowpass filter or the hipass filter goes off, the general atmosphere should step up in intensity
-
+The AI should compute a general intensity using these different infos, and determine whether the atmosphere is set to be something 
+laid back, or to something more intense. The animations which can be chosen are classified using Tags in the Attributes class
+Some rules should be applied when choosing animations :
+- If the animation is part of a set, play rhythmically and alternatively the animations part of the set
+- Do not mix too fast different color sets, the objective is to create coherent graphics, not some kind of Winamp rainbow
+- A color set change may occur on the following conditions : 
+    - Enough time has passed in the same color set
+    - A scene change could be detected inside the DAW 
+      This can be detected through the current transport position : 
+      in Maschine, there is an important and sudden change in the position - ie, at least 4 bars in the future, or 8 bars in the past (the scenes can loop !)
+      in Ableton, the position goes back to 1:1:1 when a scene is triggered
+      in other DAWs... other rules will have to be applied, but ideally these rules should apply to all DAWs (except for the ones with no transport, like MainStage)
+- Rather than playing the same animation in a loop, some transitions will be inserted, and effects will be applied rhythmically
+- Some additional effects will be possible using the classic MIDI inputs (for example, a set of pads/knobs triggering stutter effects will trigger the stroboscope)
+- Depending on the computed intensity, trigger DMX devices (mainly strobes)
+- The panel animations will have to be mixed with the LED tubes - so that means no opposing colors between the two
+- Some patterns using all the devices will be generated, using simultaneously or alternatively (to create depth effects) the panels, the LED tubes and the strobes 
 */
 
 //Time constants, used to determine evolution speed
