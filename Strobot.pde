@@ -287,18 +287,18 @@ void setup()
     create_PHP_output();
   }
   
+  //Create a new PlayMeSequencer object, to allow for automatic animation selection using audio input
+  automaticSequencer = new PlayMeSequencer();
+  
   //Initialize the ring buffers which will store incoming audio data
   initializeCircularBuffers();
   
   //Start the thread which will receive any protobuf audio data, coming from the different SignalProcessor plugin instances
   startAudioSignalMonitoringThread();
   
-  //Create a new PlayMeSequencer object, to allow for automatic animation selection using audio input
-  automaticSequencer = new PlayMeSequencer();
-  
   //Useful for debug : initialize the sketch with a specific animation
   //For the final setup : Initialize the patch by displaying "1 2 3" on the panels 
-  // -> useful to check if the panels were installed correctly, and if not, to have visual feedback when correcting the panel order
+  // -> useful to check if the panel mapping is correct, and if not, to have visual feedback when correcting the panel order
   animationnumber = 1;
   drawAnimation = 0;
   drawImage = 1;
@@ -459,8 +459,7 @@ void setup()
   //Initialize manual mode
   init_ManualMode();
   
-  noSmooth();
-  noStroke();
+  //Execute the init actions for the initial animation
   specificActions();
 
   //Refresh the outputLog file
@@ -475,11 +474,12 @@ void setup()
   
   //Initialize the GUI
   setup_gui();
-  
-  initComplete = true;  
-  
+
   //Set all the custom devices to light up
   customDeviceAnimation(4);
+  
+  //We're finally over !
+  initComplete = true;  
   
 }
 
