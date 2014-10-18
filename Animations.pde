@@ -13419,7 +13419,7 @@ void draw_rotatingcut_blue() {
 void draw_greenArcRot() {
   background(0);
   float fc = frameCount*0.001;
-  for(int r=44; r<96; r+=16) {
+  for(int r=44; r<width; r+=24) {
     float miniR = r*0.01;
     float a = arcRot_maxiPi*noise(2*miniR, fc);
     float b = arcRot_maxiPi*noise(2*fc * 2, miniR);
@@ -13444,7 +13444,7 @@ void draw_greenArcRot() {
 void draw_redArcRot() {
   background(0);
   float fc = frameCount*0.001;
-  for(int r=44; r<96; r+=16) {
+  for(int r=44; r<width; r+=24) {
     float miniR = r*0.01;
     float a = arcRot_maxiPi*noise(2*miniR, fc);
     float b = arcRot_maxiPi*noise(2*fc * 2, miniR);
@@ -13755,7 +13755,8 @@ void draw_trigoShapes() {
     trigoshapes_particles[n].updateAndRender();
   }
   
-  fill((trigoshapes_hue % 360),255,255);
+  //fill((trigoshapes_hue % 360),255,255);
+  fill(0,0,255);    //Make it red !
   for(int n = 0; n < trigoshapes_particles2.length; n++) {
     trigoshapes_particles2[n].updateAndRender();
   }

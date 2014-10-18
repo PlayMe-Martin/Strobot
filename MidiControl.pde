@@ -37,23 +37,11 @@ int PITCH_KNOB_COLORCHANGE     = 3;
 int PITCH_KNOB_WHITEJAMAMONO   = -1;      //Not very fun as an animation, don't use it
 int PITCH_KNOB_WHITENOISE      = 7;
 
-//Pitches for messages coming from the DAW - Automatic mode
-final int PITCH_NEW_SCENE_FIRST_BEAT = 0;
-final int PITCH_FIRST_BEAT           = 1;
-final int PITCH_REGULAR_BEAT         = 2;
-final int PITCH_COLORSET_RED         = 4;
-final int PITCH_COLORSET_BLUE        = 5;
-final int PITCH_COLORSET_BLACK       = 6;
-final int PITCH_COLORSET_FREE        = 7;
-final int PITCH_INTENSITY_LOW        = 8;
-final int PITCH_INTENSITY_MEDIUM     = 9;
-final int PITCH_INTENSITY_HIGH       = 10;
-final int PITCH_INTENSITY_HARDCORE   = 11;
-final int PITCH_SET_AUTOMODE_OFF     = 14;
-final int PITCH_SET_AUTOMODE_ON      = 15;
 
 //Pitches for messages coming from the DAW - Manual mode
-final int PITCH_SET_SEMIAUTO_MODE          = -18;
+final int PITCH_SET_AUTOMODE_OFF           = 90;
+final int PITCH_SET_AUTOMODE_ON            = 91;
+
 final int PITCH_CHANGE_STROBO_FRONT        = 100;
 final int PITCH_START_STROBO_FRONT         = 101;
 final int PITCH_STOP_STROBO_FRONT          = 102;
@@ -108,7 +96,7 @@ void midiInit() {
 void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_name) {
   if (initComplete == true) {
     // Receive a noteOn
-    if (bus_name == MIDI_BUS_CONTROLLER_INPUT || bus_name == MIDI_BUS_KEYBOARD_INPUT) {
+    if (bus_name == myControllerBus.getBusName() || bus_name == myKeyboardBus.getBusName()) {
       //Drumpad sub-keyboard - couldn't use a switch here because the pitches are not declared as finals 
       if (pitch == PITCH_P1_LEFT)                  {p1Left(channel, pitch, velocity);}
       else if (pitch == PITCH_P1_RIGHT)            {p1Right(channel, pitch, velocity);}
@@ -121,7 +109,7 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
       else if (pitch == PITCH_PAD_STROBE_32ND)     {activatePadStrobe32nd(channel, pitch, velocity);}
       else if (pitch == PITCH_PAD_STROBE_64TH)     {activatePadStrobe64th(channel, pitch, velocity);}
       
-      //Custom function : Remapping using the keyboard, recor 
+      //Custom function : Remapping using the keyboard, record the input notes 
       if (authorizePanelRemappingUsingKeyboard == true) {
         //Do not allow the same panel to be mapped to two different outputs
         boolean pitchAlreadyInArray = false;
@@ -156,31 +144,14 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
       AUTOMATIC_MODE = false;
       setManualAnimation(channel, pitch);
     }
-    if (channel == CHANNEL_AUTOMODE) {
-      switch (pitch) {
-        //Maschine input
-        case PITCH_NEW_SCENE_FIRST_BEAT: receiveBeatMessage(channel, pitch, velocity);break;                      //Maschine Pad 1
-        case PITCH_FIRST_BEAT:           receiveBeatMessage(channel, pitch, velocity);break;                      //Maschine Pad 2
-        case PITCH_REGULAR_BEAT:         receiveBeatMessage(channel, pitch, velocity);break;                      //Maschine Pad 3
-        case PITCH_COLORSET_RED:         receiveColorMessage(channel, pitch, velocity);break;                     //Maschine Pad 5
-        case PITCH_COLORSET_BLUE:        receiveColorMessage(channel, pitch, velocity);break;                     //Maschine Pad 6
-        case PITCH_COLORSET_BLACK:       receiveColorMessage(channel, pitch, velocity);break;                     //Maschine Pad 7
-        case PITCH_COLORSET_FREE:        receiveColorMessage(channel, pitch, velocity);break;                     //Maschine Pad 8
-        case PITCH_INTENSITY_LOW:        receiveIntensityMessage(channel, pitch, velocity);break;                 //Maschine Pad 9
-        case PITCH_INTENSITY_MEDIUM:     receiveIntensityMessage(channel, pitch, velocity);break;                 //Maschine Pad 10
-        case PITCH_INTENSITY_HIGH:       receiveIntensityMessage(channel, pitch, velocity);break;                 //Maschine Pad 11
-        case PITCH_INTENSITY_HARDCORE:   receiveIntensityMessage(channel, pitch, velocity);break;                 //Maschine Pad 12
-        case PITCH_SET_AUTOMODE_OFF:     setAutomaticMode(channel, pitch, velocity);break;                        //Maschine Pad 15
-        case PITCH_SET_AUTOMODE_ON:      setAutomaticMode(channel, pitch, velocity);break;                        //Maschine Pad 16
-      }
-    }
-      
     if (channel == CHANNEL_SEMIAUTOMODE) {
       //Release automatic mode in case of explicit input
       AUTOMATIC_MODE = false;
       switch (pitch) {
         //Manual input
-        case PITCH_SET_SEMIAUTO_MODE:          setAutomaticMode(channel, pitch, velocity);break;                        //UNUSED
+        case PITCH_SET_AUTOMODE_OFF:           setAutomaticMode(channel, pitch, velocity);break;
+        case PITCH_SET_AUTOMODE_ON:            setAutomaticMode(channel, pitch, velocity);break;
+        
         case PITCH_CHANGE_STROBO_FRONT:        changeStrobe(channel, pitch, velocity);break;                            //E7    - Classic way to use the stroboscope
         case PITCH_START_STROBO_FRONT:         startStrobe(velocity);break;                                             //F7    - Classic way to use the stroboscope
         case PITCH_STOP_STROBO_FRONT:          stopStrobe();break;                                                      //F#7   - Classic way to use the stroboscope
@@ -421,85 +392,16 @@ void stopStrobe() {
 
 
 void setAutomaticMode(int channel, int pitch, int velocity) {
-  //Set automode to true using channel 2 Maschine messages
-  if (channel == CHANNEL_SEMIAUTOMODE) {
-    if (pitch == PITCH_SET_SEMIAUTO_MODE) {
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Set Automatic Mode OFF");
-      AUTOMATIC_MODE = false;
-    }
-  }
-
-  if (channel == CHANNEL_AUTOMODE) {     
-    if (pitch == PITCH_SET_AUTOMODE_OFF) {
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Set Automatic Mode OFF");
-      AUTOMATIC_MODE = false;
-    }
-
-    
-    if (pitch == PITCH_SET_AUTOMODE_ON) {
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Set Automatic Mode ON");
-      AUTOMATIC_MODE = true;
-    }
-  }    
-}
-  
-void receiveBeatMessage(int channel, int pitch, int velocity) {
-  if (channel == CHANNEL_AUTOMODE) {
-    //Useful for debug
-    //println("Receive Beat = " + automaticSequencer.beatCounter);
-    
-    if (pitch == PITCH_NEW_SCENE_FIRST_BEAT) {
-      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Beat message / Scene first beat");
-    }
-    else if (pitch == PITCH_FIRST_BEAT) {
-      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Beat message / first beat"); 
-    }
-    else if (pitch == PITCH_REGULAR_BEAT) {
-      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Beat message / normal beat");   
-    }
-    
-    automaticSequencer.processBeatMessage(pitch);
+     
+  if (pitch == PITCH_SET_AUTOMODE_OFF) {
+    outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Set Automatic Mode OFF");
+    AUTOMATIC_MODE = false;
   }
   
-}
-
-
-void receiveIntensityMessage(int channel, int pitch, int velocity) {
-  if (channel == CHANNEL_AUTOMODE) {
-    if (pitch == PITCH_INTENSITY_LOW) {
-      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : General Intensity Level - Low");
-    }
-    else if (pitch == PITCH_INTENSITY_MEDIUM) {
-      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : General Intensity Level - Medium"); 
-    }
-    else if (pitch == PITCH_INTENSITY_HIGH) {
-      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : General Intensity Level - High");   
-    }
-    
-    automaticSequencer.processIntensityMessage(pitch);
+  if (pitch == PITCH_SET_AUTOMODE_ON) {
+    outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Set Automatic Mode ON");
+    AUTOMATIC_MODE = true;
   }
-  
-}
-
-
-void receiveColorMessage(int channel, int pitch, int velocity) {
-  if (channel == CHANNEL_AUTOMODE) {
-    if (pitch == PITCH_COLORSET_FREE) {
-      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Colorset - Free");
-    }
-    else if (pitch == PITCH_COLORSET_RED) {
-      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Colorset - Red"); 
-    }
-    else if (pitch == PITCH_COLORSET_BLACK) {
-      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Colorset - Black and White");   
-    }
-    else if (pitch == PITCH_COLORSET_BLUE) {
-      outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Colorset - Blue");   
-    }
-
-    automaticSequencer.processColorChangeMessage(pitch);
-  }
-
 }
 
 
@@ -527,58 +429,26 @@ void loadCustomDeviceAnimation3(int channel, int pitch, int velocity) {
 
 
 void loadAnimation1(int channel, int pitch, int velocity) {
-  //LOAD_SEQUENCE
-  drawImage = 0;
-  drawAnimation = 1;
-  
-  //Reset the flag to prevent any nullpointer exception
-  setupcomplete = false;
-  
   //Update the animation number
-  animationnumber = velocity;
-  
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load animation number " + animationnumber);
-  
-  //Execute specific actions related to this particular animation
-  specificActions();    
+  loadAnimation(velocity);
 }
 
 void loadAnimation2(int channel, int pitch, int velocity) {
-  //LOAD_SEQUENCE2
-  drawImage = 0;
-  drawAnimation = 1;
-  
-  //Reset the flag to prevent any nullpointer exception
-  setupcomplete = false;
-  
   //Update the animation number
-  animationnumber = velocity + 127;
-  
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load animation number " + animationnumber);
-  
-  //Execute specific actions related to this particular animation
-  specificActions();
+  loadAnimation(velocity + 127);
 }
 
 void loadAnimation3(int channel, int pitch, int velocity) {
-  //LOAD_SEQUENCE3
-  drawImage = 0;
-  drawAnimation = 1;
-  
-  //Reset the flag to prevent any nullpointer exception
-  setupcomplete = false;
-  
   //Update the animation number
-  animationnumber = velocity + 254;
-  
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load animation number " + animationnumber);
-  
-  //Execute specific actions related to this particular animation
-  specificActions();
+  loadAnimation(velocity + 254);
 }
 
-void loadAnimation4(int channel, int pitch, int velocity) {
-  //LOAD_SEQUENCE4 1 382
+void loadAnimation4(int channel, int pitch, int velocity) {  
+  //Update the animation number
+  loadAnimation(velocity + 381);
+}
+
+void loadAnimation (int number) {
   drawImage = 0;
   drawAnimation = 1;
   
@@ -586,12 +456,12 @@ void loadAnimation4(int channel, int pitch, int velocity) {
   setupcomplete = false;
   
   //Update the animation number
-  animationnumber = velocity + 381;
+  animationnumber = number;
   
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load animation number " + animationnumber);
+  outputLog.println("Semi-auto action : Change current animation to " + animationnumber);
   
   //Execute specific actions related to this particular animation
-  specificActions();
+  specificActions();  
 }
 
 void loadImage1(int channel, int pitch, int velocity) {
@@ -689,7 +559,7 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
     
   // Receive a noteOff
   if (initComplete == true) {
-    if (bus_name == MIDI_BUS_CONTROLLER_INPUT || bus_name == MIDI_BUS_KEYBOARD_INPUT) {
+    if (bus_name == myControllerBus.getBusName() || bus_name == myKeyboardBus.getBusName()) {
       if (pitch == PITCH_P1_LEFT)                  {p1LeftStop(channel, pitch, velocity);}
       else if (pitch == PITCH_P1_RIGHT)            {p1RightStop(channel, pitch, velocity);}
       else if (pitch == PITCH_P2_LEFT)             {p2LeftStop(channel, pitch, velocity);}
