@@ -906,7 +906,7 @@
         $animationName[] = 'Reverse Triangles';                                   
         $attributeList[] = array ('Geometric', 'Fast', 'Red', 'Rhythmic', 'Violent');
         $animationName[] = 'Trigo Shapes';                                   
-        $attributeList[] = array ('Geometric', 'Smooth', 'Colorful', 'Rhythmic', 'Rotating');
+        $attributeList[] = array ('Geometric', 'Smooth', 'Red', 'Rhythmic', 'Rotating');
         $animationName[] = 'Nonotak 1';                                   
         $attributeList[] = array ('Geometric', 'B&W', 'Simple', 'Rhythmic', 'Set 26');
         $animationName[] = 'Nonotak 2';                                   

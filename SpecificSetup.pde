@@ -3151,7 +3151,7 @@ void specificActions() {
       colorMode(HSB);
       noFill();
       smooth();
-      strokeWeight(4);
+      strokeWeight(8);
       arcRot_pulseSize = arcRot_maxPulseSize;    
     }
     else if (animationnumber == 326)    //ArcRot - Red
@@ -3160,7 +3160,7 @@ void specificActions() {
       colorMode(HSB);
       noFill();
       smooth();
-      strokeWeight(4);
+      strokeWeight(8);
       arcRot_pulseSize = arcRot_maxPulseSize;
     }
     else if (animationnumber == 327)

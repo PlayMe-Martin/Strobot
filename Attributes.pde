@@ -70,10 +70,6 @@ ArrayList filteredLists_MediumIntensitySet;
 ArrayList filteredLists_HighIntensitySet;
 ArrayList filteredLists_HardcoreIntensitySet;
 
-//Stroboscope rhythm patterns used by the automatic engine
-ArrayList<StroboscopeRhythmBeat> strongStroboscopePatterns;
-ArrayList<StroboscopeRhythmBeat> weakStroboscopePatterns;
-ArrayList<StroboscopeRhythmBeat> strobeOff;
 
 //Register attributes to an animation, given its number, its name, and a list of attributes
 ArrayList<Attribute> registerAttribute(ArrayList<Attribute> attributesArray, int animationNbr, String attributeName, String[] attributeList, float animationLength) {
@@ -217,8 +213,6 @@ void createCommonlyUsedAttributeLists() {
   filteredLists.add(new AnimationFilteredList(FILTEREDLIST_ID_SET_28, new String[] {"Set 28"}, filterAnimationsByAttributes(animationAttributes, new String[] {"Set 29"})));
   
     
-  //Register also some rhythm patterns to be used in automatic mode
-  createStroboPatterns();
 }
 
 //Get the AnimationFilteredList (containing an IntList of all the filtered animations) corresponding to the attributes specified as argument
@@ -609,7 +603,7 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 327, "Energy Grid"                         , new String[] {"Atmospheric", "Rhythmic", "Geometric", "Triangles", "Red", "Fast", "Rotating"}             , 2);
   animationAttributes = registerAttribute(animationAttributes, 328, "Patchwork"                           , new String[] {"Atmospheric", "Fast", "Rectangles", "Colorful", "Fast"}                                    , 16);
   animationAttributes = registerAttribute(animationAttributes, 329, "Reverse Triangles"                   , new String[] {"Geometric", "Fast", "Red", "Rhythmic", "Violent"}                                          , 1);
-  animationAttributes = registerAttribute(animationAttributes, 330, "Trigo Shapes"                        , new String[] {"Geometric", "Smooth", "Colorful", "Rhythmic", "Rotating"}                                  , 4);
+  animationAttributes = registerAttribute(animationAttributes, 330, "Trigo Shapes"                        , new String[] {"Geometric", "Smooth", "Red", "Rhythmic", "Rotating"}                                       , 1);
   animationAttributes = registerAttribute(animationAttributes, 331, "Nonotak 1"                           , new String[] {"Geometric", "B&W", "Simple", "Rhythmic", "Set 26"}                                         , 1);
   animationAttributes = registerAttribute(animationAttributes, 332, "Nonotak 2"                           , new String[] {"Geometric", "B&W", "Simple", "Rhythmic", "Set 26"}                                         , 1);
   animationAttributes = registerAttribute(animationAttributes, 333, "Nonotak 3"                           , new String[] {"Geometric", "B&W", "Simple", "Rhythmic", "Set 26"}                                         , 1);
