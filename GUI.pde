@@ -314,7 +314,7 @@ public class ControlFrame extends PApplet {
     cp5.addTextfield("DMX Microcontroller")
        .setPosition(accordionWidth - bigTextfieldWidth - leftOffset,nbrOfPanelsTextFieldPosY + 3*spacingRow + 3*textfieldHeight)
        .setSize(bigTextfieldWidth,textfieldHeight)
-       .setValue(DMX_MICROCONTROLLER_NAME)
+       .setValue(DMX_MICROCONTROLLER_NAME.substring(5, DMX_MICROCONTROLLER_NAME.length()))
        .setCaptionLabel("DMX Microcontroller:    ")
        .setAutoClear(false)
        .setFont(minimlFont)
@@ -324,8 +324,8 @@ public class ControlFrame extends PApplet {
      
     cp5.addTextfield("Custom Devices Microcontroller")
        .setPosition(accordionWidth - bigTextfieldWidth - leftOffset,nbrOfPanelsTextFieldPosY + 4*spacingRow + 4*textfieldHeight)
-       .setSize(bigTextfieldWidth - 3*textfieldHeight - spacingRow,textfieldHeight)
-       .setValue(CUSTOMDEVICES_MICROCONTROLLER_NAME)
+       .setSize(bigTextfieldWidth,textfieldHeight)
+       .setValue(CUSTOMDEVICES_MICROCONTROLLER_NAME.substring(5, CUSTOMDEVICES_MICROCONTROLLER_NAME.length()))
        .setCaptionLabel("Custom Devices Microcontroller:    ")
        .setAutoClear(false)
        .setFont(minimlFont)
@@ -339,13 +339,20 @@ public class ControlFrame extends PApplet {
       cp5.addTextfield("LED Panel Microcontroller " + i)
          .setPosition(accordionWidth - bigTextfieldWidth - leftOffset,offsetY_2)
          .setSize(bigTextfieldWidth,textfieldHeight)
-         .setValue(TEENSY_SERIAL_PORT_LIST_5[i])
+         .setValue(devicesToParse[i].substring(5, devicesToParse[i].length()))
          .setCaptionLabel("LED Panel Microcontroller " + (i+1) + ":    ")
          .setAutoClear(false)
          .setFont(minimlFont)
          .moveTo(hardwareInfo)
          .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
          ;
+//      cp5.addTextlabel("LED Panel Microcontroller " + i)
+//         .setPosition(accordionWidth - bigTextfieldWidth - leftOffset,offsetY_2)
+//         .setSize(bigTextfieldWidth,textfieldHeight)
+//         .setText("LED PANEL MICROCONTROLLER " + (i+1) + " :    " + devicesToParse[i])         
+//         .setFont(minimlFont)
+//         .moveTo(hardwareInfo)
+//         ;
       offsetY_2 += spacingRow + textfieldHeight;
     }
     
@@ -1577,17 +1584,17 @@ public class ControlFrame extends PApplet {
       }
       else if (theEvent.getName().contains("LED Panel Microcontroller ")) {
         int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
-        TEENSY_SERIAL_PORT_LIST_5[devNumber] = cp5.getController(theEvent.getName()).getStringValue();
+        devicesToParse[devNumber] = "/dev/" + cp5.getController(theEvent.getName()).getStringValue();
         resetExpectedTextLabel.setVisible(true);
         createConfigFile();
       }
       else if (theEvent.getName() == "DMX Microcontroller") {
-        DMX_MICROCONTROLLER_NAME = cp5.getController("DMX Microcontroller").getStringValue();
+        DMX_MICROCONTROLLER_NAME = "/dev/" + cp5.getController("DMX Microcontroller").getStringValue();
         resetExpectedTextLabel.setVisible(true);
         createConfigFile();
       }
       else if (theEvent.getName() == "Custom Devices Microcontroller") {
-        CUSTOMDEVICES_MICROCONTROLLER_NAME = cp5.getController("Custom Devices Microcontroller").getStringValue();
+        CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/" + cp5.getController("Custom Devices Microcontroller").getStringValue();
         resetExpectedTextLabel.setVisible(true);
         createConfigFile();
       }

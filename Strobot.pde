@@ -54,24 +54,8 @@ The configuration allows to create groups of 16 animations which go pretty well 
 In manual mode, the additional inputs used in automatic mode also apply
 
 In automatic mode, the program's behaviour is completely different.
-Automatic behaviour is set by various commands, which guide the program into choosing which animation to display
-The way to use this program is through Maschine's scenes : each drum scene will also have a pattern
-containing various instructions ("more powerful !", "faster !", "calm down !"), and the program will
-adapt to these commands.
-The instructions are to be sent on MIDI channel 3
-C-1  (MIDI 0)  : First beat of the first bar of the scene
-C#-1 (MIDI 1)  : First beat of any other bar
-D-1  (MIDI 2)  : Any other beat
-E-1  (MIDI 4)  : Choose mainly red animations
-F-1  (MIDI 5)  : Choose mainly blue animations
-F#-1 (MIDI 6)  : Choose mainly black and white animations
-G-1  (MIDI 7)  : Choose animations of any color
-G#-1 (MIDI 8)  : Set the general intensity to be low
-A-1  (MIDI 9)  : Set the general intensity to be medium
-A#-1 (MIDI 10) : Set the general intensity to be high
-B-1  (MIDI 11) : Set the general intensity to be very high
-D0   (MIDI 14) : Set Automatic mode Off
-D#0  (MIDI 15) : Set Automatic mode On
+Automatic behaviour is set by the audio processed directly from the DAW, using multiple instances
+of the Signal Processor VST
 
 In automatic mode, other actions include keyboard and pad input :
 For example --- 
@@ -105,8 +89,8 @@ boolean output_PHP = true;
 boolean debug_without_dmx = false;
 boolean debug_without_custom_devices = false;
 
-String DMX_MICROCONTROLLER_NAME = "tty.usbmodem12341";
-String CUSTOMDEVICES_MICROCONTROLLER_NAME = "tty.usbserial-A961L7NJ";
+String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
+String CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/tty.usbserial-A961L7NJ";
 
 //////////////////////////////////////////////////////
 //Define the initial config of the LED matrix here !//
@@ -121,8 +105,8 @@ int NUMBER_OF_PANELS = 5;                       //Number of panels - TBIL : auto
 //String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
 //All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
 String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
-//String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem170381", "/dev/tty.usbmodem265461", "/dev/tty.usbmodem479061", "/dev/tty.usbmodem479101"};
-String[] TEENSY_SERIAL_PORT_LIST_5 = {"tty.usbmodem113361", "tty.usbmodem479101", "tty.usbmodem265461", "tty.usbmodem479061", "tty.usbmodem479101"};
+String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem170381", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem265461", "/dev/tty.usbmodem479061"};
+String[] devicesToParse;
 
 //Define the Gamma value to be used for the panels - recommended for WS2801 modules : gamma_25
 final String panelGamma = "gamma_25";
@@ -303,14 +287,13 @@ void setup()
   drawAnimation = 0;
   drawImage = 1;
   imagenumber = 0;
-  
-
+    
   //Initialize the frame buffers
   pixelsPanels = new int[NUMBER_OF_PANELS][PIXELS_X*PIXELS_Y];  
   transformedBuffersLEDPanels = new int[NUMBER_OF_PANELS][PANEL_RESOLUTION_X*PANEL_RESOLUTION_Y];
   outputLog.println("Frame buffers initialized. Size : " + str(PIXELS_X*PIXELS_Y));
   
-  String[] devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
+  devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
   if (NUMBER_OF_PANELS == 3) {
     devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
   }
@@ -343,15 +326,17 @@ void setup()
     if (devicesToParse[i].equals("NONSTATIC") == true) {
       nonstaticDeviceArrayNumber.append(i);
     }
-  }
+  }  
   
   boolean nameExceptionFound = false;
   if (nonstaticDeviceArrayNumber.size() >= 1) {
     String rootName = "/dev/tty.usbmodem";
     for (int i =0; i < nonstaticDeviceArrayNumber.size();i++) {
       for (String portName: Serial.list()) {
+        println("Test 1 : " + portName); 
         if (portName.contains(rootName) == true) {
           for (String registeredDevice: registeredDevices) {
+            println("Registered device : " + registeredDevice + "    -   portname substring : " + portName.substring(5, portName.length()));
             if (registeredDevice.contains(portName.substring(5, portName.length())) == false || portName.equals("/dev/tty.usbmodem1")) {
               boolean newCandidate = true;
               for (int j = 0; j<candidateDevices.size();j++) {
@@ -393,8 +378,10 @@ void setup()
     devicesToParse[nonstaticDeviceArrayNumber.get(i)] = candidateDevices.get(i);
   }
   
+
+  
   for (int i = 0; i<devicesToParse.length;i++) {
-    if (devicesToParse[i].equals("NONSTATIC")) {
+    if (devicesToParse[i].contains("NONSTATIC")) {
         outputLog.println("!!!!! -------------------------------------- !!!!!");
         outputLog.println("!!!!! Error - Among the serial devices registered by the OS, couldn't find a possible candidate for non static device number " + i + ", the corresponding panel will not be initialised");
         outputLog.println("!!!!! For information, the only available serial devices are :");

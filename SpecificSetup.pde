@@ -3231,7 +3231,7 @@ void specificActions() {
       stroke(255);
       strokeWeight(4);
       noFill();
-      nonotak_1_x += 4;
+      nonotak_1_x += 2;
     }
     else if (animationnumber == 332)          //Nonotak 2
     {
