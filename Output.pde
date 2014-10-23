@@ -82,47 +82,6 @@ public abstract class Output {
 /////////////////////////////////////////////////////////
 
 int[] getpartialscreenbuffer(int stringnumber) {
-//  if (NUMBER_OF_PANELS == 3) {
-//    if (stringnumber == 0) {
-//      return pixelsLeftPanel;
-//    }
-//    else if (stringnumber == 1) {
-//      return pixelsCenterPanel;
-//    }
-//    else if (stringnumber == 2) {
-//      return pixelsRightPanel;
-//    } 
-//    else {
-//      int[] tempbuffer = {}; 
-//      return tempbuffer;
-//    }
-//  }
-//  else if (NUMBER_OF_PANELS == 5) {
-//    if (stringnumber == 0) {
-//      return pixelsExLeftPanel;
-//    }
-//    else if (stringnumber == 1) {
-//      return pixelsLeftPanel;
-//    }
-//    else if (stringnumber == 2) {
-//      return pixelsCenterPanel;
-//    }
-//    else if (stringnumber == 3) {
-//      return pixelsRightPanel;
-//    }
-//   else if (stringnumber == 4) {
-//      return pixelsExRightPanel;
-//    }  
-//    else {
-//      int[] tempbuffer = {}; 
-//      return tempbuffer;
-//    }    
-//  }
-//  else {    //No configuration other than 3 or 5 implemented yet
-//    int[] tempbuffer = {}; 
-//    return tempbuffer;
-//  }
-
   return pixelsPanels[stringnumber];
 }
 

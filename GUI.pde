@@ -346,13 +346,6 @@ public class ControlFrame extends PApplet {
          .moveTo(hardwareInfo)
          .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
          ;
-//      cp5.addTextlabel("LED Panel Microcontroller " + i)
-//         .setPosition(accordionWidth - bigTextfieldWidth - leftOffset,offsetY_2)
-//         .setSize(bigTextfieldWidth,textfieldHeight)
-//         .setText("LED PANEL MICROCONTROLLER " + (i+1) + " :    " + devicesToParse[i])         
-//         .setFont(minimlFont)
-//         .moveTo(hardwareInfo)
-//         ;
       offsetY_2 += spacingRow + textfieldHeight;
     }
     
