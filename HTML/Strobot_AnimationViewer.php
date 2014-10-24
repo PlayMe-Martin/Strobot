@@ -1037,10 +1037,12 @@
         $attributeList[] = array ('Atmospheric', 'White', 'Circles', 'Rhythmic');
         $animationName[] = 'Sliced Wave - Red';                                   
         $attributeList[] = array ('Atmospheric', 'Red', 'Circles', 'Rhythmic');
-        $animationName[] = 'Shitty audio test - to be deleted';                                   
+        $animationName[] = 'Audio Monitoring';                                   
         $attributeList[] = array ('Atmospheric', 'Red', 'Circles', 'Rhythmic', 'AudioInput');
         $animationName[] = 'Patatap with audio';                                   
         $attributeList[] = array ('Geometric', 'Colorful', 'Simple', 'Rhythmic', 'AudioInput');
+        $animationName[] = 'HypnoAudio';                                   
+        $attributeList[] = array ('Geometric', 'Red', 'Evolving', 'Rhythmic', 'AudioInput');
         echo filterAllAttributes($attributeList, $SelectedAttributeList, $animationName);  
         ?>                                                                                 
       </div>

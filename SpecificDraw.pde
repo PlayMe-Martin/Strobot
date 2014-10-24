@@ -527,8 +527,9 @@ void specific_draw() {
       case 393: draw_redSun();break;                               //RedSun - 12
       case 394: draw_slicedWaveWhite();break;                      //SlicedWave - White - 13
       case 395: draw_slicedWaveRed();break;                        //SlicedWave - Red - 14
-      case 396: draw_dirtyAudioProcessing();break;
-      case 397: draw_patatapWithAudioInput();break;
+      case 396: draw_dirtyAudioProcessing();break;                 //Audio Monitoring - 15
+      case 397: draw_patatapWithAudioInput();break;                //Patatap with audio input - 16
+      case 398: draw_hypnoAudio();break;                           //HypnoAudio - 17
       default: break;                                              //Default animation : do nothing, the screen will not be updated
     }
   }

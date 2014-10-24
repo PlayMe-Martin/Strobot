@@ -1404,3 +1404,11 @@ ArrayList<UglyImpulseKick> uglyImpulseKickList;
 ArrayList<UglyImpulseSnare> uglyImpulseSnareList;
 ArrayList<UglyImpulseCymbal> uglyImpulseCymbalList;
 ArrayList<UglyImpulseBass> uglyImpulseBassList;
+
+// HypnoAudio parameters
+int hypnoAudio_currentPoint = 0;
+float[] hypnoAudio_currentCoordinates = {-0.25,-0.25};
+float[][] hypnoAudio_coordinates = {{-0.25,-0.25}, {0.25,-0.15}, {0.25,0.25}, {-0.15,0.25}}; 
+float hypnoAudio_moveSpeed = 0.1;
+int hypnoAudio_redImpact = 0;
+int hypnoAudio_colorAttenuation = 5;
