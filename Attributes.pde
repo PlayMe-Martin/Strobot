@@ -672,6 +672,7 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 396, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                                  , -1);
   animationAttributes = registerAttribute(animationAttributes, 397, "Patatap with audio"                  , new String[] {"Geometric", "Colorful", "Simple", "Rhythmic", "AudioInput"}                                , 0);
   animationAttributes = registerAttribute(animationAttributes, 398, "HypnoAudio"                          , new String[] {"Geometric", "Red", "Evolving", "Rhythmic", "AudioInput"}                                   , 0);
+  animationAttributes = registerAttribute(animationAttributes, 399, "HypnoAudio - without audio (manual)" , new String[] {"Geometric", "Red", "Evolving", "Rhythmic"}                                                 , -1);
   createCommonlyUsedAttributeLists();
 }
 

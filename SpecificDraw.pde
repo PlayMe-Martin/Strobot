@@ -530,6 +530,7 @@ void specific_draw() {
       case 396: draw_dirtyAudioProcessing();break;                 //Audio Monitoring - 15
       case 397: draw_patatapWithAudioInput();break;                //Patatap with audio input - 16
       case 398: draw_hypnoAudio();break;                           //HypnoAudio - 17
+      case 399: draw_hypnoAudio();break;                           //HypnoAudio - Without Audio (manual mode) - 18
       default: break;                                              //Default animation : do nothing, the screen will not be updated
     }
   }

@@ -1043,6 +1043,8 @@
         $attributeList[] = array ('Geometric', 'Colorful', 'Simple', 'Rhythmic', 'AudioInput');
         $animationName[] = 'HypnoAudio';                                   
         $attributeList[] = array ('Geometric', 'Red', 'Evolving', 'Rhythmic', 'AudioInput');
+        $animationName[] = 'HypnoAudio - without audio (manual)';                                   
+        $attributeList[] = array ('Geometric', 'Red', 'Evolving', 'Rhythmic');
         echo filterAllAttributes($attributeList, $SelectedAttributeList, $animationName);  
         ?>                                                                                 
       </div>
