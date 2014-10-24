@@ -16763,11 +16763,13 @@ class UglyImpulseBass {
 
 void draw_hypnoAudio() {
   
-  if (impulse_Kick) {
-    hypnoAudio_currentPoint = (hypnoAudio_currentPoint + 1)%hypnoAudio_coordinates.length;
-  }
-  if (impulse_Snare) {
-    hypnoAudio_redImpact = 255;
+  if (hypnoAudio_listenToAudio == true) {
+    if (impulse_Kick) {
+      hypnoAudio_currentPoint = (hypnoAudio_currentPoint + 1)%hypnoAudio_coordinates.length;
+    }
+    if (impulse_Snare) {
+      hypnoAudio_redImpact = 255;
+    }
   }
   
   background(0);

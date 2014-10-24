@@ -3988,6 +3988,15 @@ void specificActions() {
       frameRate(50);
       colorMode(RGB);
       strokeWeight(4);
+      hypnoAudio_listenToAudio = true;
+    }
+    else if (animationnumber == 399)    //HypnoAudio - Without audio
+    {
+      frameRate(50);
+      colorMode(RGB);
+      strokeWeight(4);
+      hypnoAudio_listenToAudio = false;
+      hypnoAudio_currentPoint = (hypnoAudio_currentPoint + 1)%hypnoAudio_coordinates.length;
     }
     else                                //Not implemented case - do nothing
     {    }

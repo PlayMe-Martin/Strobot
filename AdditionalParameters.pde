@@ -1412,3 +1412,4 @@ float[][] hypnoAudio_coordinates = {{-0.25,-0.25}, {0.25,-0.15}, {0.25,0.25}, {-
 float hypnoAudio_moveSpeed = 0.1;
 int hypnoAudio_redImpact = 0;
 int hypnoAudio_colorAttenuation = 5;
+boolean hypnoAudio_listenToAudio = true;
