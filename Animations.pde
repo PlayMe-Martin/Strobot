@@ -16756,3 +16756,57 @@ class UglyImpulseBass {
     y += 8;
   }
 }
+
+//////////////////////////////////////////
+// Specific actions for the HypnoAudio animation
+//////////////////////////////////////////
+
+void draw_hypnoAudio() {
+  
+  if (impulse_Kick) {
+    hypnoAudio_currentPoint = (hypnoAudio_currentPoint + 1)%hypnoAudio_coordinates.length;
+  }
+  if (impulse_Snare) {
+    hypnoAudio_redImpact = 255;
+  }
+  
+  background(0);
+  translate(width/2, height/2);
+  for (int i = 0; i < 360; i+=6) {
+    for (int q = 0; q < 18*3; q+=18) {
+      if (q == 18*2) {
+        stroke(255, 255 - hypnoAudio_redImpact, 255 - hypnoAudio_redImpact);
+      }
+      else {
+        stroke(255);
+      }
+      
+      float x = map(sin(radians(q+i+frameCount))*i, -hypnoAudio_currentCoordinates[0]*width, hypnoAudio_currentCoordinates[1]*height, i, -i);
+      float y = map(cos(radians(q+i+frameCount))*i, -hypnoAudio_currentCoordinates[0]*width, hypnoAudio_currentCoordinates[1]*height, -i, i);
+      
+      float x2 = map(sin(radians(q+i+6+frameCount))*(i+6), -hypnoAudio_currentCoordinates[0]*width, hypnoAudio_currentCoordinates[1]*height, i+6, -(i+6));
+      float y2 = map(cos(radians(q+i+6+frameCount))*(i+6), -hypnoAudio_currentCoordinates[0]*width, hypnoAudio_currentCoordinates[1]*height, -(i+6), i+6);
+      line(x, y, x2, y2);
+      line(-x, -y, -x2, -y2);
+      
+      line(y, x, y2, x2);
+      line(-y, -x, -y2, -x2);
+      
+      line(x, -y, x2, -y2);
+      line(-x, y, -x2, y2);
+      
+      line(y, -x, y2, -x2);
+      line(-y, x, -y2, x2);
+    }
+  }
+  
+  // Easing towards the target coordinate
+  for (int j = 0; j < 2; j++) {
+    hypnoAudio_currentCoordinates[j] += (hypnoAudio_coordinates[hypnoAudio_currentPoint][j] - hypnoAudio_currentCoordinates[j]) * hypnoAudio_moveSpeed;
+  }
+  
+  // Ease back towards white
+  if (hypnoAudio_redImpact > 0) {
+    hypnoAudio_redImpact -= hypnoAudio_colorAttenuation;
+  }
+}

@@ -669,8 +669,9 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 393, "Red Sun"                             , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic"}                                                , 1);
   animationAttributes = registerAttribute(animationAttributes, 394, "Sliced Wave - White"                 , new String[] {"Atmospheric", "White", "Circles", "Rhythmic"}                                              , 2);
   animationAttributes = registerAttribute(animationAttributes, 395, "Sliced Wave - Red"                   , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic"}                                                , 2);
-  animationAttributes = registerAttribute(animationAttributes, 396, "Shitty audio test - to be deleted"   , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                                  , 1);
-  animationAttributes = registerAttribute(animationAttributes, 397, "Patatap with audio"                  , new String[] {"Geometric", "Colorful", "Simple", "Rhythmic", "AudioInput"}                                , 1);
+  animationAttributes = registerAttribute(animationAttributes, 396, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                                  , -1);
+  animationAttributes = registerAttribute(animationAttributes, 397, "Patatap with audio"                  , new String[] {"Geometric", "Colorful", "Simple", "Rhythmic", "AudioInput"}                                , 0);
+  animationAttributes = registerAttribute(animationAttributes, 398, "HypnoAudio"                          , new String[] {"Geometric", "Red", "Evolving", "Rhythmic", "AudioInput"}                                   , 0);
   createCommonlyUsedAttributeLists();
 }
 

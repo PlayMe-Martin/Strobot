@@ -208,7 +208,6 @@ void listenToIncomingTimeInfo() {
       int lengthAvailable = timeInfoInput.available();
       
       if (lengthAvailable != 0) {
-        //println("lengthAvailable : " + lengthAvailable);
         byte[] buf = new byte[timeInfoMessageSize];
         //Read exactly as many bytes as needed (offset = 0)
         timeInfoInput.read(buf, 0, timeInfoMessageSize);
@@ -232,7 +231,7 @@ void listenToIncomingTimeInfo() {
     } 
   }
   catch (Exception e) {
-    println("Exception occured when creating the audio input data server : " + e);
+    outputLog.println("Exception occured when creating the audio input data server : " + e);
   }
 }
 
@@ -266,7 +265,7 @@ void listenToIncomingSignalLevels(int signalID, ServerSocket audioDataServer, So
             byte[] garbage = new byte[signalLevelInput.available()];
             signalLevelInput.readFully(garbage);
           }
-          catch (Exception e2) { println("Couldn't purge the garbage inside the input buffer"); }
+          catch (Exception e2) { outputLog.println("Couldn't purge the garbage inside the input buffer"); }
         }
       }
       // If no byte is available, sleep a little to avoid CPU overload 
@@ -337,7 +336,6 @@ void processTimeInfoMessage(SignalMessages.TimeInfo timeInfo) {
 
 void processSignalLevelMessage(SignalMessages.SignalLevel signalLevel) {
   //Store the signal information in the correct ring buffer
-  println("SignalID : " + signalLevel.getSignalID() + "   SignalLevel : " + signalLevel.getSignalLevel());
   if (signalLevel.getSignalID() == SIGNAL_ID_KICK)          { audioInputBuffer_Kick.addAndRemoveLast(signalLevel.getSignalLevel()); }
   else if (signalLevel.getSignalID() == SIGNAL_ID_SNARE)    { audioInputBuffer_Snare.addAndRemoveLast(signalLevel.getSignalLevel()); }
   else if (signalLevel.getSignalID() == SIGNAL_ID_CYMBALS)  { audioInputBuffer_Cymbals.addAndRemoveLast(signalLevel.getSignalLevel()); }
@@ -348,6 +346,7 @@ void processSignalLevelMessage(SignalMessages.SignalLevel signalLevel) {
 
 void processImpulseMessage(SignalMessages.Impulse impulse) {
   //Raise the correct flag, according to the signal's ID
+  println("Impulse : " + impulse.getSignalID());
   if (impulse.getSignalID() == SIGNAL_ID_KICK)             { impulse_Kick = true; }
   else if (impulse.getSignalID() == SIGNAL_ID_SNARE)       { impulse_Snare = true; }
   else if (impulse.getSignalID() == SIGNAL_ID_CYMBALS)     { impulse_Cymbals = true; }

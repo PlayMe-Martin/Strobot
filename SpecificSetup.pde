@@ -3983,6 +3983,12 @@ void specificActions() {
         patatapObjectList = new ArrayList<PatatapObject>();
       }
     }
+    else if (animationnumber == 398)    //HypnoAudio
+    {
+      frameRate(50);
+      colorMode(RGB);
+      strokeWeight(4);
+    }
     else                                //Not implemented case - do nothing
     {    }
   }
