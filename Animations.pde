@@ -16766,9 +16766,11 @@ void draw_hypnoAudio() {
   if (hypnoAudio_listenToAudio == true) {
     if (impulse_Kick) {
       hypnoAudio_currentPoint = (hypnoAudio_currentPoint + 1)%hypnoAudio_coordinates.length;
+      impulse_Kick = false;
     }
     if (impulse_Snare) {
       hypnoAudio_redImpact = 255;
+      impulse_Snare = false;
     }
   }
   

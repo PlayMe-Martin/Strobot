@@ -7,38 +7,6 @@ import java.net.*;
 import java.io.*;
 import com.google.protobuf.*;
 
-ServerSocket timeInfoServer;
-Socket timeInfoServiceSocket;
-
-ServerSocket audioDataServer_Kick;
-ServerSocket audioDataServer_Snare;
-ServerSocket audioDataServer_Cymbals;
-ServerSocket audioDataServer_Bass;
-ServerSocket audioDataServer_Keys;
-ServerSocket audioDataServer_Guitar;
-
-ServerSocket impulseServer_Kick;
-ServerSocket impulseServer_Snare;
-ServerSocket impulseServer_Cymbals;
-ServerSocket impulseServer_Bass;
-ServerSocket impulseServer_Keys;
-ServerSocket impulseServer_Guitar;
-
-Socket audioDataServiceSocket_Kick;
-Socket audioDataServiceSocket_Snare;
-Socket audioDataServiceSocket_Cymbals;
-Socket audioDataServiceSocket_Bass;
-Socket audioDataServiceSocket_Keys;
-Socket audioDataServiceSocket_Guitar;
-
-Socket impulseServiceSocket_Kick;
-Socket impulseServiceSocket_Snare;
-Socket impulseServiceSocket_Cymbals;
-Socket impulseServiceSocket_Bass;
-Socket impulseServiceSocket_Keys;
-Socket impulseServiceSocket_Guitar;
-
-final int THREAD_SLEEP_TIME = 1;    //15 ms (for reference, 50 fps means a 20ms period)
 
 //ID numbers for the incoming signals - these are set according to the configuration file
 int SIGNAL_ID_KICK    = 1;
@@ -65,14 +33,17 @@ boolean impulse_Keys    = false;
 boolean impulse_Guitar  = false;
 
 // Port number must be greater than 1000
-int timeInfoPortNumber  = 7000;
-int audioDataPortNumber = 8000;
-int impulsePortNumber   = 9000;
-int backlog = 128;              //backlog : size of the serverSocket's waiting list for incoming connections
+int audioDataPortNumber = 7001;
+int impulsePortNumber   = 7002;
+int timeInfoPortNumber  = 7003;
+DatagramSocket AudioDataServer = null;
+DatagramSocket ImpulseServer = null;
+DatagramSocket TimeInfoServer = null;
  
 final int timeInfoMessageSize = 12;
 final int signalLevelMessageSize = 7;
 final int impulseMessageSize = 2;
+final int THREAD_SLEEP_TIME = 1;    //1 ms (for reference, 50 fps means a 20ms period)
 
 void initializeCircularBuffers() {
   // Initialize the ring buffers used to store the incoming signal data
@@ -103,228 +74,96 @@ void initializeCircularBuffers() {
 
 void startAudioSignalMonitoringThread() {
   // Create the Java servers which will listen to the different SignalProcessor plugin instances
-  try {
-    audioDataServer_Kick    = new ServerSocket(audioDataPortNumber + SIGNAL_ID_KICK, backlog);
-    audioDataServer_Snare   = new ServerSocket(audioDataPortNumber + SIGNAL_ID_SNARE, backlog);
-    audioDataServer_Cymbals = new ServerSocket(audioDataPortNumber + SIGNAL_ID_CYMBALS, backlog);
-    audioDataServer_Bass    = new ServerSocket(audioDataPortNumber + SIGNAL_ID_BASS, backlog);
-    audioDataServer_Keys    = new ServerSocket(audioDataPortNumber + SIGNAL_ID_KEYS, backlog);
-    audioDataServer_Guitar  = new ServerSocket(audioDataPortNumber + SIGNAL_ID_GUITAR, backlog);
-    impulseServer_Kick      = new ServerSocket(impulsePortNumber + SIGNAL_ID_KICK, backlog);
-    impulseServer_Snare     = new ServerSocket(impulsePortNumber + SIGNAL_ID_SNARE, backlog);
-    impulseServer_Cymbals   = new ServerSocket(impulsePortNumber + SIGNAL_ID_CYMBALS, backlog);
-    impulseServer_Bass      = new ServerSocket(impulsePortNumber + SIGNAL_ID_BASS, backlog);
-    impulseServer_Keys      = new ServerSocket(impulsePortNumber + SIGNAL_ID_KEYS, backlog);
-    impulseServer_Guitar    = new ServerSocket(impulsePortNumber + SIGNAL_ID_GUITAR, backlog);
-    timeInfoServer          = new ServerSocket(timeInfoPortNumber, backlog);
-  }
-  catch (Exception e) {outputLog.println("Couldn't create audioDataServer : " + e);}  
-  // Create a separate thread which will listen forever to the audio plugins
-  
-  thread("listenToIncomingSignalLevels_Kick");
-  thread("listenToIncomingImpulses_Kick");
-  thread("listenToIncomingSignalLevels_Snare");
-  thread("listenToIncomingImpulses_Snare");
-  thread("listenToIncomingSignalLevels_Cymbals");
-  thread("listenToIncomingImpulses_Cymbals");
-  thread("listenToIncomingSignalLevels_Bass");
-  thread("listenToIncomingImpulses_Bass");
-  thread("listenToIncomingSignalLevels_Keys");
-  thread("listenToIncomingImpulses_Keys");
-  thread("listenToIncomingSignalLevels_Guitar");
-  thread("listenToIncomingImpulses_Guitar");
-  thread("listenToIncomingTimeInfo");
+
+  thread("createAudioDataServer");
+  thread("createImpulseServer");
+  thread("createTimeInfoServer");
+
 }
 
 ///////////////////////////////////////////////////////////////////////////
-  
-
-void listenToIncomingSignalLevels_Kick() {
-  listenToIncomingSignalLevels(SIGNAL_ID_KICK, audioDataServer_Kick, audioDataServiceSocket_Kick);
-}
-
-void listenToIncomingSignalLevels_Snare() {
-  listenToIncomingSignalLevels(SIGNAL_ID_SNARE, audioDataServer_Snare, audioDataServiceSocket_Snare);
-}
-
-void listenToIncomingSignalLevels_Cymbals() {
-  listenToIncomingSignalLevels(SIGNAL_ID_CYMBALS, audioDataServer_Cymbals, audioDataServiceSocket_Cymbals);
-}
-
-void listenToIncomingSignalLevels_Bass() {
-  listenToIncomingSignalLevels(SIGNAL_ID_BASS, audioDataServer_Bass, audioDataServiceSocket_Bass);
-}
-
-void listenToIncomingSignalLevels_Keys() {
-  listenToIncomingSignalLevels(SIGNAL_ID_KEYS, audioDataServer_Keys, audioDataServiceSocket_Keys);
-}
-
-void listenToIncomingSignalLevels_Guitar() {
-  listenToIncomingSignalLevels(SIGNAL_ID_GUITAR, audioDataServer_Guitar, audioDataServiceSocket_Guitar);
-}
 
 
-
-void listenToIncomingImpulses_Kick() {
-  listenToIncomingImpulses(SIGNAL_ID_KICK, impulseServer_Kick, impulseServiceSocket_Kick);
-}
-
-void listenToIncomingImpulses_Snare() {
-  listenToIncomingImpulses(SIGNAL_ID_SNARE, impulseServer_Snare, impulseServiceSocket_Snare);
-}
-
-void listenToIncomingImpulses_Cymbals() {
-  listenToIncomingImpulses(SIGNAL_ID_CYMBALS, impulseServer_Cymbals, impulseServiceSocket_Cymbals);
-}
-
-void listenToIncomingImpulses_Bass() {
-  listenToIncomingImpulses(SIGNAL_ID_BASS, impulseServer_Bass, impulseServiceSocket_Bass);
-}
-
-void listenToIncomingImpulses_Keys() {
-  listenToIncomingImpulses(SIGNAL_ID_KEYS, impulseServer_Keys, impulseServiceSocket_Keys);
-}
-
-void listenToIncomingImpulses_Guitar() {
-  listenToIncomingImpulses(SIGNAL_ID_GUITAR, impulseServer_Guitar, impulseServiceSocket_Guitar);
-}
-
-
-void listenToIncomingTimeInfo() {
+void createAudioDataServer() {
   try {
+    outputLog.println("Audio Data server initialization");
+    AudioDataServer = new DatagramSocket(audioDataPortNumber);
     
-    outputLog.println("Ready to initialize TimeInfo server");
-    
-    // Create a new connection with the remote plugin
-    timeInfoServiceSocket = timeInfoServer.accept();
-    // Create a Datainputstream to hold the data received by the socket
-    DataInputStream timeInfoInput = new DataInputStream(timeInfoServiceSocket.getInputStream());
-    
-    outputLog.println("Created time info server");
-    
-    // Infinite loop ! The train goes on and on... Every time some data is received, the following loops
-    while (true) {
-      // Read the available number of bytes
-      int lengthAvailable = timeInfoInput.available();
-      
-      if (lengthAvailable != 0) {
-        byte[] buf = new byte[timeInfoMessageSize];
-        //Read exactly as many bytes as needed (offset = 0)
-        timeInfoInput.read(buf, 0, timeInfoMessageSize);
-        try {
-          SignalMessages.TimeInfo timeInfo = SignalMessages.TimeInfo.parseFrom(buf);
-          processTimeInfoMessage(timeInfo);
-        }
-        catch (Exception e) {
-          //Purge the current buffer in case of a badly formatted message
-          try {
-            byte[] garbage = new byte[timeInfoInput.available()];
-            timeInfoInput.readFully(garbage);
-          }
-          catch (Exception e2) { outputLog.println("Couldn't purge the garbage inside the input buffer"); }
-        }
+    //Specify a timeout for the receive, in order to avoid useless CPU usage
+    AudioDataServer.setSoTimeout(THREAD_SLEEP_TIME);
+     
+    //buffer to receive incoming data
+    byte[] bufferAudioData = new byte[signalLevelMessageSize];
+    DatagramPacket incomingAudioData = new DatagramPacket(bufferAudioData, bufferAudioData.length);
+
+    while(true)
+    {
+      try {
+        AudioDataServer.receive(incomingAudioData);
+        processSignalLevelMessage(SignalMessages.SignalLevel.parseFrom(incomingAudioData.getData()));
       }
-      // If no byte is available, sleep a little to avoid CPU overload 
-      else {
-        Thread.sleep(THREAD_SLEEP_TIME);
-      }
-    } 
+      catch (Exception e) {}
+    }
   }
   catch (Exception e) {
-    outputLog.println("Exception occured when creating the audio input data server : " + e);
+    outputLog.println("Audio Data servor error : " + e);
   }
 }
 
-void listenToIncomingSignalLevels(int signalID, ServerSocket audioDataServer, Socket audioDataServiceSocket) {
+
+void createImpulseServer() {
   try {
+    outputLog.println("Impulse server initialization");
+    ImpulseServer = new DatagramSocket(impulsePortNumber);
     
-    outputLog.println("Ready to initialize SignalLevel server for signalID " + signalID);
-    // Create a new connection with the remote plugin
-    audioDataServiceSocket = audioDataServer.accept();
-    // Create a Datainputstream to hold the data received by the socket
-    DataInputStream signalLevelInput = new DataInputStream(audioDataServiceSocket.getInputStream());
-    
-    outputLog.println("Created signal level server for signalID " + signalID);
-    
-    // Infinite loop ! The train goes on and on... Every time some data is received, the following loops
-    while (true) {
-      // Read the available number of bytes
-      int lengthAvailable = signalLevelInput.available();
-      
-      if (lengthAvailable != 0) {
-        byte[] buf = new byte[signalLevelMessageSize];
-        //Read exactly as many bytes as needed (offset = 0)
-        signalLevelInput.read(buf, 0, signalLevelMessageSize);
-        try {
-          SignalMessages.SignalLevel signalLevel = SignalMessages.SignalLevel.parseFrom(buf);
-          processSignalLevelMessage(signalLevel);
-        }
-        catch (Exception e) {
-          //Purge the current buffer in case of a badly formatted message
-          try {
-            byte[] garbage = new byte[signalLevelInput.available()];
-            signalLevelInput.readFully(garbage);
-          }
-          catch (Exception e2) { outputLog.println("Couldn't purge the garbage inside the input buffer"); }
-        }
+    //Specify a timeout for the receive, in order to avoid useless CPU usage
+    ImpulseServer.setSoTimeout(THREAD_SLEEP_TIME);
+     
+    //buffer to receive incoming data
+    byte[] bufferImpulse = new byte[impulseMessageSize];
+    DatagramPacket incomingImpulse = new DatagramPacket(bufferImpulse, bufferImpulse.length);
+
+    while(true)
+    {
+      try {
+        ImpulseServer.receive(incomingImpulse);
+        processImpulseMessage(SignalMessages.Impulse.parseFrom(incomingImpulse.getData()));
       }
-      // If no byte is available, sleep a little to avoid CPU overload 
-      else {
-        Thread.sleep(THREAD_SLEEP_TIME);
-      }
-    } 
+      catch (Exception e) {}
+    }
   }
   catch (Exception e) {
-    outputLog.println("Exception occured when creating the audio input data server : " + e);
+    outputLog.println("Audio impulse servor error : " + e);
   }
 }
 
 
-
-void listenToIncomingImpulses(int signalID, ServerSocket impulseServer, Socket impulseServiceSocket) {
+void createTimeInfoServer() {
   try {
+    outputLog.println("TimeInfo server initialization");
+    TimeInfoServer = new DatagramSocket(timeInfoPortNumber);
     
-    outputLog.println("Ready to initialize Impulse server for signalID " + signalID);
-    
-    // Create a new connection with the remote plugin
-    impulseServiceSocket = impulseServer.accept();
-    // Create a Datainputstream to hold the data received by the socket
-    DataInputStream impulseInput = new DataInputStream(impulseServiceSocket.getInputStream());
-    
-    outputLog.println("Created impulse server for signalID " + signalID);
+    //Specify a timeout for the receive, in order to avoid useless CPU usage
+    TimeInfoServer.setSoTimeout(THREAD_SLEEP_TIME);
+     
+    //buffer to receive incoming data
+    byte[] bufferTimeInfo = new byte[timeInfoMessageSize];
+    DatagramPacket incomingTimeInfo = new DatagramPacket(bufferTimeInfo, bufferTimeInfo.length);
 
-    // Infinite loop ! The train goes on and on... Every time some data is received, the following loops
-    while (true) {
-      // Read the available number of bytes
-      int lengthAvailable = impulseInput.available();
-      
-      if (lengthAvailable != 0) {
-        byte[] buf = new byte[lengthAvailable];
-        impulseInput.readFully(buf);
-
-        try {
-          SignalMessages.Impulse impulse = SignalMessages.Impulse.parseFrom(buf);
-          processImpulseMessage(impulse);
-        }
-        catch (Exception e) {
-          //Purge the current buffer in case of a badly formatted message
-          try {
-            byte[] garbage = new byte[impulseInput.available()];
-            impulseInput.readFully(garbage);
-          }
-          catch (Exception e2) { outputLog.println("Couldn't purge the garbage inside the input buffer"); }
-        }
+    while(true)
+    {
+      try {
+        TimeInfoServer.receive(incomingTimeInfo);
+        processTimeInfoMessage(SignalMessages.TimeInfo.parseFrom(incomingTimeInfo.getData()));
       }
-      // If no byte is available, sleep a little to avoid CPU overload 
-      else {
-        Thread.sleep(THREAD_SLEEP_TIME);
-      }
-    } 
+      catch (Exception e) {}
+    }
   }
   catch (Exception e) {
-    outputLog.println("Exception occured when creating the audio input data server : " + e);
+    outputLog.println("Time info servor error : " + e);
   }
 }
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -346,7 +185,6 @@ void processSignalLevelMessage(SignalMessages.SignalLevel signalLevel) {
 
 void processImpulseMessage(SignalMessages.Impulse impulse) {
   //Raise the correct flag, according to the signal's ID
-  println("Impulse : " + impulse.getSignalID());
   if (impulse.getSignalID() == SIGNAL_ID_KICK)             { impulse_Kick = true; }
   else if (impulse.getSignalID() == SIGNAL_ID_SNARE)       { impulse_Snare = true; }
   else if (impulse.getSignalID() == SIGNAL_ID_CYMBALS)     { impulse_Cymbals = true; }
