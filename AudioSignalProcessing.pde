@@ -31,6 +31,13 @@ boolean impulse_Cymbals = false;
 boolean impulse_Bass    = false;
 boolean impulse_Keys    = false;
 boolean impulse_Guitar  = false;
+long previousImpulseTimestamp_Kick = System.nanoTime();
+long previousImpulseTimestamp_Snare = System.nanoTime();
+long previousImpulseTimestamp_Cymbals = System.nanoTime();
+long previousImpulseTimestamp_Bass = System.nanoTime();
+long previousImpulseTimestamp_Keys = System.nanoTime();
+long previousImpulseTimestamp_Guitar = System.nanoTime();
+long OUTDATED_IMPULSE_AGE = 250*1000*1000;      //Consider that after OUTDATED_IMPULSE_AGE ns, the previous impulse is outdated, and should be invalidated
 
 // Port number must be greater than 1000
 int audioDataPortNumber = 7001;
@@ -185,16 +192,27 @@ void processSignalLevelMessage(SignalMessages.SignalLevel signalLevel) {
 
 void processImpulseMessage(SignalMessages.Impulse impulse) {
   //Raise the correct flag, according to the signal's ID
-  if (impulse.getSignalID() == SIGNAL_ID_KICK)             { impulse_Kick = true; }
-  else if (impulse.getSignalID() == SIGNAL_ID_SNARE)       { impulse_Snare = true; }
-  else if (impulse.getSignalID() == SIGNAL_ID_CYMBALS)     { impulse_Cymbals = true; }
-  else if (impulse.getSignalID() == SIGNAL_ID_BASS)        { impulse_Bass = true; }
-  else if (impulse.getSignalID() == SIGNAL_ID_KEYS)        { impulse_Keys = true; }
-  else if (impulse.getSignalID() == SIGNAL_ID_GUITAR)      { impulse_Guitar = true; }
+  if (impulse.getSignalID() == SIGNAL_ID_KICK)             { impulse_Kick    = true; previousImpulseTimestamp_Kick    = System.nanoTime(); println("Kick : " + System.nanoTime());}
+  else if (impulse.getSignalID() == SIGNAL_ID_SNARE)       { impulse_Snare   = true; previousImpulseTimestamp_Snare   = System.nanoTime();}
+  else if (impulse.getSignalID() == SIGNAL_ID_CYMBALS)     { impulse_Cymbals = true; previousImpulseTimestamp_Cymbals = System.nanoTime();}
+  else if (impulse.getSignalID() == SIGNAL_ID_BASS)        { impulse_Bass    = true; previousImpulseTimestamp_Bass    = System.nanoTime();}
+  else if (impulse.getSignalID() == SIGNAL_ID_KEYS)        { impulse_Keys    = true; previousImpulseTimestamp_Keys    = System.nanoTime();}
+  else if (impulse.getSignalID() == SIGNAL_ID_GUITAR)      { impulse_Guitar  = true; previousImpulseTimestamp_Guitar  = System.nanoTime();}
 }
 
+// May be called by audio-responsive animations, invalidate old impulses
+void invalidateOutdatedImpulseFlags() {
+//  if (impulse_Kick == true) {println("Kick was alive... : " + (System.nanoTime() - previousImpulseTimestamp_Kick) + " versus " + OUTDATED_IMPULSE_AGE);}
+//  if (impulse_Snare == true) {println("Snare was alive... : " + (System.nanoTime() - previousImpulseTimestamp_Snare) + " versus " + OUTDATED_IMPULSE_AGE);}
+  if (System.nanoTime() - previousImpulseTimestamp_Kick    > OUTDATED_IMPULSE_AGE) {impulse_Kick    = false;}
+  if (System.nanoTime() - previousImpulseTimestamp_Snare   > OUTDATED_IMPULSE_AGE) {impulse_Snare   = false;}
+  if (System.nanoTime() - previousImpulseTimestamp_Cymbals > OUTDATED_IMPULSE_AGE) {impulse_Cymbals = false;}
+  if (System.nanoTime() - previousImpulseTimestamp_Bass    > OUTDATED_IMPULSE_AGE) {impulse_Bass    = false;}
+  if (System.nanoTime() - previousImpulseTimestamp_Keys    > OUTDATED_IMPULSE_AGE) {impulse_Keys    = false;}
+  if (System.nanoTime() - previousImpulseTimestamp_Guitar  > OUTDATED_IMPULSE_AGE) {impulse_Guitar  = false;}
+}
 
-//Called at the end of each draw cycle, to reset the flags
+// May be called by audio-responsive animations (ie at the end of each cycle), reset all the flags
 void resetImpulseFlags() {
   impulse_Kick    = false;
   impulse_Snare   = false;
