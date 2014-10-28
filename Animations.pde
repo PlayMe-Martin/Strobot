@@ -14107,8 +14107,14 @@ class NonotakWoosh {
 //////////////////////////////////////////
 
 void draw_patatapWithAudioInput() {
+  //Reset old flags according to the current system time
+  invalidateOutdatedImpulseFlags();
+  
   patatap_checkImpulseFlags();
   draw_patatap();
+  
+  //Reset all the impulse flags, as they have been processed
+  resetImpulseFlags();
 }
 
 void draw_patatap() {  
@@ -16615,6 +16621,9 @@ void draw_slicedWave(color sliceColor) {
 
 void draw_dirtyAudioProcessing() {
   
+  //Reset old flags according to the current system time
+  invalidateOutdatedImpulseFlags();
+  
   background(0);
   stroke(255);
   strokeWeight(4);
@@ -16700,6 +16709,9 @@ void draw_dirtyAudioProcessing() {
       break;
     }
   }
+  
+  //Reset all the impulse flags, as they have been processed
+  resetImpulseFlags();
 }
 
 class UglyImpulseKick {
@@ -16763,14 +16775,15 @@ class UglyImpulseBass {
 
 void draw_hypnoAudio() {
   
+  //Reset old flags according to the current system time
+  invalidateOutdatedImpulseFlags();
+  
   if (hypnoAudio_listenToAudio == true) {
     if (impulse_Kick) {
       hypnoAudio_currentPoint = (hypnoAudio_currentPoint + 1)%hypnoAudio_coordinates.length;
-      impulse_Kick = false;
     }
     if (impulse_Snare) {
       hypnoAudio_redImpact = 255;
-      impulse_Snare = false;
     }
   }
   
@@ -16813,4 +16826,7 @@ void draw_hypnoAudio() {
   if (hypnoAudio_redImpact > 0) {
     hypnoAudio_redImpact -= hypnoAudio_colorAttenuation;
   }
+  
+  //Reset all the impulse flags, as they have been processed
+  resetImpulseFlags();
 }
