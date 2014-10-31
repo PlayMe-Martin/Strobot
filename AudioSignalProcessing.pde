@@ -192,7 +192,7 @@ void processSignalLevelMessage(SignalMessages.SignalLevel signalLevel) {
 
 void processImpulseMessage(SignalMessages.Impulse impulse) {
   //Raise the correct flag, according to the signal's ID
-  if (impulse.getSignalID() == SIGNAL_ID_KICK)             { impulse_Kick    = true; previousImpulseTimestamp_Kick    = System.nanoTime(); println("Kick : " + System.nanoTime());}
+  if (impulse.getSignalID() == SIGNAL_ID_KICK)             { impulse_Kick    = true; previousImpulseTimestamp_Kick    = System.nanoTime();}
   else if (impulse.getSignalID() == SIGNAL_ID_SNARE)       { impulse_Snare   = true; previousImpulseTimestamp_Snare   = System.nanoTime();}
   else if (impulse.getSignalID() == SIGNAL_ID_CYMBALS)     { impulse_Cymbals = true; previousImpulseTimestamp_Cymbals = System.nanoTime();}
   else if (impulse.getSignalID() == SIGNAL_ID_BASS)        { impulse_Bass    = true; previousImpulseTimestamp_Bass    = System.nanoTime();}

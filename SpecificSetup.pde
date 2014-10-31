@@ -137,7 +137,7 @@ void specificActions() {
         colorMode(HSB,255);
         worms = new Worm[numWorms];
         for (int i=0; i<numWorms; i++) {
-          worms[i] = new Worm(random(0,64),random(0,64),random(0,2*PI));
+          worms[i] = new Worm(random(0,width),random(0,height),random(0,2*PI));
         }
         pulsed = false;
         break;
@@ -1247,7 +1247,7 @@ void specificActions() {
         textSize(28);  
         textAlign(CENTER, CENTER);
         font = loadFont("Gobold-28.vlw");
-        textFont(font,64);
+        textFont(font,height);
         pongball= new Ball();
         bottom=new Paddle();
         top=new Paddle();
@@ -1543,7 +1543,7 @@ void specificActions() {
         else
         {fill(255,0,0);}
         beatcircle_counter += 1;
-        beatcircle_radius = 64;
+        beatcircle_radius = height;
         break;
       
       case 154:    //BeatCircleLinesReinit
@@ -1557,7 +1557,7 @@ void specificActions() {
         else
         {fill(255,0,0);}
         beatcircle_counter += 1;
-        beatcircle_radius = 64;
+        beatcircle_radius = height;
         beatcircles_linepos = 0;
         break;
       
@@ -1572,7 +1572,7 @@ void specificActions() {
         else
         {fill(255,0,0);}
         beatcircle_counter += 1;
-        beatcircle_radius = 64;
+        beatcircle_radius = height;
         beatcircles_linepos +=1;
         break;
       
@@ -1587,7 +1587,7 @@ void specificActions() {
         else
         {fill(255,0,0);}
         beatcircle_counter += 1;
-        beatcircle_radius = 64;
+        beatcircle_radius = height;
         beatcircles_linepos +=1;
         break;
       
@@ -1602,7 +1602,7 @@ void specificActions() {
         else
         {fill(255,0,0);}
         beatcircle_counter += 1;
-        beatcircle_radius = 64;
+        beatcircle_radius = height;
         beatcircles_linepos +=1;
         break;
       
@@ -4193,7 +4193,6 @@ void specificActions() {
         }
         crecy_list.add(new Crecy(2));
         crecy_list.add(new Crecy(3));
-       
         break;
       
       case 383:    //NonotakPanelFill - ExtremeLeft
@@ -4207,6 +4206,7 @@ void specificActions() {
           nonotakPanelFill_list.add(new NonotakPanelFill(0));
         }
         break;
+        
       case 384:    //NonotakPanelFill - ExtremeRight
 
         frameRate(30);
@@ -4284,7 +4284,8 @@ void specificActions() {
         strokeWeight(barWaves_stepX+1);
        
         barWaves_initWaves();
-        barWaves_init = true;    
+        barWaves_init = true;
+        break;  
           
       case 393:    //RedSun
 

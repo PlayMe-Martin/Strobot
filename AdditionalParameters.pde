@@ -83,7 +83,7 @@ float waveform_y_growing = 32.0;
 
 //Worms parameters
 Worm[] worms;
-int numWorms = 2*NUMBER_OF_PANELS + 1;
+int numWorms = 4*NUMBER_OF_PANELS;
 PVector pulse;
 boolean pulsed;
 
