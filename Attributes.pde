@@ -210,7 +210,7 @@ void createCommonlyUsedAttributeLists() {
   filteredLists.add(new AnimationFilteredList(FILTEREDLIST_ID_SET_26, new String[] {"Set 26"}, filterAnimationsByAttributes(animationAttributes, new String[] {"Set 26"})));
   filteredLists.add(new AnimationFilteredList(FILTEREDLIST_ID_SET_27, new String[] {"Set 27"}, filterAnimationsByAttributes(animationAttributes, new String[] {"Set 27"})));
   filteredLists.add(new AnimationFilteredList(FILTEREDLIST_ID_SET_28, new String[] {"Set 28"}, filterAnimationsByAttributes(animationAttributes, new String[] {"Set 28"})));
-  filteredLists.add(new AnimationFilteredList(FILTEREDLIST_ID_SET_28, new String[] {"Set 28"}, filterAnimationsByAttributes(animationAttributes, new String[] {"Set 29"})));
+  filteredLists.add(new AnimationFilteredList(FILTEREDLIST_ID_SET_29, new String[] {"Set 29"}, filterAnimationsByAttributes(animationAttributes, new String[] {"Set 29"})));
   
     
 }

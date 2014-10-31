@@ -240,10 +240,6 @@ class PlayMeSequencer {
   
 }
 
-
-
-  
-
   
 //  void playStroboAction(int preset) {      //Will have to be checked, depends on the assumption that the strobe's DMX channels are speed/brightness
 //    switch (preset) {       //This function may be made bigger, depending on the needs regarding the precision of the stroboscope's controls in Auto Mode
