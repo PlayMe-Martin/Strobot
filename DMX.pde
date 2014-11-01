@@ -137,6 +137,7 @@ class DMX_Stroboscope {
     }
   }
   
+  // Set the device to a predefined value, according to a preset list
   void startDMX(int preset) {
     if (this.exceptionRaisedDMX == false) {
       try {
@@ -157,6 +158,7 @@ class DMX_Stroboscope {
     }
   }
   
+  // Set all the device's channels to 0
   void stopDMX() {
     if (this.exceptionRaisedDMX == false) {
       try {
@@ -176,11 +178,72 @@ class DMX_Stroboscope {
       }    
     }
   }
+  
+  // Specify the individual channels' value, maximum value is 255
+  void startDMX(int stroboscopeSpeed, int stroboscopeBrightness) {
+    if (this.exceptionRaisedDMX == false) {
+      try {
+        if (this.numberOfChannels == 2) { 
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,stroboscopeSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,stroboscopeBrightness);
+        }
+        else if (this.numberOfChannels == 3) {
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,stroboscopeSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,stroboscopeBrightness);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
+        }
+      }
+      catch (Exception e) {
+        outputLog.println("DMX exception : " + e);
+        this.exceptionRaisedDMX = true;
+      }
+    }
+  }
 }
 
 //Specific object for projectors
 class DMX_PAR {
   //TBIL
+
+  int DMXAddress_red;
+  int DMXAddress_green;
+  int DMXAddress_blue;
+  boolean exceptionRaisedDMX = false;
+  
+  DMX_PAR(int redChannelNumber, int greenChannelNumber, int blueChannelNumber) {
+    this.DMXAddress_red   = redChannelNumber;
+    this.DMXAddress_green = greenChannelNumber;
+    this.DMXAddress_blue  = blueChannelNumber;
+  }
+  
+  void startDMX(int redChannelVal, int greenChannelVal, int blueChannelVal) {
+    if (this.exceptionRaisedDMX == false) {
+      try {
+        myDMX.setDmxChannel(this.DMXAddress_red,   redChannelVal);
+        myDMX.setDmxChannel(this.DMXAddress_green, greenChannelVal);
+        myDMX.setDmxChannel(this.DMXAddress_blue,  blueChannelVal);
+      }
+      catch (Exception e) {
+        outputLog.println("DMX exception : " + e);
+        this.exceptionRaisedDMX = true;
+      }
+    }
+  }
+  
+  void stopDMX() {
+    if (this.exceptionRaisedDMX == false) {
+      try {
+        myDMX.setDmxChannel(this.DMXAddress_red,   0);
+        myDMX.setDmxChannel(this.DMXAddress_green, 0);
+        myDMX.setDmxChannel(this.DMXAddress_blue,  0);
+      }
+      catch (Exception e) {
+        outputLog.println("DMX exception : " + e);
+        this.exceptionRaisedDMX = true;
+      }
+    }
+  }
+  
   String printStatus() {
     return "";
   }

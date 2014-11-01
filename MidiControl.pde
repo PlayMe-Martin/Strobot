@@ -48,6 +48,9 @@ final int PITCH_STOP_STROBO_FRONT          = 102;
 final int PITCH_GENERAL_STROBO_FRONT_LEFT  = 103;
 final int PITCH_GENERAL_STROBO_FRONT_RIGHT = 104;
 final int PITCH_GENERAL_STROBO_BACK        = 105;
+final int PITCH_DMX_ANIMATION_BANK1        = 106;
+final int PITCH_DMX_ANIMATION_BANK2        = 107;
+final int PITCH_DMX_ANIMATION_BANK3        = 108;
 final int PITCH_ENABLE_MAN_INPUT           = 110;
 final int PITCH_DISABLE_MAN_INPUT          = 111;
 final int PITCH_CUSTOM_DEVICE_BANK1        = 118;
@@ -144,8 +147,10 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
       AUTOMATIC_MODE = false;
       setManualAnimation(channel, pitch);
     }
+    
     if (channel == CHANNEL_SEMIAUTOMODE) {
       //Release automatic mode in case of explicit input
+      //This mode corresponds to a DAW sending MIDI commands, for example through the use of clips (Ableton Live), scenes (Maschine), or plain old MIDI tracks (Logic)
       AUTOMATIC_MODE = false;
       switch (pitch) {
         //Manual input
@@ -155,17 +160,23 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
         case PITCH_CHANGE_STROBO_FRONT:        changeStrobe(channel, pitch, velocity);break;                            //E7    - Classic way to use the stroboscope
         case PITCH_START_STROBO_FRONT:         startStrobe(velocity);break;                                             //F7    - Classic way to use the stroboscope
         case PITCH_STOP_STROBO_FRONT:          stopStrobe();break;                                                      //F#7   - Classic way to use the stroboscope
+        
         case PITCH_GENERAL_STROBO_FRONT_LEFT:  startStrobe_FrontLeft(velocity);break;                                   //G7    - New way to use the stroboscope : noteOff releases the strobe
         case PITCH_GENERAL_STROBO_FRONT_RIGHT: startStrobe_FrontRight(velocity);break;                                  //G#7   - New way to use the stroboscope : noteOff releases the strobe
         case PITCH_GENERAL_STROBO_BACK:        startStrobe_Back(velocity);break;                                        //A7    - New way to use the stroboscope : noteOff releases the strobe
+
+        case PITCH_DMX_ANIMATION_BANK1:        loadDMXAnimation1(channel, pitch, velocity); break;                      //A#7   - Load an animation using DMX devices
+        case PITCH_DMX_ANIMATION_BANK2:        loadDMXAnimation2(channel, pitch, velocity); break;                      //B7
+        case PITCH_DMX_ANIMATION_BANK3:        loadDMXAnimation3(channel, pitch, velocity); break;                      //C8
         
         case PITCH_ENABLE_MAN_INPUT:           enableManualInput();break;                                               //D8
         case PITCH_DISABLE_MAN_INPUT:          disableManualInput();break;                                              //D#8
+        
         case PITCH_CUSTOM_DEVICE_BANK1:        loadCustomDeviceAnimation1(channel, pitch, velocity);break;              //A#8   - Load an animation for the custom devices
         case PITCH_CUSTOM_DEVICE_BANK2:        loadCustomDeviceAnimation2(channel, pitch, velocity);break;              //B8
         case PITCH_CUSTOM_DEVICE_BANK3:        loadCustomDeviceAnimation3(channel, pitch, velocity);break;              //C9
         case PITCH_DISPLAY_EFFECT:             activateAdditionalEffect(velocity);break;                                //C#9
-        case PITCH_LOAD_ANIMATION_BANK1:       loadAnimation1(channel, pitch, velocity);break;                          //D#9
+        case PITCH_LOAD_ANIMATION_BANK1:       loadAnimation1(channel, pitch, velocity);break;                          //D#9   - Load an animation using the LED panels
         case PITCH_LOAD_ANIMATION_BANK2:       loadAnimation2(channel, pitch, velocity);break;                          //E9
         case PITCH_LOAD_ANIMATION_BANK3:       loadAnimation3(channel, pitch, velocity);break;                          //F9
         case PITCH_LOAD_ANIMATION_BANK4:       loadAnimation4(channel, pitch, velocity);break;                          //D9
@@ -180,29 +191,34 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
 void p1Left(int channel, int pitch, int velocity) {
   //P1_LEFT 
   command_p1_left = true;
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_LEFT");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_LEFT");
 }
 
 void p1Right(int channel, int pitch, int velocity) {
   //P1_RIGHT
   command_p1_right = true;
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_RIGHT");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_RIGHT");
 }
 
 void p2Left(int channel, int pitch, int velocity) {
   //P2_LEFT
   command_p2_left = true;
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_LEFT");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_LEFT");
 }
 
 void p2Right(int channel, int pitch, int velocity) {
   //P2_RIGHT
   command_p2_right = true; 
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_RIGHT");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_RIGHT");
 }
 
 void activateKillLedPanel(int channel, int pitch, int velocity) {
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_KILL_LEDPANEL");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_KILL_LEDPANEL");
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setKillLedPanel = true;
   }
@@ -218,7 +234,8 @@ void activateKillLedPanel(int channel, int pitch, int velocity) {
 }
 
 void activatePadStrobe4th(int channel, int pitch, int velocity) {
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_4TH");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_4TH");
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setStrobeAutoMode4th = true;
     registeredTempo = frameRate;
@@ -244,7 +261,8 @@ void activatePadStrobe4th(int channel, int pitch, int velocity) {
 }
 
 void activatePadStrobe8th(int channel, int pitch, int velocity) {
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_8TH");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_8TH");
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setStrobeAutoMode8th = true;
     registeredTempo = frameRate;
@@ -269,7 +287,8 @@ void activatePadStrobe8th(int channel, int pitch, int velocity) {
 }
 
 void activatePadStrobe16th(int channel, int pitch, int velocity) {
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_16TH");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_16TH");
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setStrobeAutoMode16th = true;
     registeredTempo = frameRate;
@@ -294,7 +313,8 @@ void activatePadStrobe16th(int channel, int pitch, int velocity) {
 }
 
 void activatePadStrobe32nd(int channel, int pitch, int velocity) {
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_32ND");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_32ND");
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setStrobeAutoMode32nd = true;
     registeredTempo = frameRate;
@@ -319,7 +339,8 @@ void activatePadStrobe32nd(int channel, int pitch, int velocity) {
 }
 
 void activatePadStrobe64th(int channel, int pitch, int velocity) {
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_64TH");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : ACTIVATE_PAD_STROBE_64TH");
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setStrobeAutoMode64th = true;
     registeredTempo = frameRate;
@@ -351,14 +372,15 @@ void changeStrobe(int channel, int pitch, int velocity) {
   //CHANGE_STROBE - change both front stroboscopes
   strobepreset_frontleft = velocity;
   strobepreset_frontright = velocity;
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Change both front stroboscope speed/brightness to preset " + strobepreset_frontleft);
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Change both front stroboscope speed/brightness to preset " + strobepreset_frontleft);
   
   // if the velocity is out of the table's bounds, prevent a crash
   if (velocity >= strobelist.length)
   {
     strobepreset_frontleft = 1;
     strobepreset_frontright = 1;
-    outputLog.println("Velocity is out of bounds, setting default speed preset"); 
+    outputLog.println("DMX changeStrobe function input error : Input MIDI velocity is out of bounds, setting default speed preset"); 
   }
 
   // if the stroboscope is already active, update the preset
@@ -376,8 +398,8 @@ void startStrobe(int velocity) {
   //START_STROBE
   drawStrobe_FrontLeft = 1;
   drawStrobe_FrontRight = 1;
-  outputLog.println("Note On received: Start front stroboscope with speed/brightness preset " + strobepreset_frontleft);
-  
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: Start front stroboscope with speed/brightness preset " + strobepreset_frontleft);
 }
 
 //Old method to call the front stroboscope, still works, but the more up-to-date stopStrobe_Front should be used
@@ -385,7 +407,8 @@ void stopStrobe() {
   //STOP_STROBE
   drawStrobe_FrontLeft = 0;
   drawStrobe_FrontRight = 0;
-  outputLog.println("Note On received: Corresponding message : Stop front stroboscope");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: Corresponding message : Stop front stroboscope");
 
 }
 
@@ -413,6 +436,26 @@ void activateAdditionalEffect(int velocity) {
 
 void deactivateAdditionalEffect(int velocity) {
   effectToBeDrawn = false;
+}
+
+void loadDMXAnimation1(int channel, int pitch, int velocity) {
+  loadDMXAnimation(velocity);
+}
+
+void loadDMXAnimation2(int channel, int pitch, int velocity) {
+  loadDMXAnimation(velocity + 127);
+}
+
+void loadDMXAnimation3(int channel, int pitch, int velocity) {
+  loadDMXAnimation(velocity + 254);
+}
+
+void loadDMXAnimation(int dmxAnimNumber) {
+  //When such a command is received, and while the note continues, the DMX control is up to Strobot
+  dmxAutomaticControl = true;
+  
+  dmxAnimationNumber = dmxAnimNumber;
+  setupDMXAnimation();
 }
 
 void loadCustomDeviceAnimation1(int channel, int pitch, int velocity) {
@@ -458,7 +501,8 @@ void loadAnimation (int number) {
   //Update the animation number
   animationnumber = number;
   
-  outputLog.println("Semi-auto action : Change current animation to " + animationnumber);
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Semi-auto action : Change current animation to " + animationnumber);
   
   //Execute specific actions related to this particular animation
   specificActions();  
@@ -474,8 +518,9 @@ void loadImage1(int channel, int pitch, int velocity) {
 
   //Get the first value as an string
   imagenumber = velocity;
-
-  outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load image number " + imagenumber);      
+  
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Load image number " + imagenumber);      
 }
 
 void activateKeyboardLEDPanelMapping() {
@@ -580,6 +625,11 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
         case PITCH_GENERAL_STROBO_FRONT_LEFT:  stopStrobe_FrontLeft();break;                               //G7    - New way to use the stroboscope : noteOff releases the strobe
         case PITCH_GENERAL_STROBO_FRONT_RIGHT: stopStrobe_FrontRight();break;                              //G#7   - New way to use the stroboscope : noteOff releases the strobe
         case PITCH_GENERAL_STROBO_BACK:        stopStrobe_Back();break;                                    //A7    - New way to use the stroboscope : noteOff releases the strobe
+
+        case PITCH_DMX_ANIMATION_BANK1:        unloadDMXAnimation(); break;                                //A#7   - Unload an animation using DMX devices : noteOff releases DMX
+        case PITCH_DMX_ANIMATION_BANK2:        unloadDMXAnimation(); break;                                //B7
+        case PITCH_DMX_ANIMATION_BANK3:        unloadDMXAnimation(); break;                                //C8
+        
         case PITCH_DISPLAY_EFFECT:             deactivateAdditionalEffect(velocity);break;                 //C9    - Reset the effect
       }
     }
@@ -636,29 +686,41 @@ void stopStrobe_Back() {
  
 }
 
+void unloadDMXAnimation() {
+  //Note off for the DMX animation, kill the DMX animation by switching everything back to a blackout
+  dmxAutomaticControl = false;
+  dmxAnimationNumber = 1;
+  dmxAnim_blackout();
+}
+
 void p1LeftStop(int channel, int pitch, int velocity) {          //Pitch == 0
   command_p1_left = false;
-  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_LEFT_STOP");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_LEFT_STOP");
 }
 
 void p1RightStop(int channel, int pitch, int velocity) {         //Pitch == 2
   command_p1_right = false;
-  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_RIGHT_STOP");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P1_RIGHT_STOP");
 }
 
 void p2LeftStop(int channel, int pitch, int velocity) {          //Pitch == 23
   command_p2_left = false;
-  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_LEFT_STOP");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_LEFT_STOP");
 }
 
 void p2RightStop(int channel, int pitch, int velocity) {         //Pitch == 24
   command_p2_right = false;
-  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_RIGHT_STOP");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : P2_RIGHT_STOP");
 }
 
 
 void deactivateKillLedPanel(int channel, int pitch, int velocity) {
-  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_KILL_LEDPANEL");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_KILL_LEDPANEL");
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setKillLedPanel = false;
   }
@@ -669,7 +731,9 @@ void deactivateKillLedPanel(int channel, int pitch, int velocity) {
 
 
 void deactivatePadStrobe4th(int channel, int pitch, int velocity) {
-  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_4TH");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_4TH");
+  
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setStrobeAutoMode4th = false;
     frameRate(registeredTempo);
@@ -703,7 +767,9 @@ void deactivatePadStrobe4th(int channel, int pitch, int velocity) {
 }
 
 void deactivatePadStrobe8th(int channel, int pitch, int velocity) {
-  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_8TH");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_8TH");
+  
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setStrobeAutoMode8th = false;
     frameRate(registeredTempo);
@@ -737,7 +803,9 @@ void deactivatePadStrobe8th(int channel, int pitch, int velocity) {
 }
 
 void deactivatePadStrobe16th(int channel, int pitch, int velocity) {
-  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_16TH");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_16TH");
+  
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setStrobeAutoMode16th = false;
     frameRate(registeredTempo);
@@ -771,7 +839,9 @@ void deactivatePadStrobe16th(int channel, int pitch, int velocity) {
 }
 
 void deactivatePadStrobe32nd(int channel, int pitch, int velocity) {
-  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_32ND");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_32ND");
+  
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setStrobeAutoMode32nd = false;
     frameRate(registeredTempo);
@@ -805,7 +875,9 @@ void deactivatePadStrobe32nd(int channel, int pitch, int velocity) {
 }
 
 void deactivatePadStrobe64th(int channel, int pitch, int velocity) {
-  outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_64TH");
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Note Off received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : DEACTIVATE_PAD_STROBE_64TH");
+  
   if (AUTOMATIC_MODE == true) {
     automaticSequencer.setStrobeAutoMode64th = false;
     frameRate(registeredTempo);
@@ -866,7 +938,7 @@ void controllerChange(int channel, int number, int value, long timestamp, String
 
 void changeBrightness(int channel, int number, int value) {
   //CHANGE_BRIGHTNESS
-  outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : CHANGE_BRIGHTNESS");
+  //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : CHANGE_BRIGHTNESS");
   brightness = value / 127.0;
 }
 
@@ -875,12 +947,12 @@ void setBlackOutAutoMode(int channel, int number, int value) {
     if (value == 0) {
       automaticSequencer.setBlackOutAutomode = false;
       automaticSequencer.blackoutPower = 0;
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_BLACKOUT_OFF");
+      //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_BLACKOUT_OFF");
     }
     else {
       automaticSequencer.setBlackOutAutomode = true;
       automaticSequencer.blackoutPower = value;
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_BLACKOUT_ON");
+      //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_BLACKOUT_ON");
     }
   }
   else {
@@ -902,12 +974,12 @@ void setWhiteOutAutoMode(int channel, int number, int value) {
     if (value == 0) {
       automaticSequencer.setWhiteOutAutomode = false;
       automaticSequencer.whiteoutPower = 0;
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEOUT_OFF");
+      //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEOUT_OFF");
     }
     else {
       automaticSequencer.setWhiteOutAutomode = true;
       automaticSequencer.whiteoutPower = value;
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEOUT_ON");
+      //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEOUT_ON");
     }
   }
   else {
@@ -927,7 +999,7 @@ void setWhiteOutAutoMode(int channel, int number, int value) {
 void setShredderAutoMode(int channel, int number, int value) {
   if (AUTOMATIC_MODE == true) {
     if (value == 0) {
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_SHREDDER_OFF");
+      //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_SHREDDER_OFF");
       
       //The shredder was active : the animation needs to be reinitialised
       if (automaticSequencer.setShredderAutoMode == true) {
@@ -940,7 +1012,7 @@ void setShredderAutoMode(int channel, int number, int value) {
     else {
       automaticSequencer.setShredderAutoMode = true; 
       automaticSequencer.shredderPower = value;
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_SHREDDER_ON");
+      //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_SHREDDER_ON");
     }
   }
   else {
@@ -963,12 +1035,12 @@ void setShredderAutoMode(int channel, int number, int value) {
 void setColorChangeAutoMode(int channel, int number, int value) {
   if (AUTOMATIC_MODE == true) {
     if (value == 0) {
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_COLORCHANGE_OFF");
+      //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_COLORCHANGE_OFF");
       automaticSequencer.setColorChangeAutoMode = false;
       automaticSequencer.colorChangePower = 0;
     }
     else {
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_COLORCHANGE_ON");
+      //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_COLORCHANGE_ON");
       automaticSequencer.setColorChangeAutoMode = true;
       automaticSequencer.colorChangePower = value;
     }
@@ -990,12 +1062,12 @@ void setColorChangeAutoMode(int channel, int number, int value) {
 void setWhiteJamaMonoAutoMode(int channel, int number, int value) {
   if (AUTOMATIC_MODE == true) {
     if (value == 0) {
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEJAMAMONO_OFF");
+      //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEJAMAMONO_OFF");
       automaticSequencer.setWhiteJamaMonoAutoMode = false;
       automaticSequencer.whiteJamaMonoPower = 0;
     }
     else {
-      outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEJAMAMONO_ON");
+      //outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + number + ", " + value + ")    -> Corresponding message : SET_WHITEJAMAMONO_ON");
       automaticSequencer.setWhiteJamaMonoAutoMode = true;
       automaticSequencer.whiteJamaMonoPower = value;
     }
