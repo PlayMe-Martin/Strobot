@@ -3,30 +3,23 @@
 ///////////////
 
 // What's this ?
-A Processing/Java application to control stage lighting, including DMX, LED matrixes, and other custom devices. This application is taylor-made for the electro-rock band PlayMe, and though it could be adapted for other shows, it would need some rework to make it as useful
+A Processing/Java application to control stage lighting, including DMX, LED matrixes, and other custom devices.
+This application is taylor-made for the electro-rock band PlayMe, though it could be adapted for other shows.
+It can be controlled using MIDI and audio, directly from the DAW and from the various keyboards/controllers available.
 
 // How do I build it ?
 Install the Processing development environment : http://processing.org/
-The following Processing libraries are used in this App:
+The following libraries are used in this App:
 Controlp5  : used to build the GUI
 themidibus : used to parse any incoming MIDI message
+protobuf   : Google Protocol Buffer 2.5.0, used to parse incoming audio data
+This program is not yet in its final release version, which is why no binary release is available.
 
 // How do I use it ?
-Connect all the different devices you want to use : Teensy 3 microcontrollers for the LED panels, Teensy 2 for the DMX output, Arduino Nano for the custom wireless devices...
-And simply launch the application, the rest is self-explanatory.
+Connect all the different devices you want to use : Teensy 3 microcontrollers for the LED panels, Teensy 2 for 
+the DMX output, Arduino Nano for the custom wireless devices...
+Start Strobot, and control it either from the GUI (not recommended), or from your DAW (much better)
+This application is to be used with the VST/AU plugin SignalProcessor (also available on my GitHub), which allows sending
+audio informations (signal waveform + beat detection) directly from each channel in your DAW, as well as useful data, such as the 
+current BPM or the transport position. Without it, some cool features will not work (automatic mode, DMX animations, audio-related stuff)
 
-
-
-//// Git configuration ////
-
-[core]
-	repositoryformatversion = 0
-	filemode = true
-	bare = false
-	logallrefupdates = true
-[remote "origin"]
-        url = https://PlayMe-Martin@github.com/PlayMe-Martin/Strobot.git
-	fetch = +refs/heads/*:refs/remotes/origin/*
-[branch "master"]
-	remote = origin
-	merge = refs/heads/master
