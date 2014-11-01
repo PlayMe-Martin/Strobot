@@ -202,9 +202,25 @@ class PanelSimulator {
 void drawSimuFrontLeftStroboscope(int positionX, int positionY) {
   auxControlFrame.fill(100);
   auxControlFrame.rect(positionX - strobe_sizeX/2,positionY,strobe_sizeX,strobe_sizeY);
-  if (drawStrobe_FrontLeft == 1) {
-    int simuSpeed = int(map(strobelist[strobepreset_frontleft][0], 0, 255, 15, 2));
-    int simuBrightness = strobelist[strobepreset_frontleft][1];
+  
+  boolean drawStrobe = false;
+  for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
+    if (stroboscope.isActive != false) {
+      drawStrobe = true;
+      break;
+    }
+  }
+  
+  if (drawStrobe == true) {
+    int simuSpeed = 0;
+    int simuBrightness = 0;
+    //Get the maximum speed/brightness of this strobe group
+    for (DMX_Stroboscope stroboscope : DMXList_FrontLeftStroboscopes) {
+      simuSpeed = max(simuSpeed, stroboscope.currentSpeed);
+      simuBrightness = max(simuBrightness, stroboscope.currentBrightness);
+    }
+    //Map simuSpeed to a more usable value
+    simuSpeed = int(map(simuSpeed, 0, 255, 12, 2));
     
     if (auxControlFrame.frameCount%simuSpeed == 0) {
       auxControlFrame.fill(simuBrightness);
@@ -222,9 +238,25 @@ void drawSimuFrontLeftStroboscope(int positionX, int positionY) {
 void drawSimuFrontRightStroboscope(int positionX, int positionY) {
   auxControlFrame.fill(100);
   auxControlFrame.rect(positionX - strobe_sizeX/2,positionY,strobe_sizeX,strobe_sizeY);
-  if (drawStrobe_FrontRight == 1) {
-    int simuSpeed = int(map(strobelist[strobepreset_frontright][0], 0, 255, 15, 2));
-    int simuBrightness = strobelist[strobepreset_frontright][1];
+  
+  boolean drawStrobe = false;
+  for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
+    if (stroboscope.isActive != false) {
+      drawStrobe = true;
+      break;
+    }
+  }
+  
+  if (drawStrobe == true) {
+    int simuSpeed = 0;
+    int simuBrightness = 0;
+    //Get the maximum speed/brightness of this strobe group
+    for (DMX_Stroboscope stroboscope : DMXList_FrontRightStroboscopes) {
+      simuSpeed = max(simuSpeed, stroboscope.currentSpeed);
+      simuBrightness = max(simuBrightness, stroboscope.currentBrightness);
+    }
+    //Map simuSpeed to a more usable value
+    simuSpeed = int(map(simuSpeed, 0, 255, 12, 2));
     
     if (auxControlFrame.frameCount%simuSpeed == 0) {
       auxControlFrame.fill(simuBrightness);
@@ -242,9 +274,25 @@ void drawSimuFrontRightStroboscope(int positionX, int positionY) {
 void drawSimuBackStroboscope(int positionX, int positionY) {
   auxControlFrame.fill(100);
   auxControlFrame.rect(positionX - strobe_sizeX/2,positionY,strobe_sizeX,strobe_sizeY);
-  if (drawStrobe_Back == 1) {
-    int simuSpeed = int(map(strobelist[strobepreset_back][0], 0, 255, 15, 2));
-    int simuBrightness = strobelist[strobepreset_back][1];
+  
+  boolean drawStrobe = false;
+  for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
+    if (stroboscope.isActive != false) {
+      drawStrobe = true;
+      break;
+    }
+  }
+  
+  if (drawStrobe == true) {
+    int simuSpeed = 0;
+    int simuBrightness = 0;
+    //Get the maximum speed/brightness of this strobe group
+    for (DMX_Stroboscope stroboscope : DMXList_BackStroboscopes) {
+      simuSpeed = max(simuSpeed, stroboscope.currentSpeed);
+      simuBrightness = max(simuBrightness, stroboscope.currentBrightness);
+    }
+    //Map simuSpeed to a more usable value
+    simuSpeed = int(map(simuSpeed, 0, 255, 12, 2));
     
     if (auxControlFrame.frameCount%simuSpeed == 0) {
       auxControlFrame.fill(simuBrightness);
