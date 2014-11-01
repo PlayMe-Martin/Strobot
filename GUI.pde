@@ -254,7 +254,7 @@ public class ControlFrame extends PApplet {
     
     
     int accordionWidth    = width - (gui_simulatorPosX + gui_simulatorWidth + 2*gui_spacing);
-    int generalInformationsHeight   = 487;
+    int generalInformationsHeight   = 477;
     
     int nbrOfPanelsTextFieldPosY = gui_spacing + 0*spacingRow;
     int DMXTextLabelPosY = 150;
@@ -633,19 +633,20 @@ public class ControlFrame extends PApplet {
                                   "// Listening on the Main Input Bus : \n" +
                                   "\n" +
                                   "\n" +
-                                  "LOAD ANIMATION BANK 1\n" +
-                                  "LOAD ANIMATION BANK 2\n" +
-                                  "LOAD ANIMATION BANK 3\n" +
-                                  "LOAD ANIMATION BANK 4\n" +
-                                  "ACTIVATE EFFECT\n" +
+                                  "PANEL ANIMATION BANK 1\n" +
+                                  "PANEL ANIMATION BANK 2\n" +
+                                  "PANEL ANIMATION BANK 3\n" +
+                                  "PANEL ANIMATION BANK 4\n" +
+                                  "PANEL IMAGE BANK 1\n" +
+                                  "ACTIVATE PANEL EFFECT\n" +
+                                  "DMX ANIMATION BANK 1\n" +
+                                  "DMX ANIMATION BANK 2\n" +
+                                  "DMX ANIMATION BANK 3\n" +
                                   "CUSTOM DEVICE BANK 1\n" +
                                   "CUSTOM DEVICE BANK 2\n" +
                                   "CUSTOM DEVICE BANK 3\n" +
-                                  "LOAD IMAGE BANK 1\n" +
-                                  "CHANGE PRESET FRONT STROBE\n" +
-                                  "START FRONT STROBE\n" +
-                                  "STOP FRONT STROBE\n" +
-                                  "START/STOP FRONT STROBE\n" +
+                                  "START/STOP FRONT RIGHT STROBE\n" +
+                                  "START/STOP FRONT LEFT STROBE\n" +
                                   "START/STOP BACK STROBE\n" +
                                   "\n" +
                                   "ENABLE MANUAL INPUT\n" +
@@ -682,50 +683,51 @@ public class ControlFrame extends PApplet {
                                   "\n" +
                                   "\n" +
                                   "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK1 + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK1) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK2 + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK2) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK3 + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK3) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK4 + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK4) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DISPLAY_EFFECT       + " | " + getStringFromNoteInt(PITCH_DISPLAY_EFFECT      ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK1  + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK1 ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK2  + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK2 ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK3  + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK3 ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_IMAGE_BANK1     + " | " + getStringFromNoteInt(PITCH_LOAD_IMAGE_BANK1    ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_CHANGE_STROBO_FRONT  + " | " + getStringFromNoteInt(PITCH_CHANGE_STROBO_FRONT ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_START_STROBO_FRONT   + " | " + getStringFromNoteInt(PITCH_START_STROBO_FRONT  ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_STOP_STROBO_FRONT    + " | " + getStringFromNoteInt(PITCH_STOP_STROBO_FRONT   ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_FRONT_LEFT + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_FRONT_LEFT) + "\n" +
+                                                                                                                                    
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK1       + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK1      ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK2       + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK2      ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK3       + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK3      ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK4       + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK4      ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_IMAGE_BANK1           + " | " + getStringFromNoteInt(PITCH_LOAD_IMAGE_BANK1          ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DISPLAY_EFFECT             + " | " + getStringFromNoteInt(PITCH_DISPLAY_EFFECT            ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_BANK1        + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK1       ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_BANK2        + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK2       ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_BANK3        + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK3       ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK1        + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK1       ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK2        + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK2       ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK3        + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK3       ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_FRONT_RIGHT + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_FRONT_RIGHT) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_BACK  + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_BACK ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_FRONT_LEFT  + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_FRONT_LEFT ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_BACK        + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_BACK       ) + "\n" +
                                   "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_ENABLE_MAN_INPUT     + " | " + getStringFromNoteInt(PITCH_ENABLE_MAN_INPUT    ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DISABLE_MAN_INPUT    + " | " + getStringFromNoteInt(PITCH_DISABLE_MAN_INPUT   ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_CHANGE_OUTPUTMAPPING + " | " + getStringFromNoteInt(PITCH_CHANGE_OUTPUTMAPPING) + "\n" +
-                                  "\n" +
-                                  "\n" +
-                                  "\n" +
-                                  "\n" +
-                                  "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_KILL_LED_PANELS + " | " + getStringFromNoteInt(PITCH_PAD_KILL_LED_PANELS) + "\n" + 
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_STROBE_4TH      + " | " + getStringFromNoteInt(PITCH_PAD_STROBE_4TH     ) + "\n" + 
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_STROBE_8TH      + " | " + getStringFromNoteInt(PITCH_PAD_STROBE_8TH     ) + "\n" + 
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_STROBE_16TH     + " | " + getStringFromNoteInt(PITCH_PAD_STROBE_16TH    ) + "\n" + 
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_STROBE_32ND     + " | " + getStringFromNoteInt(PITCH_PAD_STROBE_32ND    ) + "\n" + 
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_STROBE_64TH     + " | " + getStringFromNoteInt(PITCH_PAD_STROBE_64TH    ) + "\n" + 
-                                  "INPUT MIDI (CC VAL)     : " + PITCH_KNOB_BLACKOUT       + "\n" + 
-                                  "INPUT MIDI (CC VAL)     : " + PITCH_KNOB_WHITEOUT       + "\n" + 
-                                  "INPUT MIDI (CC VAL)     : " + PITCH_KNOB_SHREDDER       + "\n" + 
-                                  "INPUT MIDI (CC VAL)     : " + PITCH_KNOB_COLORCHANGE    + "\n" + 
-                                  "INPUT MIDI (CC VAL)     : " + PITCH_KNOB_WHITEJAMAMONO  + "\n" + 
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_ENABLE_MAN_INPUT           + " | " + getStringFromNoteInt(PITCH_ENABLE_MAN_INPUT          ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DISABLE_MAN_INPUT          + " | " + getStringFromNoteInt(PITCH_DISABLE_MAN_INPUT         ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_CHANGE_OUTPUTMAPPING       + " | " + getStringFromNoteInt(PITCH_CHANGE_OUTPUTMAPPING      ) + "\n" +
                                   "\n" +
                                   "\n" +
                                   "\n" +
                                   "\n" +
                                   "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_P1_LEFT  + " | " + getStringFromNoteInt(PITCH_P1_LEFT)  + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_P1_RIGHT + " | " + getStringFromNoteInt(PITCH_P1_RIGHT) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_P2_LEFT  + " | " + getStringFromNoteInt(PITCH_P2_LEFT)  + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_P2_RIGHT + " | " + getStringFromNoteInt(PITCH_P2_RIGHT) + "\n"
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_KILL_LED_PANELS        + " | " + getStringFromNoteInt(PITCH_PAD_KILL_LED_PANELS       ) + "\n" + 
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_STROBE_4TH             + " | " + getStringFromNoteInt(PITCH_PAD_STROBE_4TH            ) + "\n" + 
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_STROBE_8TH             + " | " + getStringFromNoteInt(PITCH_PAD_STROBE_8TH            ) + "\n" + 
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_STROBE_16TH            + " | " + getStringFromNoteInt(PITCH_PAD_STROBE_16TH           ) + "\n" + 
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_STROBE_32ND            + " | " + getStringFromNoteInt(PITCH_PAD_STROBE_32ND           ) + "\n" + 
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_PAD_STROBE_64TH            + " | " + getStringFromNoteInt(PITCH_PAD_STROBE_64TH           ) + "\n" + 
+                                  "INPUT MIDI (CC VAL)     : " + PITCH_KNOB_BLACKOUT              + "\n" + 
+                                  "INPUT MIDI (CC VAL)     : " + PITCH_KNOB_WHITEOUT              + "\n" + 
+                                  "INPUT MIDI (CC VAL)     : " + PITCH_KNOB_SHREDDER              + "\n" + 
+                                  "INPUT MIDI (CC VAL)     : " + PITCH_KNOB_COLORCHANGE           + "\n" + 
+                                  "INPUT MIDI (CC VAL)     : " + PITCH_KNOB_WHITEJAMAMONO         + "\n" + 
+                                  "\n" +
+                                  "\n" +
+                                  "\n" +
+                                  "\n" +
+                                  "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_P1_LEFT                    + " | " + getStringFromNoteInt(PITCH_P1_LEFT                   ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_P1_RIGHT                   + " | " + getStringFromNoteInt(PITCH_P1_RIGHT                  ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_P2_LEFT                    + " | " + getStringFromNoteInt(PITCH_P2_LEFT                   ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_P2_RIGHT                   + " | " + getStringFromNoteInt(PITCH_P2_RIGHT                  ) + "\n"
                                   ;
                                   
     
@@ -746,14 +748,6 @@ public class ControlFrame extends PApplet {
        .moveTo(midiInfo)
        ;
 
-    /////////////////////////////////////////////////////////////////////////////////////
-
-  
-    // group number 3, contains a bang and a slider
-    Group dmxAnimations = cp5.addGroup("DMX Animations")
-                             .setBackgroundColor(color(0, 64))
-                             .setBackgroundHeight(generalInformationsHeight)
-                             ;
                              
     /////////////////////////////////////////////////////////////////////////////////////
     
@@ -872,7 +866,6 @@ public class ControlFrame extends PApplet {
                               .setWidth(accordionWidth)
                               .addItem(hardwareInfo)
                               .addItem(midiInfo)
-                              .addItem(dmxAnimations)
                               .addItem(effectsInfo)
                               .addItem(audioSignalConfiguration)
                               ;

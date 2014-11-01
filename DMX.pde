@@ -102,11 +102,16 @@ public class DMX{
 
 //Specific object for stroboscopes
 class DMX_Stroboscope {
+  
   int DMXAddress_stroboscopeSpeed;
   int DMXAddress_stroboscopeBrightness;
   int DMXAddress_stroboscopeFlashLength;
   int numberOfChannels;
+  int currentSpeed           = 0;
+  int currentBrightness      = 0;
+  boolean isActive           = false;
   boolean exceptionRaisedDMX = false;
+  
   
   DMX_Stroboscope(int stroboscopeSpeed, int stroboscopeBrightness) {
     this.DMXAddress_stroboscopeSpeed = stroboscopeSpeed;
@@ -139,15 +144,26 @@ class DMX_Stroboscope {
   
   // Set the device to a predefined value, according to a preset list
   void startDMX(int preset) {
+    //Consider that the strobe is active
+    this.isActive = true;
+    if (preset < strobelist.length) {
+      this.currentSpeed = strobelist[preset][0];
+      this.currentBrightness = strobelist[preset][1];
+    }
+    else {
+      this.currentSpeed = 0;
+      this.currentBrightness = 0; 
+    }
+    
     if (this.exceptionRaisedDMX == false) {
       try {
         if (this.numberOfChannels == 2) { 
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,strobelist[preset][0]);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,strobelist[preset][1]);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
         }
         else if (this.numberOfChannels == 3) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,strobelist[preset][0]);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,strobelist[preset][1]);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
         }
       }
@@ -160,20 +176,25 @@ class DMX_Stroboscope {
   
   // Set all the device's channels to 0
   void stopDMX() {
+    //Consider that the strobe is not active anymore
+    this.isActive = false;
+    this.currentSpeed = strobelist[0][0];
+    this.currentBrightness = strobelist[0][1];
+    
     if (this.exceptionRaisedDMX == false) {
       try {
-        if (this.numberOfChannels == 2) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,strobelist[0][0]);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,strobelist[0][1]);
+        if (this.numberOfChannels == 2) { 
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
         }
         else if (this.numberOfChannels == 3) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,strobelist[0][0]);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,strobelist[0][1]);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
         }
       }
       catch (Exception e) {
-        outputLog.println(e); 
+        outputLog.println("DMX exception : " + e);
         this.exceptionRaisedDMX = true;
       }    
     }
@@ -181,15 +202,21 @@ class DMX_Stroboscope {
   
   // Specify the individual channels' value, maximum value is 255
   void startDMX(int stroboscopeSpeed, int stroboscopeBrightness) {
+    //Consider that the strobe is active
+    this.isActive = true;
+    this.currentSpeed = stroboscopeSpeed;
+    this.currentBrightness = stroboscopeBrightness;
+      
     if (this.exceptionRaisedDMX == false) {
+      
       try {
         if (this.numberOfChannels == 2) { 
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,stroboscopeSpeed);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,stroboscopeBrightness);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
         }
         else if (this.numberOfChannels == 3) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,stroboscopeSpeed);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,stroboscopeBrightness);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
         }
       }
