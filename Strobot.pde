@@ -208,13 +208,17 @@ float brightness = 1;
 //This variable is set to true when trying to change the number of panels from inside the GUI, until the program is reset
 boolean debug_without_panels = false;
 
-//Variables used to light up the stroboscope
-int drawStrobe_FrontLeft = 0;
-int strobepreset_frontleft = 0;
-int drawStrobe_FrontRight = 0;
+//If set to true, the devices are set on and off according to the DMX animations.
+//Otherwise, the DMX devices are controlled manually using each group's MIDI notes
+boolean dmxAutomaticControl = false;
+int dmxAnimationNumber      = 0;
+//Variables used to light up the stroboscopes (used in the manual DMX control)
+int drawStrobe_FrontLeft    = 0;
+int strobepreset_frontleft  = 0;
+int drawStrobe_FrontRight   = 0;
 int strobepreset_frontright = 0;
-int drawStrobe_Back = 0;
-int strobepreset_back = 0;
+int drawStrobe_Back         = 0;
+int strobepreset_back       = 0;
 
 //Variables used to select between image and animation mode, and which image/animation to draw
 int drawImage = 0;
@@ -224,9 +228,9 @@ int animationnumber;
 
 //Create a AnimatedGifEncoder object to allow for easy export of all the animations 
 AnimatedGifEncoder gifRecorder;
-boolean keyRegistered = false;
-boolean setGifRecording = false;
-boolean gifRecordingActive = false;
+boolean keyRegistered       = false;
+boolean setGifRecording     = false;
+boolean gifRecordingActive  = false;
 ArrayList gifRecordingFrameRate;
 int gifRecordingFrameNumber = 0;
 String ROOTDIR = "";    //Folder where the GIF shall be stored
@@ -281,7 +285,7 @@ void setup()
   startAudioSignalMonitoringThread();
   
   //Useful for debug : initialize the sketch with a specific animation
-  //For the final setup : Initialize the patch by displaying "1 2 3" on the panels 
+  //For the final setup : Initialize the patch by displaying "1 2 3 4 5" on the panels 
   // -> useful to check if the panel mapping is correct, and if not, to have visual feedback when correcting the panel order
   animationnumber = 1;
   drawAnimation = 0;
@@ -482,6 +486,8 @@ void draw()
     //Execute the draw function for the animation corresponding to animationnumber
     //The specific setup is executed once, upon reception of an MIDI message changing the animation
     try {
+      
+      //Panel graphic generation
       if (AUTOMATIC_MODE == false) {
         if (authorizeGeneralManualMode == true) {
           if (setShredderManualMode == true) {
@@ -503,6 +509,12 @@ void draw()
       }
       else {
         automaticSequencer.performAutomaticActions();
+      }
+      
+      //DMX animations - set to true when receiving the corresponding MIDI message, or when the general AUTOMATIC mode is on
+      //Sending an explicit specific DMX group message will set dmxAutomaticControl to false (ex: "front stroboscope on")
+      if (dmxAutomaticControl == true || AUTOMATIC_MODE == true) {
+        playDMXAnimation();
       }
     }
     catch(Exception e) {
