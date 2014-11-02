@@ -202,8 +202,6 @@ void processImpulseMessage(SignalMessages.Impulse impulse) {
 
 // May be called by audio-responsive animations, invalidate old impulses
 void invalidateOutdatedImpulseFlags() {
-//  if (impulse_Kick == true) {println("Kick was alive... : " + (System.nanoTime() - previousImpulseTimestamp_Kick) + " versus " + OUTDATED_IMPULSE_AGE);}
-//  if (impulse_Snare == true) {println("Snare was alive... : " + (System.nanoTime() - previousImpulseTimestamp_Snare) + " versus " + OUTDATED_IMPULSE_AGE);}
   if (System.nanoTime() - previousImpulseTimestamp_Kick    > OUTDATED_IMPULSE_AGE) {impulse_Kick    = false;}
   if (System.nanoTime() - previousImpulseTimestamp_Snare   > OUTDATED_IMPULSE_AGE) {impulse_Snare   = false;}
   if (System.nanoTime() - previousImpulseTimestamp_Cymbals > OUTDATED_IMPULSE_AGE) {impulse_Cymbals = false;}

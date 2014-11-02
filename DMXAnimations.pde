@@ -7,23 +7,29 @@
 // Play the DMX animations
 void playDMXAnimation() {
   switch(dmxAnimationNumber) {
-    case 1:   dmxAnim_blackout();             break;         // 1 -   Full Blackout
-    case 2:   dmxAnim_fullStrobeVerySlow();   break;         // 2 -   Full Strobe - Very Slow
-    case 3:   dmxAnim_fullStrobeSlow();       break;         // 3 -   Full Strobe - Slow
-    case 4:   dmxAnim_fullStrobeMedium();     break;         // 4 -   Full Strobe - Medium
-    case 5:   dmxAnim_fullStrobeFast();       break;         // 5 -   Full Strobe - Fast
-    case 6:   dmxAnim_fullStrobeVeryFast();   break;         // 6 -   Full Strobe - Very Fast
-    case 7:   dmxAnim_leftStrobeVerySlow();   break;         // 7 -   Left Strobe - Very Slow
-    case 8:   dmxAnim_leftStrobeSlow();       break;         // 8 -   Left Strobe - Slow     
-    case 9:   dmxAnim_leftStrobeMedium();     break;         // 9 -   Left Strobe - Medium   
-    case 10:  dmxAnim_leftStrobeFast();       break;         // 10 -  Left Strobe - Fast     
-    case 11:  dmxAnim_leftStrobeVeryFast();   break;         // 11 -  Left Strobe - Very Fast
-    case 12:  dmxAnim_rightStrobeVerySlow();  break;         // 12 -  Right Strobe - Very Slow
-    case 13:  dmxAnim_rightStrobeSlow();      break;         // 13 -  Right Strobe - Slow     
-    case 14:  dmxAnim_rightStrobeMedium();    break;         // 14 -  Right Strobe - Medium   
-    case 15:  dmxAnim_rightStrobeFast();      break;         // 15 -  Right Strobe - Fast     
-    case 16:  dmxAnim_rightStrobeVeryFast();  break;         // 16 -  Right Strobe - Very Fast
-    default:  dmxAnim_blackout();             break;
+    case 1:   dmxAnim_blackout();                  break;         // 1 -   Full Blackout
+    case 2:   dmxAnim_fullStrobeVerySlow();        break;         // 2 -   Full Strobe - Very Slow
+    case 3:   dmxAnim_fullStrobeSlow();            break;         // 3 -   Full Strobe - Slow
+    case 4:   dmxAnim_fullStrobeMedium();          break;         // 4 -   Full Strobe - Medium
+    case 5:   dmxAnim_fullStrobeFast();            break;         // 5 -   Full Strobe - Fast
+    case 6:   dmxAnim_fullStrobeVeryFast();        break;         // 6 -   Full Strobe - Very Fast
+    case 7:   dmxAnim_leftStrobeVerySlow();        break;         // 7 -   Left Strobe - Very Slow
+    case 8:   dmxAnim_leftStrobeSlow();            break;         // 8 -   Left Strobe - Slow     
+    case 9:   dmxAnim_leftStrobeMedium();          break;         // 9 -   Left Strobe - Medium   
+    case 10:  dmxAnim_leftStrobeFast();            break;         // 10 -  Left Strobe - Fast     
+    case 11:  dmxAnim_leftStrobeVeryFast();        break;         // 11 -  Left Strobe - Very Fast
+    case 12:  dmxAnim_rightStrobeVerySlow();       break;         // 12 -  Right Strobe - Very Slow
+    case 13:  dmxAnim_rightStrobeSlow();           break;         // 13 -  Right Strobe - Slow     
+    case 14:  dmxAnim_rightStrobeMedium();         break;         // 14 -  Right Strobe - Medium   
+    case 15:  dmxAnim_rightStrobeFast();           break;         // 15 -  Right Strobe - Fast     
+    case 16:  dmxAnim_rightStrobeVeryFast();       break;         // 16 -  Right Strobe - Very Fast
+    
+    case 17:  dmxAnim_alternateStrobe2();          break;         // 17 -  Alternate Strobe - 2/4
+    case 18:  dmxAnim_alternateStrobe4();          break;         // 18 -  Alternate Strobe - 1/4
+    case 19:  dmxAnim_alternateStrobe8();          break;         // 19 -  Alternate Strobe - 1/8
+    case 20:  dmxAnim_alternateStrobe16();         break;         // 20 -  Alternate Strobe - 1/16
+    
+    default:  dmxAnim_blackout();                  break;
   }
 }
 
@@ -200,15 +206,36 @@ void dmxAnim_backStrobeVeryFast() {
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-// Rhythmic stroboscopes
-/////////////////////////////////////////////////////////////////////////////////
-
-
-/////////////////////////////////////////////////////////////////////////////////
 // Alternate continuous stroboscopes
 /////////////////////////////////////////////////////////////////////////////////
 
 // Switch the side stroboscopes intermittently on and off
-void dmxAnim_alternateStrobe() {
-  
+void dmxAnim_alternateStrobe(float factor) {
+  if ((int)(automaticSequencer.currentPosition * factor) % 2 == 0) {
+    dmxAnim_rightStrobeVeryFast();
+  }
+  else {
+    dmxAnim_leftStrobeVeryFast();
+  }
 }
+
+void dmxAnim_alternateStrobe2() {
+  dmxAnim_alternateStrobe(0.5);
+}
+
+void dmxAnim_alternateStrobe4() {
+  dmxAnim_alternateStrobe(1.0);
+}
+
+void dmxAnim_alternateStrobe8() {
+  dmxAnim_alternateStrobe(2.0);
+}
+
+void dmxAnim_alternateStrobe16() {
+  dmxAnim_alternateStrobe(4.0);
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+// Rhythmic stroboscopes
+/////////////////////////////////////////////////////////////////////////////////
+
