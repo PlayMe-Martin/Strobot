@@ -275,6 +275,8 @@ void setup()
     create_PHP_output();
   }
   
+  //Parse all available MIDI clips, in order to feed them to the auto sequencer
+  parseAllAvailableMidiClips();
   //Create a new PlayMeSequencer object, to allow for automatic animation selection using audio input
   automaticSequencer = new PlayMeSequencer();
   
