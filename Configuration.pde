@@ -1,6 +1,6 @@
 
 ////////////////////////////////////////////////
-//   I/O address management - configuration   //
+//       Configuration file management        //
 ////////////////////////////////////////////////
 
 //Creates a config file in the root path of the application

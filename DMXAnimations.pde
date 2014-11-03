@@ -8,6 +8,7 @@
 void playDMXAnimation() {
   switch(dmxAnimationNumber) {
     case 1:   dmxAnim_blackout();                  break;         // 1 -   Full Blackout
+    
     case 2:   dmxAnim_fullStrobeVerySlow();        break;         // 2 -   Full Strobe - Very Slow
     case 3:   dmxAnim_fullStrobeSlow();            break;         // 3 -   Full Strobe - Slow
     case 4:   dmxAnim_fullStrobeMedium();          break;         // 4 -   Full Strobe - Medium
