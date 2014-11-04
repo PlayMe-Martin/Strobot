@@ -1890,14 +1890,14 @@ void draw_pong()
       background(0);
       fill(255, 0, 0);
       changespeed=0;
-      text(topscore, width/6, height/2+4);
-      text(bottomscore, 5*width/6, height/2+4);
+      text(topscore, width/2*NUMBER_OF_PANELS, height/2+4);
+      text(bottomscore, (2*NUMBER_OF_PANELS-1)*width/2*NUMBER_OF_PANELS, height/2+4);
       
       for (int j=0; j<bottommatchcount;j++) {
-        rect(width/3 + 4, j*pong_rectspacing + pong_rectheight, pong_rectwidth, pong_rectheight);
+        rect(width/NUMBER_OF_PANELS + 4, j*pong_rectspacing + pong_rectheight, pong_rectwidth, pong_rectheight);
       }
       for (int j=0; j<topmatchcount;j++) {
-        rect(2*width/3 - pong_rectwidth - 4, j*pong_rectspacing + pong_rectheight, pong_rectwidth, pong_rectheight);
+        rect((NUMBER_OF_PANELS-1)*width/NUMBER_OF_PANELS - pong_rectwidth - 4, j*pong_rectspacing + pong_rectheight, pong_rectwidth, pong_rectheight);
       }
       
       if (command_p1_left | command_p1_right | command_p2_left | command_p2_right)
