@@ -265,8 +265,8 @@
         $attributeList[] = array ('Geometric', 'Red', 'Slow');
         $animationName[] = 'Flash Extreme Left';                                   
         $attributeList[] = array ('Fade In/Out', 'B&W', 'Smooth');
-        $animationName[] = 'Bouncing Circle';                                   
-        $attributeList[] = array ('Geometric', 'Circles', 'Simple', 'Very Dark', 'B&W');
+        $animationName[] = 'Flash Extreme Right';                                   
+        $attributeList[] = array ('Fade In/Out', 'B&W', 'Smooth');
         $animationName[] = 'Rotating Circles';                                   
         $attributeList[] = array ('Geometric', 'Circles', 'Simple', 'Rotating', 'B&W');
         $animationName[] = 'Waveform';                                   

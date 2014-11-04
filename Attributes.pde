@@ -263,13 +263,6 @@ Simple, Complex, Atmospheric, Fade In/Out, Objects
 Geometric, Rotating, Circles, Lines, Curves, Triangles, Spiral
 Atmospheric, Evolving, Smooth, Violent, Rhythmic, Random, Game
 
-Important attributes used by the automatic engine :
-MainAnimation : interesting enough to be set for some time (or rather, too long to be cut off after 1-2 beats)
-Repeater : needs to be called each beat, or each beat subdivision : rhythmic animations
-Length x : minimum length of the animation (in beats). Of course, depending on the tempo, this changes, but this should be enough for the AI
-Set x : set of animations which go well together, and which should be used together
-        ex : still white squares (used on Chasing Air), or BeatCircles and the variations with or without lines
-
 */
 void setAnimationAttributes() {
   //register attributes : animation number | animation name | attributes as a table of strings | indicative animation length (in number of beats)
@@ -283,7 +276,7 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 7,   "Red Glowing Balls 1"                 , new String[] {"Geometric", "Red", "Slow"}                                                                 , 8);
   animationAttributes = registerAttribute(animationAttributes, 8,   "Red Glowing Balls 2"                 , new String[] {"Geometric", "Red", "Slow"}                                                                 , 8);
   animationAttributes = registerAttribute(animationAttributes, 9,   "Flash Extreme Left"                  , new String[] {"Fade In/Out", "B&W", "Smooth"}                                                             , 8);
-  animationAttributes = registerAttribute(animationAttributes, 10,  "Bouncing Circle"                     , new String[] {"Geometric", "Circles", "Simple", "Very Dark", "B&W"}                                       , 4);
+  animationAttributes = registerAttribute(animationAttributes, 10,  "Flash Extreme Right"                 , new String[] {"Fade In/Out", "B&W", "Smooth"}                                                             , 8);
   animationAttributes = registerAttribute(animationAttributes, 11,  "Rotating Circles"                    , new String[] {"Geometric", "Circles", "Simple", "Rotating", "B&W"}                                        , 4);
   animationAttributes = registerAttribute(animationAttributes, 12,  "Waveform"                            , new String[] {"Atmospheric", "Colorful"}                                                                  , 16);
   animationAttributes = registerAttribute(animationAttributes, 13,  "Fadeout"                             , new String[] {"Fade In/Out", "Very Dark"}                                                                 , 1);

@@ -154,33 +154,33 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
       AUTOMATIC_MODE = false;
       switch (pitch) {
         //Manual input
-        case PITCH_SET_AUTOMODE_OFF:           setAutomaticMode(channel, pitch, velocity);break;
-        case PITCH_SET_AUTOMODE_ON:            setAutomaticMode(channel, pitch, velocity);break;
+        case PITCH_SET_AUTOMODE_OFF:           setAutomaticModeOff();break;                                             //F#5   - Disable the automatic mode
+        case PITCH_SET_AUTOMODE_ON:            setAutomaticModeOn();break;                                              //G5    - Enable the automatic mode
         
-        case PITCH_CHANGE_STROBO_FRONT:        changeStrobe(channel, pitch, velocity);break;                            //E7    - Classic way to use the stroboscope
-        case PITCH_START_STROBO_FRONT:         startStrobe(velocity);break;                                             //F7    - Classic way to use the stroboscope
-        case PITCH_STOP_STROBO_FRONT:          stopStrobe();break;                                                      //F#7   - Classic way to use the stroboscope
+        case PITCH_CHANGE_STROBO_FRONT:        changeStrobe(velocity);break;                                            //E7    - Deprecated way to use the stroboscope
+        case PITCH_START_STROBO_FRONT:         startStrobe(velocity);break;                                             //F7    - Deprecated way to use the stroboscope
+        case PITCH_STOP_STROBO_FRONT:          stopStrobe();break;                                                      //F#7   - Deprecated way to use the stroboscope
         
         case PITCH_GENERAL_STROBO_FRONT_LEFT:  startStrobe_FrontLeft(velocity);break;                                   //G7    - New way to use the stroboscope : noteOff releases the strobe
         case PITCH_GENERAL_STROBO_FRONT_RIGHT: startStrobe_FrontRight(velocity);break;                                  //G#7   - New way to use the stroboscope : noteOff releases the strobe
         case PITCH_GENERAL_STROBO_BACK:        startStrobe_Back(velocity);break;                                        //A7    - New way to use the stroboscope : noteOff releases the strobe
 
-        case PITCH_DMX_ANIMATION_BANK1:        loadDMXAnimation1(channel, pitch, velocity); break;                      //A#7   - Load an animation using DMX devices
-        case PITCH_DMX_ANIMATION_BANK2:        loadDMXAnimation2(channel, pitch, velocity); break;                      //B7
-        case PITCH_DMX_ANIMATION_BANK3:        loadDMXAnimation3(channel, pitch, velocity); break;                      //C8
+        case PITCH_DMX_ANIMATION_BANK1:        loadDMXAnimation1(velocity); break;                                      //A#7   - Load an animation using DMX devices
+        case PITCH_DMX_ANIMATION_BANK2:        loadDMXAnimation2(velocity); break;                                      //B7
+        case PITCH_DMX_ANIMATION_BANK3:        loadDMXAnimation3(velocity); break;                                      //C8
         
         case PITCH_ENABLE_MAN_INPUT:           enableManualInput();break;                                               //D8
         case PITCH_DISABLE_MAN_INPUT:          disableManualInput();break;                                              //D#8
         
-        case PITCH_CUSTOM_DEVICE_BANK1:        loadCustomDeviceAnimation1(channel, pitch, velocity);break;              //A#8   - Load an animation for the custom devices
-        case PITCH_CUSTOM_DEVICE_BANK2:        loadCustomDeviceAnimation2(channel, pitch, velocity);break;              //B8
-        case PITCH_CUSTOM_DEVICE_BANK3:        loadCustomDeviceAnimation3(channel, pitch, velocity);break;              //C9
+        case PITCH_CUSTOM_DEVICE_BANK1:        loadCustomDeviceAnimation1(velocity);break;                              //A#8   - Load an animation for the custom devices
+        case PITCH_CUSTOM_DEVICE_BANK2:        loadCustomDeviceAnimation2(velocity);break;                              //B8
+        case PITCH_CUSTOM_DEVICE_BANK3:        loadCustomDeviceAnimation3(velocity);break;                              //C9
         case PITCH_DISPLAY_EFFECT:             activateAdditionalEffect(velocity);break;                                //C#9
-        case PITCH_LOAD_ANIMATION_BANK1:       loadAnimation1(channel, pitch, velocity);break;                          //D#9   - Load an animation using the LED panels
-        case PITCH_LOAD_ANIMATION_BANK2:       loadAnimation2(channel, pitch, velocity);break;                          //E9
-        case PITCH_LOAD_ANIMATION_BANK3:       loadAnimation3(channel, pitch, velocity);break;                          //F9
-        case PITCH_LOAD_ANIMATION_BANK4:       loadAnimation4(channel, pitch, velocity);break;                          //D9
-        case PITCH_LOAD_IMAGE_BANK1:           loadImage1(channel, pitch, velocity);break;                              //F#9
+        case PITCH_LOAD_ANIMATION_BANK1:       loadAnimation1(velocity);break;                                          //D#9   - Load an animation using the LED panels
+        case PITCH_LOAD_ANIMATION_BANK2:       loadAnimation2(velocity);break;                                          //E9
+        case PITCH_LOAD_ANIMATION_BANK3:       loadAnimation3(velocity);break;                                          //F9
+        case PITCH_LOAD_ANIMATION_BANK4:       loadAnimation4(velocity);break;                                          //D9
+        case PITCH_LOAD_IMAGE_BANK1:           loadImage1(velocity);break;                                              //F#9
         case PITCH_CHANGE_OUTPUTMAPPING:       activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
         default: break;
       }
@@ -368,7 +368,7 @@ void activatePadStrobe64th(int channel, int pitch, int velocity) {
   }
 }
 
-void changeStrobe(int channel, int pitch, int velocity) {
+void changeStrobe(int velocity) {
   //CHANGE_STROBE - change both front stroboscopes
   strobepreset_frontleft = velocity;
   strobepreset_frontright = velocity;
@@ -414,17 +414,14 @@ void stopStrobe() {
 
 
 
-void setAutomaticMode(int channel, int pitch, int velocity) {
-     
-  if (pitch == PITCH_SET_AUTOMODE_OFF) {
-    outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Set Automatic Mode OFF");
-    AUTOMATIC_MODE = false;
-  }
+void setAutomaticModeOff() {     
+  outputLog.println("Action received: Set Automatic Mode OFF");
+  AUTOMATIC_MODE = false;
+}
   
-  if (pitch == PITCH_SET_AUTOMODE_ON) {
-    outputLog.println("Note On received: (Channel, Number, Value = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Set Automatic Mode ON");
-    AUTOMATIC_MODE = true;
-  }
+void setAutomaticModeOn() {  
+  outputLog.println("Action received: Set Automatic Mode ON");
+  AUTOMATIC_MODE = true;
 }
 
 
@@ -438,15 +435,15 @@ void deactivateAdditionalEffect(int velocity) {
   effectToBeDrawn = false;
 }
 
-void loadDMXAnimation1(int channel, int pitch, int velocity) {
+void loadDMXAnimation1(int velocity) {
   loadDMXAnimation(velocity);
 }
 
-void loadDMXAnimation2(int channel, int pitch, int velocity) {
+void loadDMXAnimation2(int velocity) {
   loadDMXAnimation(velocity + 127);
 }
 
-void loadDMXAnimation3(int channel, int pitch, int velocity) {
+void loadDMXAnimation3(int velocity) {
   loadDMXAnimation(velocity + 254);
 }
 
@@ -458,35 +455,35 @@ void loadDMXAnimation(int dmxAnimNumber) {
   setupDMXAnimation();
 }
 
-void loadCustomDeviceAnimation1(int channel, int pitch, int velocity) {
+void loadCustomDeviceAnimation1(int velocity) {
   customDeviceAnimation(velocity);
 }
 
-void loadCustomDeviceAnimation2(int channel, int pitch, int velocity) {
+void loadCustomDeviceAnimation2(int velocity) {
   customDeviceAnimation(velocity + 127);
 }
 
-void loadCustomDeviceAnimation3(int channel, int pitch, int velocity) {
+void loadCustomDeviceAnimation3(int velocity) {
   customDeviceAnimation(velocity + 254);
 }
 
 
-void loadAnimation1(int channel, int pitch, int velocity) {
+void loadAnimation1(int velocity) {
   //Update the animation number
   loadAnimation(velocity);
 }
 
-void loadAnimation2(int channel, int pitch, int velocity) {
+void loadAnimation2(int velocity) {
   //Update the animation number
   loadAnimation(velocity + 127);
 }
 
-void loadAnimation3(int channel, int pitch, int velocity) {
+void loadAnimation3(int velocity) {
   //Update the animation number
   loadAnimation(velocity + 254);
 }
 
-void loadAnimation4(int channel, int pitch, int velocity) {  
+void loadAnimation4(int velocity) {  
   //Update the animation number
   loadAnimation(velocity + 381);
 }
@@ -508,7 +505,7 @@ void loadAnimation (int number) {
   specificActions();  
 }
 
-void loadImage1(int channel, int pitch, int velocity) {
+void loadImage1(int velocity) {
   //LOAD_IMAGE_BANK1
   drawImage = 1;
   drawAnimation = 0;
@@ -619,8 +616,8 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
     
     //Semi-automatic mode - Release for DMX actions, or for effects
     if (channel == CHANNEL_SEMIAUTOMODE) {
-      //Release automatic mode in case of explicit input
-      AUTOMATIC_MODE = false;
+      //Do not release automatic mode : only Note On events have this right
+      //AUTOMATIC_MODE = false;
       switch (pitch) {
         case PITCH_GENERAL_STROBO_FRONT_LEFT:  stopStrobe_FrontLeft();break;                               //G7    - New way to use the stroboscope : noteOff releases the strobe
         case PITCH_GENERAL_STROBO_FRONT_RIGHT: stopStrobe_FrontRight();break;                              //G#7   - New way to use the stroboscope : noteOff releases the strobe
@@ -631,6 +628,7 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
         case PITCH_DMX_ANIMATION_BANK3:        unloadDMXAnimation(); break;                                //C8
         
         case PITCH_DISPLAY_EFFECT:             deactivateAdditionalEffect(velocity);break;                 //C9    - Reset the effect
+        default: break;
       }
     }
     
