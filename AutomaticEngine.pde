@@ -15,26 +15,27 @@ The plugin is to be put as an effect on each track with a special function :
 The six plugin instances can send the following messages :
 - Signal level : an instant value of the track's output level, averaged on a user-defined buffer
 - Impulses : the plugin detects important changes in intensity, and associates them to beats, or impulses
+- FFT : instant 8-band Fast Fourier Transform of the signal. Fairly expensive CPU-wise, so only switch it on for the instances which really need it (Bass for example) 
 - TimeInfo : Transport informations, ie current position, BPM and whether playback is active. Only one instance should be set to send these messages, it's enough !
 These messages are received by the different threads in AudioSignalProcessing, and the variables they set are to be consumed by this class
 
-The AI should compute a general intensity using these different infos, and determine whether the atmosphere is set to be something 
-laid back, or to something more intense. The animations which can be chosen are classified using Tags in the Attributes class
-Some rules should be applied when choosing animations :
-- If the animation is part of a set, play rhythmically and alternatively the animations part of the set
-- Do not mix too fast different color sets, the objective is to create coherent graphics, not some kind of Winamp rainbow
-- A color set change may occur on the following conditions : 
-    - Enough time has passed in the same color set
-    - A scene change could be detected inside the DAW 
-      This can be detected through the current transport position : 
-      in Maschine, there is an important and sudden change in the position - ie, at least 4 bars in the future, or 8 bars in the past (the scenes can loop !)
-      in Ableton, the position goes back to 1:1:1 when a scene is triggered
-      in other DAWs... other rules will have to be applied, but ideally these rules should apply to all DAWs (except for the ones with no transport, like MainStage)
-- Rather than playing the same animation in a loop, some transitions will be inserted, and effects will be applied rhythmically
-- Some additional effects will be possible using the classic MIDI inputs (for example, a set of pads/knobs triggering stutter effects will trigger the stroboscope)
-- Depending on the computed intensity, trigger DMX devices (mainly strobes)
-- The panel animations will have to be mixed with the LED tubes - so that means no opposing colors between the two
-- Some patterns using all the devices will be generated, using simultaneously or alternatively (to create depth effects) the panels, the LED tubes and the strobes 
+An ultra-general all-powerful AI is too hard to make, and realistically speaking, would probably fail at being ultra-dynamic
+and always appropriated to the musical context.
+The first version of the AI (before the complete rewrite) was using this paradigm, and even though it kinda worked, it wasn't
+too fancy : an algorithmic main animation - transition - another main animation AI can only go so far without being redundant,
+or without being a CPU hog. It's also to be noted that the transitions which were chosen by the AI, while not out of context, 
+had an "average" feeling to them, the difference between machine-made and man-made sequences  would have been clear to the public.
+A lot of animations are way too specific to be integrated in an auto-mode like that without looking bland (sets, multi-controls, rhythm...)
+
+To do something more usable live, and generally speaking more impressive, a compromise was made : part of the work still needs to
+be done by a human.
+The AI processes a general intensity using all these messages, and creates a set of variables which correspond more or less to a "I
+think that something like that is going on with the music" declaration. These variables are then used, following a certain number of
+scenarios, to pick in specific banks of animation sequences.
+These sequences are short MIDI clips created by the user, containing DMX, panel or custom device animations. They are divided into banks 
+of different intensities, and processed at the start of the program.
+The scenarios may include use cases such as : 
+
 */
 
 
