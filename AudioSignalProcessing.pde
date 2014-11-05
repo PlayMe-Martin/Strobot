@@ -24,6 +24,14 @@ CircularArrayList<Float> audioInputBuffer_Bass;
 CircularArrayList<Float> audioInputBuffer_Keys;
 CircularArrayList<Float> audioInputBuffer_Guitar;
 
+//Containers to hold the FFT values
+SignalFFT signalFFT_Kick;
+SignalFFT signalFFT_Snare;
+SignalFFT signalFFT_Cymbals;
+SignalFFT signalFFT_Bass;
+SignalFFT signalFFT_Keys;
+SignalFFT signalFFT_Guitar;
+
 //Flags triggered when an impulse is received. These are to be set back to false each cycle so that no old data will be processed
 boolean impulse_Kick    = false;
 boolean impulse_Snare   = false;
@@ -43,14 +51,17 @@ long OUTDATED_IMPULSE_AGE = 250*1000*1000;      //Consider that after OUTDATED_I
 int audioDataPortNumber = 7001;
 int impulsePortNumber   = 7002;
 int timeInfoPortNumber  = 7003;
+int fftPortNumber  = 7004;
 DatagramSocket AudioDataServer = null;
 DatagramSocket ImpulseServer = null;
 DatagramSocket TimeInfoServer = null;
+DatagramSocket FFTServer = null;
  
-final int timeInfoMessageSize = 12;
+final int timeInfoMessageSize    = 12;
 final int signalLevelMessageSize = 7;
-final int impulseMessageSize = 2;
-final int THREAD_SLEEP_TIME = 1;    //1 ms (for reference, 50 fps means a 20ms period)
+final int impulseMessageSize     = 2;
+final int fftMessageSize         = 42;
+final int THREAD_SLEEP_TIME      = 1;    //1 ms (for reference, 50 fps means a 20ms period)
 
 void initializeCircularBuffers() {
   // Initialize the ring buffers used to store the incoming signal data
@@ -75,6 +86,14 @@ void initializeCircularBuffers() {
 
 }
 
+void initializeSignalFFTBuffers() {
+  signalFFT_Kick    = new SignalFFT(SIGNAL_ID_KICK);
+  signalFFT_Snare   = new SignalFFT(SIGNAL_ID_SNARE);
+  signalFFT_Cymbals = new SignalFFT(SIGNAL_ID_CYMBALS);
+  signalFFT_Bass    = new SignalFFT(SIGNAL_ID_BASS);
+  signalFFT_Keys    = new SignalFFT(SIGNAL_ID_KEYS);
+  signalFFT_Guitar  = new SignalFFT(SIGNAL_ID_GUITAR);
+}
 
 /////////////////////////////////////////////////////////////////////////
 
@@ -85,6 +104,7 @@ void startAudioSignalMonitoringThread() {
   thread("createAudioDataServer");
   thread("createImpulseServer");
   thread("createTimeInfoServer");
+  thread("createFFTServer");
 
 }
 
@@ -113,7 +133,7 @@ void createAudioDataServer() {
     }
   }
   catch (Exception e) {
-    outputLog.println("Audio Data servor error : " + e);
+    outputLog.println("Audio Data server error : " + e);
   }
 }
 
@@ -140,7 +160,7 @@ void createImpulseServer() {
     }
   }
   catch (Exception e) {
-    outputLog.println("Audio impulse servor error : " + e);
+    outputLog.println("Audio impulse server error : " + e);
   }
 }
 
@@ -167,10 +187,35 @@ void createTimeInfoServer() {
     }
   }
   catch (Exception e) {
-    outputLog.println("Time info servor error : " + e);
+    outputLog.println("Time info server error : " + e);
   }
 }
 
+void createFFTServer() {
+  try {
+    outputLog.println("FFT server initialization");
+    FFTServer = new DatagramSocket(fftPortNumber);
+    
+    //Specify a timeout for the receive, in order to avoid useless CPU usage
+    FFTServer.setSoTimeout(THREAD_SLEEP_TIME);
+     
+    //buffer to receive incoming data
+    byte[] bufferFFT = new byte[fftMessageSize];
+    DatagramPacket incomingFFT = new DatagramPacket(bufferFFT, bufferFFT.length);
+
+    while(true)
+    {
+      try {
+        FFTServer.receive(incomingFFT);
+        processFFTMessage(SignalMessages.FFT.parseFrom(incomingFFT.getData()));
+      }
+      catch (Exception e) {}
+    }
+  }
+  catch (Exception e) {
+    outputLog.println("FFT server error : " + e);
+  }
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -200,6 +245,16 @@ void processImpulseMessage(SignalMessages.Impulse impulse) {
   else if (impulse.getSignalID() == SIGNAL_ID_GUITAR)      { impulse_Guitar  = true; previousImpulseTimestamp_Guitar  = System.nanoTime();}
 }
 
+void processFFTMessage(SignalMessages.FFT fft) {
+  //Put the FFT's data in the correct buffers, according to the signal's ID
+  if (fft.getSignalID() == SIGNAL_ID_KICK)             { signalFFT_Kick.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
+  else if (fft.getSignalID() == SIGNAL_ID_SNARE)       { signalFFT_Snare.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
+  else if (fft.getSignalID() == SIGNAL_ID_CYMBALS)     { signalFFT_Cymbals.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
+  else if (fft.getSignalID() == SIGNAL_ID_BASS)        { signalFFT_Bass.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
+  else if (fft.getSignalID() == SIGNAL_ID_KEYS)        { signalFFT_Keys.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
+  else if (fft.getSignalID() == SIGNAL_ID_GUITAR)      { signalFFT_Guitar.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
+}
+
 // May be called by audio-responsive animations, invalidate old impulses
 void invalidateOutdatedImpulseFlags() {
   if (System.nanoTime() - previousImpulseTimestamp_Kick    > OUTDATED_IMPULSE_AGE) {impulse_Kick    = false;}
@@ -221,6 +276,44 @@ void resetImpulseFlags() {
 }
 
 
+////////////////////////////////////////////////////
+//   SignalFFT class to hold the signals' freqs   //
+////////////////////////////////////////////////////
+
+public class SignalFFT {
+  int signalID;
+  float band1;
+  float band2;
+  float band3;
+  float band4;
+  float band5;
+  float band6;
+  float band7;
+  float band8;
+  
+  SignalFFT(int _signalID) {
+    signalID = _signalID;
+    band1 = 0.0;
+    band2 = 0.0;
+    band3 = 0.0;
+    band4 = 0.0;
+    band5 = 0.0;
+    band6 = 0.0;
+    band7 = 0.0;
+    band8 = 0.0;
+  }
+  
+  void setFFTBandValues(float val1, float val2, float val3, float val4, float val5, float val6, float val7, float val8) {
+    band1 = val1;
+    band2 = val2;
+    band3 = val3;
+    band4 = val4;
+    band5 = val5;
+    band6 = val6;
+    band7 = val7;
+    band8 = val8;
+  }
+}
 
 ////////////////////////////////////////////////////
 //   Ring buffer class to store the signal data   //
