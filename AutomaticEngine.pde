@@ -182,11 +182,13 @@ class PlayMeSequencer {
     //previousSequenceStartingPosition = ((int)(currentPosition*10)/10.0);
     currentSequenceStartingPos = currentPosition - currentPosition%4;
     currentSequence.initActions();
+
+    
   }
 
   void chooseNewMidiSequence() {
-    
-    currentSequence = MidiSequences_DefaultIntensity.get(0);
+    //JUST FOR DEBUG !!! This function will need to be based on the Audio AI, choosing sequences according to scenarios
+    currentSequence = MidiSequences_DefaultIntensity.get((int)random(MidiSequences_DefaultIntensity.size()));
     currentSequence.initActions();
     currentSequenceStartingPos = currentPosition - currentPosition%4;    //Define the sequence's starting point as the current bar's start
   }

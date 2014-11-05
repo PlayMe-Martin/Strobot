@@ -282,6 +282,8 @@ void setup()
   
   //Initialize the ring buffers which will store incoming audio data
   initializeCircularBuffers();
+  //Initialize the FFT buffers which will hold the current FFT for every signal
+  initializeSignalFFTBuffers();
   
   //Start the thread which will receive any protobuf audio data, coming from the different SignalProcessor plugin instances
   startAudioSignalMonitoringThread();
