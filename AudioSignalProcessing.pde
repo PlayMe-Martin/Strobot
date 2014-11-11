@@ -51,17 +51,17 @@ long OUTDATED_IMPULSE_AGE = 250*1000*1000;      //Consider that after OUTDATED_I
 int audioDataPortNumber = 7001;
 int impulsePortNumber   = 7002;
 int timeInfoPortNumber  = 7003;
-int fftPortNumber  = 7004;
+int fftPortNumber       = 7004;
 DatagramSocket AudioDataServer = null;
-DatagramSocket ImpulseServer = null;
-DatagramSocket TimeInfoServer = null;
-DatagramSocket FFTServer = null;
+DatagramSocket ImpulseServer   = null;
+DatagramSocket TimeInfoServer  = null;
+DatagramSocket FFTServer       = null;
  
 final int timeInfoMessageSize    = 12;
 final int signalLevelMessageSize = 7;
 final int impulseMessageSize     = 2;
-final int fftMessageSize         = 42;
-final int THREAD_SLEEP_TIME      = 1;    //1 ms (for reference, 50 fps means a 20ms period)
+final int fftMessageSize         = 67;
+final int THREAD_SLEEP_TIME      = 5;    //5 ms (for reference, 50 fps means a 20ms period)
 
 void initializeCircularBuffers() {
   // Initialize the ring buffers used to store the incoming signal data
@@ -207,7 +207,7 @@ void createFFTServer() {
     {
       try {
         FFTServer.receive(incomingFFT);
-        processFFTMessage(SignalMessages.FFT.parseFrom(incomingFFT.getData()));
+        processFFTMessage(SignalMessages.LogFFT.parseFrom(incomingFFT.getData()));
       }
       catch (Exception e) {}
     }
@@ -245,14 +245,14 @@ void processImpulseMessage(SignalMessages.Impulse impulse) {
   else if (impulse.getSignalID() == SIGNAL_ID_GUITAR)      { impulse_Guitar  = true; previousImpulseTimestamp_Guitar  = System.nanoTime();}
 }
 
-void processFFTMessage(SignalMessages.FFT fft) {
+void processFFTMessage(SignalMessages.LogFFT fft) {
   //Put the FFT's data in the correct buffers, according to the signal's ID
-  if (fft.getSignalID() == SIGNAL_ID_KICK)             { signalFFT_Kick.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
-  else if (fft.getSignalID() == SIGNAL_ID_SNARE)       { signalFFT_Snare.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
-  else if (fft.getSignalID() == SIGNAL_ID_CYMBALS)     { signalFFT_Cymbals.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
-  else if (fft.getSignalID() == SIGNAL_ID_BASS)        { signalFFT_Bass.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
-  else if (fft.getSignalID() == SIGNAL_ID_KEYS)        { signalFFT_Keys.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
-  else if (fft.getSignalID() == SIGNAL_ID_GUITAR)      { signalFFT_Guitar.setFFTBandValues(fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8()); }
+  if (fft.getSignalID() == SIGNAL_ID_KICK)             { signalFFT_Kick.setFFTBandValues(fft.getFundamentalFreq(), fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8(), fft.getBand9(), fft.getBand10(), fft.getBand11(), fft.getBand12()); }
+  else if (fft.getSignalID() == SIGNAL_ID_SNARE)       { signalFFT_Snare.setFFTBandValues(fft.getFundamentalFreq(), fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8(), fft.getBand9(), fft.getBand10(), fft.getBand11(), fft.getBand12()); }
+  else if (fft.getSignalID() == SIGNAL_ID_CYMBALS)     { signalFFT_Cymbals.setFFTBandValues(fft.getFundamentalFreq(), fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8(), fft.getBand9(), fft.getBand10(), fft.getBand11(), fft.getBand12()); }
+  else if (fft.getSignalID() == SIGNAL_ID_BASS)        { signalFFT_Bass.setFFTBandValues(fft.getFundamentalFreq(), fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8(), fft.getBand9(), fft.getBand10(), fft.getBand11(), fft.getBand12()); }
+  else if (fft.getSignalID() == SIGNAL_ID_KEYS)        { signalFFT_Keys.setFFTBandValues(fft.getFundamentalFreq(), fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8(), fft.getBand9(), fft.getBand10(), fft.getBand11(), fft.getBand12()); }
+  else if (fft.getSignalID() == SIGNAL_ID_GUITAR)      { signalFFT_Guitar.setFFTBandValues(fft.getFundamentalFreq(), fft.getBand1(), fft.getBand2(), fft.getBand3(), fft.getBand4(), fft.getBand5(), fft.getBand6(), fft.getBand7(), fft.getBand8(), fft.getBand9(), fft.getBand10(), fft.getBand11(), fft.getBand12()); }
 }
 
 // May be called by audio-responsive animations, invalidate old impulses
@@ -282,36 +282,51 @@ void resetImpulseFlags() {
 
 public class SignalFFT {
   int signalID;
-  float band1;
-  float band2;
-  float band3;
-  float band4;
-  float band5;
-  float band6;
-  float band7;
-  float band8;
+  float mainFreq;          //Frequency of the first harmonic in Hz
+  float band1;             //Energy in the 0 to 11 Hz band
+  float band2;             //Energy in the 11 to 22 Hz band
+  float band3;             //Energy in the 22 to 43 Hz band
+  float band4;             //Energy in the 43 to 86 Hz band
+  float band5;             //Energy in the 86 to 172 Hz band
+  float band6;             //Energy in the 172 to 344 Hz band
+  float band7;             //Energy in the 344 to 689 Hz band
+  float band8;             //Energy in the 689 to 1378 Hz band
+  float band9;             //Energy in the 1378 to 2756 Hz band
+  float band10;            //Energy in the 2756 to 5512 Hz band
+  float band11;            //Energy in the 5512 to 11025 Hz band
+  float band12;            //Energy in the 11025 to 22050 Hz band
   
   SignalFFT(int _signalID) {
     signalID = _signalID;
-    band1 = 0.0;
-    band2 = 0.0;
-    band3 = 0.0;
-    band4 = 0.0;
-    band5 = 0.0;
-    band6 = 0.0;
-    band7 = 0.0;
-    band8 = 0.0;
+    mainFreq = 0.0;
+    band1  = 0.0;
+    band2  = 0.0;
+    band3  = 0.0;
+    band4  = 0.0;
+    band5  = 0.0;
+    band6  = 0.0;
+    band7  = 0.0;
+    band8  = 0.0;
+    band9  = 0.0;
+    band10 = 0.0;
+    band11 = 0.0;
+    band12 = 0.0;
   }
   
-  void setFFTBandValues(float val1, float val2, float val3, float val4, float val5, float val6, float val7, float val8) {
-    band1 = val1;
-    band2 = val2;
-    band3 = val3;
-    band4 = val4;
-    band5 = val5;
-    band6 = val6;
-    band7 = val7;
-    band8 = val8;
+  void setFFTBandValues(float freq, float val1, float val2, float val3, float val4, float val5, float val6, float val7, float val8, float val9, float val10, float val11, float val12) {
+    mainFreq = freq;
+    band1  = val1;
+    band2  = val2;
+    band3  = val3;
+    band4  = val4;
+    band5  = val5;
+    band6  = val6;
+    band7  = val7;
+    band8  = val8;
+    band9  = val9;
+    band10 = val10;
+    band11 = val11;
+    band12 = val12;
   }
 }
 

@@ -4364,6 +4364,13 @@ void specificActions() {
         hypnoAudio_listenToAudio = false;
         hypnoAudio_currentPoint = (hypnoAudio_currentPoint + 1)%hypnoAudio_coordinates.length;
         break;
+      
+      case 400:    //Channel 1 FFT display
+        
+        frameRate(50);
+        colorMode(RGB);
+        noStroke();
+        break;
         
       default:     //Not implemented case - do nothing
         break;
