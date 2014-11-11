@@ -531,6 +531,7 @@ void specific_draw() {
       case 397: draw_patatapWithAudioInput();break;                //Patatap with audio input - 16
       case 398: draw_hypnoAudio();break;                           //HypnoAudio - 17
       case 399: draw_hypnoAudio();break;                           //HypnoAudio - Without Audio (manual mode) - 18
+      case 400: draw_displayFFT_kick();break;                       //DisplayFFT - Kick - 19
       default: break;                                              //Default animation : do nothing, the screen will not be updated
     }
   }

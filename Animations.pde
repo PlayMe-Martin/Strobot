@@ -16830,3 +16830,28 @@ void draw_hypnoAudio() {
   //Reset all the impulse flags, as they have been processed
   resetImpulseFlags();
 }
+
+//////////////////////////////////////////
+// Specific actions for the DisplayFFT animation
+//////////////////////////////////////////
+
+void draw_displayFFT_kick() {
+  draw_displayFFT(SIGNAL_ID_KICK);
+}
+
+void draw_displayFFT(int signalID) {
+  background(0);
+  fill(255);
+  rect((width/12)*0,height - map(signalFFT_Kick.band1,0,8000,0,height), (width/12), height);
+  rect((width/12)*1,height - map(signalFFT_Kick.band2,0,8000,0,height), (width/12), height);
+  rect((width/12)*2,height - map(signalFFT_Kick.band3,0,8000,0,height), (width/12), height);
+  rect((width/12)*3,height - map(signalFFT_Kick.band4,0,8000,0,height), (width/12), height);
+  rect((width/12)*4,height - map(signalFFT_Kick.band5,0,8000,0,height), (width/12), height);
+  rect((width/12)*5,height - map(signalFFT_Kick.band6,0,8000,0,height), (width/12), height);
+  rect((width/12)*6,height - map(signalFFT_Kick.band7,0,8000,0,height), (width/12), height);
+  rect((width/12)*7,height - map(signalFFT_Kick.band8,0,8000,0,height), (width/12), height);
+  rect((width/12)*8,height - map(signalFFT_Kick.band9,0,8000,0,height), (width/12), height);
+  rect((width/12)*9,height - map(signalFFT_Kick.band10,0,8000,0,height), (width/12), height);
+  rect((width/12)*10,height - map(signalFFT_Kick.band11,0,8000,0,height), (width/12), height);
+  rect((width/12)*11,height - map(signalFFT_Kick.band12,0,8000,0,height), (width/12), height);
+}
