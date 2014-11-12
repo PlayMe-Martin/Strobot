@@ -15,7 +15,7 @@ The plugin is to be put as an effect on each track with a special function :
 The six plugin instances can send the following messages :
 - Signal level : an instant value of the track's output level, averaged on a user-defined buffer
 - Impulses : the plugin detects important changes in intensity, and associates them to beats, or impulses
-- FFT : instant 8-band Fast Fourier Transform of the signal. Fairly expensive CPU-wise, so only switch it on for the instances which really need it (Bass for example) 
+- FFT : 12-band Fast Fourier Transform of the signal, averaged over a few values for more precision. Fairly expensive CPU-wise, so only switch it on for the instances which really need it (Bass for example) 
 - TimeInfo : Transport informations, ie current position, BPM and whether playback is active. Only one instance should be set to send these messages, it's enough !
 These messages are received by the different threads in AudioSignalProcessing, and the variables they set are to be consumed by this class
 
@@ -87,18 +87,24 @@ class PlayMeSequencer {
   
   boolean animationShouldBeReinitialized = false;
   
+  //Flags raised by the scenario functions : set depending on the audio/transport conditions
+  boolean tempoIsVerySlow          = false;
+  boolean onlyGuitarIsPlaying      = false;
   
   PlayMeSequencer() {
     chooseNewMidiSequence();
   }
   
   
-  //Determine which actions to take, depending on the current system time regarding to the beat
+  // Perform any action on the list, depending on the current system time regarding to the beat
   void performAutomaticActions() {
-
+    
+    // Check what's going on with the audio
+    determineAudioModeVariables();
+    
     drawAnimation = 1;
     drawImage = 0;
-    determineAutomaticAnimations();
+    playCurrentMidiLoop();
     
     specific_draw();
     
@@ -118,7 +124,8 @@ class PlayMeSequencer {
     }  
   }
 
-  void determineAutomaticAnimations() {
+  // Check the current MIDI loop : is an action to be executed ? If so, do it
+  void playCurrentMidiLoop() {
     if (currentSequence.actionQueue.size() > 0) {
       if (currentSequence.actionQueue.get(0).timestamp <= currentPosition % (currentSequence.lengthInBars*4)) {
         playAction(currentSequence.actionQueue.get(0).eventType, currentSequence.actionQueue.get(0).actionType, currentSequence.actionQueue.get(0).actionVal);
@@ -179,6 +186,7 @@ class PlayMeSequencer {
     }
   }
   
+  // Loop the current Midi clip
   void loopCurrentSequence() {
     //previousSequenceStartingPosition = ((int)(currentPosition*10)/10.0);
     currentSequenceStartingPos = currentPosition - currentPosition%4;
@@ -192,6 +200,39 @@ class PlayMeSequencer {
     currentSequence = MidiSequences_DefaultIntensity.get((int)random(MidiSequences_DefaultIntensity.size()));
     currentSequence.initActions();
     currentSequenceStartingPos = currentPosition - currentPosition%4;    //Define the sequence's starting point as the current bar's start
+  }
+  
+  
+  // Using the different scenarios, set the different variables which will be used to determine which animation is to play
+  void determineAudioModeVariables() {
+    isTheTempoVerySlow();
+    isOnlyTheGuitarPlaying();
+  }
+  
+  // Scenario functions : the following functions check specific parts of the data transmitted the plugin, and set internal variables accordingly
+  void isTheTempoVerySlow() {
+    if (currentBPM <= 90.0) {
+      tempoIsVerySlow = true;
+    }
+    else {
+      tempoIsVerySlow = true;
+    } 
+  }
+  
+  void isOnlyTheGuitarPlaying() {
+    float INTENSITY_THRESHOLD = 0.1; 
+    if (audioInputBuffer_Guitar.get(0) > INTENSITY_THRESHOLD
+        && audioInputBuffer_Kick.get(0) < INTENSITY_THRESHOLD 
+        && audioInputBuffer_Snare.get(0) < INTENSITY_THRESHOLD
+        && audioInputBuffer_Cymbals.get(0) < INTENSITY_THRESHOLD
+        && audioInputBuffer_Bass.get(0) < INTENSITY_THRESHOLD
+        && audioInputBuffer_Keys.get(0) < INTENSITY_THRESHOLD) 
+    {
+      onlyGuitarIsPlaying = true;
+    }
+    else {
+      onlyGuitarIsPlaying = false;
+    }
   }
   
 }
