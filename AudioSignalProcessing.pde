@@ -62,20 +62,21 @@ final int signalLevelMessageSize = 7;
 final int impulseMessageSize     = 2;
 final int fftMessageSize         = 67;
 final int THREAD_SLEEP_TIME      = 5;    //5 ms (for reference, 50 fps means a 20ms period)
+final int AUDIO_BUFFER_SIZE      = max(PANEL_RESOLUTION_X*NUMBER_OF_PANELS, PANEL_RESOLUTION_Y);    //Enough to have one value for each LED pixel (= 4 pixels in Processing)
 
 void initializeCircularBuffers() {
   // Initialize the ring buffers used to store the incoming signal data
   // Set the size of these buffers to be equal to the largest value between the screen width and the screen height
-  int size = max(PANEL_RESOLUTION_X*NUMBER_OF_PANELS, PANEL_RESOLUTION_Y);
   
-  audioInputBuffer_Kick    = new CircularArrayList<Float>(size);
-  audioInputBuffer_Snare   = new CircularArrayList<Float>(size);
-  audioInputBuffer_Cymbals = new CircularArrayList<Float>(size);
-  audioInputBuffer_Bass    = new CircularArrayList<Float>(size);
-  audioInputBuffer_Keys    = new CircularArrayList<Float>(size);
-  audioInputBuffer_Guitar  = new CircularArrayList<Float>(size);
+  audioInputBuffer_Kick    = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  audioInputBuffer_Snare   = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  audioInputBuffer_Cymbals = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  audioInputBuffer_Bass    = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  audioInputBuffer_Keys    = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  audioInputBuffer_Guitar  = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
   
-  for (int i = 0; i<size; i++) {
+  // Initialize all the buffers with 0s
+  for (int i = 0; i<AUDIO_BUFFER_SIZE; i++) {
     audioInputBuffer_Kick.addAndRemoveLast(0f);
     audioInputBuffer_Snare.addAndRemoveLast(0f);
     audioInputBuffer_Cymbals.addAndRemoveLast(0f);

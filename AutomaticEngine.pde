@@ -46,10 +46,11 @@ final int COLORSET_BLUE      = 2;
 final int COLORSET_COLORFUL  = 3;
 
 //Intensity levels
-final int INTENSITY_LOW      = 0;
-final int INTENSITY_MEDIUM   = 1;
-final int INTENSITY_HIGH     = 2;
-final int INTENSITY_HARDCORE = 3;
+final int INTENSITY_DEFAULT  = 0;
+final int INTENSITY_LOW      = 1;
+final int INTENSITY_MEDIUM   = 2;
+final int INTENSITY_HIGH     = 3;
+final int INTENSITY_HARDCORE = 4;
 
 
 //Automatic mode flag : set to true or false by input MIDI notes
@@ -61,7 +62,9 @@ class PlayMeSequencer {
   boolean isPlaying = false;                //State of the host, is equal to true if playback is set to true
   float currentBPM = 120.0;                 //Current BPM of the host
   float currentPosition = 0.0;              //Current position, in pulses-per-quarter-note (ie, 1:1:1 -> 0.0,  1:2:4 -> 1.75, 2:1:1 -> 4.0)
-
+  
+  int currentIntensity = INTENSITY_DEFAULT; //Intensity of the sequences which will be played, defined the incoming audio
+  
   MidiSequence currentSequence;             //Sequence being currently played by the sequencer
   float currentSequenceStartingPos = 0.0;   //Starting position of the sequence being currently played (in pulses per quarter note)
   
@@ -101,6 +104,11 @@ class PlayMeSequencer {
     
     // Check what's going on with the audio
     determineAudioModeVariables();
+    
+    
+    // Now do something with the variables which were computed right now
+    // TODO
+    // Placeholder code is used for now
     
     drawAnimation = 1;
     drawImage = 0;
@@ -207,6 +215,7 @@ class PlayMeSequencer {
   void determineAudioModeVariables() {
     isTheTempoVerySlow();
     isOnlyTheGuitarPlaying();
+    computeGlobalIntensity();
   }
   
   // Scenario functions : the following functions check specific parts of the data transmitted the plugin, and set internal variables accordingly
@@ -233,6 +242,53 @@ class PlayMeSequencer {
     else {
       onlyGuitarIsPlaying = false;
     }
+  }
+  
+  void computeGlobalIntensity() {
+    // Check all the instrument buffers, define the intensity according to the following rule :
+    // Kick+Snare / No bass -> intensity low
+    float globalIntensity_Kick    = 0;
+    float globalIntensity_Snare   = 0;
+    float globalIntensity_Cymbals = 0;
+    float globalIntensity_Bass    = 0;
+    float globalIntensity_Keys    = 0;
+    float globalIntensity_Guitar  = 0;
+    
+    for (int i=1; i<AUDIO_BUFFER_SIZE; i++) {
+      globalIntensity_Kick    += audioInputBuffer_Kick.get(i);
+      globalIntensity_Snare   += audioInputBuffer_Snare.get(i);
+      globalIntensity_Cymbals += audioInputBuffer_Cymbals.get(i);
+      globalIntensity_Bass    += audioInputBuffer_Bass.get(i);
+      globalIntensity_Keys    += audioInputBuffer_Keys.get(i);
+      globalIntensity_Guitar  += audioInputBuffer_Guitar.get(i);
+    }
+    
+    // The value will be adjusted during testing
+    float INTENSITY_THRESHOLD = 0.1 * AUDIO_BUFFER_SIZE;
+    
+    if (globalIntensity_Kick > INTENSITY_THRESHOLD
+        && globalIntensity_Snare > INTENSITY_THRESHOLD
+        && globalIntensity_Cymbals > INTENSITY_THRESHOLD
+        && globalIntensity_Bass > INTENSITY_THRESHOLD
+        && globalIntensity_Keys > INTENSITY_THRESHOLD)
+     {
+       currentIntensity = INTENSITY_HARDCORE;
+     }
+     else if (globalIntensity_Kick > INTENSITY_THRESHOLD
+        && globalIntensity_Snare > INTENSITY_THRESHOLD
+        && globalIntensity_Cymbals > INTENSITY_THRESHOLD
+        && globalIntensity_Bass > INTENSITY_THRESHOLD)
+     {
+       currentIntensity = INTENSITY_HIGH;
+     }
+     else if (globalIntensity_Kick > INTENSITY_THRESHOLD
+        && globalIntensity_Snare > INTENSITY_THRESHOLD)
+     {
+       currentIntensity = INTENSITY_MEDIUM;
+     }
+     else {
+       currentIntensity = INTENSITY_LOW;
+     }
   }
   
 }
