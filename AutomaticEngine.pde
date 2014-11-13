@@ -68,6 +68,15 @@ class PlayMeSequencer {
   MidiSequence currentSequence;             //Sequence being currently played by the sequencer
   float currentSequenceStartingPos = 0.0;   //Starting position of the sequence being currently played (in pulses per quarter note)
   
+  // Sum of all the signal samples in the buffer
+  float globalIntensity_Kick    = 0;
+  float globalIntensity_Snare   = 0;
+  float globalIntensity_Cymbals = 0;
+  float globalIntensity_Bass    = 0;
+  float globalIntensity_Keys    = 0;
+  float globalIntensity_Guitar  = 0;
+  
+  
   //Flags raised by user input, MIDI keyboard related animations
   boolean setStrobeAutoMode4th     = false;
   boolean setStrobeAutoMode8th     = false;
@@ -93,6 +102,7 @@ class PlayMeSequencer {
   //Flags raised by the scenario functions : set depending on the audio/transport conditions
   boolean tempoIsVerySlow          = false;
   boolean onlyGuitarIsPlaying      = false;
+  boolean firstBeat                = false;
   
   PlayMeSequencer() {
     chooseNewMidiSequence();
@@ -105,6 +115,7 @@ class PlayMeSequencer {
     // Check what's going on with the audio
     determineAudioModeVariables();
     
+    printSystemDebugData();
     
     // Now do something with the variables which were computed right now
     // TODO
@@ -200,7 +211,6 @@ class PlayMeSequencer {
     currentSequenceStartingPos = currentPosition - currentPosition%4;
     currentSequence.initActions();
 
-    
   }
 
   void chooseNewMidiSequence() {
@@ -213,9 +223,12 @@ class PlayMeSequencer {
   
   // Using the different scenarios, set the different variables which will be used to determine which animation is to play
   void determineAudioModeVariables() {
+    computeSignalIntensity();
+    
     isTheTempoVerySlow();
+    isFirstBeat();
     isOnlyTheGuitarPlaying();
-    computeGlobalIntensity();
+    determineIntensity();
   }
   
   // Scenario functions : the following functions check specific parts of the data transmitted the plugin, and set internal variables accordingly
@@ -226,6 +239,15 @@ class PlayMeSequencer {
     else {
       tempoIsVerySlow = true;
     } 
+  }
+  
+  void isFirstBeat() {
+    if (int(currentPosition%4) == 0) {
+      firstBeat = true;
+    }
+    else {
+      firstBeat = false;
+    }
   }
   
   void isOnlyTheGuitarPlaying() {
@@ -244,15 +266,13 @@ class PlayMeSequencer {
     }
   }
   
-  void computeGlobalIntensity() {
-    // Check all the instrument buffers, define the intensity according to the following rule :
-    // Kick+Snare / No bass -> intensity low
-    float globalIntensity_Kick    = 0;
-    float globalIntensity_Snare   = 0;
-    float globalIntensity_Cymbals = 0;
-    float globalIntensity_Bass    = 0;
-    float globalIntensity_Keys    = 0;
-    float globalIntensity_Guitar  = 0;
+  void computeSignalIntensity() {
+    globalIntensity_Kick    = 0;
+    globalIntensity_Snare   = 0;
+    globalIntensity_Cymbals = 0;
+    globalIntensity_Bass    = 0;
+    globalIntensity_Keys    = 0;
+    globalIntensity_Guitar  = 0;
     
     for (int i=1; i<AUDIO_BUFFER_SIZE; i++) {
       globalIntensity_Kick    += audioInputBuffer_Kick.get(i);
@@ -262,35 +282,58 @@ class PlayMeSequencer {
       globalIntensity_Keys    += audioInputBuffer_Keys.get(i);
       globalIntensity_Guitar  += audioInputBuffer_Guitar.get(i);
     }
+  }
+  
+  void determineIntensity() {
+    // Check all the instrument buffers, define the intensity according to the audio :
     
     // The value will be adjusted during testing
-    float INTENSITY_THRESHOLD = 0.1 * AUDIO_BUFFER_SIZE;
-    
-    if (globalIntensity_Kick > INTENSITY_THRESHOLD
+    float INTENSITY_THRESHOLD = 0.004 * AUDIO_BUFFER_SIZE;    //About equal to 0.16
+
+    if (globalIntensity_Kick > 5*INTENSITY_THRESHOLD
         && globalIntensity_Snare > INTENSITY_THRESHOLD
         && globalIntensity_Cymbals > INTENSITY_THRESHOLD
         && globalIntensity_Bass > INTENSITY_THRESHOLD
         && globalIntensity_Keys > INTENSITY_THRESHOLD)
-     {
-       currentIntensity = INTENSITY_HARDCORE;
-     }
-     else if (globalIntensity_Kick > INTENSITY_THRESHOLD
-        && globalIntensity_Snare > INTENSITY_THRESHOLD
-        && globalIntensity_Cymbals > INTENSITY_THRESHOLD
-        && globalIntensity_Bass > INTENSITY_THRESHOLD)
-     {
-       currentIntensity = INTENSITY_HIGH;
-     }
-     else if (globalIntensity_Kick > INTENSITY_THRESHOLD
-        && globalIntensity_Snare > INTENSITY_THRESHOLD)
-     {
-       currentIntensity = INTENSITY_MEDIUM;
-     }
-     else {
-       currentIntensity = INTENSITY_LOW;
-     }
+    {
+      currentIntensity = INTENSITY_HARDCORE;
+    }
+    else if (globalIntensity_Kick > INTENSITY_THRESHOLD
+       && globalIntensity_Snare > INTENSITY_THRESHOLD
+       && globalIntensity_Cymbals > INTENSITY_THRESHOLD
+       && globalIntensity_Bass > INTENSITY_THRESHOLD)
+    {
+      currentIntensity = INTENSITY_HIGH;
+    }
+    else if (globalIntensity_Kick > INTENSITY_THRESHOLD
+       && globalIntensity_Snare > INTENSITY_THRESHOLD)
+    {
+      currentIntensity = INTENSITY_MEDIUM;
+    }
+    else {
+      currentIntensity = INTENSITY_LOW;
+    }
   }
-  
+
+  //Debug function used for tuning the system, print the most important informations in a clear, readable way
+  void printSystemDebugData() {
+    String debugString = "Automatic mode debug info : ";
+    if (currentIntensity == INTENSITY_HARDCORE)     {debugString += "Intensity=Hardcore";}
+    else if (currentIntensity == INTENSITY_HIGH)    {debugString += "Intensity=High";}
+    else if (currentIntensity == INTENSITY_MEDIUM)  {debugString += "Intensity=Medium";}
+    else if (currentIntensity == INTENSITY_LOW)     {debugString += "Intensity=Low";}
+    else if (currentIntensity == INTENSITY_DEFAULT) {debugString += "Intensity=Default";}
+    debugString += ", GuitarOnly="         + onlyGuitarIsPlaying;
+    debugString += ", Intensity[Kick]="    + globalIntensity_Kick;
+    debugString += ", Intensity[Snare]="   + globalIntensity_Snare;
+    debugString += ", Intensity[Cymbals]=" + globalIntensity_Cymbals;
+    debugString += ", Intensity[Bass]="    + globalIntensity_Bass;
+    debugString += ", Intensity[Keys]="    + globalIntensity_Keys;
+    debugString += ", Intensity[Guitar]="  + globalIntensity_Guitar;
+    
+    println(debugString);
+    //outputLog.println(debugString);
+  }
 }
 
 
