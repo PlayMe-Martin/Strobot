@@ -62,7 +62,10 @@ final int signalLevelMessageSize = 7;
 final int impulseMessageSize     = 2;
 final int fftMessageSize         = 67;
 final int THREAD_SLEEP_TIME      = 5;    //5 ms (for reference, 50 fps means a 20ms period)
-final int AUDIO_BUFFER_SIZE      = max(PANEL_RESOLUTION_X*NUMBER_OF_PANELS, PANEL_RESOLUTION_Y);    //Enough to have one value for each LED pixel (= 4 pixels in Processing)
+//Audio buffer size, big enough to have one value for each LED pixel (= 4 pixels in Processing)
+//Important note : the number of panels is hard coded, so that even when using 3 panels, the buffer is the same
+//This is important, as the thresholds set in the Auto mode depend on this value
+final int AUDIO_BUFFER_SIZE      = max(PANEL_RESOLUTION_X*5, PANEL_RESOLUTION_Y);
 
 void initializeCircularBuffers() {
   // Initialize the ring buffers used to store the incoming signal data
