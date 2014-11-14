@@ -19,6 +19,14 @@ The six plugin instances can send the following messages :
 - TimeInfo : Transport informations, ie current position, BPM and whether playback is active. Only one instance should be set to send these messages, it's enough !
 These messages are received by the different threads in AudioSignalProcessing, and the variables they set are to be consumed by this class
 
+--------------------------------
+-- Setting up SignalProcessor --
+--------------------------------
+Different settings may be recommended depending on the source
+For the kick : short averaging buffer (512) to have a lot of messages per second (and be reactive if the intensity changes)
+For the snare : longer averaging buffer (2048) to have a picture over a longer period whether the snare is here or not
+
+
 An ultra-general all-powerful AI is too hard to make, and realistically speaking, would probably fail at being ultra-dynamic
 and always appropriated to the musical context.
 The first version of the AI (before the complete rewrite) was using this paradigm, and even though it kinda worked, it wasn't
@@ -34,7 +42,6 @@ think that something like that is going on with the music" declaration. These va
 scenarios, to pick in specific banks of animation sequences.
 These sequences are short MIDI clips created by the user, containing DMX, panel or custom device animations. They are divided into banks 
 of different intensities, and processed at the start of the program.
-The scenarios may include use cases such as : 
 
 */
 
