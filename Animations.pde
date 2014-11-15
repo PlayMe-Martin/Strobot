@@ -7742,6 +7742,8 @@ void circlepusher_getCircle(int i){
 //////////////////////////////////////////
 
 void draw_shutter() {
+  pushStyle();
+  rectMode(CENTER);
   
   PGraphics temp = createGraphics(width,height);
   temp.beginDraw();
@@ -7800,6 +7802,7 @@ void draw_shutter() {
     shutter_distance = shutter_distanceInit;
   }
   
+  popStyle();
 }
 
 //////////////////////////////////////////
@@ -12607,9 +12610,8 @@ void draw_lightpainting() {
   long elapsedMillis = now - lastFrameDrawn;
   lastFrameDrawn = now;
   averageElapsedMillis = .90 * averageElapsedMillis + .10 * elapsedMillis;
- 
   //Fade the screen's current contents a bit more toward black.
-  noStroke();   
+  noStroke();
   fill(0, 0, 0, constrain(3 * elapsedMillis, 0, 255));
   rect(0, 0, width, height);
  
@@ -12733,13 +12735,13 @@ public class LightPaintingCanvas3D {
  
   //Draw a line between 3D points.
   public void drawLine(LightPaintingPoint3D from, LightPaintingPoint3D to, float weight) {
-    strokeWeight(scaleToScreen(weight, to.z));
+    strokeWeight(max(0,scaleToScreen(weight, to.z)));
     drawLine(toScreenCoordinates(from), toScreenCoordinates(to));
   }
  
   //Draw a point in 3D.
   public void drawPoint(LightPaintingPoint3D p, float weight) {
-    strokeWeight(scaleToScreen(weight, p.z));
+    strokeWeight(max(0,scaleToScreen(weight, p.z)));
     drawPoint(toScreenCoordinates(p));
   }
  
@@ -12804,17 +12806,15 @@ public class LightPaintingParticle {
     LightPaintingPoint3D from = location;
     LightPaintingPoint3D to = location.add(velocity.mul(elapsedMillis));
  
-    //Draw three motion blurs, successively narrower and brighter.
-    
+    //Draw three motion blurs, successively narrower and brighter.    
     drawMotion(from, to, 64, 8);
     drawMotion(from, to, 32, 32);
     drawMotion(from, to, 8, 255);
- 
+
     //Draw a splash if it has struck the ground
     if (isUnderground(elapsedMillis)) {
       splash(to);
     }
- 
     //Remember if we drew off of the left or right of the screen.
     LightPaintingPoint2D p = lightpainting_canvas.toScreenCoordinates(to);
     pastLeftWall = p.x < 0;
@@ -12827,11 +12827,10 @@ public class LightPaintingParticle {
     stroke(red, green, blue, 128);
     fill(red, green, blue, 64);
     lightpainting_canvas.drawHorizontalCircle(to, 64);
- 
+
     //At the point where the LightPaintingParticle touched the ground, draw a small but bright flash of light.
     stroke(amplify(red), amplify(green), amplify(blue), 255);
     lightpainting_canvas.drawPoint(to, 8);
- 
   }
  
  

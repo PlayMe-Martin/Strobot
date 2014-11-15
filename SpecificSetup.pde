@@ -3170,7 +3170,6 @@ void specificActions() {
         frameRate(50);
         strokeWeight(1);
         noStroke();
-        rectMode(CENTER);
         shutter_colorMode = (shutter_colorMode + 1) % 3;
         shutter_distance = shutter_distanceInit;
         break;
@@ -3200,7 +3199,6 @@ void specificActions() {
         break;
       
       case 305:    //LightPainting
-
         frameRate(60);
         background(0);
         if (lightpainting_initok == false) {
