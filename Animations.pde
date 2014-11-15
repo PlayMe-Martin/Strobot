@@ -577,14 +577,19 @@ void draw_fadeout(){
 // Specific actions for the FadeoutLeft animation
 //////////////////////////////////////////
 
-void draw_fadeoutleft(){
+void draw_fadeoutextremeleft(){
   resetMatrix() ;
   // Fade background by drawing a partially transparent black rectangle over the screen
   noStroke() ;
   rect(0*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, height) ;
-  if (NUMBER_OF_PANELS == 5) {
-    rect(1*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, height) ;
-  }
+  fill(0, 15) ;
+}
+
+void draw_fadeoutleft(){
+  resetMatrix() ;
+  // Fade background by drawing a partially transparent black rectangle over the screen
+  noStroke() ;
+  rect((NUMBER_OF_PANELS/2 - 1)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, height) ;
   fill(0, 15) ;
 }
 
@@ -608,13 +613,22 @@ void draw_fadeoutright(){
   resetMatrix() ;
   // Fade background by drawing a partially transparent black rectangle over the screen
   noStroke() ;
-  rect((NUMBER_OF_PANELS-1)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, height) ;
-  if (NUMBER_OF_PANELS == 5) {
+  if (NUMBER_OF_PANELS == 3) {
+    rect((NUMBER_OF_PANELS-1)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, height) ;
+  }
+  else if (NUMBER_OF_PANELS == 5) {
     rect((NUMBER_OF_PANELS-2)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, height) ;
   }
   fill(0, 15) ;
 }
 
+void draw_fadeoutextremeright(){
+  resetMatrix() ;
+  // Fade background by drawing a partially transparent black rectangle over the screen
+  noStroke() ;
+  rect((NUMBER_OF_PANELS-1)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, height) ;
+  fill(0, 15) ;
+}
 
 //////////////////////////////////////////
 // Specific actions for the Fadein animation
@@ -1264,6 +1278,21 @@ void draw_wideflashred() {
 // Specific actions for the FlashLeftRed animation
 //////////////////////////////////////////
 
+void draw_flashextremeleftred() {
+  if (drawleft >= 0) {
+    resetMatrix() ;
+    // Fade background by drawing a partially transparent black rectangle over the screen
+    noStroke() ;
+
+    fill(255,0,0) ;
+    rect(0*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, height) ;
+    drawleft --;
+  }
+  else {
+    draw_fadeout();
+  }
+}
+
 void draw_flashleftred() {
   if (drawleft >= 0) {
     resetMatrix() ;
@@ -1318,6 +1347,21 @@ void draw_flashrightred() {
       rect((NUMBER_OF_PANELS-2)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, height) ;
     }
     
+    drawright --;
+
+  }
+  else {
+    draw_fadeout();
+  }
+}
+
+void draw_flashextremerightred() {
+  if (drawright >= 0) {
+    resetMatrix() ;
+    // Fade background by drawing a partially transparent black rectangle over the screen
+    noStroke() ;
+    fill(255,0,0) ;
+    rect((NUMBER_OF_PANELS-1)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, height) ;
     drawright --;
 
   }
@@ -4206,6 +4250,14 @@ void draw_strobored() {
 // Specific actions for the Individual Panels animation
 //////////////////////////////////////////
 
+void draw_fillextremelowleft(){
+  rect(0*width/NUMBER_OF_PANELS,height/2,width/NUMBER_OF_PANELS,height/2);
+}
+
+void draw_fillextremehileft(){
+  rect(0*width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS,height/2);
+}
+
 void draw_filllowleft(){
   rect(((NUMBER_OF_PANELS-1)/2 - 1)*width/NUMBER_OF_PANELS,height/2,width/NUMBER_OF_PANELS,height/2);
 }
@@ -4230,6 +4282,13 @@ void draw_fillhiright(){
   rect(((NUMBER_OF_PANELS-1)/2 + 1)*width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS,height/2);
 }
 
+void draw_fillextremelowright(){
+  rect((NUMBER_OF_PANELS-1)*width/NUMBER_OF_PANELS,height/2,width/NUMBER_OF_PANELS,height/2);
+}
+
+void draw_fillextremehiright(){
+  rect((NUMBER_OF_PANELS-1)*width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS,height/2);
+}
 
 //////////////////////////////////////////
 // Specific actions for the White Out and Blackout animation
