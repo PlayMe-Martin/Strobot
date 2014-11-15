@@ -61,7 +61,7 @@ final int INTENSITY_HARDCORE = 4;
 
 
 //Automatic mode flag : set to true or false by input MIDI notes
-boolean AUTOMATIC_MODE = false;
+boolean AUTOMATIC_MODE = true;
 
 
 class PlayMeSequencer {
@@ -74,6 +74,10 @@ class PlayMeSequencer {
   
   MidiSequence currentSequence;             //Sequence being currently played by the sequencer
   float currentSequenceStartingPos = 0.0;   //Starting position of the sequence being currently played (in pulses per quarter note)
+  float currentSequenceTimeElapsed = 0.0;   //How long the current sequence has been active. Necessary to use this variable, because the current position can jump at anytime (loop/restart)
+  float previouslyCheckedTimestamp = 0.0;   
+  boolean timestampToBeReinit      = false;
+  boolean timestampChanged         = true;  //Set to true when the timestamp has changed since the last time we checked. If the time has not changed, it is not necessary to perform all the checks
   
   // Sum of all the signal samples in the buffer
   float globalIntensity_Kick    = 0;
@@ -119,18 +123,27 @@ class PlayMeSequencer {
   // Perform any action on the list, depending on the current system time regarding to the beat
   void performAutomaticActions() {
     
-    // Check what's going on with the audio
-    determineAudioModeVariables();
+    //Check the current time
+    checkCurrentTime();
     
-    printSystemDebugData();
+    // If the timestamp is the same as during the previous analysis, don't try to do the work a second time
+    if (timestampChanged) {
+      // Check what's going on with the audio
+      determineAudioModeVariables();
+      
+      printSystemDebugData();
+      
+      // Now do something with the variables which were computed right now
+      // TODO
+      // Placeholder code is used for now
+      
+      drawAnimation = 1;
+      drawImage = 0;
+      playCurrentMidiLoop();
+    }
     
-    // Now do something with the variables which were computed right now
-    // TODO
-    // Placeholder code is used for now
-    
-    drawAnimation = 1;
-    drawImage = 0;
-    playCurrentMidiLoop();
+    ////////////////////////////////////////////////////////////////////////////
+    // Now that we've determined which animations should be played, play them
     
     specific_draw();
     
@@ -153,7 +166,8 @@ class PlayMeSequencer {
   // Check the current MIDI loop : is an action to be executed ? If so, do it
   void playCurrentMidiLoop() {
     if (currentSequence.actionQueue.size() > 0) {
-      if (currentSequence.actionQueue.get(0).timestamp <= currentPosition % (currentSequence.lengthInBars*4)) {
+      //if (currentSequence.actionQueue.get(0).timestamp <= currentPosition % (currentSequence.lengthInBars*4)) {
+      if (currentSequence.actionQueue.get(0).timestamp <= currentSequenceTimeElapsed) {
         playAction(currentSequence.actionQueue.get(0).eventType, currentSequence.actionQueue.get(0).actionType, currentSequence.actionQueue.get(0).actionVal);
         currentSequence.actionQueue.remove(0);
       }
@@ -164,8 +178,14 @@ class PlayMeSequencer {
       if (currentSequence.actionBank.size() != 0) {
          
         //If the sequence is over, loop it
-        if (currentPosition - currentSequenceStartingPos > currentSequence.lengthInBars * 4 ) {
+        //if (currentPosition - currentSequenceStartingPos > currentSequence.lengthInBars * 4 ) {
+        if (currentSequenceTimeElapsed >= currentSequence.lengthInBars * 4 ) {
           loopCurrentSequence();
+          println("-------------------------------------");
+          println("-------------------------------------");
+          println("                LOOP !");
+          println("-------------------------------------");
+          println("-------------------------------------");
         }
       }
     }
@@ -216,6 +236,11 @@ class PlayMeSequencer {
   void loopCurrentSequence() {
     //previousSequenceStartingPosition = ((int)(currentPosition*10)/10.0);
     currentSequenceStartingPos = currentPosition - currentPosition%4;
+    
+    //Reset currentSequenceTimeElapsed - not to 0, but to the current position normalized to a bar, for more precision
+    currentSequenceTimeElapsed = currentPosition%4;
+    
+    
     currentSequence.initActions();
 
   }
@@ -225,8 +250,47 @@ class PlayMeSequencer {
     currentSequence = MidiSequences_DefaultIntensity.get((int)random(MidiSequences_DefaultIntensity.size()));
     currentSequence.initActions();
     currentSequenceStartingPos = currentPosition - currentPosition%4;    //Define the sequence's starting point as the current bar's start
+    
+    currentSequenceTimeElapsed = currentPosition%4;
   }
   
+  // Check the current time : increment currentSequenceTimeElapsed each elapsed beat
+  // Since there is no way to predict if the time won't go back in the past (loop/restart), only the beat subdivision is used to calculate the elapsed time
+  // Enough time messages are sent for the system to have at least 4-5 messages per beat.
+  // In DAWs such as Maschine or Ableton, the position may jump with no warning (particularly during scene changes), even if the position suddenly flies
+  // 16 bars ahead, only to come back 2 beats later, the elapsed time must still be incremented properly
+  void checkCurrentTime() {
+    
+    if (isPlaying == false) {
+      currentSequenceTimeElapsed = 0;
+      timestampToBeReinit        = true;
+      timestampChanged           = false;
+    }
+    else {
+      // Playback just started, so check where we are on the grid. The scene's starting point is set to the current bar's first beat
+      if (timestampToBeReinit) {
+        currentSequenceTimeElapsed = currentPosition%4.0;
+      }
+      
+      if (currentPosition > previouslyCheckedTimestamp) {
+        println("currentPosition > previouslyCheckedTimestamp --> " + currentSequenceTimeElapsed + " += " + ((currentPosition - previouslyCheckedTimestamp)%1.0));
+        currentSequenceTimeElapsed += (currentPosition - previouslyCheckedTimestamp)%1.0;
+        previouslyCheckedTimestamp = currentPosition;
+        timestampChanged           = true;
+      }
+      else if (currentPosition < previouslyCheckedTimestamp) {
+        println("currentPosition < previouslyCheckedTimestamp --> " + currentSequenceTimeElapsed + " += " + (1.0 - ((previouslyCheckedTimestamp - currentPosition)%1.0)));
+        currentSequenceTimeElapsed += 1.0 - ((previouslyCheckedTimestamp - currentPosition)%1.0);
+        previouslyCheckedTimestamp = currentPosition;
+        timestampChanged           = true;
+      }
+      else {
+        println("The time has not changed, nothing to do");
+        //If currentPosition is equal to previouslyCheckedTimestamp, no need to go further in analyzing stuff
+        timestampChanged           = false;
+      }
+    }
+  }
   
   // Using the different scenarios, set the different variables which will be used to determine which animation is to play
   void determineAudioModeVariables() {
@@ -331,13 +395,10 @@ class PlayMeSequencer {
     else if (currentIntensity == INTENSITY_LOW)     {debugString += "Intensity=Low";}
     else if (currentIntensity == INTENSITY_DEFAULT) {debugString += "Intensity=Default";}
     debugString += ", GuitarOnly="         + onlyGuitarIsPlaying;
-    debugString += ", Intensity[Kick]="    + globalIntensity_Kick;
-    debugString += ", Intensity[Snare]="   + globalIntensity_Snare;
-    debugString += ", Intensity[Cymbals]=" + globalIntensity_Cymbals;
-    debugString += ", Intensity[Bass]="    + globalIntensity_Bass;
-    debugString += ", Intensity[Keys]="    + globalIntensity_Keys;
-    debugString += ", Intensity[Guitar]="  + globalIntensity_Guitar;
-    
+    debugString += ", Intensity[Kick|Snare|Cymbal|Bass|Keys|Guitar]=[" + globalIntensity_Kick + "|" + globalIntensity_Snare + "|" + globalIntensity_Cymbals + "|" + globalIntensity_Bass + "|" + globalIntensity_Keys + "|" + globalIntensity_Guitar + "]";
+    debugString += ", CurrentPosition=" + currentPosition;
+    debugString += ", CurrentSequenceStartingPos=" + currentSequenceStartingPos;
+    debugString += ", CurrentSequenceTimeElapsed=" + currentSequenceTimeElapsed;
     println(debugString);
     //outputLog.println(debugString);
   }
