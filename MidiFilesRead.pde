@@ -20,33 +20,61 @@ final int[] AVAILABLE_NOTE_OFF = {PITCH_GENERAL_STROBO_FRONT_LEFT, PITCH_GENERAL
                                   PITCH_DMX_ANIMATION_BANK1, PITCH_DMX_ANIMATION_BANK2, PITCH_DMX_ANIMATION_BANK3, 
                                   PITCH_DISPLAY_EFFECT};
   
-ArrayList<MidiSequence> MidiSequences_DefaultIntensity;
-ArrayList<MidiSequence> MidiSequences_LowIntensity;
-ArrayList<MidiSequence> MidiSequences_MediumIntensity;
-ArrayList<MidiSequence> MidiSequences_HighIntensity;
+ArrayList<MidiSequence> MidiSequences_White_DefaultIntensity;
+ArrayList<MidiSequence> MidiSequences_White_LowIntensity;
+ArrayList<MidiSequence> MidiSequences_White_MediumIntensity;
+ArrayList<MidiSequence> MidiSequences_White_HighIntensity;
+ArrayList<MidiSequence> MidiSequences_White_MaxIntensity;
+
+ArrayList<MidiSequence> MidiSequences_Red_DefaultIntensity;
+ArrayList<MidiSequence> MidiSequences_Red_LowIntensity;
+ArrayList<MidiSequence> MidiSequences_Red_MediumIntensity;
+ArrayList<MidiSequence> MidiSequences_Red_HighIntensity;
+ArrayList<MidiSequence> MidiSequences_Red_MaxIntensity;
+
+ArrayList<MidiSequence> MidiSequences_Colorful_DefaultIntensity;
+ArrayList<MidiSequence> MidiSequences_Colorful_LowIntensity;
+ArrayList<MidiSequence> MidiSequences_Colorful_MediumIntensity;
+ArrayList<MidiSequence> MidiSequences_Colorful_HighIntensity;
+ArrayList<MidiSequence> MidiSequences_Colorful_MaxIntensity;
 
 // Check in the data folder all the MIDI files available, and parse them
 void parseAllAvailableMidiClips() {
   
-  String[] directoriesToParse = { "Default Intensity", "Low Intensity", "Medium Intensity", "High Intensity" };
-  MidiSequences_DefaultIntensity = new ArrayList<MidiSequence>();
-  MidiSequences_LowIntensity     = new ArrayList<MidiSequence>();
-  MidiSequences_MediumIntensity  = new ArrayList<MidiSequence>();
-  MidiSequences_HighIntensity    = new ArrayList<MidiSequence>();
+  String[] colorDirectories   = { "White", "Red", "Colorful" };
+  String[] directoriesToParse = { "Default Intensity", "Low Intensity", "Medium Intensity", "High Intensity", "Max Intensity" };
+  MidiSequences_White_DefaultIntensity    = new ArrayList<MidiSequence>();
+  MidiSequences_White_LowIntensity        = new ArrayList<MidiSequence>();
+  MidiSequences_White_MediumIntensity     = new ArrayList<MidiSequence>();
+  MidiSequences_White_HighIntensity       = new ArrayList<MidiSequence>();
+  MidiSequences_White_MaxIntensity        = new ArrayList<MidiSequence>();
+  MidiSequences_Red_DefaultIntensity      = new ArrayList<MidiSequence>();
+  MidiSequences_Red_LowIntensity          = new ArrayList<MidiSequence>();
+  MidiSequences_Red_MediumIntensity       = new ArrayList<MidiSequence>();
+  MidiSequences_Red_HighIntensity         = new ArrayList<MidiSequence>();
+  MidiSequences_Red_MaxIntensity          = new ArrayList<MidiSequence>();
+  MidiSequences_Colorful_DefaultIntensity = new ArrayList<MidiSequence>();
+  MidiSequences_Colorful_LowIntensity     = new ArrayList<MidiSequence>();
+  MidiSequences_Colorful_MediumIntensity  = new ArrayList<MidiSequence>();
+  MidiSequences_Colorful_HighIntensity    = new ArrayList<MidiSequence>();
+  MidiSequences_Colorful_MaxIntensity     = new ArrayList<MidiSequence>();
   
-  //Parse all three data folders, and create MidiSequence objects
-  for (String directoryToParse: directoriesToParse) {
-    
-    try {
-      String fullDirectoryPath = dataPath("") + "/MIDI/" + directoryToParse;
-      File dir = new File(fullDirectoryPath);
-      String[] children = dir.list();
-      for (String child : children) {
-        parseMIDISequence(fullDirectoryPath + "/" + child);
+  //Parse all data folders, and create MidiSequence objects
+  
+  for (String colorDirectory: colorDirectories) {
+    for (String directoryToParse: directoriesToParse) {
+      
+      try {
+        String fullDirectoryPath = dataPath("") + "/MIDI/" + colorDirectory + "/" + directoryToParse;
+        File dir = new File(fullDirectoryPath);
+        String[] children = dir.list();
+        for (String child : children) {
+          parseMIDISequence(fullDirectoryPath + "/" + child);
+        }
       }
-    }
-    catch (Exception e) {
-      println("Exception while parsing MIDI clip directories : " + e);
+      catch (Exception e) {
+        println("Exception while parsing MIDI clip directories : " + e);
+      }
     }
   }
 }
@@ -98,26 +126,75 @@ void parseMIDISequence(String filepath) {
         }
       }
       
-      //Length of the animation : MidiSequence's constructor shall round the value to the upper int, all animations should be whole bars
+      //Create the MidiSequence object. Length of the animation : MidiSequence's constructor shall round the value to the upper int, all animations should be whole bars
       MidiSequence newSeq = new MidiSequence(endOfTrackTickNumber/ONE_BAR_LENGTH, actionList);
-      if (filepath.contains("Default")) {
-        MidiSequences_DefaultIntensity.add(newSeq);
+      
+      //Add the MidiSequence to the correct list, regarding the MIDI clip's filepath
+      //Black and white animations
+      if (filepath.contains("/White/")) {
+        println("white !");
+        if (filepath.contains("Default")) {
+          MidiSequences_White_DefaultIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Low")) {
+          MidiSequences_White_LowIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Medium")) {
+          MidiSequences_White_MediumIntensity.add(newSeq);
+        }
+        else if (filepath.contains("High")) {
+          MidiSequences_White_HighIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Max")) {
+          MidiSequences_White_MaxIntensity.add(newSeq);
+        }
       }
-      if (filepath.contains("Low")) {
-        MidiSequences_LowIntensity.add(newSeq);
+      
+      //Red animations (some white can be allowed)
+      else if (filepath.contains("/Red/")) {
+        println("red !");
+        if (filepath.contains("Default")) {
+          MidiSequences_Red_DefaultIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Low")) {
+          MidiSequences_Red_LowIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Medium")) {
+          MidiSequences_Red_MediumIntensity.add(newSeq);
+        }
+        else if (filepath.contains("High")) {
+          MidiSequences_Red_HighIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Max")) {
+          MidiSequences_Red_MaxIntensity.add(newSeq);
+        }
       }
-      else if (filepath.contains("Medium")) {
-        MidiSequences_MediumIntensity.add(newSeq);
+      
+      //Colorful animations
+      else if (filepath.contains("/Colorful/")) {
+        println("colorful !");
+        if (filepath.contains("Default")) {
+          MidiSequences_Colorful_DefaultIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Low")) {
+          MidiSequences_Colorful_LowIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Medium")) {
+          MidiSequences_Colorful_MediumIntensity.add(newSeq);
+        }
+        else if (filepath.contains("High")) {
+          MidiSequences_Colorful_HighIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Max")) {
+          MidiSequences_Colorful_MaxIntensity.add(newSeq);
+        }
       }
-      else if (filepath.contains("High")) {
-        MidiSequences_HighIntensity.add(newSeq);
-      }      
     }
   }
   catch (Exception e) 
   {
     outputLog.println("Exception when parsing AutoMode MIDI files : " + e);
-  }  
+  }
 }
 
 //Sequence created by a single MIDI clip

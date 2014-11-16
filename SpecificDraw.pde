@@ -54,27 +54,27 @@ void actionControlled_preSpecificDraw() {
 void actionControlled_postSpecificDraw() {
   if (authorizeStrobeManualMode4th == true) {
     if (setStrobeManualMode4th == true) {
-      draw_stroboAutoPad(COLORSET_BLACK, 120, 1);
+      draw_stroboAutoPad(COLORSET_WHITE, 120, 1);
     }
   }
   if (authorizeStrobeManualMode8th == true) {
     if (setStrobeManualMode8th == true) {
-      draw_stroboAutoPad(COLORSET_BLACK, 120, 2);
+      draw_stroboAutoPad(COLORSET_WHITE, 120, 2);
     }
   }
   if (authorizeStrobeManualMode16th == true) {
     if (setStrobeManualMode16th == true) {
-      draw_stroboAutoPad(COLORSET_BLACK, 120, 4);        
+      draw_stroboAutoPad(COLORSET_WHITE, 120, 4);        
     }
   }
   if (authorizeStrobeManualMode32nd == true) {
     if (setStrobeManualMode32nd == true) {
-      draw_stroboAutoPad(COLORSET_BLACK, 120, 8);
+      draw_stroboAutoPad(COLORSET_WHITE, 120, 8);
     }
   }
   if (authorizeStrobeManualMode64th == true) {
     if (setStrobeManualMode64th == true) {
-      draw_stroboAutoPad(COLORSET_BLACK, 120, 8);
+      draw_stroboAutoPad(COLORSET_WHITE, 120, 8);
     }
   }
     
