@@ -96,9 +96,7 @@ void midiInit() {
 //////////////       NOTE ON       //////////////
 /////////////////////////////////////////////////
 
-void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_name) {
-  println("note on : " + pitch + " - " + velocity);
-  
+void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_name) {  
   if (initComplete == true) {
     // Receive a noteOn
     if (bus_name == myControllerBus.getBusName() || bus_name == myKeyboardBus.getBusName()) {

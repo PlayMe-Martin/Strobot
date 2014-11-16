@@ -116,11 +116,11 @@ class PlayMeSequencer {
   boolean firstBeat                = false;
   
   PlayMeSequencer() {
-    chooseNewMidiSequence();
+    chooseNewMidiSequence(true);
   }
   
   
-  // Perform any action on the list, depending on the current system time regarding to the beat
+  // Perform any action on the list, depending on the current system time based on the beat
   void performAutomaticActions() {
     
     //Check the current time
@@ -131,14 +131,25 @@ class PlayMeSequencer {
       if (sequencerHasBeenStopped == false) {
         // Check what's going on with the audio, if the sequencer is not stopped (in that case, we'll be starting with Default intensity patterns, since we can't predict the future)
         determineAudioModeVariables();
-        printSystemDebugData();
+        
+        // No need to print the auto mode debug in the release version
+        // printSystemDebugData();
 
         // Now do something with the variables which were computed right now
         // TODO
         // Placeholder code is used for now
       }
-
+      
+      //If the sequencer has been stopped, force a reinitialization of the sequence
+      if (sequencerHasBeenStopped) {
+        chooseNewMidiSequence(true);
+      }
+      
+      //Execute the actions relative to the current loop (ex: "set animation #x", "set effect #y")
       playCurrentMidiLoop();
+      
+      // The timestamp has changed, so the sequencer is necessary moving again
+      sequencerHasBeenStopped = false;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -162,25 +173,25 @@ class PlayMeSequencer {
       // Don't try to reinitialize the sequence if it's empty anyways
       if (currentSequence.actionBank.size() != 0) {
          
-        // Rule to choose a new sequence : Either the intensity has changed, or the clip has looped 4 times
-        if (currentIntensity != previousSelectedIntensity || globalSequenceTimeElapsed >= currentSequence.lengthInBars * 4 * 4) {
-          chooseNewMidiSequence();
+        // Rule to choose a new sequence : Either the intensity has changed (and the clip is actually over), or the clip has looped for 8 bars (2*4*4 beats)
+        // However, if the sequence is changed because the detected intensity has changed, do not reset the global elapsed time for the sequence : everything should stay 4/4, aligned with 4 bars per block
+        if (currentIntensity != previousSelectedIntensity && currentLoopTimeElapsed >= currentSequence.lengthInBars * 4) {
+          boolean resetGlobalSequenceTimeElapsed = false;
+          chooseNewMidiSequence(resetGlobalSequenceTimeElapsed);
+        }
+        else if (globalSequenceTimeElapsed >= 2 * 4 * 4) {
+          boolean resetGlobalSequenceTimeElapsed = true;
+          chooseNewMidiSequence(resetGlobalSequenceTimeElapsed);
         }
         // If the clip is over but it's not yet time to change it, loop it
         else if (currentLoopTimeElapsed >= currentSequence.lengthInBars * 4 ) {
           loopCurrentSequence();
-          println("-------------------------------------");
-          println("-------------------------------------");
-          println("                LOOP !");
-          println("-------------------------------------");
-          println("-------------------------------------");
         }
       }
     }
   }
   
   void playAction(int eventType, int actionNumber, int actionValue) {
-    println("Executing " + eventType + " : " + actionNumber + " -- " + actionValue);
     // The actions done here are similar to those done in MidiControl, though restrictions apply
     
     if (eventType == NOTE_ON) {
@@ -226,10 +237,9 @@ class PlayMeSequencer {
     //Reset currentLoopTimeElapsed - not to 0, but to the current position normalized to a bar, for more precision
     currentLoopTimeElapsed = currentPosition%4;    
     currentSequence.initActions();
-
   }
 
-  void chooseNewMidiSequence() {
+  void chooseNewMidiSequence(boolean resetSequenceElapsedTime) {
     if (currentColorSet == COLORSET_WHITE) {
       if (currentIntensity == INTENSITY_DEFAULT) {
         currentSequence = MidiSequences_White_DefaultIntensity.get((int)random(MidiSequences_White_DefaultIntensity.size()));
@@ -285,17 +295,22 @@ class PlayMeSequencer {
     currentSequence.initActions();
     
     currentLoopTimeElapsed    = currentPosition%4;
-    globalSequenceTimeElapsed = currentPosition%4;
     
+    // In some cases, the sequence time might not want to be reset : for example, the first 4 beats are used to compute the sound's intensity at startup.
+    // After these first 4 beats, a more appropriate sequence is used, but it should only go on for 3 bars before changing again : stay square !
+    if (resetSequenceElapsedTime) {
+      globalSequenceTimeElapsed = currentPosition%4;
+    }
+        
     previousSelectedIntensity = currentIntensity;
     
-    println("-------------------------------------");
-    println("-------------------------------------");
-    println("-------------------------------------");
-    println("CHOOSE A NEW MIDI SEQUENCE !!! Colorset : " + currentColorSet);
-    println("-------------------------------------");
-    println("-------------------------------------");
-    println("-------------------------------------");
+    // Fix for a shitty case which might occur : if playback is cut off when an effect is active, playback restart will forces a new animation, without killing off any effect
+    // The same goes for the DMX animations for that matter, so kill any DMX device
+    deactivateAdditionalEffect(0);
+    unloadDMXAnimation();
+    stopStrobe_FrontLeft();
+    stopStrobe_FrontRight();
+    stopStrobe_Back();
   }
   
   // Check the current time : increment currentLoopTimeElapsed each elapsed beat
@@ -304,7 +319,6 @@ class PlayMeSequencer {
   // In DAWs such as Maschine or Ableton, the position may jump with no warning (particularly during scene changes), even if the position suddenly flies
   // 16 bars ahead, only to come back 2 beats later, the elapsed time must still be incremented properly
   void checkCurrentTime() {
-    
     if (isPlaying == false) {
       currentLoopTimeElapsed     = 0;
       globalSequenceTimeElapsed  = 0;
@@ -321,9 +335,7 @@ class PlayMeSequencer {
         globalSequenceTimeElapsed  = currentPosition%4.0;
         
         //Also, if the sequencer has stopped, it might be time to choose a new color set
-        chooseNewColorset();
-        
-        sequencerHasBeenStopped = false;
+        chooseNewColorset();        
       }
       
       if (currentPosition > previouslyCheckedTimestamp) {
@@ -410,27 +422,24 @@ class PlayMeSequencer {
   
   void determineIntensity() {
     // Check all the instrument buffers, define the intensity according to the audio :
-    
-    // The value will be adjusted during testing
-    float INTENSITY_THRESHOLD = 0.004 * AUDIO_BUFFER_SIZE;    //About equal to 0.16
-
-    if (globalIntensity_Kick > 5*INTENSITY_THRESHOLD
-        && globalIntensity_Snare > INTENSITY_THRESHOLD
-        && globalIntensity_Cymbals > INTENSITY_THRESHOLD
-        && globalIntensity_Bass > INTENSITY_THRESHOLD
-        && globalIntensity_Keys > INTENSITY_THRESHOLD)
+        
+    if (globalIntensity_Kick       > 5*INTENSITY_THRESHOLD_KICK
+        && globalIntensity_Snare   > INTENSITY_THRESHOLD_SNARE
+        && globalIntensity_Cymbals > INTENSITY_THRESHOLD_CYMBALS
+        && globalIntensity_Bass    > INTENSITY_THRESHOLD_BASS
+        && globalIntensity_Keys    > INTENSITY_THRESHOLD_KEYS)
     {
       currentIntensity = INTENSITY_MAX;
     }
-    else if (globalIntensity_Kick > INTENSITY_THRESHOLD
-       && globalIntensity_Snare > INTENSITY_THRESHOLD
-       && globalIntensity_Cymbals > INTENSITY_THRESHOLD
-       && globalIntensity_Bass > INTENSITY_THRESHOLD)
+    else if (globalIntensity_Kick  > INTENSITY_THRESHOLD_KICK
+       && globalIntensity_Snare    > INTENSITY_THRESHOLD_SNARE
+       && globalIntensity_Cymbals  > INTENSITY_THRESHOLD_CYMBALS
+       && globalIntensity_Bass     > INTENSITY_THRESHOLD_BASS)
     {
       currentIntensity = INTENSITY_HIGH;
     }
-    else if (globalIntensity_Kick > INTENSITY_THRESHOLD
-       && globalIntensity_Snare > INTENSITY_THRESHOLD)
+    else if (globalIntensity_Kick > INTENSITY_THRESHOLD_KICK
+       && globalIntensity_Snare   > INTENSITY_THRESHOLD_SNARE)
     {
       currentIntensity = INTENSITY_MEDIUM;
     }
@@ -461,17 +470,17 @@ class PlayMeSequencer {
     if (rollTheDice <= 0.5) {
       //50% chance to choose the white colorset
       currentColorSet = COLORSET_WHITE;
-      outputLog.println("Automatic mode info : current color set is White");
+      //outputLog.println("Automatic mode info : current color set is White");
     }
     else if (rollTheDice <= 0.8) {
       //30% chance to choose the red colorset
       currentColorSet = COLORSET_RED;
-      outputLog.println("Automatic mode info : current color set is Red");
+      //outputLog.println("Automatic mode info : current color set is Red");
     }
     else {
       //20% chance to choose the white colorset
       currentColorSet = COLORSET_COLORFUL;
-      outputLog.println("Automatic mode info : current color set is Colorful");
+      //outputLog.println("Automatic mode info : current color set is Colorful");
     }
   }
 
@@ -487,6 +496,7 @@ class PlayMeSequencer {
     debugString += ", Intensity[Kick|Snare|Cymbal|Bass|Keys|Guitar]=[" + globalIntensity_Kick + "|" + globalIntensity_Snare + "|" + globalIntensity_Cymbals + "|" + globalIntensity_Bass + "|" + globalIntensity_Keys + "|" + globalIntensity_Guitar + "]";
     debugString += ", CurrentPosition=" + currentPosition;
     debugString += ", CurrentLoopTimeElapsed=" + currentLoopTimeElapsed;
+    debugString += ", GlobalSequenceTimeElapsed=" + globalSequenceTimeElapsed;
     println(debugString);
     //outputLog.println(debugString);
   }

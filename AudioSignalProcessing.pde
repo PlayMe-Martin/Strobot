@@ -39,12 +39,12 @@ boolean impulse_Cymbals = false;
 boolean impulse_Bass    = false;
 boolean impulse_Keys    = false;
 boolean impulse_Guitar  = false;
-long previousImpulseTimestamp_Kick = System.nanoTime();
-long previousImpulseTimestamp_Snare = System.nanoTime();
+long previousImpulseTimestamp_Kick    = System.nanoTime();
+long previousImpulseTimestamp_Snare   = System.nanoTime();
 long previousImpulseTimestamp_Cymbals = System.nanoTime();
-long previousImpulseTimestamp_Bass = System.nanoTime();
-long previousImpulseTimestamp_Keys = System.nanoTime();
-long previousImpulseTimestamp_Guitar = System.nanoTime();
+long previousImpulseTimestamp_Bass    = System.nanoTime();
+long previousImpulseTimestamp_Keys    = System.nanoTime();
+long previousImpulseTimestamp_Guitar  = System.nanoTime();
 long OUTDATED_IMPULSE_AGE = 250*1000*1000;      //Consider that after OUTDATED_IMPULSE_AGE ns, the previous impulse is outdated, and should be invalidated
 
 // Port number must be greater than 1000
@@ -66,6 +66,16 @@ final int THREAD_SLEEP_TIME      = 5;    //5 ms (for reference, 50 fps means a 2
 //Important note : the number of panels is hard coded, so that even when using 3 panels, the buffer is the same
 //This is important, as the thresholds set in the Auto mode depend on this value
 final int AUDIO_BUFFER_SIZE      = max(PANEL_RESOLUTION_X*5, PANEL_RESOLUTION_Y);
+
+// These thresholds are used to determine the intensity of the incoming sources
+// The different thresholds between the sources are due to the natural waveforms of the sounds
+// A bass's RMS value will always be higher than that of a snare which is only hit on beats 2 and 4
+final float INTENSITY_THRESHOLD_KICK    = 0.003 * AUDIO_BUFFER_SIZE;    //About equal to 0.12 with an audio buffer size equal to 40
+final float INTENSITY_THRESHOLD_SNARE   = 0.001 * AUDIO_BUFFER_SIZE;    //About equal to 0.04
+final float INTENSITY_THRESHOLD_CYMBALS = 0.002 * AUDIO_BUFFER_SIZE;    //About equal to 0.08
+final float INTENSITY_THRESHOLD_BASS    = 0.010 * AUDIO_BUFFER_SIZE;    //About equal to 0.40
+final float INTENSITY_THRESHOLD_KEYS    = 0.010 * AUDIO_BUFFER_SIZE;    //About equal to 0.40
+final float INTENSITY_THRESHOLD_GUITAR  = 0.010 * AUDIO_BUFFER_SIZE;    //About equal to 0.40
 
 void initializeCircularBuffers() {
   // Initialize the ring buffers used to store the incoming signal data
