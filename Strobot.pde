@@ -275,19 +275,6 @@ void setup()
     create_PHP_output();
   }
   
-  //Parse all available MIDI clips, in order to feed them to the auto sequencer
-  parseAllAvailableMidiClips();
-  //Create a new PlayMeSequencer object, to allow for automatic animation selection using audio input
-  automaticSequencer = new PlayMeSequencer();
-  
-  //Initialize the ring buffers which will store incoming audio data
-  initializeCircularBuffers();
-  //Initialize the FFT buffers which will hold the current FFT for every signal
-  initializeSignalFFTBuffers();
-  
-  //Start the thread which will receive any protobuf audio data, coming from the different SignalProcessor plugin instances
-  startAudioSignalMonitoringThread();
-  
   //Useful for debug : initialize the sketch with a specific animation
   //For the final setup : Initialize the patch by displaying "1 2 3 4 5" on the panels 
   // -> useful to check if the panel mapping is correct, and if not, to have visual feedback when correcting the panel order
@@ -448,7 +435,21 @@ void setup()
   //This allows Processing to be controlled by MIDI messages coming from external equipments or the IEC internal MIDI Bus (ie. messages from Ableton)
   midiInit();
   
+  //Parse all available MIDI clips, in order to feed them to the auto sequencer
+  parseAllAvailableMidiClips();
+  //Create a new PlayMeSequencer object, to allow for automatic animation selection using audio input
+  automaticSequencer = new PlayMeSequencer();
+  
+  //Initialize the ring buffers which will store incoming audio data
+  initializeCircularBuffers();
+  //Initialize the FFT buffers which will hold the current FFT for every signal
+  initializeSignalFFTBuffers();
+  
+  //Start the thread which will receive any protobuf audio data, coming from the different SignalProcessor plugin instances
+  startAudioSignalMonitoringThread();
+  
   //Pre-load video animations, there is a slight latency gain by not creating the objects upon reading the video
+  //Note that this is not really used anymore, but the function is interesting enough for it not to be removed from the app
   initialize_video_animations();
     
   //Initialize manual mode
@@ -513,6 +514,7 @@ void draw()
       }
       else {
         automaticSequencer.performAutomaticActions();
+        draw_effects();
       }
       
       //DMX animations - set to true when receiving the corresponding MIDI message, or when the general AUTOMATIC mode is on

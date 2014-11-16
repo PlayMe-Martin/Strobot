@@ -41,7 +41,7 @@ ArrayList<MidiSequence> MidiSequences_Colorful_MaxIntensity;
 // Check in the data folder all the MIDI files available, and parse them
 void parseAllAvailableMidiClips() {
   
-  String[] colorDirectories   = { "White", "Red", "Colorful" };
+  String[] colorDirectories   = { "White", "Red", "Colorful"};
   String[] directoriesToParse = { "Default Intensity", "Low Intensity", "Medium Intensity", "High Intensity", "Max Intensity" };
   MidiSequences_White_DefaultIntensity    = new ArrayList<MidiSequence>();
   MidiSequences_White_LowIntensity        = new ArrayList<MidiSequence>();
@@ -114,6 +114,7 @@ void parseMIDISequence(String filepath) {
             if (addNoteToActionList) {
               int noteVelocity = sm.getData2();
               MidiAction newEvent = new MidiAction(event.getTick()*4/ONE_BAR_LENGTH, NOTE_OFF, notePitch, noteVelocity);      //  Timestamp in pulses-per-quarter-note | Event Type | Action Type | Action Parameter
+              actionList.add(newEvent);
             }
           } 
           else { }    //The controller change commands could be used
@@ -132,7 +133,6 @@ void parseMIDISequence(String filepath) {
       //Add the MidiSequence to the correct list, regarding the MIDI clip's filepath
       //Black and white animations
       if (filepath.contains("/White/")) {
-        println("white !");
         if (filepath.contains("Default")) {
           MidiSequences_White_DefaultIntensity.add(newSeq);
         }
@@ -152,7 +152,6 @@ void parseMIDISequence(String filepath) {
       
       //Red animations (some white can be allowed)
       else if (filepath.contains("/Red/")) {
-        println("red !");
         if (filepath.contains("Default")) {
           MidiSequences_Red_DefaultIntensity.add(newSeq);
         }
@@ -172,7 +171,6 @@ void parseMIDISequence(String filepath) {
       
       //Colorful animations
       else if (filepath.contains("/Colorful/")) {
-        println("colorful !");
         if (filepath.contains("Default")) {
           MidiSequences_Colorful_DefaultIntensity.add(newSeq);
         }
