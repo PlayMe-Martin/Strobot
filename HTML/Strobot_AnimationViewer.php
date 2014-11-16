@@ -974,7 +974,7 @@
         $animationName[] = 'Rotozoom 3';                                   
         $attributeList[] = array ('Atmospheric', 'Rotating', 'Complex', 'Red');
         $animationName[] = 'Spiraluality';                                   
-        $attributeList[] = array ('Rotating', 'Smooth', 'Slow', 'Red');
+        $attributeList[] = array ('Rotating', 'Smooth', 'Slow', 'Red', 'Spiral', 'Evolving');
         $animationName[] = 'Rotating Half Circle';                                   
         $attributeList[] = array ('Atmospheric', 'Red', 'Complex', 'Slow', 'Smooth', 'Rotating');
         $animationName[] = 'Sliced Wave - White';                                   
@@ -990,9 +990,9 @@
         $animationName[] = 'Arc Rot Red';                                   
         $attributeList[] = array ('Atmospheric', 'Rhythmic', 'Geometric', 'Circles', 'Slow', 'Red', 'Rotating', 'Set 15');
         $animationName[] = 'Hypno Pendulum';                                   
-        $attributeList[] = array ('Spiral', 'Blue', 'Lines', 'Geometric');
+        $attributeList[] = array ('Spiral', 'Red', 'Lines', 'Geometric');
         $animationName[] = 'LargeWheel Pendulum';                                   
-        $attributeList[] = array ('Spiral', 'Blue', 'Lines', 'Geometric');
+        $attributeList[] = array ('Spiral', 'Red', 'Lines', 'Geometric');
         $animationName[] = 'Single Square Spiral';                                   
         $attributeList[] = array ('Geometric', 'Spiral', 'Rotating', 'Red', 'Rhythmic', 'Set 6');
         $animationName[] = 'Dual Square Spiral';                                   

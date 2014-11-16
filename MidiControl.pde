@@ -97,6 +97,8 @@ void midiInit() {
 /////////////////////////////////////////////////
 
 void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_name) {
+  println("note on : " + pitch + " - " + velocity);
+  
   if (initComplete == true) {
     // Receive a noteOn
     if (bus_name == myControllerBus.getBusName() || bus_name == myKeyboardBus.getBusName()) {
@@ -417,11 +419,14 @@ void stopStrobe() {
 void setAutomaticModeOff() {     
   outputLog.println("Action received: Set Automatic Mode OFF");
   AUTOMATIC_MODE = false;
+  // Update the GUI's Auto Mode toggle
+  controlFrame.setAutomaticModeToggle.setValue(false);
 }
   
 void setAutomaticModeOn() {  
   outputLog.println("Action received: Set Automatic Mode ON");
   AUTOMATIC_MODE = true;
+  controlFrame.setAutomaticModeToggle.setValue(true);
 }
 
 

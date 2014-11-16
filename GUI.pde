@@ -151,6 +151,7 @@ public class ControlFrame extends PApplet {
   controlP5.Button gui_mainLogo;
   controlP5.Accordion generalInfoAccordion;
   controlP5.Toggle changeLEDPanelMappingToggle;
+  controlP5.Toggle setAutomaticModeToggle;
   ArrayList<Bang> changeLEDPanelMappingBangList;
   controlP5.Textlabel resetExpectedTextLabel;
   controlP5.Button add_FrontLeftStrobo;
@@ -190,13 +191,8 @@ public class ControlFrame extends PApplet {
     frameRate(50);
     
     cp5 = new ControlP5(this);    
-    gui_mainLogo = cp5.addButton("Activate Simulator")
-                      .setSwitch(true)
-                      .setPosition(gui_spacing,gui_spacing)
-                      .setImages(gui_whiteLogo, gui_glitchWhiteLogo, gui_glitchBlackLogo, gui_blackLogo)
-                      .updateSize();
     
-  
+    createGuiHeaderElements();
     createGeneralInfoAccordion();
     createLEDPanelAnimationListGroup();
     createCustomDeviceAnimationListGroup();
@@ -236,6 +232,37 @@ public class ControlFrame extends PApplet {
     deactivateAdditionalEffect(1);
   }
   
+  ////////////////////////////////////////////////////////////////
+  // Create the header GUI elements
+  //  
+  
+  void createGuiHeaderElements() {
+    
+    int autoModeToggleWidth  = 180;
+    int autoModeToggleHeight = 36;
+    
+    gui_mainLogo = cp5.addButton("Activate Simulator")
+                      .setSwitch(true)
+                      .setPosition(gui_spacing,gui_spacing)
+                      .setImages(gui_whiteLogo, gui_glitchWhiteLogo, gui_glitchBlackLogo, gui_blackLogo)
+                      .updateSize();
+    
+    
+    //Add a toggle to set the automatic mode
+    setAutomaticModeToggle = cp5.addToggle("Auto Mode")
+                                .setValue(0)
+                                .setCaptionLabel("Auto Mode")
+                                .setPosition(gui_simulatorWidth - autoModeToggleWidth, 15)
+                                .setSize(autoModeToggleWidth, autoModeToggleHeight)
+                                .setColorBackground(color(100,0,0))
+                                .setColorForeground(color(130,0,0))
+                                .setColorActive(color(160,0,0))
+                                ;
+    setAutomaticModeToggle.getCaptionLabel().setFont(minimlFontMedium);
+    //setAutomaticModeToggle.getCaptionLabel().setColor(255);
+    setAutomaticModeToggle.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    
+  }
 
   ////////////////////////////////////////////////////////////////
   // Create the General Informations accordion
@@ -1560,6 +1587,9 @@ public class ControlFrame extends PApplet {
 
       if (theEvent.getName() == "Activate Simulator") {
         gui_activateSimulator = !gui_activateSimulator;
+      }
+      else if (theEvent.getName() == "Auto Mode") {
+        AUTOMATIC_MODE = setAutomaticModeToggle.getState();
       }
       else if (theEvent.getName() == "Change Panel Mapping") {
         gui_changePanelMappingActive = changeLEDPanelMappingToggle.getState();

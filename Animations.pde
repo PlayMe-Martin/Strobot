@@ -4603,9 +4603,8 @@ class ParticleExplode {
   color particleC;
  
   ParticleExplode(PVector l, color pC) {
-    //[offset-up] For demonstration purposes we assign the Particle an initial velocity and constant acceleration.
     acceleration = new PVector(0,0.05);
-    velocity = new PVector(random(-2,2),random(-4,0));
+    velocity = new PVector(random(-4,4),random(-8,0));
     location = l.get();
     lifespan = 255.0;
     particleC = pC;

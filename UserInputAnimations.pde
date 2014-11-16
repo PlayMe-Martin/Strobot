@@ -22,14 +22,11 @@ void draw_stroboAutoPad(int colorset, float tempo, int noteSpeed) {
     
     if (frameCount % 2 == 0)
     {
-      if (colorset == COLORSET_BLACK) {
+      if (colorset == COLORSET_WHITE) {
         fill(255);
       }
       if (colorset == COLORSET_RED) {
         fill(0,255,255);
-      }
-      if (colorset == COLORSET_BLUE) {
-        fill(int(random(190,250)),255,255);
       }
       if (colorset == COLORSET_COLORFUL) {
         fill(int(random(0,360)),255,255);
