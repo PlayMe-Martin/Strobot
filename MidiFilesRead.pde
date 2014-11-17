@@ -81,7 +81,10 @@ void parseAllAvailableMidiClips() {
         File dir = new File(fullDirectoryPath);
         String[] children = dir.list();
         for (String child : children) {
-          parseMIDISequence(fullDirectoryPath + "/" + child);
+          // Only check for MIDI files, disregard OSX's Finder cookie
+          if (child.contains(".mid")) {
+            parseMIDISequence(fullDirectoryPath + "/" + child);
+          }
         }
       }
       catch (Exception e) {
@@ -222,7 +225,7 @@ void parseMIDISequence(String filepath) {
   }
   catch (Exception e) 
   {
-    outputLog.println("Exception when parsing AutoMode MIDI files : " + e);
+    outputLog.println("Exception when parsing AutoMode MIDI file " + filepath + " : " + e);
   }
 }
 
