@@ -1985,13 +1985,14 @@ public class ControlFrame extends PApplet {
         
         
         //Update the description
+        //Note : get animNbr - 1, because unlike for the LED Panel animations, there is no 0
         String textDescription = "Current animation description \n"
-                                      + customDevicesAttributes.get(animNbr).name + "\n"
+                                      + customDevicesAttributes.get(animNbr - 1).name + "\n"
                                       + "\n"
-                                      + "Animation number : " + customDevicesAttributes.get(animNbr).animationNbr + "\n"
-                                      + "Corresponding note/velocity : " + getStringFromAnimationNumber(customDevicesAttributes.get(animNbr).animationNbr) + "\n"
+                                      + "Animation number : " + customDevicesAttributes.get(animNbr - 1).animationNbr + "\n"
+                                      + "Corresponding note/velocity : " + getStringFromCustomDeviceAnimationNumber(customDevicesAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
-                                      + customDevicesAttributes.get(animNbr).attributes;
+                                      + customDevicesAttributes.get(animNbr - 1).attributes;
         CustomDeviceAnimations_currentAnimationDescription.setText(textDescription);
         
         //Load the animation

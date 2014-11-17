@@ -72,8 +72,10 @@ class PlayMeSequencer {
   int previousSelectedIntensity = currentIntensity;     //Intensity which was detected at the time the sequence started
   int currentColorSet  = COLORSET_WHITE;
   
-  MidiSequence currentSequence;                         //Sequence being currently played by the sequencer
+  MidiSequence currentSequence;                         //Sequence being currently played by the sequencer (for the panels)
+  MidiSequence currentSequenceDMX;                      //Sequence being currently played by the sequencer (for the DMX and the custom devices)
   float currentLoopTimeElapsed     = 0.0;               //Elapsed time for the current loop iteration. Necessary to use this variable instead of a simple math based on the DAW's position, because the transport can jump at anytime (loop/restart/scene change)
+  float currentDMXLoopTimeElapsed  = 0.0;               //The same, for the DMX loop. Two different variables are used because the panel and the DMX sequences are not necessary the same size
   float globalSequenceTimeElapsed  = 0.0;               //How long the current sequence has been active. Incremented every time the loop is restarted 
   float previouslyCheckedTimestamp = 0.0;   
   boolean sequencerHasBeenStopped  = false;
@@ -105,11 +107,7 @@ class PlayMeSequencer {
   int whiteJamaMonoPower           = 0;
   boolean setColorChangeAutoMode   = false;
   int colorChangePower             = 0;
-  
-  boolean automaticModeIsInitialised = false;
-  
-  boolean animationShouldBeReinitialized = false;
-  
+      
   //Flags raised by the scenario functions : set depending on the audio/transport conditions
   boolean tempoIsVerySlow          = false;
   boolean onlyGuitarIsPlaying      = false;
@@ -147,6 +145,7 @@ class PlayMeSequencer {
       
       //Execute the actions relative to the current loop (ex: "set animation #x", "set effect #y")
       playCurrentMidiLoop();
+      playCurrentDMXMidiLoop();
       
       // The timestamp has changed, so the sequencer is necessary moving again
       sequencerHasBeenStopped = false;
@@ -188,7 +187,26 @@ class PlayMeSequencer {
           loopCurrentSequence();
         }
       }
-    }
+    } 
+  }
+  
+  void playCurrentDMXMidiLoop() {
+    // Execute the DMX / Custom Devices sequence
+    println(currentSequenceDMX.actionQueue.size());
+//    if (currentSequenceDMX.actionQueue.size() > 0) {
+//      if (currentSequenceDMX.actionQueue.get(0).timestamp <= currentDMXLoopTimeElapsed) {
+//        playAction(currentSequenceDMX.actionQueue.get(0).eventType, currentSequenceDMX.actionQueue.get(0).actionType, currentSequenceDMX.actionQueue.get(0).actionVal);
+//        currentSequenceDMX.actionQueue.remove(0);
+//      }
+//    }
+//    else {
+//      if (currentSequenceDMX.actionBank.size() != 0) {
+//        // For the DMX Sequence, the only choice possible is to loop the clip : the panel sequence is the master, and will be the trigger for the DMX clip change
+//        if (currentDMXLoopTimeElapsed >= currentSequenceDMX.lengthInBars * 4 ) {
+//          loopCurrentDMXSequence();
+//        }
+//      }
+//    }    
   }
   
   void playAction(int eventType, int actionNumber, int actionValue) {
@@ -231,15 +249,27 @@ class PlayMeSequencer {
     }
   }
   
-  // Loop the current Midi clip
+  // Loop the current Midi clip - panel animations
   void loopCurrentSequence() {
     
-    //Reset currentLoopTimeElapsed - not to 0, but to the current position normalized to a bar, for more precision
+    // Reset currentLoopTimeElapsed - not to 0, but to the current position normalized to a bar, for more precision
     currentLoopTimeElapsed = currentPosition%4;    
     currentSequence.initActions();
+    
+  }
+  
+  // Loop the current Midi clip - DMX and custom animations
+  void loopCurrentDMXSequence() {
+    
+    // Reset currentDMXLoopTimeElapsed - not to 0, but to the current position normalized to a bar, for more precision
+    currentDMXLoopTimeElapsed = currentPosition%4;    
+    currentSequenceDMX.initActions();
+    
   }
 
   void chooseNewMidiSequence(boolean resetSequenceElapsedTime) {
+    
+    // Choose a new sequence for the panels
     if (currentColorSet == COLORSET_WHITE) {
       if (currentIntensity == INTENSITY_DEFAULT) {
         currentSequence = MidiSequences_White_DefaultIntensity.get((int)random(MidiSequences_White_DefaultIntensity.size()));
@@ -292,9 +322,28 @@ class PlayMeSequencer {
       }
     }
     
+    // Same goes for the DMX and the Custom Devices
+    if (currentIntensity == INTENSITY_DEFAULT) {
+      currentSequenceDMX = MidiSequences_Devices_DefaultIntensity.get((int)random(MidiSequences_Devices_DefaultIntensity.size()));
+    }
+    else if (currentIntensity == INTENSITY_LOW) {
+      currentSequenceDMX = MidiSequences_Devices_LowIntensity.get((int)random(MidiSequences_Devices_LowIntensity.size()));
+    }
+    else if (currentIntensity == INTENSITY_MEDIUM) {
+      currentSequenceDMX = MidiSequences_Devices_MediumIntensity.get((int)random(MidiSequences_Devices_MediumIntensity.size()));
+    }
+    else if (currentIntensity == INTENSITY_HIGH) {
+      currentSequenceDMX = MidiSequences_Devices_HighIntensity.get((int)random(MidiSequences_Devices_HighIntensity.size()));
+    }
+    else if (currentIntensity == INTENSITY_MAX) {
+      currentSequenceDMX = MidiSequences_Devices_MaxIntensity.get((int)random(MidiSequences_Devices_MaxIntensity.size()));
+    }
+    
+    
     currentSequence.initActions();
     
     currentLoopTimeElapsed    = currentPosition%4;
+    currentDMXLoopTimeElapsed = currentPosition%4;
     
     // In some cases, the sequence time might not want to be reset : for example, the first 4 beats are used to compute the sound's intensity at startup.
     // After these first 4 beats, a more appropriate sequence is used, but it should only go on for 3 bars before changing again : stay square !
@@ -321,6 +370,7 @@ class PlayMeSequencer {
   void checkCurrentTime() {
     if (isPlaying == false) {
       currentLoopTimeElapsed     = 0;
+      currentDMXLoopTimeElapsed  = 0;
       globalSequenceTimeElapsed  = 0;
       sequencerHasBeenStopped    = true;
       timestampChanged           = false;
@@ -331,6 +381,7 @@ class PlayMeSequencer {
       // Playback just started, so check where we are on the grid. The scene's starting point is set to the current bar's first beat
       if (sequencerHasBeenStopped) {
         currentLoopTimeElapsed     = currentPosition%4.0;
+        currentDMXLoopTimeElapsed  = currentPosition%4.0;
         //We've lost how long the sequence has been going for, so take the first beat as reference
         globalSequenceTimeElapsed  = currentPosition%4.0;
         
@@ -340,12 +391,14 @@ class PlayMeSequencer {
       
       if (currentPosition > previouslyCheckedTimestamp) {
         currentLoopTimeElapsed    += (currentPosition - previouslyCheckedTimestamp)%1.0;
+        currentDMXLoopTimeElapsed += (currentPosition - previouslyCheckedTimestamp)%1.0;
         globalSequenceTimeElapsed += (currentPosition - previouslyCheckedTimestamp)%1.0;
         previouslyCheckedTimestamp = currentPosition;
         timestampChanged           = true;
       }
       else if (currentPosition < previouslyCheckedTimestamp) {
         currentLoopTimeElapsed    += 1.0 - ((previouslyCheckedTimestamp - currentPosition)%1.0);
+        currentDMXLoopTimeElapsed += 1.0 - ((previouslyCheckedTimestamp - currentPosition)%1.0);
         globalSequenceTimeElapsed += 1.0 - ((previouslyCheckedTimestamp - currentPosition)%1.0);
         previouslyCheckedTimestamp = currentPosition;
         timestampChanged           = true;
@@ -388,6 +441,7 @@ class PlayMeSequencer {
   
   void isOnlyTheGuitarPlaying() {
     float INTENSITY_THRESHOLD = 0.1; 
+    // Since this is an extremely local check, do not consider the averaged signal over the entirety of the buffer : only the most recent signal counts
     if (audioInputBuffer_Guitar.get(0) > INTENSITY_THRESHOLD
         && audioInputBuffer_Kick.get(0) < INTENSITY_THRESHOLD 
         && audioInputBuffer_Snare.get(0) < INTENSITY_THRESHOLD
@@ -478,7 +532,7 @@ class PlayMeSequencer {
       //outputLog.println("Automatic mode info : current color set is Red");
     }
     else {
-      //20% chance to choose the white colorset
+      //20% chance to choose the colorful colorset
       currentColorSet = COLORSET_COLORFUL;
       //outputLog.println("Automatic mode info : current color set is Colorful");
     }
@@ -487,7 +541,7 @@ class PlayMeSequencer {
   //Debug function used for tuning the system, print the most important informations in a clear, readable way
   void printSystemDebugData() {
     String debugString = "Automatic mode debug info : ";
-    if (currentIntensity == INTENSITY_MAX)     {debugString += "Intensity=Max";}
+    if (currentIntensity == INTENSITY_MAX)          {debugString += "Intensity=Max";}
     else if (currentIntensity == INTENSITY_HIGH)    {debugString += "Intensity=High";}
     else if (currentIntensity == INTENSITY_MEDIUM)  {debugString += "Intensity=Medium";}
     else if (currentIntensity == INTENSITY_LOW)     {debugString += "Intensity=Low";}
