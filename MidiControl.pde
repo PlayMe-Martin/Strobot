@@ -415,14 +415,14 @@ void stopStrobe() {
 
 
 void setAutomaticModeOff() {     
-  outputLog.println("Action received: Set Automatic Mode OFF");
+  //outputLog.println("Action received: Set Automatic Mode OFF");
   AUTOMATIC_MODE = false;
   // Update the GUI's Auto Mode toggle
   controlFrame.setAutomaticModeToggle.setValue(false);
 }
   
 void setAutomaticModeOn() {  
-  outputLog.println("Action received: Set Automatic Mode ON");
+  //outputLog.println("Action received: Set Automatic Mode ON");
   AUTOMATIC_MODE = true;
   controlFrame.setAutomaticModeToggle.setValue(true);
 }

@@ -192,21 +192,20 @@ class PlayMeSequencer {
   
   void playCurrentDMXMidiLoop() {
     // Execute the DMX / Custom Devices sequence
-    println(currentSequenceDMX.actionQueue.size());
-//    if (currentSequenceDMX.actionQueue.size() > 0) {
-//      if (currentSequenceDMX.actionQueue.get(0).timestamp <= currentDMXLoopTimeElapsed) {
-//        playAction(currentSequenceDMX.actionQueue.get(0).eventType, currentSequenceDMX.actionQueue.get(0).actionType, currentSequenceDMX.actionQueue.get(0).actionVal);
-//        currentSequenceDMX.actionQueue.remove(0);
-//      }
-//    }
-//    else {
-//      if (currentSequenceDMX.actionBank.size() != 0) {
-//        // For the DMX Sequence, the only choice possible is to loop the clip : the panel sequence is the master, and will be the trigger for the DMX clip change
-//        if (currentDMXLoopTimeElapsed >= currentSequenceDMX.lengthInBars * 4 ) {
-//          loopCurrentDMXSequence();
-//        }
-//      }
-//    }    
+    if (currentSequenceDMX.actionQueue.size() > 0) {
+      if (currentSequenceDMX.actionQueue.get(0).timestamp <= currentDMXLoopTimeElapsed) {
+        playAction(currentSequenceDMX.actionQueue.get(0).eventType, currentSequenceDMX.actionQueue.get(0).actionType, currentSequenceDMX.actionQueue.get(0).actionVal);
+        currentSequenceDMX.actionQueue.remove(0);
+      }
+    }
+    else {
+      if (currentSequenceDMX.actionBank.size() != 0) {
+        // For the DMX Sequence, the only choice possible is to loop the clip : the panel sequence is the master, and will be the trigger for the DMX clip change
+        if (currentDMXLoopTimeElapsed >= currentSequenceDMX.lengthInBars * 4 ) {
+          loopCurrentDMXSequence();
+        }
+      }
+    }    
   }
   
   void playAction(int eventType, int actionNumber, int actionValue) {
@@ -260,7 +259,7 @@ class PlayMeSequencer {
   
   // Loop the current Midi clip - DMX and custom animations
   void loopCurrentDMXSequence() {
-    
+        
     // Reset currentDMXLoopTimeElapsed - not to 0, but to the current position normalized to a bar, for more precision
     currentDMXLoopTimeElapsed = currentPosition%4;    
     currentSequenceDMX.initActions();
@@ -268,7 +267,7 @@ class PlayMeSequencer {
   }
 
   void chooseNewMidiSequence(boolean resetSequenceElapsedTime) {
-    
+        
     // Choose a new sequence for the panels
     if (currentColorSet == COLORSET_WHITE) {
       if (currentIntensity == INTENSITY_DEFAULT) {
@@ -341,6 +340,7 @@ class PlayMeSequencer {
     
     
     currentSequence.initActions();
+    currentSequenceDMX.initActions();
     
     currentLoopTimeElapsed    = currentPosition%4;
     currentDMXLoopTimeElapsed = currentPosition%4;
