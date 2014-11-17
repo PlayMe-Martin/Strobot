@@ -1004,7 +1004,7 @@ void setShredderAutoMode(int channel, int number, int value) {
       
       //The shredder was active : the animation needs to be reinitialised
       if (automaticSequencer.setShredderAutoMode == true) {
-        automaticSequencer.animationShouldBeReinitialized = true;
+        specificActions();
       }
       
       automaticSequencer.setShredderAutoMode = false; 

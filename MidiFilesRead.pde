@@ -38,11 +38,18 @@ ArrayList<MidiSequence> MidiSequences_Colorful_MediumIntensity;
 ArrayList<MidiSequence> MidiSequences_Colorful_HighIntensity;
 ArrayList<MidiSequence> MidiSequences_Colorful_MaxIntensity;
 
+ArrayList<MidiSequence> MidiSequences_Devices_DefaultIntensity;
+ArrayList<MidiSequence> MidiSequences_Devices_LowIntensity;
+ArrayList<MidiSequence> MidiSequences_Devices_MediumIntensity;
+ArrayList<MidiSequence> MidiSequences_Devices_HighIntensity;
+ArrayList<MidiSequence> MidiSequences_Devices_MaxIntensity;
+
 // Check in the data folder all the MIDI files available, and parse them
 void parseAllAvailableMidiClips() {
   
-  String[] colorDirectories   = { "White", "Red", "Colorful"};
+  String[] colorDirectories   = { "Panels/White", "Panels/Red", "Panels/Colorful", "DMX & Custom Devices"};
   String[] directoriesToParse = { "Default Intensity", "Low Intensity", "Medium Intensity", "High Intensity", "Max Intensity" };
+  
   MidiSequences_White_DefaultIntensity    = new ArrayList<MidiSequence>();
   MidiSequences_White_LowIntensity        = new ArrayList<MidiSequence>();
   MidiSequences_White_MediumIntensity     = new ArrayList<MidiSequence>();
@@ -58,6 +65,11 @@ void parseAllAvailableMidiClips() {
   MidiSequences_Colorful_MediumIntensity  = new ArrayList<MidiSequence>();
   MidiSequences_Colorful_HighIntensity    = new ArrayList<MidiSequence>();
   MidiSequences_Colorful_MaxIntensity     = new ArrayList<MidiSequence>();
+  MidiSequences_Devices_DefaultIntensity  = new ArrayList<MidiSequence>();
+  MidiSequences_Devices_LowIntensity      = new ArrayList<MidiSequence>();
+  MidiSequences_Devices_MediumIntensity   = new ArrayList<MidiSequence>();
+  MidiSequences_Devices_HighIntensity     = new ArrayList<MidiSequence>();
+  MidiSequences_Devices_MaxIntensity      = new ArrayList<MidiSequence>();
   
   //Parse all data folders, and create MidiSequence objects
   
@@ -132,7 +144,7 @@ void parseMIDISequence(String filepath) {
       
       //Add the MidiSequence to the correct list, regarding the MIDI clip's filepath
       //Black and white animations
-      if (filepath.contains("/White/")) {
+      if (filepath.contains("Panels/White/")) {
         if (filepath.contains("Default")) {
           MidiSequences_White_DefaultIntensity.add(newSeq);
         }
@@ -151,7 +163,7 @@ void parseMIDISequence(String filepath) {
       }
       
       //Red animations (some white can be allowed)
-      else if (filepath.contains("/Red/")) {
+      else if (filepath.contains("Panels/Red/")) {
         if (filepath.contains("Default")) {
           MidiSequences_Red_DefaultIntensity.add(newSeq);
         }
@@ -170,7 +182,7 @@ void parseMIDISequence(String filepath) {
       }
       
       //Colorful animations
-      else if (filepath.contains("/Colorful/")) {
+      else if (filepath.contains("Panels/Colorful/")) {
         if (filepath.contains("Default")) {
           MidiSequences_Colorful_DefaultIntensity.add(newSeq);
         }
@@ -185,6 +197,25 @@ void parseMIDISequence(String filepath) {
         }
         else if (filepath.contains("Max")) {
           MidiSequences_Colorful_MaxIntensity.add(newSeq);
+        }
+      }
+      
+      //DMX & Custom Devices animations
+      else if (filepath.contains("DMX & Custom Devices")) {
+        if (filepath.contains("Default")) {
+          MidiSequences_Devices_DefaultIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Low")) {
+          MidiSequences_Devices_LowIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Medium")) {
+          MidiSequences_Devices_MediumIntensity.add(newSeq);
+        }
+        else if (filepath.contains("High")) {
+          MidiSequences_Devices_HighIntensity.add(newSeq);
+        }
+        else if (filepath.contains("Max")) {
+          MidiSequences_Devices_MaxIntensity.add(newSeq);
         }
       }
     }

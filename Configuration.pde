@@ -743,6 +743,34 @@ String getStringFromAnimationNumber(int animNbr) {
   return temp;
 }
 
+String getStringFromCustomDeviceAnimationNumber(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK1) + "  |  " + str(animNbr);
+  }                                                                                              
+  else if (animNbr <= 254) {
+    temp = getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK2) + "  |  " + str(animNbr - 127);
+  }                                                                                              
+  else if (animNbr <= 381) {
+    temp = getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK3) + "  |  " + str(animNbr - 254);    
+  }
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK1) + "  |  " + str(animNbr);
+  }                                                                                              
+  else if (animNbr <= 254) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK2) + "  |  " + str(animNbr - 127);
+  }                                                                                              
+  else if (animNbr <= 381) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK3) + "  |  " + str(animNbr - 254);    
+  }
+  return temp;
+}
+
 int convertStringToInt(String text) {
   //Allow to parse either regular ints (ie MIDI notes "0", "1"...), or real notes (ie "C3", "A#-1"...) 
   
