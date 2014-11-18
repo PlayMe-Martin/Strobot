@@ -132,20 +132,23 @@ class PlayMeSequencer {
         
         // No need to print the auto mode debug in the release version
         // printSystemDebugData();
-
-        // Now do something with the variables which were computed right now
-        // TODO
-        // Placeholder code is used for now
       }
       
       //If the sequencer has been stopped, force a reinitialization of the sequence
       if (sequencerHasBeenStopped) {
         chooseNewMidiSequence(true);
       }
-      
-      //Execute the actions relative to the current loop (ex: "set animation #x", "set effect #y")
-      playCurrentMidiLoop();
-      playCurrentDMXMidiLoop();
+            
+      // Only the guitar is playing, this is a special case where the intensity cannot be computed normally
+      if (onlyGuitarIsPlaying) {
+        playSpecialActions_onlyGuitar();
+      }
+      // No special scenario has been detected, execute the normal auto actions
+      else {
+        //Execute the actions relative to the current loop (ex: "set animation #x", "set effect #y")
+        playCurrentMidiLoop();
+        playCurrentDMXMidiLoop();
+      }
       
       // The timestamp has changed, so the sequencer is necessary moving again
       sequencerHasBeenStopped = false;
@@ -440,10 +443,10 @@ class PlayMeSequencer {
   }
   
   void isOnlyTheGuitarPlaying() {
-    float INTENSITY_THRESHOLD = 0.1; 
-    // Since this is an extremely local check, do not consider the averaged signal over the entirety of the buffer : only the most recent signal counts
-    if (audioInputBuffer_Guitar.get(0) > INTENSITY_THRESHOLD
-        && audioInputBuffer_Kick.get(0) < INTENSITY_THRESHOLD 
+    float INTENSITY_THRESHOLD = 0.005; 
+    // Since this is an extremely local check, do not consider the averaged signal over the entirety of the buffer for the signals other than the guitar : only the most recent signal counts
+    if (globalIntensity_Guitar > INTENSITY_THRESHOLD_GUITAR
+        && globalIntensity_Kick < INTENSITY_THRESHOLD_KICK 
         && audioInputBuffer_Snare.get(0) < INTENSITY_THRESHOLD
         && audioInputBuffer_Cymbals.get(0) < INTENSITY_THRESHOLD
         && audioInputBuffer_Bass.get(0) < INTENSITY_THRESHOLD
@@ -553,5 +556,13 @@ class PlayMeSequencer {
     debugString += ", GlobalSequenceTimeElapsed=" + globalSequenceTimeElapsed;
     println(debugString);
     //outputLog.println(debugString);
+  }
+  
+  //Special actions to be executed when specific conditions are met
+  void playSpecialActions_onlyGuitar() {
+    // No need to reset dmxAnimationNumber when this special condition ends, as the auto mode will force back whatever DMX animations it wants to play 
+    dmxAnimationNumber = 11;
+    animationnumber    = 1;
+    specificActions();
   }
 }

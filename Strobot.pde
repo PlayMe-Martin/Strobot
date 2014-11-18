@@ -79,7 +79,7 @@ import java.util.*;
 
 //Set to true to create a web page allowing easy management of the registered animations
 //This file's primary use is to provide support when creating large MIDI files calling multiple animations
-boolean output_PHP = true;
+boolean output_PHP = false;
 
 /////////////////////////////////////////////////////
 /////////Define the DMX configuration here !/////////
@@ -262,7 +262,6 @@ void setup()
   
   //Register attributes for all loaded animations
   animationAttributes = new ArrayList<Attribute>();
-  filteredLists = new ArrayList<AnimationFilteredList>();
   registeredAttributes = new StringList();
   setAnimationAttributes();
   
