@@ -339,9 +339,9 @@ void specificActions() {
 
       case 36:   //PanelFillLines
 
-        if (panelFillListInit == false) {
-          panelFillList = new ArrayList<PanelFillClass>();
-          panelFillListInit = true;
+        if (panelFillLinesListInit == false) {
+          panelFillLinesList = new ArrayList<PanelFillLineClass>();
+          panelFillLinesListInit = true;
         }
         rectMode(CORNER);
         frameRate(50);

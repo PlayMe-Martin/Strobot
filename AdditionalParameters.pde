@@ -96,7 +96,8 @@ int NUMPARTICLES = 15*NUMBER_OF_PANELS ;
 Wind wind ;
 
 //PanelFill parameters
-ArrayList panelFillLinesList = new ArrayList();
+ArrayList<PanelFillLineClass> panelFillLinesList;
+boolean panelFillLinesListInit = false;
 boolean panelfilllines_kill = false;
 int panelfilllines_j = 0;
 int panelfilllines_maxsize = 4;
