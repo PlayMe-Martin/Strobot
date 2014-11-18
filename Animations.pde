@@ -865,7 +865,7 @@ class PanelFillLineClass{
   moveup = false;
   this.type = type;
   if (type == 1) {
-    panelfilllines_x = -width/NUMBER_OF_PANELS;
+    panelfilllines_x = -84;
   }
  }
  
@@ -918,22 +918,22 @@ class PanelFillLineClass{
   
 void draw_panelfillline() {
   background(0);
-  for (int i = 0; i < panelFillLinesList.size() ; i ++) {
-    PanelFillLineClass panelright = (PanelFillLineClass) panelFillLinesList.get(i);
-    panelright.display();
-  }
-  for (int i = 0; i < panelFillLinesList.size() ; i ++) {
-    PanelFillLineClass panelright = (PanelFillLineClass) panelFillLinesList.get(i);
-    if (panelright.panelfilllines_y > height*2) {
-      panelFillLinesList.remove(panelright);
-      break;
-    }
-  }
+  
   if (panelfilllines_draw == true) {
     panelFillLinesList.add(new PanelFillLineClass(width, 0, panelfilllines_randtype));
     panelfilllines_randtype = (panelfilllines_randtype+1)%2;
     panelfilllines_draw = false;
-  }  
+  }
+  
+  for (PanelFillLineClass element: panelFillLinesList) {
+    element.display();
+  }
+  for (PanelFillLineClass element: panelFillLinesList) {
+    if (element.panelfilllines_y > height*2) {
+      panelFillLinesList.remove(element);
+      break;
+    }
+  }
 }
   
 
