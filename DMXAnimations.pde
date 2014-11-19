@@ -36,6 +36,13 @@ void playDMXAnimation() {
     case 24:  dmxAnim_growingAlternateStrobe2();   break;         // 24 -  Growing Strobe - Alternate Left/Right - 2/4
     case 25:  dmxAnim_growingAlternateStrobe4();   break;         // 25 -  Growing Strobe - Alternate Left/Right - 1/4
     case 26:  dmxAnim_growingAlternateStrobe8();   break;         // 26 -  Growing Strobe - Alternate Left/Right - 1/8
+    
+    case 27:  dmxAnim_backStrobeVerySlow();        break;         // 27 -  Back Strobe - Very Slow
+    case 28:  dmxAnim_backStrobeSlow();            break;         // 28 -  Back Strobe - Slow
+    case 29:  dmxAnim_backStrobeMedium();          break;         // 29 -  Back Strobe - Medium
+    case 30:  dmxAnim_backStrobeFast();            break;         // 30 -  Back Strobe - Fast
+    case 31:  dmxAnim_backStrobeVeryFast();        break;         // 31 -  Back Strobe - Very Fast
+    
     default:  dmxAnim_blackout();                  break;
   }
 }

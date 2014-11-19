@@ -612,10 +612,11 @@ float circlecontour_lineweight = 0.23;
 colorexplode_particle[] colorexplode_Z = new colorexplode_particle[100];
 float colorexplode_colour = random(1);
 float colorexplode_r;
-PImage colorexplode_img;
 int colorexplode_intcounter = 0;
+boolean colorexplode_init = false;
 
 //ColorRain parameters
+boolean colorrain_init = false;
 colorrain_CellArray colorrain_cells;
 
 //WarpSpeed parameters
@@ -1182,6 +1183,7 @@ float redwave_xspan;
 float redwave_yspan;
 
 //DiagonalColors parameters
+boolean diagonalcolor_init = false;
 DiagonalColor[] diagonalcolors = new DiagonalColor[90];
 
 //HypnoSpiralRed parameters
