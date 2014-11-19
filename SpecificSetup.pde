@@ -3079,26 +3079,28 @@ void specificActions() {
         background(0);
         strokeWeight(4); 
         colorexplode_intcounter = 0;
-        //colorMode(HSB,1);
         colorMode(HSB);
-    
-        for(int j = 0; j < colorexplode_Z.length; j++) {
-          colorexplode_Z[j] = new colorexplode_particle(random(width), random(height), random(-.5,.5), random(-.5,.5), 1);
+        if (colorexplode_init == false) {
+          for(int j = 0; j < colorexplode_Z.length; j++) {
+            colorexplode_Z[j] = new colorexplode_particle(random(width), random(height), random(-.5,.5), random(-.5,.5), 1);
+          }
+          colorexplode_init = true;
         }
-          
         frameRate(50);
         
         break;
       
       case 297:    //ColorRain
-
-        frameRate(30);
         colorMode(HSB);
-        noFill();
         background(0);
+        frameRate(30);
+        noFill();
         strokeWeight(1);
         noStroke();
-        colorrain_cells = new colorrain_CellArray((float)width, (float)height, width/4, height/4);
+        if (colorrain_init == false) {
+          colorrain_cells = new colorrain_CellArray((float)width, (float)height, width/4, height/4);
+          colorrain_init  = true;
+        }
         break;
       
       case 298:    //WarpSpeed
@@ -3766,17 +3768,19 @@ void specificActions() {
       case 343:    //DiagonalColor
 
         colorMode(HSB);
-        background(0);
         frameRate(60);
         smooth();
-       
-        for (int j = 0; j < diagonalcolors.length;j++) {
-          if (j < diagonalcolors.length - diagonalcolors.length/10) {
-            diagonalcolors[j] = new DiagonalColor(0);
+        
+        if (diagonalcolor_init == false) {
+          for (int j = 0; j < diagonalcolors.length;j++) {
+            if (j < diagonalcolors.length - diagonalcolors.length/10) {
+              diagonalcolors[j] = new DiagonalColor(0);
+            }
+            else {
+              diagonalcolors[j] = new DiagonalColor(180);
+            }
           }
-          else {
-            diagonalcolors[j] = new DiagonalColor(180);
-          }
+          diagonalcolor_init = true;
         }
         break;
       
