@@ -58,6 +58,9 @@ final int COLORSET_WHITE     = 0;
 final int COLORSET_RED       = 1;
 final int COLORSET_COLORFUL  = 2;
 
+// Print real time auto mode debug data - MUST be set to false for the final release
+final boolean printSystemDebugData = false;
+
 //Automatic mode flag : set to true or false by input MIDI notes
 boolean AUTOMATIC_MODE = false;
 
@@ -131,7 +134,9 @@ class PlayMeSequencer {
         determineAudioModeVariables();
         
         // No need to print the auto mode debug in the release version
-        // printSystemDebugData();
+        if (printSystemDebugData) {
+          printSystemDebugData();
+        }
       }
       
       //If the sequencer has been stopped, force a reinitialization of the sequence
@@ -429,7 +434,7 @@ class PlayMeSequencer {
       tempoIsVerySlow = true;
     }
     else {
-      tempoIsVerySlow = true;
+      tempoIsVerySlow = false;
     } 
   }
   
@@ -496,9 +501,16 @@ class PlayMeSequencer {
       currentIntensity = INTENSITY_HIGH;
     }
     else if (globalIntensity_Kick > INTENSITY_THRESHOLD_KICK
-       && globalIntensity_Snare   > INTENSITY_THRESHOLD_SNARE)
+       && globalIntensity_Snare   > INTENSITY_THRESHOLD_SNARE
+       && (tempoIsVerySlow == false))
     {
       currentIntensity = INTENSITY_MEDIUM;
+    }
+    // Even if there is both kick and snare, if the tempo is very low, consider the intensity to be low
+    else if (globalIntensity_Kick > INTENSITY_THRESHOLD_KICK
+       && globalIntensity_Snare   > INTENSITY_THRESHOLD_SNARE)
+    {
+      currentIntensity = INTENSITY_LOW;
     }
     else {
       currentIntensity = INTENSITY_LOW;
@@ -560,9 +572,11 @@ class PlayMeSequencer {
   
   //Special actions to be executed when specific conditions are met
   void playSpecialActions_onlyGuitar() {
-    // No need to reset dmxAnimationNumber when this special condition ends, as the auto mode will force back whatever DMX animations it wants to play 
-    dmxAnimationNumber = 11;
-    animationnumber    = 1;
+    // No need to reset dmxAnimationNumber when this special condition ends, as the auto mode will force back whatever DMX animations it wants to play
+    // Only light up the right side's stroboscope, full power 
+    dmxAnimationNumber  = 11;
+    animationnumber     = 1;
+    customDeviceAnimation(1);
     specificActions();
   }
 }
