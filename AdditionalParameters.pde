@@ -642,12 +642,14 @@ int[] flashingdotsborder_y = new int[flashingdotsborder_num];
 //FallingCircles parameters
 FallingCircles fallingCircles;
 int fallingcircles_fade;
+boolean fallingCircles_init = false;
 
 //ExplodingParticles
 int nbExplodingParticles=1000;
 float explodingparticle_asp=0;
 ExplodingParticles[] explodingparticle = new ExplodingParticles[nbExplodingParticles];
 boolean ExplodingParticles_explodeflag = true;
+boolean explodingparticle_init = false;
 
 //RandomBWFlow
 int randomBWFlow_resolutionX = 8*NUMBER_OF_PANELS;

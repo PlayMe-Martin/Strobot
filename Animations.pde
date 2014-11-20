@@ -4541,9 +4541,9 @@ void draw_responsivecircles(){
       }
    }
   if (responsiveCircles_forward) {
-  responsiveCircles_x += 1;}
+  responsiveCircles_x += 3;}
   else {
-  responsiveCircles_x -= 1;}
+  responsiveCircles_x -= 3;}
   if (responsiveCircles_x >= (NUMBER_OF_PANELS+1)*width/NUMBER_OF_PANELS) {
    responsiveCircles_forward = false; 
   }
@@ -4564,9 +4564,9 @@ void draw_responsivecirclesbw(){
       }
    }
   if (responsiveCircles_forward) {
-  responsiveCircles_x += 1;}
+  responsiveCircles_x += 3;}
   else {
-  responsiveCircles_x -= 1;}
+  responsiveCircles_x -= 3;}
   if (responsiveCircles_x >= width+48) {
    responsiveCircles_forward = false; 
   }
@@ -7101,8 +7101,8 @@ class ExplodingParticles {
     px=x;
     py=y;
     a=atan2(height/2-y,width/2-x);
-    x+=0.4*cos(a)*(explodingparticle_asp);
-    y+=0.4*sin(a)*(explodingparticle_asp);
+    x+=4*cos(a)*(explodingparticle_asp);
+    y+=4*sin(a)*(explodingparticle_asp);
   }
  
   void trace() {

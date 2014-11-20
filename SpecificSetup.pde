@@ -3820,8 +3820,11 @@ void specificActions() {
         colorMode(HSB);
         strokeWeight(1);
         frameRate(50);
-        fallingCircles = new FallingCircles(NUMBER_OF_PANELS*4);
-        fallingcircles_fade = 40;
+        if (fallingCircles_init == false) {
+          fallingCircles = new FallingCircles(NUMBER_OF_PANELS*4);
+          fallingcircles_fade = 40;
+          fallingCircles_init = true;
+        }
     
         break;
       
@@ -3830,8 +3833,11 @@ void specificActions() {
         frameRate(30);
         colorMode(HSB);
         strokeWeight(4);
-        for (int j=0;j<nbExplodingParticles;j++) {
-          explodingparticle[j]=new ExplodingParticles();
+        if (explodingparticle_init == false) {
+          for (int j=0;j<nbExplodingParticles;j++) {
+            explodingparticle[j]=new ExplodingParticles();
+          }
+          explodingparticle_init = true;
         }
         fill(0,100);
         ExplodingParticles_explodeflag = true;
@@ -3842,8 +3848,11 @@ void specificActions() {
         frameRate(30);
         colorMode(HSB);
         strokeWeight(4);
-        for (int j=0;j<nbExplodingParticles;j++) {
-          explodingparticle[j]=new ExplodingParticles();
+        if (explodingparticle_init == false) {
+          for (int j=0;j<nbExplodingParticles;j++) {
+            explodingparticle[j]=new ExplodingParticles();
+          }
+          explodingparticle_init = true;
         }
         fill(0,100);
         ExplodingParticles_explodeflag = false;
