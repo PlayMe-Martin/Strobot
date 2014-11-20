@@ -116,6 +116,10 @@ class PlayMeSequencer {
   boolean onlyGuitarIsPlaying      = false;
   boolean firstBeat                = false;
   
+  //Flag used to indicate that special conditions are met and that the normal intensity detection is bypassed
+  //In this case, the intensity following the immediate fall of the flag shall be set to Max
+  boolean specialRuleActive        = false;
+  
   PlayMeSequencer() {
     chooseNewMidiSequence(true);
   }
@@ -146,10 +150,13 @@ class PlayMeSequencer {
             
       // Only the guitar is playing, this is a special case where the intensity cannot be computed normally
       if (onlyGuitarIsPlaying) {
+        specialRuleActive = true;
         playSpecialActions_onlyGuitar();
       }
       // No special scenario has been detected, execute the normal auto actions
       else {
+        specialRuleActive = false;
+        
         //Execute the actions relative to the current loop (ex: "set animation #x", "set effect #y")
         playCurrentMidiLoop();
         playCurrentDMXMidiLoop();
@@ -157,6 +164,12 @@ class PlayMeSequencer {
       
       // The timestamp has changed, so the sequencer is necessary moving again
       sequencerHasBeenStopped = false;
+    }
+    
+    // Fallback actions : if the sequencer has stopped, reset the DMX actions and the custom devices
+    // Leave the panel animation as it is, but stop all which is "too risky" (we don't want a strobe party with a perfect silence)
+    if (isPlaying == false) {
+      playActionsWhenSequencerStopped();
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -418,6 +431,12 @@ class PlayMeSequencer {
     }
   }
   
+  // When in Auto mode, if the sequencer stops, kill the DMX and the custom devices
+  void playActionsWhenSequencerStopped() {
+    dmxAnimationNumber  = 1;
+    customDeviceAnimation(1);
+  }
+  
   // Using the different scenarios, set the different variables which will be used to determine which animation is to play
   void determineAudioModeVariables() {
     computeSignalIntensity();
@@ -484,8 +503,12 @@ class PlayMeSequencer {
   
   void determineIntensity() {
     // Check all the instrument buffers, define the intensity according to the audio :
-        
-    if (globalIntensity_Kick       > 5*INTENSITY_THRESHOLD_KICK
+    // Check also if a special scenario is currently active - in this case, the intensity is set by default, not according to the audio
+    
+    if (specialRuleActive) {
+      currentIntensity = INTENSITY_MAX;
+    }
+    else if (globalIntensity_Kick  > 5*INTENSITY_THRESHOLD_KICK
         && globalIntensity_Snare   > INTENSITY_THRESHOLD_SNARE
         && globalIntensity_Cymbals > INTENSITY_THRESHOLD_CYMBALS
         && globalIntensity_Bass    > INTENSITY_THRESHOLD_BASS
