@@ -188,7 +188,7 @@ public class ControlFrame extends PApplet {
   
   public void setup() {
     size(w, h);
-    frameRate(50);
+    frameRate(60);
     
     cp5 = new ControlP5(this);    
     
@@ -206,7 +206,6 @@ public class ControlFrame extends PApplet {
 
   public void draw() {
     background(color(gui_backgroundBrightness));
-
     if (gui_activateSimulator) {
       draw_simulator(gui_simulatorPosX,gui_simulatorPosY);
     }
@@ -1473,7 +1472,6 @@ public class ControlFrame extends PApplet {
   
   void gui_parseMessageBoxFrontLeftStrobe(String result) {
     int[] parsedResult = gui_parseStringGenericDMX(result, 3);
-    println(result);
     if (parsedResult[2] < 0) {
       DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1]));
       resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT LEFT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+")");
@@ -1852,7 +1850,6 @@ public class ControlFrame extends PApplet {
       else if (theEvent.getName() == "Kick - Audio Signal ID") {
         SIGNAL_ID_KICK = Integer.parseInt(cp5.getController(theEvent.getName()).getStringValue());
         createConfigFile();
-        println(SIGNAL_ID_KICK);
       }
       else if (theEvent.getName() == "Snare - Audio Signal ID") {
         SIGNAL_ID_SNARE = Integer.parseInt(cp5.getController(theEvent.getName()).getStringValue());
