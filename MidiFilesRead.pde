@@ -88,7 +88,7 @@ void parseAllAvailableMidiClips() {
         }
       }
       catch (Exception e) {
-        println("Exception while parsing MIDI clip directories : " + e);
+        outputLog.println("Exception while parsing MIDI clip directories : " + e);
       }
     }
   }

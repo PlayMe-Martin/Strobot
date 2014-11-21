@@ -155,11 +155,9 @@ class PlayMeSequencer {
       }
       // No special scenario has been detected, execute the normal auto actions
       else {
-        specialRuleActive = false;
-        
-        //Execute the actions relative to the current loop (ex: "set animation #x", "set effect #y")
+        //Execute the actions relative to the current loop (ex: "set animation #x", "set effect #y")        
         playCurrentMidiLoop();
-        playCurrentDMXMidiLoop();
+        playCurrentDMXMidiLoop();        
       }
       
       // The timestamp has changed, so the sequencer is necessary moving again
@@ -288,7 +286,7 @@ class PlayMeSequencer {
   }
 
   void chooseNewMidiSequence(boolean resetSequenceElapsedTime) {
-        
+
     // Choose a new sequence for the panels
     if (currentColorSet == COLORSET_WHITE) {
       if (currentIntensity == INTENSITY_DEFAULT) {
@@ -381,6 +379,14 @@ class PlayMeSequencer {
     stopStrobe_FrontLeft();
     stopStrobe_FrontRight();
     stopStrobe_Back();
+    
+    // If a special scenario had been detected previously, now's the time to reset the flag
+    // When the special rule is active, the following sequence change is defined not by the audio's intensity, but by the algorithm
+    // Ex : when only the guitar is playing, when all the other parts start playing again, the desired intensity would be max
+    // However, following the audio algo, the buffers do not contain enough energy yet, so the processed intensity is Low
+    // This flag is set when a scenario is detected, and reset when the next sequence change is requested
+    specialRuleActive = false;
+
   }
   
   // Check the current time : increment currentLoopTimeElapsed each elapsed beat
@@ -586,6 +592,7 @@ class PlayMeSequencer {
     else if (currentIntensity == INTENSITY_DEFAULT) {debugString += "Intensity=Default";}
     debugString += ", GuitarOnly="         + onlyGuitarIsPlaying;
     debugString += ", Intensity[Kick|Snare|Cymbal|Bass|Keys|Guitar]=[" + globalIntensity_Kick + "|" + globalIntensity_Snare + "|" + globalIntensity_Cymbals + "|" + globalIntensity_Bass + "|" + globalIntensity_Keys + "|" + globalIntensity_Guitar + "]";
+    debugString += ", SpecialScenarioDetected=" + specialRuleActive;
     debugString += ", CurrentPosition=" + currentPosition;
     debugString += ", CurrentLoopTimeElapsed=" + currentLoopTimeElapsed;
     debugString += ", GlobalSequenceTimeElapsed=" + globalSequenceTimeElapsed;

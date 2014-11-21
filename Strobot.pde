@@ -327,10 +327,10 @@ void setup()
     String rootName = "/dev/tty.usbmodem";
     for (int i =0; i < nonstaticDeviceArrayNumber.size();i++) {
       for (String portName: Serial.list()) {
-        println("Test 1 : " + portName); 
+
         if (portName.contains(rootName) == true) {
           for (String registeredDevice: registeredDevices) {
-            println("Registered device : " + registeredDevice + "    -   portname substring : " + portName.substring(5, portName.length()));
+
             if (registeredDevice.contains(portName.substring(5, portName.length())) == false || portName.equals("/dev/tty.usbmodem1")) {
               boolean newCandidate = true;
               for (int j = 0; j<candidateDevices.size();j++) {
