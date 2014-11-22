@@ -58,6 +58,9 @@ final int COLORSET_WHITE     = 0;
 final int COLORSET_RED       = 1;
 final int COLORSET_COLORFUL  = 2;
 
+//Number of samples to calculate the partial intensity on (in numbers of messages sent by SignalProcessor, 1 SP sample = a certain number of audio samples)
+final int PARTIAL_INTENSITY_SAMPLE_NUMBER = AUDIO_BUFFER_SIZE/2;
+
 // Print real time auto mode debug data - MUST be set to false for the final release
 final boolean printSystemDebugData = false;
 
@@ -91,30 +94,39 @@ class PlayMeSequencer {
   float globalIntensity_Bass    = 0;
   float globalIntensity_Keys    = 0;
   float globalIntensity_Guitar  = 0;
-  
+  // Sum of only the most recent signal samples in the buffer
+  // Since these variables are computed on less samples, they allow a more reactive analysis and can be used to detect sudden changes faster
+  // Will be uncommented when a scenario using this is made 
+//  float partialIntensity_Kick    = 0;
+//  float partialIntensity_Snare   = 0;
+//  float partialIntensity_Cymbals = 0;
+//  float partialIntensity_Bass    = 0;
+//  float partialIntensity_Keys    = 0;
+//  float partialIntensity_Guitar  = 0;
   
   //Flags raised by user input, MIDI keyboard related animations
-  boolean setStrobeAutoMode4th     = false;
-  boolean setStrobeAutoMode8th     = false;
-  boolean setStrobeAutoMode16th    = false;
-  boolean setStrobeAutoMode32nd    = false;
-  boolean setStrobeAutoMode64th    = false;
-  boolean setKillLedPanel          = false;
-  boolean setBlackOutAutomode      = false;
-  int blackoutPower                = 0;
-  boolean setWhiteOutAutomode      = false;
-  int whiteoutPower                = 0;
-  boolean setShredderAutoMode      = false; 
-  int shredderPower                = 0;
-  boolean setWhiteJamaMonoAutoMode = false;
-  int whiteJamaMonoPower           = 0;
-  boolean setColorChangeAutoMode   = false;
-  int colorChangePower             = 0;
+  boolean setStrobeAutoMode4th      = false;
+  boolean setStrobeAutoMode8th      = false;
+  boolean setStrobeAutoMode16th     = false;
+  boolean setStrobeAutoMode32nd     = false;
+  boolean setStrobeAutoMode64th     = false;
+  boolean setKillLedPanel           = false;
+  boolean setBlackOutAutomode       = false;
+  int blackoutPower                 = 0;
+  boolean setWhiteOutAutomode       = false;
+  int whiteoutPower                 = 0;
+  boolean setShredderAutoMode       = false; 
+  int shredderPower                 = 0;
+  boolean setWhiteJamaMonoAutoMode  = false;
+  int whiteJamaMonoPower            = 0;
+  boolean setColorChangeAutoMode    = false;
+  int colorChangePower              = 0;
       
   //Flags raised by the scenario functions : set depending on the audio/transport conditions
-  boolean tempoIsVerySlow          = false;
-  boolean onlyGuitarIsPlaying      = false;
-  boolean firstBeat                = false;
+  boolean tempoIsVerySlow           = false;
+  boolean onlyGuitarIsPlaying       = false;
+  boolean onlyFilteredBassIsPlaying = false;
+  boolean firstBeat                 = false;
   
   //Flag used to indicate that special conditions are met and that the normal intensity detection is bypassed
   //In this case, the intensity following the immediate fall of the flag shall be set to Max
@@ -152,6 +164,10 @@ class PlayMeSequencer {
       if (onlyGuitarIsPlaying) {
         specialRuleActive = true;
         playSpecialActions_onlyGuitar();
+      }
+      else if (onlyFilteredBassIsPlaying) {
+        specialRuleActive = true;
+        playSpecialActions_onlyFilteredBass();
       }
       // No special scenario has been detected, execute the normal auto actions
       else {
@@ -450,6 +466,7 @@ class PlayMeSequencer {
     isTheTempoVerySlow();
     isFirstBeat();
     isOnlyTheGuitarPlaying();
+    isOnlyTheFilteredBassPlaying();
     determineIntensity();
   }
   
@@ -476,16 +493,46 @@ class PlayMeSequencer {
     float INTENSITY_THRESHOLD = 0.005; 
     // Since this is an extremely local check, do not consider the averaged signal over the entirety of the buffer for the signals other than the guitar : only the most recent signal counts
     if (globalIntensity_Guitar > INTENSITY_THRESHOLD_GUITAR
-        && globalIntensity_Kick < INTENSITY_THRESHOLD_KICK 
-        && audioInputBuffer_Snare.get(0) < INTENSITY_THRESHOLD
-        && audioInputBuffer_Cymbals.get(0) < INTENSITY_THRESHOLD
-        && audioInputBuffer_Bass.get(0) < INTENSITY_THRESHOLD
-        && audioInputBuffer_Keys.get(0) < INTENSITY_THRESHOLD) 
+        && globalIntensity_Kick < INTENSITY_THRESHOLD_KICK
+        && audioInputBuffer_Snare.get(AUDIO_BUFFER_SIZE-1) < INTENSITY_THRESHOLD
+        && audioInputBuffer_Cymbals.get(AUDIO_BUFFER_SIZE-1) < INTENSITY_THRESHOLD
+        && audioInputBuffer_Bass.get(AUDIO_BUFFER_SIZE-1) < INTENSITY_THRESHOLD
+        && audioInputBuffer_Keys.get(AUDIO_BUFFER_SIZE-1) < INTENSITY_THRESHOLD) 
     {
       onlyGuitarIsPlaying = true;
     }
     else {
       onlyGuitarIsPlaying = false;
+    }
+  }
+  
+  void isOnlyTheFilteredBassPlaying() {
+    float INTENSITY_THRESHOLD_FILTEREDBASS = 0.005;    //The intensity may be very low, as the bass can be heavily filtered 
+    float INTENSITY_THRESHOLD = 0.005;
+    float HI_LO_RATIO_THRESHOLD = 6;
+    
+    
+    
+    // Since this is an extremely local check, do not consider the averaged signal over the entirety of the buffer for the signals other than the bass : only the most recent signal counts
+    // An exception is made for the kick, to prevent false positives (the kick's plugin is usually set to send a lot of signal messages so this is not a problem)
+    // Furthermore, this scenario also considers the FFT the bass SignalProcessor sends : activate only if the HPF is active
+    
+    float lowEnergy = signalFFT_Bass.band1;
+    float hiEnergy  = (signalFFT_Bass.band8 + signalFFT_Bass.band9 + signalFFT_Bass.band10 + signalFFT_Bass.band11 + signalFFT_Bass.band12);
+    
+    if (globalIntensity_Bass > INTENSITY_THRESHOLD_FILTEREDBASS
+        && (hiEnergy / lowEnergy) > HI_LO_RATIO_THRESHOLD
+        && signalFFT_Bass.band1 != FFT_DUMMY_VALUE
+        && globalIntensity_Kick < INTENSITY_THRESHOLD_KICK
+        && audioInputBuffer_Snare.get(AUDIO_BUFFER_SIZE-1) < INTENSITY_THRESHOLD
+        && audioInputBuffer_Cymbals.get(AUDIO_BUFFER_SIZE-1) < INTENSITY_THRESHOLD
+        && audioInputBuffer_Guitar.get(AUDIO_BUFFER_SIZE-1) < INTENSITY_THRESHOLD
+        && audioInputBuffer_Keys.get(AUDIO_BUFFER_SIZE-1) < INTENSITY_THRESHOLD) 
+    {
+      onlyFilteredBassIsPlaying = true;
+    }
+    else {
+      onlyFilteredBassIsPlaying = false;
     }
   }
   
@@ -497,6 +544,14 @@ class PlayMeSequencer {
     globalIntensity_Keys    = 0;
     globalIntensity_Guitar  = 0;
     
+    // Will be uncommented when a scenario using this is made
+//    partialIntensity_Kick    = 0;
+//    partialIntensity_Snare   = 0;
+//    partialIntensity_Cymbals = 0;
+//    partialIntensity_Bass    = 0;
+//    partialIntensity_Keys    = 0;
+//    partialIntensity_Guitar  = 0;
+    
     for (int i=1; i<AUDIO_BUFFER_SIZE; i++) {
       globalIntensity_Kick    += audioInputBuffer_Kick.get(i);
       globalIntensity_Snare   += audioInputBuffer_Snare.get(i);
@@ -505,6 +560,16 @@ class PlayMeSequencer {
       globalIntensity_Keys    += audioInputBuffer_Keys.get(i);
       globalIntensity_Guitar  += audioInputBuffer_Guitar.get(i);
     }
+    
+    // Will be uncommented when a scenario using this is made 
+//    for (int i=1; i<PARTIAL_INTENSITY_SAMPLE_NUMBER; i++) {
+//      partialIntensity_Kick    += audioInputBuffer_Kick.get(i);
+//      partialIntensity_Snare   += audioInputBuffer_Snare.get(i);
+//      partialIntensity_Cymbals += audioInputBuffer_Cymbals.get(i);
+//      partialIntensity_Bass    += audioInputBuffer_Bass.get(i);
+//      partialIntensity_Keys    += audioInputBuffer_Keys.get(i);
+//      partialIntensity_Guitar  += audioInputBuffer_Guitar.get(i);
+//    }
   }
   
   void determineIntensity() {
@@ -591,6 +656,7 @@ class PlayMeSequencer {
     else if (currentIntensity == INTENSITY_LOW)     {debugString += "Intensity=Low";}
     else if (currentIntensity == INTENSITY_DEFAULT) {debugString += "Intensity=Default";}
     debugString += ", GuitarOnly="         + onlyGuitarIsPlaying;
+    debugString += ", FilteredBassOnly="         + onlyFilteredBassIsPlaying;
     debugString += ", Intensity[Kick|Snare|Cymbal|Bass|Keys|Guitar]=[" + globalIntensity_Kick + "|" + globalIntensity_Snare + "|" + globalIntensity_Cymbals + "|" + globalIntensity_Bass + "|" + globalIntensity_Keys + "|" + globalIntensity_Guitar + "]";
     debugString += ", SpecialScenarioDetected=" + specialRuleActive;
     debugString += ", CurrentPosition=" + currentPosition;
@@ -600,11 +666,22 @@ class PlayMeSequencer {
     //outputLog.println(debugString);
   }
   
-  //Special actions to be executed when specific conditions are met
+  ///////////////////////////////////////////////////////////////////
+  // Special actions to be executed when specific conditions are met
+  
   void playSpecialActions_onlyGuitar() {
     // No need to reset dmxAnimationNumber when this special condition ends, as the auto mode will force back whatever DMX animations it wants to play
-    // Only light up the right side's stroboscope, full power 
+    // Only light up the left side's stroboscope, full power 
     dmxAnimationNumber  = 11;
+    animationnumber     = 1;
+    customDeviceAnimation(1);
+    specificActions();
+  }
+  
+  void playSpecialActions_onlyFilteredBass() {
+    // No need to reset dmxAnimationNumber when this special condition ends, as the auto mode will force back whatever DMX animations it wants to play
+    // Only light up the right side's stroboscope, full power 
+    dmxAnimationNumber  = 16;
     animationnumber     = 1;
     customDeviceAnimation(1);
     specificActions();

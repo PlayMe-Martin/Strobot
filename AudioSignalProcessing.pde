@@ -77,6 +77,9 @@ final float INTENSITY_THRESHOLD_BASS    = 0.010 * AUDIO_BUFFER_SIZE;    //About 
 final float INTENSITY_THRESHOLD_KEYS    = 0.010 * AUDIO_BUFFER_SIZE;    //About equal to 0.40
 final float INTENSITY_THRESHOLD_GUITAR  = 0.010 * AUDIO_BUFFER_SIZE;    //About equal to 0.40
 
+// Initial value of the signal's band intensities, when no other value has been received
+final float FFT_DUMMY_VALUE = -1.0;
+
 void initializeCircularBuffers() {
   // Initialize the ring buffers used to store the incoming signal data
   // Set the size of these buffers to be equal to the largest value between the screen width and the screen height
@@ -311,20 +314,21 @@ public class SignalFFT {
   float band12;            //Energy in the 11025 to 22050 Hz band
   
   SignalFFT(int _signalID) {
+    // Initialize the signal with dummy values, to prevent confusing a low value from an undefined value
     signalID = _signalID;
-    mainFreq = 0.0;
-    band1  = 0.0;
-    band2  = 0.0;
-    band3  = 0.0;
-    band4  = 0.0;
-    band5  = 0.0;
-    band6  = 0.0;
-    band7  = 0.0;
-    band8  = 0.0;
-    band9  = 0.0;
-    band10 = 0.0;
-    band11 = 0.0;
-    band12 = 0.0;
+    mainFreq = FFT_DUMMY_VALUE;
+    band1  = FFT_DUMMY_VALUE;
+    band2  = FFT_DUMMY_VALUE;
+    band3  = FFT_DUMMY_VALUE;
+    band4  = FFT_DUMMY_VALUE;
+    band5  = FFT_DUMMY_VALUE;
+    band6  = FFT_DUMMY_VALUE;
+    band7  = FFT_DUMMY_VALUE;
+    band8  = FFT_DUMMY_VALUE;
+    band9  = FFT_DUMMY_VALUE;
+    band10 = FFT_DUMMY_VALUE;
+    band11 = FFT_DUMMY_VALUE;
+    band12 = FFT_DUMMY_VALUE;
   }
   
   void setFFTBandValues(float freq, float val1, float val2, float val3, float val4, float val5, float val6, float val7, float val8, float val9, float val10, float val11, float val12) {
