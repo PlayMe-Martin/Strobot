@@ -526,8 +526,13 @@ void specificActions() {
         noFill();
         stroke(255);
         strokeWeight(16);
-        turningsinglelines_position = turningsinglelines_init;
-        turningsinglelines_init = -1.5*width;
+        
+        if (turningsinglelines_init != -1.0*width) {
+          turningsinglelines_init = -1.0*width;
+          turningsinglelines_lines = new ArrayList<SingleTurningLine>();
+        }
+        turningsinglelines_lines.add(new SingleTurningLine(turningsinglelines_angle));
+        turningsinglelines_angle += turningsinglelines_angleincrement;
         break;
       
       case 59:    //RandomAppearingLines

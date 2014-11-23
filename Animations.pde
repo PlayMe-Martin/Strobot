@@ -12099,17 +12099,44 @@ void draw_rednoise_trianglestrobo() {
 
 void draw_turningsinglelines() {
   background(0);
-  pushMatrix();
-  rotate(turningsinglelines_angle);
-  line(-2*width,turningsinglelines_position,3*width,turningsinglelines_position);
-  popMatrix();
-  turningsinglelines_position += turningsinglelines_increment;
-  if (turningsinglelines_position > 2*height) {
-    turningsinglelines_position = turningsinglelines_init;
-    turningsinglelines_angle += turningsinglelines_angleincrement;
+  for (SingleTurningLine line: turningsinglelines_lines) {
+    line.drawSingleTurningLine();
   }
+  for (SingleTurningLine line: turningsinglelines_lines) {
+    if (line.isDead()) {
+      turningsinglelines_lines.remove(line);
+      break;
+    }
+  }
+
 }
 
+class SingleTurningLine {
+  float position;
+  float angle;
+  
+  SingleTurningLine(float _angle) {
+    angle = _angle;
+    position = turningsinglelines_init - (((PI - abs(angle%(2*PI)-(3*PI/2)))/PI) * turningsinglelines_init);
+  }
+  
+  void drawSingleTurningLine() {
+    pushMatrix();
+    rotate(angle);
+    line(-2*width,position,3*width,position);
+    popMatrix();
+    position += turningsinglelines_increment;
+  }
+  
+  boolean isDead() {
+    if (position > 3*height) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+}
 
 //////////////////////////////////////////
 // Specific actions for the RandomAppearingLines animation
