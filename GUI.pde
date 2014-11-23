@@ -17,6 +17,7 @@ PFont minimlFontMedium;
 PFont minimlFontBig;
 
 boolean gui_activateSimulator = false;
+boolean gui_activateAudioMonitoring = false;
 boolean gui_initComplete = false;
 
 boolean gui_changePanelMappingActive = false;
@@ -42,6 +43,11 @@ final int gui_spacing                    = 10;
 final int gui_simulatorTextCenterX       = 300;
 final int gui_simulatorTextMainY         = 170;
 final int gui_simulatorTextSubY          = 210;
+
+final int gui_audioMonitoringGroupOffsetX = (gui_simulatorPosX + gui_simulatorWidth + gui_spacing);
+final int gui_audioMonitoringGroupWidth   = gui_width - (gui_simulatorPosX + gui_simulatorWidth + 2*gui_spacing);
+final int gui_audioMonitoringToggleWidth  = 140;
+final int gui_audioMonitoringToggleHeight = 20;    
 
 //Attributes for the LED Panel animations
 final int GUI_ATTR_LEDPANEL_GEOMETRIC   = 0;
@@ -103,6 +109,15 @@ final int GUI_ATTR_CUSTOMDEV_BUILDUP       = 21;
 final int GUI_ATTR_CUSTOMDEV_NOISE         = 22;
 final int GUI_ATTR_CUSTOMDEV_SMOOTHNOISE   = 23;
 
+final int audioMonitoring_barWidth         = 90;
+final int audioMonitoring_barHeight        = 10;
+final float audioMonitoring_maxSignalLevel_Kick    = 1.0;
+final float audioMonitoring_maxSignalLevel_Snare   = 0.3;
+final float audioMonitoring_maxSignalLevel_Cymbals = 0.3;
+final float audioMonitoring_maxSignalLevel_Bass    = 3.0;
+final float audioMonitoring_maxSignalLevel_Keys    = 1.2;
+final float audioMonitoring_maxSignalLevel_Guitar  = 1.2;
+
 
 void setup_gui() {
   
@@ -152,8 +167,18 @@ public class ControlFrame extends PApplet {
   controlP5.Accordion generalInfoAccordion;
   controlP5.Toggle changeLEDPanelMappingToggle;
   controlP5.Toggle setAutomaticModeToggle;
+  controlP5.Toggle setAudioMonitoringToggle;
   ArrayList<Bang> changeLEDPanelMappingBangList;
+  
   controlP5.Textlabel resetExpectedTextLabel;
+  controlP5.Textlabel inactiveAudioMonitoringTextLabel;
+  controlP5.Textlabel audioMonitoringKickTextLabel;
+  controlP5.Textlabel audioMonitoringSnareTextLabel;
+  controlP5.Textlabel audioMonitoringCymbalsTextLabel;
+  controlP5.Textlabel audioMonitoringBassTextLabel;
+  controlP5.Textlabel audioMonitoringKeysTextLabel;
+  controlP5.Textlabel audioMonitoringGuitarTextLabel;
+
   controlP5.Button add_FrontLeftStrobo;
   controlP5.Button add_FrontRightStrobo;
   controlP5.Button add_LEDTube;
@@ -196,6 +221,7 @@ public class ControlFrame extends PApplet {
     createGeneralInfoAccordion();
     createLEDPanelAnimationListGroup();
     createCustomDeviceAnimationListGroup();
+    createAudioMonitoringGroup();
     
     init_panelSimulatorList();
     init_customDevicesSimulatorList();
@@ -216,6 +242,10 @@ public class ControlFrame extends PApplet {
       text("SIMULATOR DEACTIVATED", gui_simulatorTextCenterX, gui_simulatorTextMainY);
       textFont(minimlFontMedium, 20);
       text("ACTIVATE THE SIMULATOR BY CLICKING ON THE PLAYME LOGO", gui_simulatorTextCenterX, gui_simulatorTextSubY);
+    }
+    
+    if (gui_activateAudioMonitoring) {
+      draw_audioMonitoring(gui_audioMonitoringGroupOffsetX + gui_spacing, 22*height/30 + 4*gui_spacing, 10);
     }
   }
   
@@ -877,7 +907,7 @@ public class ControlFrame extends PApplet {
                                  "\n" +
                                  "Do not forget to also set only one instance to\n" +
                                  "send the transport data (timecode / tempo),\n" +
-                                 "more than one could mess up analysis\n"
+                                 "more than one could mess up the analysis\n"
                                  ;
     cp5.addTextarea("ID# Explanation 1")
        .setPosition(leftOffset,leftOffset)
@@ -1589,6 +1619,17 @@ public class ControlFrame extends PApplet {
       else if (theEvent.getName() == "Auto Mode") {
         AUTOMATIC_MODE = setAutomaticModeToggle.getState();
       }
+      else if (theEvent.getName() == "Activate audio monitoring") {
+        gui_activateAudioMonitoring = setAudioMonitoringToggle.getState();
+        inactiveAudioMonitoringTextLabel.setVisible(!(setAudioMonitoringToggle.getState()));
+        audioMonitoringKickTextLabel.setVisible((setAudioMonitoringToggle.getState()));
+        audioMonitoringSnareTextLabel.setVisible((setAudioMonitoringToggle.getState()));
+        audioMonitoringCymbalsTextLabel.setVisible((setAudioMonitoringToggle.getState()));
+        audioMonitoringBassTextLabel.setVisible((setAudioMonitoringToggle.getState()));
+        audioMonitoringKeysTextLabel.setVisible((setAudioMonitoringToggle.getState()));
+        audioMonitoringGuitarTextLabel.setVisible((setAudioMonitoringToggle.getState()));
+        
+      }
       else if (theEvent.getName() == "Change Panel Mapping") {
         gui_changePanelMappingActive = changeLEDPanelMappingToggle.getState();
         if (gui_changePanelMappingActive) { gui_activateMappingBangs(); initLEDPanelMappingArray(); resetLEDPanelMapping();} 
@@ -2004,8 +2045,105 @@ public class ControlFrame extends PApplet {
     }
   }
   
-
+  //////////////////////////////////////////
+  // Create a small interface to monitor the incoming audio
   
+  void createAudioMonitoringGroup() {
+        
+    Group AudioMonitoringGroup = cp5.addGroup("Audio monitoring")
+                                    .setPosition(gui_audioMonitoringGroupOffsetX,22*height/30 )
+                                    .setWidth(gui_audioMonitoringGroupWidth)
+                                    .activateEvent(true)
+                                    .disableCollapse() 
+                                    .setBackgroundColor(color(255,40))
+                                    .setBackgroundHeight(height/4-20)
+                                    .setLabel("Audio monitoring")
+                                    ;
+    
+    setAudioMonitoringToggle = cp5.addToggle("Activate audio monitoring")
+                                  .setValue(0)
+                                  .setCaptionLabel("Activate Audio Monitoring")
+                                  .setPosition(gui_spacing, gui_spacing)
+                                  .setSize(gui_audioMonitoringToggleWidth, gui_audioMonitoringToggleHeight)
+                                  .setColorBackground(color(100,0,0))
+                                  .setColorForeground(color(130,0,0))
+                                  .setColorActive(color(160,0,0))
+                                  .setGroup(AudioMonitoringGroup)
+                                  ;
+    setAudioMonitoringToggle.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    
+    //Label which gets hidden when audio monitoring is activated
+    inactiveAudioMonitoringTextLabel = cp5.addTextlabel("Inactive Audio Monitoring")
+                                          .setText("AUDIO MONITORING IS CURRENTLY INACTIVE\nACTIVATE ONLY IF YOU NEED TO CHECK CORRECT INPUT \nROUTING THROUGH THE GUI AS ALL INCOMING AUDIO DATA \nWILL BE PROCESSED, REGARDLESS THIS TOGGLE")
+                                          .setPosition(gui_spacing, gui_spacing*5)
+                                          .setColorValue(color(255))
+                                          .moveTo(AudioMonitoringGroup)
+                                          ;
+    inactiveAudioMonitoringTextLabel.setVisible(true);
+    
+    //Labels which gets hidden when audio monitoring is deactivated
+    audioMonitoringKickTextLabel = cp5.addTextlabel("Audio Monitoring - Kick")
+                                      .setText("KICK")
+                                      .setPosition(2*gui_spacing + audioMonitoring_barWidth, 4*gui_spacing + 0*(10 + audioMonitoring_barHeight))
+                                      .setColorValue(color(255))
+                                      .moveTo(AudioMonitoringGroup)
+                                      ;
+    audioMonitoringSnareTextLabel = cp5.addTextlabel("Audio Monitoring - Snare")
+                                      .setText("SNARE")
+                                      .setPosition(2*gui_spacing + audioMonitoring_barWidth, 4*gui_spacing + 1*(10 + audioMonitoring_barHeight))
+                                      .setColorValue(color(255))
+                                      .moveTo(AudioMonitoringGroup)
+                                      ;
+    audioMonitoringCymbalsTextLabel = cp5.addTextlabel("Audio Monitoring - Cymbals")
+                                      .setText("CYMBALS")
+                                      .setPosition(2*gui_spacing + audioMonitoring_barWidth, 4*gui_spacing + 2*(10 + audioMonitoring_barHeight))
+                                      .setColorValue(color(255))
+                                      .moveTo(AudioMonitoringGroup)
+                                      ;
+    audioMonitoringBassTextLabel = cp5.addTextlabel("Audio Monitoring - Bass")
+                                      .setText("BASS")
+                                      .setPosition(2*gui_spacing + audioMonitoring_barWidth, 4*gui_spacing + 3*(10 + audioMonitoring_barHeight))
+                                      .setColorValue(color(255))
+                                      .moveTo(AudioMonitoringGroup)
+                                      ;
+    audioMonitoringKeysTextLabel = cp5.addTextlabel("Audio Monitoring - Keys")
+                                      .setText("KEYS")
+                                      .setPosition(2*gui_spacing + audioMonitoring_barWidth, 4*gui_spacing + 4*(10 + audioMonitoring_barHeight))
+                                      .setColorValue(color(255))
+                                      .moveTo(AudioMonitoringGroup)
+                                      ;
+    audioMonitoringGuitarTextLabel = cp5.addTextlabel("Audio Monitoring - Guitar")
+                                      .setText("GUITAR")
+                                      .setPosition(2*gui_spacing + audioMonitoring_barWidth, 4*gui_spacing + 5*(10 + audioMonitoring_barHeight))
+                                      .setColorValue(color(255))
+                                      .moveTo(AudioMonitoringGroup)
+                                      ;
+    audioMonitoringKickTextLabel.setVisible(false);
+    audioMonitoringSnareTextLabel.setVisible(false);
+    audioMonitoringCymbalsTextLabel.setVisible(false);
+    audioMonitoringBassTextLabel.setVisible(false);
+    audioMonitoringKeysTextLabel.setVisible(false);
+    audioMonitoringGuitarTextLabel.setVisible(false);
+    
+  }
+  
+  // Draw the actual audio info
+  void draw_audioMonitoring(int offsetX, int offsetY, int spacing) {
+    draw_singleAudioBar(offsetX, offsetY + 0*(spacing + audioMonitoring_barHeight), automaticSequencer.globalIntensity_Kick,    audioMonitoring_maxSignalLevel_Kick);
+    draw_singleAudioBar(offsetX, offsetY + 1*(spacing + audioMonitoring_barHeight), automaticSequencer.globalIntensity_Snare,   audioMonitoring_maxSignalLevel_Snare);
+    draw_singleAudioBar(offsetX, offsetY + 2*(spacing + audioMonitoring_barHeight), automaticSequencer.globalIntensity_Cymbals, audioMonitoring_maxSignalLevel_Cymbals);
+    draw_singleAudioBar(offsetX, offsetY + 3*(spacing + audioMonitoring_barHeight), automaticSequencer.globalIntensity_Bass,    audioMonitoring_maxSignalLevel_Bass);
+    draw_singleAudioBar(offsetX, offsetY + 4*(spacing + audioMonitoring_barHeight), automaticSequencer.globalIntensity_Keys,    audioMonitoring_maxSignalLevel_Keys);
+    draw_singleAudioBar(offsetX, offsetY + 5*(spacing + audioMonitoring_barHeight), automaticSequencer.globalIntensity_Guitar,  audioMonitoring_maxSignalLevel_Guitar);
+  }
+
+  void draw_singleAudioBar(int x, int y, float val, float maxVal) {
+    noStroke();
+    fill(80);
+    rect(x, y, audioMonitoring_barWidth, audioMonitoring_barHeight);
+    fill(160);
+    rect(x, y, map(constrain(val,0,maxVal),0,maxVal, 0, audioMonitoring_barWidth), audioMonitoring_barHeight);
+  }  
 }
 
 

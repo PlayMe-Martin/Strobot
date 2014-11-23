@@ -1050,10 +1050,10 @@ float rednoise_circlerad = 0;
 
 //TurningSingleLines parameters
 float turningsinglelines_init = 0;    //Defined during setup
-float turningsinglelines_position = turningsinglelines_init;
 float turningsinglelines_increment = 10;
 float turningsinglelines_angle = 0;
 float turningsinglelines_angleincrement = 0.2;
+ArrayList<SingleTurningLine> turningsinglelines_lines;
 
 //RandomAppearingLines parameters
 float randomappearinglines_speedx = 0;
