@@ -109,6 +109,14 @@ final int GUI_ATTR_CUSTOMDEV_BUILDUP       = 21;
 final int GUI_ATTR_CUSTOMDEV_NOISE         = 22;
 final int GUI_ATTR_CUSTOMDEV_SMOOTHNOISE   = 23;
 
+//Attributes for the DMX animations
+final int GUI_ATTR_DMX_ALL       = 0;
+final int GUI_ATTR_DMX_RIGHT     = 1;
+final int GUI_ATTR_DMX_LEFT      = 2;
+final int GUI_ATTR_DMX_CENTER    = 3;
+final int GUI_ATTR_DMX_STROBE    = 4;
+final int GUI_ATTR_DMX_PAR       = 5;
+
 final int audioMonitoring_barWidth         = 90;
 final int audioMonitoring_barHeight        = 10;
 final float audioMonitoring_maxSignalLevel_Kick    = 1.0;
@@ -165,6 +173,7 @@ public class ControlFrame extends PApplet {
   
   controlP5.Button gui_mainLogo;
   controlP5.Accordion generalInfoAccordion;
+  controlP5.Accordion customDevicesDMXAnimationListsAccordion;
   controlP5.Toggle changeLEDPanelMappingToggle;
   controlP5.Toggle setAutomaticModeToggle;
   controlP5.Toggle setAudioMonitoringToggle;
@@ -220,7 +229,10 @@ public class ControlFrame extends PApplet {
     createGuiHeaderElements();
     createGeneralInfoAccordion();
     createLEDPanelAnimationListGroup();
-    createCustomDeviceAnimationListGroup();
+    //createCustomDeviceAnimationListGroup();
+    
+    createCustomDeviceAndDMXAccordion();
+    
     createAudioMonitoringGroup();
     
     init_panelSimulatorList();
@@ -1064,6 +1076,29 @@ public class ControlFrame extends PApplet {
     return LEDPanelAnimations_animListGroup;
   } 
   
+  
+  void createCustomDeviceAndDMXAccordion(){
+
+    int accordionPosX  = gui_spacing;
+    int accordionPosY  = 22*height/30;
+    int accordionWidth = 576;
+    
+    Group CustomDevices = createCustomDeviceAnimationListGroup();
+    
+    
+    // Create an accordion containing two elements : the DMX and the Custom Device animation lists
+    customDevicesDMXAnimationListsAccordion = cp5.addAccordion("Animation Lists")
+                                                 .setPosition(accordionPosX, accordionPosY)
+                                                 .setWidth(accordionWidth)
+                                                 .addItem(CustomDevices)
+                                                 ;
+                   
+        
+    // when in SINGLE mode, only 1 accordion  
+    // group can be open at a time.  
+    generalInfoAccordion.open(0);
+    generalInfoAccordion.setCollapseMode(Accordion.SINGLE);    
+  }
   
   ////////////////////////////////////////////////////////////////
   // Create the custom device filter group

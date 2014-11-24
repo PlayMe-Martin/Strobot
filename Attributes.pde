@@ -13,6 +13,10 @@ StringList registeredAttributes;
 ArrayList<Attribute> customDevicesAttributes;
 StringList registeredAttributes_customDevices;
 
+//And again for the DMX animations 
+ArrayList<Attribute> DMXAttributes;
+StringList registeredAttributes_DMX;
+
 //Register attributes to an animation, given its number, its name, and a list of attributes
 ArrayList<Attribute> registerAttribute(ArrayList<Attribute> attributesArray, int animationNbr, String attributeName, String[] attributeList, float animationLength) {
   boolean alreadyRegistered = false;
@@ -824,6 +828,10 @@ void setCustomDevicesActionsAttributes() {
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 294, "Rack Lights - Slow Rainbow Smooth Noise"            , new String[] { "Rack Lights", "Slow", "Rainbow", "Smooth Noise"         } , 4);
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 295, "LED Tubes   - Slow Rainbow Smooth Noise"            , new String[] { "LED Tubes",   "Slow", "Rainbow", "Smooth Noise"         } , 4);
   
+}
+
+void setDMXAnimationsAttributes() {
+  DMXAttributes = registerAttribute(DMXAttributes, 1,   "All Devices - Blackout"                             , new String[] { "Strobe", "PAR", "All"                     } , 4);  
 }
 
 //Helper function to get back the length of the animation

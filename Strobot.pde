@@ -268,6 +268,10 @@ void setup()
   //Do the same for Custom devices actions
   customDevicesAttributes = new ArrayList<Attribute>();
   setCustomDevicesActionsAttributes();
+  
+  //And do the same for the DMX animations
+  DMXAttributes = new ArrayList<Attribute>();
+  setDMXAnimationsAttributes();
 
   if (output_PHP == true) {
     //Initialize and fill in the PHP file
