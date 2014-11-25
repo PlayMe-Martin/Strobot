@@ -196,12 +196,16 @@ public class ControlFrame extends PApplet {
  
   controlP5.CheckBox LEDPanelAnimations_animationListCheckBox;
   controlP5.CheckBox CustomDeviceAnimations_animationListCheckBox;
+  controlP5.CheckBox DMXAnimations_animationListCheckBox;
   controlP5.Button LEDPanelAnimations_reinitButton;
   controlP5.Button CustomDeviceAnimations_reinitButton;
+  controlP5.Button DMXAnimations_reinitButton;
   controlP5.ListBox LEDPanelAnimations_animationListBox;
   controlP5.ListBox CustomDeviceAnimations_animationListBox;
+  controlP5.ListBox DMXAnimations_animationListBox;
   controlP5.Textarea LEDPanelAnimations_currentAnimationDescription;
   controlP5.Textarea CustomDeviceAnimations_currentAnimationDescription;
+  controlP5.Textarea DMXAnimations_currentAnimationDescription;
   
   Group effectsInfo;
   
@@ -1080,24 +1084,25 @@ public class ControlFrame extends PApplet {
   void createCustomDeviceAndDMXAccordion(){
 
     int accordionPosX  = gui_spacing;
-    int accordionPosY  = 22*height/30;
+    int accordionPosY  = 22*height/30 - 10;
     int accordionWidth = 576;
     
     Group CustomDevices = createCustomDeviceAnimationListGroup();
-    
+    Group DMX = createDMXAnimationListGroup();
     
     // Create an accordion containing two elements : the DMX and the Custom Device animation lists
     customDevicesDMXAnimationListsAccordion = cp5.addAccordion("Animation Lists")
                                                  .setPosition(accordionPosX, accordionPosY)
                                                  .setWidth(accordionWidth)
                                                  .addItem(CustomDevices)
+                                                 .addItem(DMX)
                                                  ;
                    
         
     // when in SINGLE mode, only 1 accordion  
     // group can be open at a time.  
-    generalInfoAccordion.open(0);
-    generalInfoAccordion.setCollapseMode(Accordion.SINGLE);    
+    customDevicesDMXAnimationListsAccordion.open(0);
+    customDevicesDMXAnimationListsAccordion.setCollapseMode(Accordion.SINGLE);    
   }
   
   ////////////////////////////////////////////////////////////////
@@ -1114,12 +1119,12 @@ public class ControlFrame extends PApplet {
     int groupWidth = 576;
     
     Group CustomDeviceAnimations_animListGroup = cp5.addGroup("Animation list - Custom Devices")
-                                                    .setPosition(gui_spacing,22*height/30 )
+//                                                    .setPosition(gui_spacing,22*height/30 )
                                                     .setWidth(groupWidth)
                                                     .activateEvent(true)
-                                                    .disableCollapse() 
+//                                                    .disableCollapse() 
                                                     .setBackgroundColor(color(255,80))
-                                                    .setBackgroundHeight(height/4-20)
+                                                    .setBackgroundHeight(height/4-30)
                                                     .setLabel("Animation list - Custom devices")
                                                     ;
 
@@ -1209,6 +1214,95 @@ public class ControlFrame extends PApplet {
     return CustomDeviceAnimations_animListGroup;
   }
   
+  
+  ////////////////////////////////////////////////////////////////
+  // Now do the same for the DMX animations
+  //
+  
+  Group createDMXAnimationListGroup() {
+    int toggleWidth   = 12;
+    int toggleHeight  = 9;
+    int spacingRow    = 3;
+    int spacingColumn = 75;
+    int leftOffset    = 6;
+    
+    int groupWidth = 576;
+    
+    Group DMXAnimations_animListGroup = cp5.addGroup("Animation list - DMX Devices")
+                                                    .setWidth(groupWidth)
+                                                    .activateEvent(true) 
+                                                    .setBackgroundColor(color(255,80))
+                                                    .setBackgroundHeight(height/4-30)
+                                                    .setLabel("Animation list - DMX devices")
+                                                    ;
+
+    DMXAnimations_reinitButton = cp5.addButton("Reinit DMX list")
+                                             .setValue(0)
+                                             .setCaptionLabel("Reinit")
+                                             .setPosition(leftOffset + 6*spacingColumn + 6*toggleWidth, 4*toggleHeight + 3*spacingRow)
+                                             .setSize(40, toggleHeight)
+                                             .setColorBackground(color(110,0,0))
+                                             .setColorForeground(color(160,0,0))
+                                             .setColorActive(color(255,0,0))
+                                             .setGroup(DMXAnimations_animListGroup)
+                                             ;
+    // Center the label
+    DMXAnimations_reinitButton.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    
+    DMXAnimations_animationListCheckBox = cp5.addCheckBox("Attributes - DMX animations")
+                                                  .setPosition(leftOffset,toggleHeight)
+                                                  .setSize(toggleWidth,toggleHeight)
+                                                  .setItemsPerRow(7)
+                                                  .setSpacingColumn(spacingColumn)
+                                                  .setSpacingRow(spacingRow)
+                                                  .setColorForeground(color(120,0,0))
+                                                  .setColorActive(color(160,0,0))
+                                                  .setColorLabel(color(255))
+                                                  .addItem("All",         0)
+                                                  .addItem("Right",       1)
+                                                  .addItem("Left",        2)
+                                                  .addItem("Center",      3)
+                                                  .addItem("Strobe",      4)
+                                                  .addItem("Par",         5)
+                                                  .setGroup(DMXAnimations_animListGroup)
+                                                  ;
+
+    
+    List<String> filteredAnimationsStringList = new ArrayList<String>();
+    for (Attribute attr: DMXAttributes) {
+      filteredAnimationsStringList.add(attr.animationNbr + ": " + attr.name);
+    }
+    //Initialize the filtered animation list with all the available animations
+    DMXAnimations_animationListBox = cp5.addListBox("Filtered DMX Animation List")
+                                                 .setPosition(leftOffset, 5*toggleHeight + 6*spacingRow)
+                                                 .setSize(3*DMXAnimations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_animListGroup.getBackgroundHeight() - (6*toggleHeight + 5*spacingRow) + 1)
+                                                 .addItems(filteredAnimationsStringList)
+                                                 .hideBar() 
+                                                 .disableCollapse()
+                                                 .moveTo(DMXAnimations_animListGroup)
+                                                 ;
+    
+    DMXAnimations_currentAnimationDescription = cp5.addTextarea("Current DMX Animation Description")
+                                                            .setPosition(3*DMXAnimations_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
+                                                            .setSize(DMXAnimations_animListGroup.getWidth() - DMXAnimations_animationListBox.getWidth() - 3*leftOffset, DMXAnimations_animationListBox.getBackgroundHeight())
+                                                            .setColor(color(255))
+                                                            .setFont(minimlFont)
+                                                            .hideScrollbar()
+                                                            .setColorBackground(color(255,90))
+                                                            .setColorForeground(color(255,90))
+                                                            .moveTo(DMXAnimations_animListGroup)
+                                                            ;
+    String textDescription = "Current DMX animation description \n"
+                                      + "Select an animation in the list\n"
+                                      + "\n"
+                                      + "Animation number : \n"
+                                      + "Corresponding note/velocity : \n"
+                                      + "Attributes: \n";
+    DMXAnimations_currentAnimationDescription.setText(textDescription.toUpperCase());    
+        
+    return DMXAnimations_animListGroup;
+  }
+  
   void rebuildFilteredLEDPanelAnimationList(float[] checkBoxArrayValue) {
     String[] wantedAttributes = createLEDPanelAnimationListFilter(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = new ArrayList<String>();
@@ -1265,6 +1359,35 @@ public class ControlFrame extends PApplet {
     CustomDeviceAnimations_animationListBox.addItems(filteredAnimationsStringList);
   }
   
+  
+  void rebuildFilteredDMXAnimationList(float[] checkBoxArrayValue) {
+    String[] wantedAttributes = createDMXAnimationListFilter(checkBoxArrayValue);
+    List<String> filteredAnimationsStringList = new ArrayList<String>();
+    boolean init = false;
+    if (wantedAttributes.length == 0) {
+      init = true;
+    }
+
+    if (init == false) {
+      String[] unwantedAttributes = {};
+      ArrayList<Attribute> gui_DMXFilteredAttributes = new ArrayList<Attribute>();
+      gui_DMXFilteredAttributes = filterAnimationsByAttributes(DMXAttributes, wantedAttributes, unwantedAttributes);
+      for (Attribute attr: gui_DMXFilteredAttributes) {
+        filteredAnimationsStringList.add(attr.animationNbr + ": " + attr.name);
+      }
+    }
+    else {
+      for (Attribute attr: DMXAttributes) {
+        filteredAnimationsStringList.add(attr.animationNbr + ": " + attr.name);
+      }
+    }
+
+    for (String item[]: DMXAnimations_animationListBox.getListBoxItems()) {
+      DMXAnimations_animationListBox.removeItem(item[0]);
+    }
+    DMXAnimations_animationListBox.addItems(filteredAnimationsStringList);
+  }
+  
   ////////////////////////////////////////////////////////
   
   void gui_loadLEDPanelAnimation(int animNbr) {
@@ -1275,6 +1398,11 @@ public class ControlFrame extends PApplet {
     specificActions();
   }
   
+  void gui_loadDMXAnimation(int animNbr) {
+    dmxAutomaticControl = true;
+    dmxAnimationNumber  = animNbr;
+    setupDMXAnimation();
+  }
   
   ////////////////////////////////////////////////////////
   
@@ -2024,11 +2152,17 @@ public class ControlFrame extends PApplet {
       else if (theEvent.getName() == "Reinit CustomDevice list") {
         CustomDeviceAnimations_animationListCheckBox.deactivateAll();
       }
+      else if (theEvent.getName() == "Reinit DMX list") {
+        DMXAnimations_animationListCheckBox.deactivateAll();
+      }
       else if (theEvent.getName() == "Attributes - LED Panel animations") {
         rebuildFilteredLEDPanelAnimationList(LEDPanelAnimations_animationListCheckBox.getArrayValue());        
       }
       else if (theEvent.getName() == "Attributes - Custom Device animations") {
         rebuildFilteredCustomDeviceAnimationList(CustomDeviceAnimations_animationListCheckBox.getArrayValue());        
+      }
+      else if (theEvent.getName() == "Attributes - DMX animations") {
+        rebuildFilteredDMXAnimationList(DMXAnimations_animationListCheckBox.getArrayValue());        
       }
       //With listBoxes, it is necessary to also check if theEvent.isGroup()
       else if (theEvent.getName() == "Filtered LED Panel Animation List" && theEvent.isGroup()) {
@@ -2070,6 +2204,28 @@ public class ControlFrame extends PApplet {
         
         //Load the animation
         customDeviceAnimation(animNbr);
+
+      }
+      else if (theEvent.getName() == "Filtered DMX Animation List") {
+        int selectedVal = int(DMXAnimations_animationListBox.getValue());
+        String selectedItem =  DMXAnimations_animationListBox.getListBoxItems()[selectedVal][0];
+        String[] selectedItemSplit = split(selectedItem, ":");
+        int animNbr = Integer.parseInt(selectedItemSplit[0]);
+        
+        
+        //Update the description
+        //Note : get animNbr - 1, because unlike for the LED Panel animations, there is no 0
+        String textDescription = "Current animation description \n"
+                                      + DMXAttributes.get(animNbr - 1).name + "\n"
+                                      + "\n"
+                                      + "Animation number : " + DMXAttributes.get(animNbr - 1).animationNbr + "\n"
+                                      + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber(DMXAttributes.get(animNbr - 1).animationNbr) + "\n"
+                                      + "Attributes:\n"
+                                      + DMXAttributes.get(animNbr - 1).attributes;
+        DMXAnimations_currentAnimationDescription.setText(textDescription);
+        
+        //Load the animation
+        gui_loadDMXAnimation(animNbr);
 
       }
       else if (theEvent.getName().contains("Effect Bang")) {
@@ -2264,6 +2420,29 @@ String[] createCustomDeviceAnimationListFilter(float[] checkBoxArrayvalue) {
         case GUI_ATTR_CUSTOMDEV_BUILDUP       : temp.append("BuildUp");break;
         case GUI_ATTR_CUSTOMDEV_NOISE         : temp.append("Noise");break;
         case GUI_ATTR_CUSTOMDEV_SMOOTHNOISE   : temp.append("Smooth Noise");break;
+        default: break;
+      }
+    }
+  }
+  
+  String[] filter = new String[temp.size()];
+  for (int i = 0; i<temp.size(); i++) {
+    filter[i] = temp.get(i);
+  }
+  return filter;
+}
+
+String[] createDMXAnimationListFilter(float[] checkBoxArrayvalue) {
+  StringList temp = new StringList();
+  for (int i = 0; i<checkBoxArrayvalue.length; i++) {
+    if (checkBoxArrayvalue[i] == 1.0) {
+      switch(i) {
+        case GUI_ATTR_DMX_ALL       : temp.append("All");break;
+        case GUI_ATTR_DMX_LEFT      : temp.append("Left");break;
+        case GUI_ATTR_DMX_RIGHT     : temp.append("Right");break;
+        case GUI_ATTR_DMX_CENTER    : temp.append("Center");break;
+        case GUI_ATTR_DMX_STROBE    : temp.append("Strobe");break;
+        case GUI_ATTR_DMX_PAR       : temp.append("Par");break;        
         default: break;
       }
     }
