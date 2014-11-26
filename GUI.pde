@@ -114,8 +114,10 @@ final int GUI_ATTR_DMX_ALL       = 0;
 final int GUI_ATTR_DMX_RIGHT     = 1;
 final int GUI_ATTR_DMX_LEFT      = 2;
 final int GUI_ATTR_DMX_CENTER    = 3;
-final int GUI_ATTR_DMX_STROBE    = 4;
-final int GUI_ATTR_DMX_PAR       = 5;
+final int GUI_ATTR_DMX_RHYTHMIC  = 4;
+final int GUI_ATTR_DMX_STROBE    = 5;
+final int GUI_ATTR_DMX_PAR       = 6;
+
 
 final int audioMonitoring_barWidth         = 90;
 final int audioMonitoring_barHeight        = 10;
@@ -2441,8 +2443,9 @@ String[] createDMXAnimationListFilter(float[] checkBoxArrayvalue) {
         case GUI_ATTR_DMX_LEFT      : temp.append("Left");break;
         case GUI_ATTR_DMX_RIGHT     : temp.append("Right");break;
         case GUI_ATTR_DMX_CENTER    : temp.append("Center");break;
+        case GUI_ATTR_DMX_RHYTHMIC  : temp.append("Rhythmic");break;
         case GUI_ATTR_DMX_STROBE    : temp.append("Strobe");break;
-        case GUI_ATTR_DMX_PAR       : temp.append("Par");break;        
+        case GUI_ATTR_DMX_PAR       : temp.append("PAR");break;        
         default: break;
       }
     }
