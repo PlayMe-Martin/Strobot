@@ -117,6 +117,11 @@ final int GUI_ATTR_DMX_CENTER    = 3;
 final int GUI_ATTR_DMX_RHYTHMIC  = 4;
 final int GUI_ATTR_DMX_STROBE    = 5;
 final int GUI_ATTR_DMX_PAR       = 6;
+final int GUI_ATTR_DMX_VERYSLOW  = 7;
+final int GUI_ATTR_DMX_SLOW      = 8;
+final int GUI_ATTR_DMX_MEDIUM    = 9;
+final int GUI_ATTR_DMX_FAST      = 10;
+final int GUI_ATTR_DMX_VERYFAST  = 11;
 
 
 final int audioMonitoring_barWidth         = 90;
@@ -263,7 +268,8 @@ public class ControlFrame extends PApplet {
     }
     
     if (gui_activateAudioMonitoring) {
-      draw_audioMonitoring(gui_audioMonitoringGroupOffsetX + gui_spacing, 22*height/30 + 4*gui_spacing, 10);
+      println(22*gui_height/30 + 4*gui_spacing);
+      draw_audioMonitoring(gui_audioMonitoringGroupOffsetX + gui_spacing, 22*gui_height/30 + 4*gui_spacing, 10);
     }
   }
   
@@ -1264,8 +1270,14 @@ public class ControlFrame extends PApplet {
                                                   .addItem("Right",       1)
                                                   .addItem("Left",        2)
                                                   .addItem("Center",      3)
-                                                  .addItem("Strobe",      4)
-                                                  .addItem("Par",         5)
+                                                  .addItem("rhythmic",    4)
+                                                  .addItem("Strobe",      5)
+                                                  .addItem("Par",         6)
+                                                  .addItem("very slow ",   7)    //Small trick, controlP5 does not allow two elements with the same name
+                                                  .addItem("slow ",        8)
+                                                  .addItem("medium ",      9)
+                                                  .addItem("fast ",       10)
+                                                  .addItem("very fast ",  11)
                                                   .setGroup(DMXAnimations_animListGroup)
                                                   ;
 
@@ -1276,8 +1288,8 @@ public class ControlFrame extends PApplet {
     }
     //Initialize the filtered animation list with all the available animations
     DMXAnimations_animationListBox = cp5.addListBox("Filtered DMX Animation List")
-                                                 .setPosition(leftOffset, 5*toggleHeight + 6*spacingRow)
-                                                 .setSize(3*DMXAnimations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_animListGroup.getBackgroundHeight() - (6*toggleHeight + 5*spacingRow) + 1)
+                                                 .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
+                                                 .setSize(3*DMXAnimations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
                                                  .addItems(filteredAnimationsStringList)
                                                  .hideBar() 
                                                  .disableCollapse()
@@ -2328,6 +2340,8 @@ public class ControlFrame extends PApplet {
     draw_singleAudioBar(offsetX, offsetY + 3*(spacing + audioMonitoring_barHeight), automaticSequencer.globalIntensity_Bass,    audioMonitoring_maxSignalLevel_Bass);
     draw_singleAudioBar(offsetX, offsetY + 4*(spacing + audioMonitoring_barHeight), automaticSequencer.globalIntensity_Keys,    audioMonitoring_maxSignalLevel_Keys);
     draw_singleAudioBar(offsetX, offsetY + 5*(spacing + audioMonitoring_barHeight), automaticSequencer.globalIntensity_Guitar,  audioMonitoring_maxSignalLevel_Guitar);
+    
+    draw_timeInfoText();
   }
 
   void draw_singleAudioBar(int x, int y, float val, float maxVal) {
@@ -2337,6 +2351,37 @@ public class ControlFrame extends PApplet {
     fill(160);
     rect(x, y, map(constrain(val,0,maxVal),0,maxVal, 0, audioMonitoring_barWidth), audioMonitoring_barHeight);
   }  
+  
+  void draw_timeInfoText() {
+    textFont(minimlFont, 8);
+    textAlign(LEFT, TOP);
+    fill(255);
+    text(formatTimeInfoPositionText(), gui_audioMonitoringGroupOffsetX + 175,22*gui_height/30 + 4*gui_spacing + 0);
+    text(formatTimeInfoBPMText(),      gui_audioMonitoringGroupOffsetX + 175,22*gui_height/30 + 4*gui_spacing + 13);
+    text(formatTimeInfoPlayingText(),  gui_audioMonitoringGroupOffsetX + 175,22*gui_height/30 + 4*gui_spacing + 26);
+    
+  }
+  
+  String formatTimeInfoPositionText() {
+    int bar    = (((int) automaticSequencer.currentPosition) / 4) + 1;
+    int beat   = ((int) (automaticSequencer.currentPosition % 4.0)) + 1;
+    int ticks  = ((int) ( (automaticSequencer.currentPosition % 1.0) * 960.0 + 0.5));
+    return "POSITION: " + bar + "|" + beat + "|" + ticks;
+  }
+  
+  String formatTimeInfoBPMText() {
+    return "TEMPO: " + automaticSequencer.currentBPM + " BPM";
+  }
+  
+  String formatTimeInfoPlayingText() {
+    
+    if (automaticSequencer.isPlaying) {
+      return "PLAYBACK: ON";
+    }
+    else {
+      return "PLAYBACK: OFF";
+    }
+  }
 }
 
 
@@ -2445,7 +2490,13 @@ String[] createDMXAnimationListFilter(float[] checkBoxArrayvalue) {
         case GUI_ATTR_DMX_CENTER    : temp.append("Center");break;
         case GUI_ATTR_DMX_RHYTHMIC  : temp.append("Rhythmic");break;
         case GUI_ATTR_DMX_STROBE    : temp.append("Strobe");break;
-        case GUI_ATTR_DMX_PAR       : temp.append("PAR");break;        
+        case GUI_ATTR_DMX_PAR       : temp.append("PAR");break;
+        case GUI_ATTR_DMX_VERYSLOW  : temp.append("Very Slow");break;
+        case GUI_ATTR_DMX_SLOW      : temp.append("Slow");break;
+        case GUI_ATTR_DMX_MEDIUM    : temp.append("Medium");break;
+        case GUI_ATTR_DMX_FAST      : temp.append("Fast");break;
+        case GUI_ATTR_DMX_VERYFAST  : temp.append("Very Fast");break;
+
         default: break;
       }
     }
