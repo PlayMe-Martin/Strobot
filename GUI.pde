@@ -268,7 +268,6 @@ public class ControlFrame extends PApplet {
     }
     
     if (gui_activateAudioMonitoring) {
-      println(22*gui_height/30 + 4*gui_spacing);
       draw_audioMonitoring(gui_audioMonitoringGroupOffsetX + gui_spacing, 22*gui_height/30 + 4*gui_spacing, 10);
     }
   }
@@ -2342,6 +2341,7 @@ public class ControlFrame extends PApplet {
     draw_singleAudioBar(offsetX, offsetY + 5*(spacing + audioMonitoring_barHeight), automaticSequencer.globalIntensity_Guitar,  audioMonitoring_maxSignalLevel_Guitar);
     
     draw_timeInfoText();
+    draw_autoModeInfo();
   }
 
   void draw_singleAudioBar(int x, int y, float val, float maxVal) {
@@ -2381,6 +2381,32 @@ public class ControlFrame extends PApplet {
     else {
       return "PLAYBACK: OFF";
     }
+  }
+  
+  void draw_autoModeInfo() {
+    textFont(minimlFont, 8);
+    textAlign(LEFT, TOP);
+    fill(255);
+    text(formatCurrentIntensityText(),  gui_audioMonitoringGroupOffsetX + 175,22*gui_height/30 + 4*gui_spacing + 39);
+  }
+  
+  String formatCurrentIntensityText() {
+    if (automaticSequencer.currentIntensity == INTENSITY_DEFAULT) {
+      return "INTENSITY: DEFAULT";
+    }
+    else if (automaticSequencer.currentIntensity == INTENSITY_LOW) {
+      return "INTENSITY: LOW";
+    }
+    else if (automaticSequencer.currentIntensity == INTENSITY_MEDIUM) {
+      return "INTENSITY: MEDIUM";
+    }
+    else if (automaticSequencer.currentIntensity == INTENSITY_HIGH) {
+      return "INTENSITY: HIGH";
+    }
+    else if (automaticSequencer.currentIntensity == INTENSITY_MAX) {
+      return "INTENSITY: MAX";
+    }
+    return "INTENSITY: ";
   }
 }
 
