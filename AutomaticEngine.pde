@@ -64,8 +64,12 @@ final int PARTIAL_INTENSITY_SAMPLE_NUMBER = AUDIO_BUFFER_SIZE/2;
 // Print real time auto mode debug data - MUST be set to false for the final release
 final boolean printSystemDebugData = false;
 
+// Energy ratio between the high and the low frequencies - used when detecting the filtered bass only special scenario
+// When the processed FFT's ratio between the high end and the low end is higher than this threshold, consider the bass to be filtered
+float HI_LO_RATIO_THRESHOLD = 100;//6;
+
 //Automatic mode flag : set to true or false by input MIDI notes
-boolean AUTOMATIC_MODE = false;
+boolean AUTOMATIC_MODE = true;
 
 
 class PlayMeSequencer {
@@ -509,9 +513,6 @@ class PlayMeSequencer {
   void isOnlyTheFilteredBassPlaying() {
     float INTENSITY_THRESHOLD_FILTEREDBASS = 0.005;    //The intensity may be very low, as the bass can be heavily filtered 
     float INTENSITY_THRESHOLD = 0.005;
-    float HI_LO_RATIO_THRESHOLD = 6;
-    
-    
     
     // Since this is an extremely local check, do not consider the averaged signal over the entirety of the buffer for the signals other than the bass : only the most recent signal counts
     // An exception is made for the kick, to prevent false positives (the kick's plugin is usually set to send a lot of signal messages so this is not a problem)
@@ -519,6 +520,10 @@ class PlayMeSequencer {
     
     float lowEnergy = signalFFT_Bass.band1;
     float hiEnergy  = (signalFFT_Bass.band8 + signalFFT_Bass.band9 + signalFFT_Bass.band10 + signalFFT_Bass.band11 + signalFFT_Bass.band12);
+    
+    if (lowEnergy != 0) {
+    println((hiEnergy / lowEnergy) + " -- " + lowEnergy + "vs " + hiEnergy);
+    }
     
     if (globalIntensity_Bass > INTENSITY_THRESHOLD_FILTEREDBASS
         && (hiEnergy / lowEnergy) > HI_LO_RATIO_THRESHOLD

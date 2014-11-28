@@ -128,6 +128,7 @@ void createConfigFile() {
     configFile_write.println("AudioInput|SignalID|Bass:" + SIGNAL_ID_BASS);
     configFile_write.println("AudioInput|SignalID|Keys:" + SIGNAL_ID_KEYS);
     configFile_write.println("AudioInput|SignalID|Guitar:" + SIGNAL_ID_GUITAR);
+    configFile_write.println("AudioInput|HiLoFilterThreshold|Bass:" + HI_LO_RATIO_THRESHOLD);
     configFile_write.println();
     configFile_write.flush();
     configFile_write.close();  
@@ -420,6 +421,9 @@ void parseConfigurationFile(String line) {
       }
       else if (lineSplit[0].contains("AudioInput|SignalID|Guitar")) {
         SIGNAL_ID_GUITAR = convertStringToInt(lineSplit[1]);
+      }
+      else if (lineSplit[0].contains("AudioInput|HiLoFilterThreshold|Bass")) {
+        HI_LO_RATIO_THRESHOLD = convertStringToFloat(lineSplit[1]);
       }
       
     }
@@ -780,6 +784,19 @@ int convertStringToInt(String text) {
   }
   catch(NumberFormatException nfe) {
     a = getIntFromNoteString(text);
+  }
+  return a;
+}
+
+float convertStringToFloat(String text) {
+  //Allow to parse a float String 
+  
+  float a = -1;
+  try {
+    a = Float.parseFloat(text);
+  }
+  catch(NumberFormatException nfe) {
+    outputLog.println("Exception when parsing float : " + text);
   }
   return a;
 }
