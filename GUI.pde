@@ -862,6 +862,8 @@ public class ControlFrame extends PApplet {
                                         .setBackgroundHeight(generalInformationsHeight)
                                         ;
     int signalTextFieldOffset = 80;
+    int bassThresholdTextFieldOffset = signalTextFieldOffset + 7*spacingRow + 6*textfieldHeight;
+    
     cp5.addTextfield("Kick - Audio Signal ID")
        .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, spacingRow + signalTextFieldOffset)
        .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
@@ -946,6 +948,31 @@ public class ControlFrame extends PApplet {
        .setText(idNumberExplanation)
        .moveTo(audioSignalConfiguration)
        ;
+       
+       
+     String bassFilterExplanation = "Set the value for the ratio between the high\n" +
+                                    "and the low frequencies after which the bass\n" +
+                                    "is considered to be filtered\n" +
+                                    "This parameter is used by the auto mode\n" +
+                                    "algorithm, to detect when the bass is alone\n" +
+                                    "and filtered (special scenario in which the\n" +
+                                    "right stroboscope is on, and the panels off)\n"
+                                    ;
+       
+     cp5.addTextarea("Bass Filter Explanation")
+       .setPosition(leftOffset,leftOffset + textfieldHeight + spacingRow + bassThresholdTextFieldOffset)
+       .setFont(minimlFont)
+       .setColor(color(220))
+       .setText(bassFilterExplanation)
+       .moveTo(audioSignalConfiguration)
+       ;
+       
+     cp5.addSlider("Bass Hi-Lo Ratio Threshold")
+        .setPosition(leftOffset, 7*spacingRow + 6*textfieldHeight + bassThresholdTextFieldOffset)
+        .setRange(5,200)
+        .setValue(HI_LO_RATIO_THRESHOLD)
+        .moveTo(audioSignalConfiguration)
+        ;
 
     /////////////////////////////////////////////////////////////////////////////////////
        
@@ -2088,6 +2115,12 @@ public class ControlFrame extends PApplet {
         SIGNAL_ID_GUITAR = Integer.parseInt(cp5.getController(theEvent.getName()).getStringValue());
         createConfigFile();
       }
+      else if (theEvent.getName() == "Bass Hi-Lo Ratio Threshold") {
+        HI_LO_RATIO_THRESHOLD = Float.parseFloat(cp5.getController(theEvent.getName()).getStringValue());
+        createConfigFile();
+      }
+      
+      
       
       
       /////////////////////////
