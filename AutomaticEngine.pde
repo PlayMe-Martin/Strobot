@@ -66,7 +66,7 @@ final boolean printSystemDebugData = false;
 
 // Energy ratio between the high and the low frequencies - used when detecting the filtered bass only special scenario
 // When the processed FFT's ratio between the high end and the low end is higher than this threshold, consider the bass to be filtered
-float HI_LO_RATIO_THRESHOLD = 100;//6;
+float HI_LO_RATIO_THRESHOLD = 100;
 
 //Automatic mode flag : set to true or false by input MIDI notes
 boolean AUTOMATIC_MODE = true;
@@ -520,10 +520,6 @@ class PlayMeSequencer {
     
     float lowEnergy = signalFFT_Bass.band1;
     float hiEnergy  = (signalFFT_Bass.band8 + signalFFT_Bass.band9 + signalFFT_Bass.band10 + signalFFT_Bass.band11 + signalFFT_Bass.band12);
-    
-    if (lowEnergy != 0) {
-    println((hiEnergy / lowEnergy) + " -- " + lowEnergy + "vs " + hiEnergy);
-    }
     
     if (globalIntensity_Bass > INTENSITY_THRESHOLD_FILTEREDBASS
         && (hiEnergy / lowEnergy) > HI_LO_RATIO_THRESHOLD

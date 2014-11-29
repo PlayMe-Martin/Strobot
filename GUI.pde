@@ -2424,7 +2424,13 @@ public class ControlFrame extends PApplet {
   }
   
   String formatCurrentIntensityText() {
-    if (automaticSequencer.currentIntensity == INTENSITY_DEFAULT) {
+    if (automaticSequencer.onlyGuitarIsPlaying) {
+      return "INTENSITY: SOLO GUITAR";
+    }
+    else if (automaticSequencer.onlyFilteredBassIsPlaying) {
+      return "INTENSITY: SOLO HPF BASS";
+    }
+    else if (automaticSequencer.currentIntensity == INTENSITY_DEFAULT) {
       return "INTENSITY: DEFAULT";
     }
     else if (automaticSequencer.currentIntensity == INTENSITY_LOW) {
@@ -2442,8 +2448,6 @@ public class ControlFrame extends PApplet {
     return "INTENSITY: ";
   }
 }
-
-
 
 
 
