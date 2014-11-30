@@ -16919,23 +16919,117 @@ void draw_hypnoAudio() {
 // Specific actions for the DisplayFFT animation
 //////////////////////////////////////////
 
-void draw_displayFFT_kick() {
-  draw_displayFFT(SIGNAL_ID_KICK);
-}
-
-void draw_displayFFT(int signalID) {
+void draw_displayFFT_bass() {
   background(0);
   fill(255);
-  rect((width/12)*0,height - map(signalFFT_Kick.band1,0,8000,0,height), (width/12), height);
-  rect((width/12)*1,height - map(signalFFT_Kick.band2,0,8000,0,height), (width/12), height);
-  rect((width/12)*2,height - map(signalFFT_Kick.band3,0,8000,0,height), (width/12), height);
-  rect((width/12)*3,height - map(signalFFT_Kick.band4,0,8000,0,height), (width/12), height);
-  rect((width/12)*4,height - map(signalFFT_Kick.band5,0,8000,0,height), (width/12), height);
-  rect((width/12)*5,height - map(signalFFT_Kick.band6,0,8000,0,height), (width/12), height);
-  rect((width/12)*6,height - map(signalFFT_Kick.band7,0,8000,0,height), (width/12), height);
-  rect((width/12)*7,height - map(signalFFT_Kick.band8,0,8000,0,height), (width/12), height);
-  rect((width/12)*8,height - map(signalFFT_Kick.band9,0,8000,0,height), (width/12), height);
-  rect((width/12)*9,height - map(signalFFT_Kick.band10,0,8000,0,height), (width/12), height);
-  rect((width/12)*10,height - map(signalFFT_Kick.band11,0,8000,0,height), (width/12), height);
-  rect((width/12)*11,height - map(signalFFT_Kick.band12,0,8000,0,height), (width/12), height);
+  rect((width/12)*0,height - map(signalFFT_Bass.band1,0,8000,0,height), (width/12), height);
+  rect((width/12)*1,height - map(signalFFT_Bass.band2,0,8000,0,height), (width/12), height);
+  rect((width/12)*2,height - map(signalFFT_Bass.band3,0,8000,0,height), (width/12), height);
+  rect((width/12)*3,height - map(signalFFT_Bass.band4,0,8000,0,height), (width/12), height);
+  rect((width/12)*4,height - map(signalFFT_Bass.band5,0,8000,0,height), (width/12), height);
+  rect((width/12)*5,height - map(signalFFT_Bass.band6,0,8000,0,height), (width/12), height);
+  rect((width/12)*6,height - map(signalFFT_Bass.band7,0,8000,0,height), (width/12), height);
+  rect((width/12)*7,height - map(signalFFT_Bass.band8,0,8000,0,height), (width/12), height);
+  rect((width/12)*8,height - map(signalFFT_Bass.band9,0,8000,0,height), (width/12), height);
+  rect((width/12)*9,height - map(signalFFT_Bass.band10,0,8000,0,height), (width/12), height);
+  rect((width/12)*10,height - map(signalFFT_Bass.band11,0,8000,0,height), (width/12), height);
+  rect((width/12)*11,height - map(signalFFT_Bass.band12,0,8000,0,height), (width/12), height);
+}
+
+
+//////////////////////////////////////////
+// Specific actions for the SpiderWeb animation
+//////////////////////////////////////////
+
+void spiderweb_init() {
+  spiderWebPoints = new ArrayList<SpiderWebPoint>();
+  for (int i=0; i<spiderweb_nbPoints; i++) {
+    spiderWebPoints.add(new SpiderWebPoint());
+  }
+  for (SpiderWebPoint point: spiderWebPoints) {
+    point.findFriends();
+  }
+}
+
+void draw_spiderwebs() {
+  
+  background(0);
+  strokeWeight(3);
+  noFill();
+  
+  if (spiderweb_color == SPIDERWEB_WHITE) {
+    stroke(255);
+  }
+  else if (spiderweb_color == SPIDERWEB_RED) {
+    stroke(255,0,0);
+  }
+  
+  if (spiderweb_audioReactive) {
+    
+    //Reset old flags according to the current system time
+    invalidateOutdatedImpulseFlags();
+  
+    if (impulse_Kick) {
+      //Create a new environment
+      spiderweb_init();
+    }
+    
+    //Reset all the impulse flags, as they have been processed
+    resetImpulseFlags();
+  }
+  
+  for (SpiderWebPoint point: spiderWebPoints) {
+    point.drawLines();
+  }
+  
+  if (spiderweb_fade) {
+    fill(0, min(255, spiderweb_fadecpt));
+    noStroke();
+    rect(0,0,width,height);
+    spiderweb_fadecpt += spiderweb_fadespeed;
+  }
+}
+
+class SpiderWebPoint {
+  int x;
+  int y;
+  
+  int[][] closeFriends;
+  
+  SpiderWebPoint() {
+    x = (int) random(-width/3,4*width/3);
+    y = (int) random(-height/3,4*height/3);
+    closeFriends = new int[spiderweb_maxFriends][2];
+    //Initialize the list with rubbish
+    for (int[] row: closeFriends) {
+      Arrays.fill(row, 1000000);
+    }
+  }
+  
+  void findFriends() {
+    for (int i = 0; i<spiderWebPoints.size(); i++) {
+      SpiderWebPoint point = spiderWebPoints.get(i);
+      float squareDist = (x-point.x)*(x-point.x) + (y-point.y)*(y-point.y);
+      
+      for (int j = 0; j<spiderweb_maxFriends; j++) {
+        // If the new possible friend is closer than the j point, insert it in its place and shift it
+        if (closeFriends[j][1] > squareDist) {
+          // Shift the previous values
+          for (int k = spiderweb_maxFriends - 1; k > j; k--) {
+            closeFriends[k] = closeFriends[k-1]; 
+          }
+          int[] newFriend = {i,(int)squareDist};
+          closeFriends[j] = newFriend;
+          break;
+        }
+      }
+    }
+  }
+  
+  void drawLines() {
+    for (int[] pointNb: closeFriends) {
+      line(x, y, spiderWebPoints.get(pointNb[0]).x, spiderWebPoints.get(pointNb[0]).y);
+    }
+  }
+  
 }

@@ -4434,7 +4434,53 @@ void specificActions() {
         shiftpixels_speed = shiftpixels_fastspeed;
         break;      
       
-      case 407:    // Dirty Audio processing - to be modified
+      case 407:    //SpiderWebs - Manual - White
+        
+        smooth();
+        spiderweb_audioReactive = false;
+        spiderweb_fade = false;
+        spiderweb_color = SPIDERWEB_WHITE;
+        spiderweb_init();
+        break;
+        
+      case 408:    //SpiderWebs - Manual - Red
+        
+        smooth();
+        spiderweb_audioReactive = false;
+        spiderweb_fade = false;
+        spiderweb_color = SPIDERWEB_RED;
+        spiderweb_init();
+        break;
+        
+      case 409:    //SpiderWebs - Manual Fade - White
+        
+        smooth();
+        spiderweb_audioReactive = false;
+        spiderweb_fade = true;
+        spiderweb_color = SPIDERWEB_WHITE;
+        spiderweb_fadecpt = 0;
+        spiderweb_init();
+        break;
+        
+      case 410:    //SpiderWebs - Manual Fade - Red
+        
+        smooth();
+        spiderweb_audioReactive = false;
+        spiderweb_fade = true;
+        spiderweb_color = SPIDERWEB_RED;
+        spiderweb_fadecpt = 0;
+        spiderweb_init();
+        break;
+        
+      case 411:    //SpiderWebs - Audio
+        
+        smooth();
+        spiderweb_audioReactive = true;
+        spiderweb_fade = false;
+        spiderweb_color = SPIDERWEB_WHITE;
+        break;
+        
+      case 509:    //Audio Monitoring
 
         background(0);
         uglyImpulseKickList = new ArrayList<UglyImpulseKick>();
@@ -4443,7 +4489,7 @@ void specificActions() {
         uglyImpulseBassList = new ArrayList<UglyImpulseBass>();
         break;
       
-      case 408:    //Channel 1 FFT display
+      case 510:    //Bass FFT display
         
         frameRate(50);
         colorMode(RGB);

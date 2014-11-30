@@ -1418,3 +1418,15 @@ float hypnoAudio_moveSpeed = 0.1;
 int hypnoAudio_redImpact = 0;
 int hypnoAudio_colorAttenuation = 5;
 boolean hypnoAudio_listenToAudio = true;
+
+// Spider Web
+boolean spiderweb_audioReactive = false;
+boolean spiderweb_fade          = false;
+ArrayList<SpiderWebPoint> spiderWebPoints;
+int spiderweb_nbPoints    = 25;
+int spiderweb_maxFriends  = 4;    //Allow at most 4 points to be in contact
+final int SPIDERWEB_WHITE = 0;
+final int SPIDERWEB_RED   = 1;
+int spiderweb_color       = SPIDERWEB_WHITE;
+int spiderweb_fadecpt     = 0;
+int spiderweb_fadespeed   = 8;

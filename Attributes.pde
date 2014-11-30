@@ -525,9 +525,15 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 403, "Shred Pixels Vertical / Slow"        , new String[] {"Special", "Slow", "Rhythmic", "Violent"}                                             , -1);  
   animationAttributes = registerAttribute(animationAttributes, 404, "Shred Pixels Horizontal / Slow"      , new String[] {"Special", "Slow", "Rhythmic", "Violent"}                                             , -1);  
   animationAttributes = registerAttribute(animationAttributes, 405, "Shred Pixels Vertical / Slow"        , new String[] {"Special", "Fast", "Rhythmic", "Violent"}                                             , -1);  
-  animationAttributes = registerAttribute(animationAttributes, 406, "Shred Pixels Horizontal / Slow"      , new String[] {"Special", "Fast", "Rhythmic", "Violent"}                                             , -1);  
-  animationAttributes = registerAttribute(animationAttributes, 407, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                            , -1);  
-  animationAttributes = registerAttribute(animationAttributes, 408, "Display FFT - Kick"                  , new String[] {"Geometric", "Simple", "AudioInput"}                                                  , -1);    
+  animationAttributes = registerAttribute(animationAttributes, 406, "Shred Pixels Horizontal / Slow"      , new String[] {"Special", "Fast", "Rhythmic", "Violent"}                                             , -1);
+  animationAttributes = registerAttribute(animationAttributes, 407, "Spider Web - White - Manual"         , new String[] {"Geometric", "Simple", "Lines", "B&W", "Rhythmic"}                                    , -1);
+  animationAttributes = registerAttribute(animationAttributes, 408, "Spider Web - Red - Manual"           , new String[] {"Geometric", "Simple", "Lines", "Red", "Rhythmic"}                                    , -1);
+  animationAttributes = registerAttribute(animationAttributes, 409, "Spider Web - White Fade - Manual"    , new String[] {"Geometric", "Simple", "Lines", "B&W", "Rhythmic"}                                    , -1);
+  animationAttributes = registerAttribute(animationAttributes, 410, "Spider Web - Red Fade - Manual"      , new String[] {"Geometric", "Simple", "Lines", "Red", "Rhythmic"}                                    , -1);
+  animationAttributes = registerAttribute(animationAttributes, 411, "Spider Web - White - Audio"          , new String[] {"Geometric", "Simple", "Lines", "B&W", "Rhythmic", "AudioInput"}                      , -1);
+  
+  animationAttributes = registerAttribute(animationAttributes, 509, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                            , -1);  
+  animationAttributes = registerAttribute(animationAttributes, 510, "Display FFT - Bass"                  , new String[] {"Geometric", "Simple", "AudioInput"}                                                  , -1);    
 }
 
 

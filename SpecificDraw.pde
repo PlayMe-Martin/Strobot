@@ -528,8 +528,14 @@ void specific_draw() {
       case 404: draw_shredpixelshorizontal();break;                //ShredPixelsHorizontal / Slow
       case 405: draw_shredpixelsvertical();break;                  //ShredPixelsVertical / Slow
       case 406: draw_shredpixelshorizontal();break;                //ShredPixelsHorizontal / Slow
-      case 407: draw_dirtyAudioProcessing();break;                 //Audio Monitoring
-      case 408: draw_displayFFT_kick();break;                      //DisplayFFT - Kick
+      case 407: draw_spiderwebs();break;                           //Spider Webs - White - Manual
+      case 408: draw_spiderwebs();break;                           //Spider Webs - Red - Manual
+      case 409: draw_spiderwebs();break;                           //Spider Webs - White - Manual Fade
+      case 410: draw_spiderwebs();break;                           //Spider Webs - Red - Manual Fade
+      case 411: draw_spiderwebs();break;                           //Spider Webs - White - Audio
+      
+      case 509: draw_dirtyAudioProcessing();break;                 //Audio Monitoring
+      case 510: draw_displayFFT_bass();break;                      //DisplayFFT - Bass
       
       default: break;                                              //Default animation : do nothing, the screen will not be updated
     }
