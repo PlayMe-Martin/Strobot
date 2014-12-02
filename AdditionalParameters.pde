@@ -1430,3 +1430,9 @@ final int SPIDERWEB_RED   = 1;
 int spiderweb_color       = SPIDERWEB_WHITE;
 int spiderweb_fadecpt     = 0;
 int spiderweb_fadespeed   = 8;
+
+// Woublines
+ArrayList<WoubLine> woublines_list;
+boolean woublines_init  = false;
+boolean woublines_audio = false;
+float woublines_speed   = 2;

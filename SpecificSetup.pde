@@ -4480,6 +4480,70 @@ void specificActions() {
         spiderweb_color = SPIDERWEB_WHITE;
         break;
         
+      case 412:    //Woublines - White Inwards
+
+        strokeWeight(4);
+        smooth();
+        frameRate(80);
+        if (woublines_init == false) {
+          woublines_list = new ArrayList<WoubLine>();
+          woublines_init = true;
+        }
+        woublines_list.add(new WoubLine(0));
+        woublines_audio = false;
+        break;
+        
+      case 413:    //Woublines - White Outwards
+
+        strokeWeight(4);
+        smooth();
+        frameRate(80);
+        if (woublines_init == false) {
+          woublines_list = new ArrayList<WoubLine>();
+          woublines_init = true;
+        }
+        woublines_list.add(new WoubLine(1));
+        woublines_audio = false;
+        break;
+        
+      case 414:    //Woublines - Red Inwards
+
+        strokeWeight(4);
+        smooth();
+        frameRate(80);
+        if (woublines_init == false) {
+          woublines_list = new ArrayList<WoubLine>();
+          woublines_init = true;
+        }
+        woublines_list.add(new WoubLine(2));
+        woublines_audio = false;
+        break;
+        
+      case 415:    //Woublines - Red Outwards
+
+        strokeWeight(4);
+        smooth();
+        frameRate(80);
+        if (woublines_init == false) {
+          woublines_list = new ArrayList<WoubLine>();
+          woublines_init = true;
+        }
+        woublines_list.add(new WoubLine(3));
+        woublines_audio = false;
+        break;
+        
+      case 416:    //Woublines - Audio
+
+        strokeWeight(4);
+        smooth();
+        frameRate(80);
+        if (woublines_init == false) {
+          woublines_list = new ArrayList<WoubLine>();
+          woublines_init = true;
+        }
+        woublines_audio = true;
+        break;
+        
       case 509:    //Audio Monitoring
 
         background(0);

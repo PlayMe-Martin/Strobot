@@ -531,6 +531,11 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 409, "Spider Web - White Fade - Manual"    , new String[] {"Geometric", "Simple", "Lines", "B&W", "Rhythmic"}                                    );
   animationAttributes = registerAttribute(animationAttributes, 410, "Spider Web - Red Fade - Manual"      , new String[] {"Geometric", "Simple", "Lines", "Red", "Rhythmic"}                                    );
   animationAttributes = registerAttribute(animationAttributes, 411, "Spider Web - White - Audio"          , new String[] {"Geometric", "Simple", "Lines", "B&W", "Rhythmic", "AudioInput"}                      );
+  animationAttributes = registerAttribute(animationAttributes, 412, "Woublines - White Inwards"           , new String[] {"Geometric", "Simple", "Lines", "B&W", "Rhythmic"}                                    );
+  animationAttributes = registerAttribute(animationAttributes, 413, "Woublines - White Outwards"          , new String[] {"Geometric", "Simple", "Lines", "B&W", "Rhythmic"}                                    );
+  animationAttributes = registerAttribute(animationAttributes, 414, "Woublines - Red Inwards"             , new String[] {"Geometric", "Simple", "Lines", "Red", "Rhythmic"}                                    );
+  animationAttributes = registerAttribute(animationAttributes, 415, "Woublines - Red Outwards"            , new String[] {"Geometric", "Simple", "Lines", "Red", "Rhythmic"}                                    );
+  animationAttributes = registerAttribute(animationAttributes, 416, "Woublines - Audio"                   , new String[] {"Geometric", "Simple", "Lines", "B&W", "Red", "AudioInput"}                           );
   animationAttributes = registerAttribute(animationAttributes, 509, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                            );
   animationAttributes = registerAttribute(animationAttributes, 510, "Display FFT - Bass"                  , new String[] {"Geometric", "Simple", "AudioInput"}                                                  );  
 }

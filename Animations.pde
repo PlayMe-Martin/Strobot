@@ -17033,3 +17033,77 @@ class SpiderWebPoint {
   }
   
 }
+
+//////////////////////////////////////////
+// Specific actions for the Woublines animation
+//////////////////////////////////////////
+
+void draw_woublines() {
+  noStroke();
+  fill(0,30);
+  rect(0,0,width,height);
+  stroke(255);
+  
+  if (woublines_audio) {
+    
+    //Reset old flags according to the current system time
+    invalidateOutdatedImpulseFlags();
+  
+    if (impulse_Kick) {
+      //Add a new line
+      woublines_list.add(new WoubLine((int)random(4)));
+    }
+    
+    //Reset all the impulse flags, as they have been processed
+    resetImpulseFlags();
+  }
+  
+  for (WoubLine line: woublines_list) {
+    line.drawLine();
+  }
+  
+  for (WoubLine line: woublines_list) {
+    if (line.isDead()) {
+      woublines_list.remove(line);
+      break;
+    }
+  }
+}
+
+class WoubLine {
+  
+  int progress;
+  int type;
+  
+  float y;
+  float x;
+  
+  WoubLine(int _type) {
+    progress = 0;
+    type = _type;
+  }
+  
+  void drawLine() {
+    y = ((height-progress)*(height-progress))/height;
+    switch (type) {
+      case 0:  x = width - progress*1.2; stroke(255);      break;
+      case 1:  x = width - progress*2;   stroke(255);      break;
+      case 2:  x = width - progress*1.2; stroke(255,0,0);  break;
+      case 3:  x = width - progress*2;   stroke(255,0,0);  break;
+      default: x = width;                stroke(255);      break;
+    }
+    line(width/2 - x, y, width/2 + x, y); 
+    
+    progress += woublines_speed;
+  }
+  
+  boolean isDead() {
+    if (progress >= 2.5*height) {
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
+}
+
