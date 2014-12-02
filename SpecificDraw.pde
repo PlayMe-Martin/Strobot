@@ -533,6 +533,12 @@ void specific_draw() {
       case 409: draw_spiderwebs();break;                           //Spider Webs - White - Manual Fade
       case 410: draw_spiderwebs();break;                           //Spider Webs - Red - Manual Fade
       case 411: draw_spiderwebs();break;                           //Spider Webs - White - Audio
+      case 412: draw_woublines();break;                            //Woublines - White Inwards
+      case 413: draw_woublines();break;                            //Woublines - White Outwards
+      case 414: draw_woublines();break;                            //Woublines - Red Inwards
+      case 415: draw_woublines();break;                            //Woublines - Red Outwards
+      case 416: draw_woublines();break;                            //Woublines - Audio
+      
       
       case 509: draw_dirtyAudioProcessing();break;                 //Audio Monitoring
       case 510: draw_displayFFT_bass();break;                      //DisplayFFT - Bass
