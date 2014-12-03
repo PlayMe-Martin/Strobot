@@ -14198,7 +14198,7 @@ void draw_patatapWithAudioInput() {
   draw_patatap();
   
   //Reset all the impulse flags, as they have been processed
-  resetImpulseFlags();
+  impulseMessageProcessed = true;
 }
 
 void draw_patatap() {  
@@ -16795,7 +16795,7 @@ void draw_dirtyAudioProcessing() {
   }
   
   //Reset all the impulse flags, as they have been processed
-  resetImpulseFlags();
+  impulseMessageProcessed = true;
 }
 
 class UglyImpulseKick {
@@ -16912,7 +16912,7 @@ void draw_hypnoAudio() {
   }
   
   //Reset all the impulse flags, as they have been processed
-  resetImpulseFlags();
+  impulseMessageProcessed = true;
 }
 
 //////////////////////////////////////////
@@ -16975,7 +16975,7 @@ void draw_spiderwebs() {
     }
     
     //Reset all the impulse flags, as they have been processed
-    resetImpulseFlags();
+    impulseMessageProcessed = true;
   }
   
   for (SpiderWebPoint point: spiderWebPoints) {
@@ -17054,8 +17054,8 @@ void draw_woublines() {
       woublines_list.add(new WoubLine((int)random(4)));
     }
     
-    //Reset all the impulse flags, as they have been processed
-    resetImpulseFlags();
+    //Set all the impulse flags to be reset at the end of the cycle, as they have been processed
+    impulseMessageProcessed = true;
   }
   
   for (WoubLine line: woublines_list) {

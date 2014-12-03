@@ -63,6 +63,14 @@ void playDMXAnimation() {
     case 46:  dmxAnim_growingRotatingStrobe8();    break;         // 46 -  Growing Strobe - Rotating Left/Center/Right - 1/8
     case 47:  dmxAnim_growingRotatingStrobe16();   break;         // 47 -  Growing Strobe - Rotating Left/Center/Right - 1/16
     
+    case 48:  dmxAnim_singleFlash();               break;         // 48 -  Single Flash - Atomic 3000
+    case 49:  dmxAnim_impulseFlasher_kick();       break;         // 49 -  Impulse Flasher - Kick    : flash once the Atomic 3000 when an impulse is processed
+    case 50:  dmxAnim_impulseFlasher_snare();      break;         // 50 -  Impulse Flasher - Snare   : flash once the Atomic 3000 when an impulse is processed
+    case 51:  dmxAnim_impulseFlasher_cymbals();    break;         // 51 -  Impulse Flasher - Cymbals : flash once the Atomic 3000 when an impulse is processed
+    case 52:  dmxAnim_impulseFlasher_bass();       break;         // 52 -  Impulse Flasher - Bass    : flash once the Atomic 3000 when an impulse is processed
+    case 53:  dmxAnim_impulseFlasher_keys();       break;         // 53 -  Impulse Flasher - Keys    : flash once the Atomic 3000 when an impulse is processed
+    case 54:  dmxAnim_impulseFlasher_guitar();     break;         // 54 -  Impulse Flasher - Guitar  : flash once the Atomic 3000 when an impulse is processed
+    
     // PAR animations must start from 128
     
     default:  dmxAnim_blackout();                  break;
@@ -86,6 +94,7 @@ void setupDMXAnimation() {
     case 45:  growingStrobe_speed = 255; growingStrobe_intensity = 0; break;
     case 46:  growingStrobe_speed = 255; growingStrobe_intensity = 0; break;
     case 47:  growingStrobe_speed = 255; growingStrobe_intensity = 0; break;
+    case 48:  singleFlash_cpt = 1;
     default:  break;
   } 
 }
@@ -425,4 +434,97 @@ void dmxAnim_growingRotatingStrobe8() {
 
 void dmxAnim_growingRotatingStrobe16() {
   dmxAnim_growingRotatingStrobe(4.0);
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////
+// Single flashes using the Atomic-3000 type strobes
+/////////////////////////////////////////////////////////////////////////////////
+
+// This counter is set to 1 when a single flash is called, the function then sets it to 0 once the flash has been executed
+// This is to deal with the single flash protocol used on the Atomic strobes :
+// Start by setting the intensity and the flash rate at 0, then set an intensity on channel 1
+int singleFlash_cpt = 0;
+
+void dmxAnim_singleFlash() {
+  if (singleFlash_cpt > 0) {
+    // Do a single flash by setting an intensity on channel 1
+    // TBIL
+
+    for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
+      //This is a function specific to the Martin strobes, which can be set apart using their number of channels
+      if (stroboscope.numberOfChannels == 4) {
+  
+      }
+      else {
+        stroboscope.stopDMX();
+      }
+    }
+    for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
+      stroboscope.stopDMX();
+      if (stroboscope.numberOfChannels == 4) {
+  
+      }
+      else {
+        stroboscope.stopDMX();
+      }
+    }
+    
+    for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
+      if (stroboscope.numberOfChannels == 4) {
+  
+      }
+    }
+    
+    // Decrease the counter
+    singleFlash_cpt -= 1;
+    
+  }
+  else {
+    // Reset the intensity and the flash rate to 0
+    for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
+      stroboscope.stopDMX();
+    }
+    for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
+      stroboscope.stopDMX();
+    }
+    for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
+      stroboscope.stopDMX();
+    }
+  }
+}
+
+// Impulse flasher : flash the center strobe once, when an impulse is processed
+void dmxAnim_impulseFlasher_kick() {
+  dmxAnim_impulseFlasher(SIGNAL_ID_KICK);
+}
+
+void dmxAnim_impulseFlasher_snare() {
+  dmxAnim_impulseFlasher(SIGNAL_ID_SNARE);
+}
+
+void dmxAnim_impulseFlasher_cymbals() {
+  dmxAnim_impulseFlasher(SIGNAL_ID_CYMBALS);
+}
+
+void dmxAnim_impulseFlasher_bass() {
+  dmxAnim_impulseFlasher(SIGNAL_ID_BASS);
+}
+
+void dmxAnim_impulseFlasher_keys() {
+  dmxAnim_impulseFlasher(SIGNAL_ID_KEYS);
+}
+
+void dmxAnim_impulseFlasher_guitar() {
+  dmxAnim_impulseFlasher(SIGNAL_ID_GUITAR);
+}
+
+void dmxAnim_impulseFlasher(int signalID) {
+
+  
+  //Reset old flags according to the current system time
+  invalidateOutdatedImpulseFlags();
+  
+  //Set all the impulse flags to be reset at the end of the cycle, as they have been processed
+  impulseMessageProcessed = true;
 }

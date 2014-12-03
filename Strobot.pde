@@ -525,6 +525,12 @@ void draw()
       if (dmxAutomaticControl == true || AUTOMATIC_MODE == true) {
         playDMXAnimation();
       }
+      
+      //Reset the Audio flags if requested by the animation
+      if (impulseMessageProcessed) {
+        resetImpulseFlags();
+        impulseMessageProcessed = false;
+      }
     }
     catch(Exception e) {
       outputLog.println("Caught an exception in the draw thread ! " + e); 

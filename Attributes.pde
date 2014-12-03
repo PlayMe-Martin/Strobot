@@ -888,7 +888,13 @@ void setDMXAnimationsAttributes() {
   DMXAttributes = registerAttribute(DMXAttributes, 45,  "Growing Strobe - Rotating Left/Center/Right - 1/4"   , new String[] { "Strobe", "All", "Rhythmic", "Medium"                                       } );
   DMXAttributes = registerAttribute(DMXAttributes, 46,  "Growing Strobe - Rotating Left/Center/Right - 1/8"   , new String[] { "Strobe", "All", "Rhythmic", "Fast"                                         } );
   DMXAttributes = registerAttribute(DMXAttributes, 47,  "Growing Strobe - Rotating Left/Center/Right - 1/16"  , new String[] { "Strobe", "All", "Rhythmic", "Very Fast"                                    } );
-
+  DMXAttributes = registerAttribute(DMXAttributes, 48,  "Martin Atomic - Single Flash"                        , new String[] { "Strobe", "Center", "Rhythmic"                                              } );
+  DMXAttributes = registerAttribute(DMXAttributes, 49,  "Impulse Flasher - Kick"                              , new String[] { "Strobe", "Center", "Rhythmic", "AudioInput"                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 50,  "Impulse Flasher - Snare"                             , new String[] { "Strobe", "Center", "Rhythmic", "AudioInput"                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 51,  "Impulse Flasher - Cymbals"                           , new String[] { "Strobe", "Center", "Rhythmic", "AudioInput"                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 52,  "Impulse Flasher - Bass"                              , new String[] { "Strobe", "Center", "Rhythmic", "AudioInput"                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 53,  "Impulse Flasher - Keys"                              , new String[] { "Strobe", "Center", "Rhythmic", "AudioInput"                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 54,  "Impulse Flasher - Guitar"                            , new String[] { "Strobe", "Center", "Rhythmic", "AudioInput"                                } );
 }
 
 

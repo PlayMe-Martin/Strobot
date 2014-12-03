@@ -548,7 +548,8 @@ void specific_draw() {
   }
   
   //At the end of every draw cycle, reset the impulse flags to prevent processing old audio data
-  resetImpulseFlags();
+  //This is not such a good idea, as on slower machines, the draw thread may be interrupted - and as such, some impulses may be lost
+  //impulseMessageProcessed = true;
 }
 
 void specific_draw_dmx() {
