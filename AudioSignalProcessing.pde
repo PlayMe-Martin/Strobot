@@ -45,6 +45,7 @@ long previousImpulseTimestamp_Cymbals = System.nanoTime();
 long previousImpulseTimestamp_Bass    = System.nanoTime();
 long previousImpulseTimestamp_Keys    = System.nanoTime();
 long previousImpulseTimestamp_Guitar  = System.nanoTime();
+boolean impulseMessageProcessed = false;        //Flag set by the animations which use the impulse : after the data processing, this flag is set to true so that at the end of the cycle, the old messages are reset
 long OUTDATED_IMPULSE_AGE = 250*1000*1000;      //Consider that after OUTDATED_IMPULSE_AGE ns, the previous impulse is outdated, and should be invalidated
 
 // Port number must be greater than 1000

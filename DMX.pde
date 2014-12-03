@@ -112,7 +112,7 @@ class DMX_Stroboscope {
   boolean isActive           = false;
   boolean exceptionRaisedDMX = false;
   
-  
+  //Classic 2-channel stroboscope (eg. the cheap ones)
   DMX_Stroboscope(int stroboscopeSpeed, int stroboscopeBrightness) {
     this.DMXAddress_stroboscopeSpeed = stroboscopeSpeed;
     this.DMXAddress_stroboscopeBrightness = stroboscopeBrightness;
@@ -120,6 +120,7 @@ class DMX_Stroboscope {
     this.numberOfChannels = 2;
   }
   
+  //More complex 4-channel stroboscope (eg. Martin Atomic 3000)
   DMX_Stroboscope(int stroboscopeSpeed, int stroboscopeBrightness, int stroboscopeFlashLength) {
     this.DMXAddress_stroboscopeSpeed = stroboscopeSpeed;
     this.DMXAddress_stroboscopeBrightness = stroboscopeBrightness;
@@ -190,8 +191,15 @@ class DMX_Stroboscope {
         else if (this.numberOfChannels == 3) {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
+          
+          //Not advisable, as it would make for a bad initialization of the single flash commands
+          //myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
         }
+        
+        else if (this.numberOfChannels == 4) {
+          //TBIL
+        }
+        
       }
       catch (Exception e) {
         outputLog.println("DMX exception : " + e);

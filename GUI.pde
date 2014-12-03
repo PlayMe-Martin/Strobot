@@ -79,7 +79,7 @@ final int GUI_ATTR_LEDPANEL_SPIRAL      = 25;
 final int GUI_ATTR_LEDPANEL_NOISE       = 26;
 final int GUI_ATTR_LEDPANEL_OBJECTS     = 27;   
 final int GUI_ATTR_LEDPANEL_SPECIAL     = 28;
-final int GUI_ATTR_LEDPANEL_VIDEO       = 29;
+final int GUI_ATTR_LEDPANEL_AUDIO       = 29;
 final int GUI_ATTR_LEDPANEL_GAME        = 30;
 final int GUI_ATTR_LEDPANEL_3D          = 31;
 
@@ -122,6 +122,7 @@ final int GUI_ATTR_DMX_SLOW      = 8;
 final int GUI_ATTR_DMX_MEDIUM    = 9;
 final int GUI_ATTR_DMX_FAST      = 10;
 final int GUI_ATTR_DMX_VERYFAST  = 11;
+final int GUI_ATTR_DMX_AUDIO     = 12;
 
 
 final int audioMonitoring_barWidth         = 90;
@@ -1072,7 +1073,7 @@ public class ControlFrame extends PApplet {
                                                   .addItem("Noise",26)
                                                   .addItem("Objects",27)   
                                                   .addItem("Special",28)
-                                                  .addItem("Video",29)
+                                                  .addItem("Audio",29)
                                                   .addItem("Game",30)
                                                   .addItem("3D",31)
                                                   .setGroup(LEDPanelAnimations_animListGroup)
@@ -1299,11 +1300,12 @@ public class ControlFrame extends PApplet {
                                                   .addItem("rhythmic",    4)
                                                   .addItem("Strobe",      5)
                                                   .addItem("Par",         6)
-                                                  .addItem("very slow ",   7)    //Small trick, controlP5 does not allow two elements with the same name
-                                                  .addItem("slow ",        8)
-                                                  .addItem("medium ",      9)
+                                                  .addItem("very slow ",  7)    //Small trick, controlP5 does not allow two elements with the same name
+                                                  .addItem("slow ",       8)
+                                                  .addItem("medium ",     9)
                                                   .addItem("fast ",       10)
                                                   .addItem("very fast ",  11)
+                                                  .addItem("audio",       12)
                                                   .setGroup(DMXAnimations_animListGroup)
                                                   ;
 
@@ -1324,7 +1326,7 @@ public class ControlFrame extends PApplet {
     
     DMXAnimations_currentAnimationDescription = cp5.addTextarea("Current DMX Animation Description")
                                                             .setPosition(3*DMXAnimations_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_animListGroup.getWidth() - DMXAnimations_animationListBox.getWidth() - 3*leftOffset, DMXAnimations_animationListBox.getBackgroundHeight())
+                                                            .setSize(DMXAnimations_animListGroup.getWidth() - DMXAnimations_animationListBox.getWidth() - 3*leftOffset, DMXAnimations_animationListBox.getBackgroundHeight() - toggleHeight - spacingRow)
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -2485,7 +2487,7 @@ String[] createLEDPanelAnimationListFilter(float[] checkBoxArrayvalue) {
         case GUI_ATTR_LEDPANEL_NOISE       : temp.append("Noise"      );break;
         case GUI_ATTR_LEDPANEL_OBJECTS     : temp.append("Objects"    );break;
         case GUI_ATTR_LEDPANEL_SPECIAL     : temp.append("Special"    );break;
-        case GUI_ATTR_LEDPANEL_VIDEO       : temp.append("Video"      );break;
+        case GUI_ATTR_LEDPANEL_AUDIO       : temp.append("AudioInput" );break;
         case GUI_ATTR_LEDPANEL_GAME        : temp.append("Game"       );break;
         case GUI_ATTR_LEDPANEL_3D          : temp.append("3D"         );break;
         default: break;
@@ -2559,7 +2561,7 @@ String[] createDMXAnimationListFilter(float[] checkBoxArrayvalue) {
         case GUI_ATTR_DMX_MEDIUM    : temp.append("Medium");break;
         case GUI_ATTR_DMX_FAST      : temp.append("Fast");break;
         case GUI_ATTR_DMX_VERYFAST  : temp.append("Very Fast");break;
-
+        case GUI_ATTR_DMX_AUDIO     : temp.append("AudioInput");break;
         default: break;
       }
     }
