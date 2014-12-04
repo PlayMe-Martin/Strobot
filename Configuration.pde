@@ -500,9 +500,10 @@ void parseCustomDeviceSpecificLine_RackLight(String line) {
 
 
 void parseDMXSpecificLine_FrontLeftStroboscope(String line) {
-  int dmx_speed = -1;
-  int dmx_brightness = -1;
+  int dmx_speed       = -1;
+  int dmx_brightness  = -1;
   int dmx_flashLength = -1;
+  int dmx_specialFX   = -1;
   
   try {
     String[] lineSplit = split(line, "|");
@@ -522,6 +523,9 @@ void parseDMXSpecificLine_FrontLeftStroboscope(String line) {
         }
         else if (elementSplit[0].contains("FlashLength")) {
           dmx_flashLength = convertStringToInt(elementSplit[1]);
+        }
+        else if (elementSplit[0].contains("SpecialFX")) {
+          dmx_specialFX = convertStringToInt(elementSplit[1]);
         }
       }
     }
@@ -540,8 +544,8 @@ void parseDMXSpecificLine_FrontLeftStroboscope(String line) {
       DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
     }
     else {
-      outputLog.println("Adding a 3-channel front left stroboscope : Speed:" + dmx_speed + "|Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength);
-      DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness, dmx_flashLength));
+      outputLog.println("Adding a 4-channel front left stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed "|SpecialFX:" + dmx_specialFX);
+      DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
     }
   }
   else {
@@ -553,6 +557,7 @@ void parseDMXSpecificLine_FrontRightStroboscope(String line) {
   int dmx_speed = -1;
   int dmx_brightness = -1;
   int dmx_flashLength = -1;
+  int dmx_specialFX   = -1;
   
   try {
     String[] lineSplit = split(line, "|");
@@ -572,6 +577,9 @@ void parseDMXSpecificLine_FrontRightStroboscope(String line) {
         }
         else if (elementSplit[0].contains("FlashLength")) {
           dmx_flashLength = convertStringToInt(elementSplit[1]);
+        }
+        else if (elementSplit[0].contains("SpecialFX")) {
+          dmx_specialFX = convertStringToInt(elementSplit[1]);
         }
       }
     }
@@ -590,8 +598,8 @@ void parseDMXSpecificLine_FrontRightStroboscope(String line) {
       DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
     }
     else {
-      outputLog.println("Adding a 3-channel front right stroboscope : Speed:" + dmx_speed + "|Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength);
-      DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness, dmx_flashLength));
+      outputLog.println("Adding a 4-channel front right stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed "|SpecialFX:" + dmx_specialFX);
+      DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
     }
   }
   else {
@@ -603,6 +611,7 @@ void parseDMXSpecificLine_BackStroboscope(String line) {
   int dmx_speed = -1;
   int dmx_brightness = -1;
   int dmx_flashLength = -1;
+  int dmx_specialFX = -1;
   
   try {
     String[] lineSplit = split(line, "|");
@@ -623,6 +632,9 @@ void parseDMXSpecificLine_BackStroboscope(String line) {
         else if (elementSplit[0].contains("FlashLength")) {
           dmx_flashLength = convertStringToInt(elementSplit[1]);
         }
+        else if (elementSplit[0].contains("SpecialFX")) {
+          dmx_specialFX = convertStringToInt(elementSplit[1]);
+        }
       }
     }
   }
@@ -640,8 +652,8 @@ void parseDMXSpecificLine_BackStroboscope(String line) {
       DMXList_BackStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
     }
     else {
-      outputLog.println("Adding a 3-channel back stroboscope : Speed:" + dmx_speed + "|Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength);
-      DMXList_BackStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness, dmx_flashLength));
+      outputLog.println("Adding a 4-channel back stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed "|SpecialFX:" + dmx_specialFX);
+      DMXList_BackStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
     }
   }
   else {
