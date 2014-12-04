@@ -28,8 +28,9 @@ final int strobelist[][] = { {0,0},
     {225,25},{225,50},{225,75},{225,100},{225,125},{225,150},{225,175},{225,200},{225,225},{225,255},
     {255,25},{255,50},{255,75},{255,100},{255,125},{255,150},{255,175},{255,200},{255,225},{255,255},{255,255}};
 
-//For 3 channel stroboscopes, a default flash length shall be used
+//For 4 channel stroboscopes, default values for the special channels
 final int DMXStroboscope_defaultFlashLengthValue = 127;
+final int DMXStroboscope_defaultSpecialFXValue   = 0;      // No effect  
 
 //General DMX object, serves as en entry point to send actual DMX data over the network
 public class DMX{
@@ -106,6 +107,7 @@ class DMX_Stroboscope {
   int DMXAddress_stroboscopeSpeed;
   int DMXAddress_stroboscopeBrightness;
   int DMXAddress_stroboscopeFlashLength;
+  int DMXAddress_stroboscopeSpecialFX;
   int numberOfChannels;
   int currentSpeed           = 0;
   int currentBrightness      = 0;
@@ -121,16 +123,12 @@ class DMX_Stroboscope {
   }
   
   //More complex 4-channel stroboscope (eg. Martin Atomic 3000)
-  DMX_Stroboscope(int stroboscopeSpeed, int stroboscopeBrightness, int stroboscopeFlashLength) {
+  DMX_Stroboscope(int stroboscopeBrightness, int stroboscopeFlashLength, int stroboscopeSpeed, int stroboscopeSpecialFX ) {
     this.DMXAddress_stroboscopeSpeed = stroboscopeSpeed;
     this.DMXAddress_stroboscopeBrightness = stroboscopeBrightness;
     this.DMXAddress_stroboscopeFlashLength = stroboscopeFlashLength;
-    if (stroboscopeFlashLength < 0) {
-      this.numberOfChannels = 2;
-    }
-    else {
-      this.numberOfChannels = 3;
-    }
+    this.DMXAddress_stroboscopeSpecialFX = stroboscopeSpecialFX;
+    this.numberOfChannels = 4;
   }
   
   //Used to print the informations regarding this device in the configuration file
@@ -139,7 +137,7 @@ class DMX_Stroboscope {
       return "Speed:" + this.DMXAddress_stroboscopeSpeed + "|Brightness:" + this.DMXAddress_stroboscopeBrightness;
     }
     else {
-      return "Speed:" + this.DMXAddress_stroboscopeSpeed + "|Brightness:" + this.DMXAddress_stroboscopeBrightness + "|FlashLength:" + this.DMXAddress_stroboscopeFlashLength;
+      return "Brightness:" + this.DMXAddress_stroboscopeBrightness + "|FlashLength:" + this.DMXAddress_stroboscopeFlashLength + "|Speed:" + this.DMXAddress_stroboscopeSpeed + "|SpecialFX:" + this.DMXAddress_stroboscopeSpecialFX;
     }
   }
   
@@ -222,10 +220,11 @@ class DMX_Stroboscope {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
         }
-        else if (this.numberOfChannels == 3) {
+        else if (this.numberOfChannels == 4) {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,DMXStroboscope_defaultSpecialFXValue);
         }
       }
       catch (Exception e) {
@@ -290,7 +289,8 @@ void init_defaultDMXDevices() {
   DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
   DMXList_PARs                   = new ArrayList<DMX_PAR>();
   
-  //The default DMX devices consist of a single stroboscope, in 2-channel mode, and with the DMX addresses 1 and 2 for speed and brightness
+  //The default DMX devices consist of two small stroboscopes on the left and on the right, and one big in the middle
+  DMXList_BackStroboscopes.add(new DMX_Stroboscope(5,6,7,8));
   DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(1, 2));
   DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
 }
