@@ -544,7 +544,7 @@ void parseDMXSpecificLine_FrontLeftStroboscope(String line) {
       DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
     }
     else {
-      outputLog.println("Adding a 4-channel front left stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed "|SpecialFX:" + dmx_specialFX);
+      outputLog.println("Adding a 4-channel front left stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed + "|SpecialFX:" + dmx_specialFX);
       DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
     }
   }
@@ -598,7 +598,7 @@ void parseDMXSpecificLine_FrontRightStroboscope(String line) {
       DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
     }
     else {
-      outputLog.println("Adding a 4-channel front right stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed "|SpecialFX:" + dmx_specialFX);
+      outputLog.println("Adding a 4-channel front right stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed + "|SpecialFX:" + dmx_specialFX);
       DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
     }
   }
@@ -652,7 +652,7 @@ void parseDMXSpecificLine_BackStroboscope(String line) {
       DMXList_BackStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
     }
     else {
-      outputLog.println("Adding a 4-channel back stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed "|SpecialFX:" + dmx_specialFX);
+      outputLog.println("Adding a 4-channel back stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed + "|SpecialFX:" + dmx_specialFX);
       DMXList_BackStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
     }
   }

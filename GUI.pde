@@ -432,7 +432,7 @@ public class ControlFrame extends PApplet {
     
     int offsetY = DMXTextLabelPosY;
     cp5.addTextlabel("DMX Info")
-       .setText("DMX STROBE CHANNELS : (SPEED,BRIGHTNESS,FLASHLENGTH)")
+       .setText("DMX STROBE CHANNELS : (SPD, INTSTY) OR (INTSTY, LNGTH, SPD, SFX)")
        .setPosition(leftOffset,offsetY)
        .setFont(minimlFont)
        .moveTo(hardwareInfo)
@@ -448,7 +448,13 @@ public class ControlFrame extends PApplet {
     
     for (int i=0; i<DMXList_FrontLeftStroboscopes.size(); i++) {
       DMX_Stroboscope stroboscope = DMXList_FrontLeftStroboscopes.get(i);
-      String fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + ")";
+      String fieldValue;
+      if (stroboscope.numberOfChannels == 2) {
+        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + ")";
+      } 
+      else {
+        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + "," + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeSpecialFX + ")";
+      }
       cp5.addTextfield("Left Strobe " + i)
          .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
          .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
@@ -474,7 +480,13 @@ public class ControlFrame extends PApplet {
     }
     for (int i=0; i<DMXList_FrontRightStroboscopes.size(); i++) {
       DMX_Stroboscope stroboscope = DMXList_FrontRightStroboscopes.get(i);
-      String fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + ")";
+      String fieldValue;
+      if (stroboscope.numberOfChannels == 2) {
+        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + ")";
+      } 
+      else {
+        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + "," + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeSpecialFX + ")";
+      }
       cp5.addTextfield("Right Strobe " + i)
          .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
          .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
@@ -500,7 +512,13 @@ public class ControlFrame extends PApplet {
     }
     for (int i=0; i<DMXList_BackStroboscopes.size(); i++) {
       DMX_Stroboscope stroboscope = DMXList_BackStroboscopes.get(i);
-      String fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + ")";
+      String fieldValue;
+      if (stroboscope.numberOfChannels == 2) {
+        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + ")";
+      } 
+      else {
+        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + "," + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeSpecialFX + ")";
+      }
       cp5.addTextfield("Back Strobe " + i)
          .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
          .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
