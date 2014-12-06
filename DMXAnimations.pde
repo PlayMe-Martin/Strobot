@@ -523,9 +523,24 @@ void dmxAnim_impulseFlasher_guitar() {
 
 void dmxAnim_impulseFlasher(int signalID) {
 
-  
   //Reset old flags according to the current system time
   invalidateOutdatedImpulseFlags();
+  
+  boolean impulse = false;
+  
+  if (signalID == SIGNAL_ID_KICK)         { impulse = impulse_Kick;    }
+  else if (signalID == SIGNAL_ID_SNARE)   { impulse = impulse_Snare;   }
+  else if (signalID == SIGNAL_ID_CYMBALS) { impulse = impulse_Cymbals; }
+  else if (signalID == SIGNAL_ID_BASS)    { impulse = impulse_Bass;    }
+  else if (signalID == SIGNAL_ID_KEYS)    { impulse = impulse_Keys;    }
+  else if (signalID == SIGNAL_ID_GUITAR)  { impulse = impulse_Guitar;  }
+  
+  if (impulse) {
+    dmxAnim_longSingleFlash();
+  }
+  else {
+    dmxAnim_blackout();
+  }
   
   //Set all the impulse flags to be reset at the end of the cycle, as they have been processed
   impulseMessageProcessed = true;
