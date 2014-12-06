@@ -63,13 +63,14 @@ void playDMXAnimation() {
     case 46:  dmxAnim_growingRotatingStrobe8();    break;         // 46 -  Growing Strobe - Rotating Left/Center/Right - 1/8
     case 47:  dmxAnim_growingRotatingStrobe16();   break;         // 47 -  Growing Strobe - Rotating Left/Center/Right - 1/16
     
-    case 48:  dmxAnim_singleFlash();               break;         // 48 -  Single Flash - Atomic 3000
-    case 49:  dmxAnim_impulseFlasher_kick();       break;         // 49 -  Impulse Flasher - Kick    : flash once the Atomic 3000 when an impulse is processed
-    case 50:  dmxAnim_impulseFlasher_snare();      break;         // 50 -  Impulse Flasher - Snare   : flash once the Atomic 3000 when an impulse is processed
-    case 51:  dmxAnim_impulseFlasher_cymbals();    break;         // 51 -  Impulse Flasher - Cymbals : flash once the Atomic 3000 when an impulse is processed
-    case 52:  dmxAnim_impulseFlasher_bass();       break;         // 52 -  Impulse Flasher - Bass    : flash once the Atomic 3000 when an impulse is processed
-    case 53:  dmxAnim_impulseFlasher_keys();       break;         // 53 -  Impulse Flasher - Keys    : flash once the Atomic 3000 when an impulse is processed
-    case 54:  dmxAnim_impulseFlasher_guitar();     break;         // 54 -  Impulse Flasher - Guitar  : flash once the Atomic 3000 when an impulse is processed
+    case 48:  dmxAnim_shortSingleFlash();          break;         // 48 -  Short Single Flash - Atomic 3000
+    case 49:  dmxAnim_longSingleFlash();           break;         // 49 -  Long Single Flash - Atomic 3000
+    case 50:  dmxAnim_impulseFlasher_kick();       break;         // 50 -  Impulse Flasher - Kick    : flash once the Atomic 3000 when an impulse is processed
+    case 51:  dmxAnim_impulseFlasher_snare();      break;         // 51 -  Impulse Flasher - Snare   : flash once the Atomic 3000 when an impulse is processed
+    case 52:  dmxAnim_impulseFlasher_cymbals();    break;         // 52 -  Impulse Flasher - Cymbals : flash once the Atomic 3000 when an impulse is processed
+    case 53:  dmxAnim_impulseFlasher_bass();       break;         // 53 -  Impulse Flasher - Bass    : flash once the Atomic 3000 when an impulse is processed
+    case 54:  dmxAnim_impulseFlasher_keys();       break;         // 54 -  Impulse Flasher - Keys    : flash once the Atomic 3000 when an impulse is processed
+    case 55:  dmxAnim_impulseFlasher_guitar();     break;         // 55 -  Impulse Flasher - Guitar  : flash once the Atomic 3000 when an impulse is processed
     
     // PAR animations must start from 128
     
@@ -446,33 +447,34 @@ void dmxAnim_growingRotatingStrobe16() {
 // Start by setting the intensity and the flash rate at 0, then set an intensity on channel 1
 int singleFlash_cpt = 0;
 
-void dmxAnim_singleFlash() {
+void dmxAnim_shortSingleFlash() {
+  dmxAnim_singleFlash(50);
+}
+
+void dmxAnim_longSingleFlash() {
+  dmxAnim_singleFlash(250);
+}
+
+void dmxAnim_singleFlash(int flashLength) {
   if (singleFlash_cpt > 0) {
     // Do a single flash by setting an intensity on channel 1
-    // TBIL
 
     for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
       //This is a function specific to the Martin strobes, which can be set apart using their number of channels
       if (stroboscope.numberOfChannels == 4) {
-  
-      }
-      else {
-        stroboscope.stopDMX();
+        stroboscope.startDMX(0, 255, flashLength, 0);    //Speed = 0, Intensity = Max, specialFX = 0 
       }
     }
     for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
       stroboscope.stopDMX();
       if (stroboscope.numberOfChannels == 4) {
-  
-      }
-      else {
-        stroboscope.stopDMX();
+        stroboscope.startDMX(0, 255, flashLength, 0);    //Speed = 0, Intensity = Max, specialFX = 0
       }
     }
     
     for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
       if (stroboscope.numberOfChannels == 4) {
-  
+        stroboscope.startDMX(0, 255, flashLength, 0);    //Speed = 0, Intensity = Max, specialFX = 0
       }
     }
     

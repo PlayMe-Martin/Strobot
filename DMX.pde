@@ -16,7 +16,8 @@ ArrayList<DMX_PAR> DMXList_PARs;
 boolean exceptionRaisedDMX = false;
 
 //Create a preset table for the DMX stroboscope // {strobo_speed, strobo_brightness}
-final int strobelist[][] = { {0,0},
+//Note : for the first value (10,0), the speed is a bit particular : setting it to a non-null value allows to easily make single flashes using the Atomic 3000 strobes
+final int strobelist[][] = { {10,0},
     {25,25},{25,50},{25,75},{25,100},{25,125},{25,150},{25,175},{25,200},{25,225},{25,255},
     {50,25},{50,50},{50,75},{50,100},{50,125},{50,150},{50,175},{50,200},{50,225},{50,255},
     {75,25},{75,50},{75,75},{75,100},{75,125},{75,150},{75,175},{75,200},{75,225},{75,255},
@@ -111,23 +112,26 @@ class DMX_Stroboscope {
   int numberOfChannels;
   int currentSpeed           = 0;
   int currentBrightness      = 0;
+  int currentFlashLength     = DMXStroboscope_defaultFlashLengthValue;
+  int currentSpecialFX       = DMXStroboscope_defaultSpecialFXValue;
   boolean isActive           = false;
   boolean exceptionRaisedDMX = false;
   
   //Classic 2-channel stroboscope (eg. the cheap ones)
   DMX_Stroboscope(int stroboscopeSpeed, int stroboscopeBrightness) {
-    this.DMXAddress_stroboscopeSpeed = stroboscopeSpeed;
-    this.DMXAddress_stroboscopeBrightness = stroboscopeBrightness;
+    this.DMXAddress_stroboscopeSpeed       = stroboscopeSpeed;
+    this.DMXAddress_stroboscopeBrightness  = stroboscopeBrightness;
     this.DMXAddress_stroboscopeFlashLength = -1;
+    this.DMXAddress_stroboscopeSpecialFX   = -1;
     this.numberOfChannels = 2;
   }
   
   //More complex 4-channel stroboscope (eg. Martin Atomic 3000)
   DMX_Stroboscope(int stroboscopeBrightness, int stroboscopeFlashLength, int stroboscopeSpeed, int stroboscopeSpecialFX ) {
-    this.DMXAddress_stroboscopeSpeed = stroboscopeSpeed;
-    this.DMXAddress_stroboscopeBrightness = stroboscopeBrightness;
+    this.DMXAddress_stroboscopeSpeed       = stroboscopeSpeed;
+    this.DMXAddress_stroboscopeBrightness  = stroboscopeBrightness;
     this.DMXAddress_stroboscopeFlashLength = stroboscopeFlashLength;
-    this.DMXAddress_stroboscopeSpecialFX = stroboscopeSpecialFX;
+    this.DMXAddress_stroboscopeSpecialFX   = stroboscopeSpecialFX;
     this.numberOfChannels = 4;
   }
   
@@ -160,10 +164,12 @@ class DMX_Stroboscope {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
         }
-        else if (this.numberOfChannels == 3) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+        else if (this.numberOfChannels == 4) {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,this.currentSpeed);
+          
         }
       }
       catch (Exception e) {
@@ -186,12 +192,12 @@ class DMX_Stroboscope {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
         }
-        else if (this.numberOfChannels == 3) {
+        else if (this.numberOfChannels == 4) {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength, DMXStroboscope_defaultFlashLengthValue);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX, DMXStroboscope_defaultSpecialFXValue);
           
-          //Not advisable, as it would make for a bad initialization of the single flash commands
-          //myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
         }
         
         else if (this.numberOfChannels == 4) {
@@ -225,6 +231,35 @@ class DMX_Stroboscope {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,DMXStroboscope_defaultSpecialFXValue);
+        }
+      }
+      catch (Exception e) {
+        outputLog.println("DMX exception : " + e);
+        this.exceptionRaisedDMX = true;
+      }
+    }
+  }
+  
+  //Alternate function, with additional parameters
+  void startDMX(int stroboscopeSpeed, int stroboscopeBrightness, int stroboscopeFlashLength, int stroboscopeSpecialFX) {
+    //Consider that the strobe is active
+    this.isActive = true;
+    this.currentSpeed       = stroboscopeSpeed;
+    this.currentBrightness  = stroboscopeBrightness;
+    this.currentFlashLength = stroboscopeFlashLength;
+    this.currentSpecialFX   = stroboscopeSpecialFX;
+      
+    if (this.exceptionRaisedDMX == false) {
+      try {
+        // Additional security : only allow this function for the 4-channel strobes
+        if (this.numberOfChannels == 4) {
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,this.currentFlashLength);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,this.currentSpecialFX);
+        }
+        else {
+          outputLog.println("Internal DMX error : Tried calling a complete startDMX for devices other than the 4-channel strobes"); 
         }
       }
       catch (Exception e) {
