@@ -72,6 +72,8 @@ void playDMXAnimation() {
     case 54:  dmxAnim_impulseFlasher_keys();       break;         // 54 -  Impulse Flasher - Keys    : flash once the Atomic 3000 when an impulse is processed
     case 55:  dmxAnim_impulseFlasher_guitar();     break;         // 55 -  Impulse Flasher - Guitar  : flash once the Atomic 3000 when an impulse is processed
     
+    case 56:  dmxAnim_atomicFX_rampUp_Slow();      break;         // 56 -  Atomic 3000 SpecialFX - Ramp up - Slow
+    
     // PAR animations must start from 128
     
     default:  dmxAnim_blackout();                  break;
@@ -544,4 +546,43 @@ void dmxAnim_impulseFlasher(int signalID) {
   
   //Set all the impulse flags to be reset at the end of the cycle, as they have been processed
   impulseMessageProcessed = true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////
+// Special FX using the Atomic 3000 stroboscopes
+/////////////////////////////////////////////////////////////////////////////////
+
+void dmxAnim_atomicFX_rampUp_Slow() {
+  dmxAnim_atomicFX(255, 255, 60, 10);
+}
+
+void dmxAnim_atomicFX(int intensity, int flashLength, int speed, int fxNumber) {
+  for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
+    //This is a function specific to the Martin strobes, which can be set apart using their number of channels
+    if (stroboscope.numberOfChannels == 4) {
+      stroboscope.startDMX(speed, intensity, flashLength, fxNumber); 
+    }
+    else {
+      stroboscope.stopDMX();
+    }
+  }
+  for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
+    stroboscope.stopDMX();
+    if (stroboscope.numberOfChannels == 4) {
+      stroboscope.startDMX(speed, intensity, flashLength, fxNumber);
+    }
+    else {
+      stroboscope.stopDMX();
+    }
+  }
+  
+  for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
+    if (stroboscope.numberOfChannels == 4) {
+      stroboscope.startDMX(speed, intensity, flashLength, fxNumber);
+    }
+    else {
+      stroboscope.stopDMX();
+    }
+  }
 }
