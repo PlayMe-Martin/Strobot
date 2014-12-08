@@ -1524,7 +1524,7 @@ public class ControlFrame extends PApplet {
   void createEffectsBangList() {
     addEffectBang("1 - Classic Glitch", 1);
     addEffectBang("2 - RGB Glitch", 2);
-    addEffectBang("3 - 180° Flip", 3);
+    addEffectBang("3 - 180 Flip", 3);
     addEffectBang("4 - Red Shift", 4);
     addEffectBang("5 - General Flicker", 5);
     addEffectBang("6 - Random White Stripes", 6);
