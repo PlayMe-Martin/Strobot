@@ -168,8 +168,9 @@ class DMX_Stroboscope {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,this.currentSpeed);
-          
+          if (this.DMXAddress_stroboscopeSpecialFX != -1) {
+            myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,this.currentSpeed);
+          }
         }
       }
       catch (Exception e) {
@@ -196,8 +197,9 @@ class DMX_Stroboscope {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength, DMXStroboscope_defaultFlashLengthValue);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX, DMXStroboscope_defaultSpecialFXValue);
-          
+          if (this.DMXAddress_stroboscopeSpecialFX != -1) {
+            myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX, DMXStroboscope_defaultSpecialFXValue);
+          }
         }
         
         else if (this.numberOfChannels == 4) {
@@ -230,7 +232,9 @@ class DMX_Stroboscope {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,DMXStroboscope_defaultSpecialFXValue);
+          if (this.DMXAddress_stroboscopeSpecialFX != -1) {
+            myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,DMXStroboscope_defaultSpecialFXValue);
+          }
         }
       }
       catch (Exception e) {
@@ -256,7 +260,9 @@ class DMX_Stroboscope {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,this.currentFlashLength);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,this.currentSpecialFX);
+          if (this.DMXAddress_stroboscopeSpecialFX != -1) {
+            myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,this.currentSpecialFX);
+          }
         }
         else {
           outputLog.println("Internal DMX error : Tried calling a complete startDMX for devices other than the 4-channel strobes"); 

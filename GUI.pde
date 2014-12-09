@@ -123,6 +123,7 @@ final int GUI_ATTR_DMX_MEDIUM    = 9;
 final int GUI_ATTR_DMX_FAST      = 10;
 final int GUI_ATTR_DMX_VERYFAST  = 11;
 final int GUI_ATTR_DMX_AUDIO     = 12;
+final int GUI_ATTR_DMX_ATOMIC    = 13;
 
 
 final int audioMonitoring_barWidth         = 90;
@@ -1324,6 +1325,7 @@ public class ControlFrame extends PApplet {
                                                   .addItem("fast ",       10)
                                                   .addItem("very fast ",  11)
                                                   .addItem("audio",       12)
+                                                  .addItem("Atomic",      13)
                                                   .setGroup(DMXAnimations_animListGroup)
                                                   ;
 
@@ -2611,6 +2613,7 @@ String[] createDMXAnimationListFilter(float[] checkBoxArrayvalue) {
         case GUI_ATTR_DMX_FAST      : temp.append("Fast");break;
         case GUI_ATTR_DMX_VERYFAST  : temp.append("Very Fast");break;
         case GUI_ATTR_DMX_AUDIO     : temp.append("AudioInput");break;
+        case GUI_ATTR_DMX_ATOMIC    : temp.append("Atomic");break;
         default: break;
       }
     }
