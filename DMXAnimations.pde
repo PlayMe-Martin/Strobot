@@ -86,6 +86,13 @@ void playDMXAnimation() {
     case 66:  dmxAnim_atomicFX_rampDown_MediumContinuous();      break;         // 66 -  Atomic 3000 SpecialFX - Ramp down - Medium Continuous
     case 67:  dmxAnim_atomicFX_rampDown_FastContinuous();        break;         // 67 -  Atomic 3000 SpecialFX - Ramp down - Fast Continuous
     
+    case 68:  dmxAnim_atomicFX_rampUpDown_SlowFlash();           break;         // 68 -  Atomic 3000 SpecialFX - Ramp up/down - Slow Flash
+    case 69:  dmxAnim_atomicFX_rampUpDown_MediumFlash();         break;         // 69 -  Atomic 3000 SpecialFX - Ramp up/down - Medium Flash
+    case 70:  dmxAnim_atomicFX_rampUpDown_FastFlash();           break;         // 70 -  Atomic 3000 SpecialFX - Ramp up/down - Fast Flash
+    case 71:  dmxAnim_atomicFX_rampUpDown_SlowContinuous();      break;         // 71 -  Atomic 3000 SpecialFX - Ramp up/down - Slow Continuous
+    case 72:  dmxAnim_atomicFX_rampUpDown_MediumContinuous();    break;         // 72 -  Atomic 3000 SpecialFX - Ramp up/down - Medium Continuous
+    case 73:  dmxAnim_atomicFX_rampUpDown_FastContinuous();      break;         // 73 -  Atomic 3000 SpecialFX - Ramp up/down - Fast Continuous
+    
     // PAR animations must start from 128
     
     default:  dmxAnim_blackout();                  break;
@@ -629,6 +636,32 @@ void dmxAnim_atomicFX_rampDown_MediumContinuous() {
 
 void dmxAnim_atomicFX_rampDown_FastContinuous() {
   dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_RAMPDOWN);
+}
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_atomicFX_rampUpDown_SlowFlash() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_SLOW, ATOMICFX_RAMPUPDOWN);
+}
+
+void dmxAnim_atomicFX_rampUpDown_MediumFlash() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_MEDIUM, ATOMICFX_RAMPUPDOWN);
+}
+
+void dmxAnim_atomicFX_rampUpDown_FastFlash() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_FAST, ATOMICFX_RAMPUPDOWN);
+}
+
+void dmxAnim_atomicFX_rampUpDown_SlowContinuous() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_SLOW, ATOMICFX_RAMPUPDOWN);
+}
+
+void dmxAnim_atomicFX_rampUpDown_MediumContinuous() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_MEDIUM, ATOMICFX_RAMPUPDOWN);
+}
+
+void dmxAnim_atomicFX_rampUpDown_FastContinuous() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_RAMPUPDOWN);
 }
 
 ////////////////////////////////////////////////////////////
