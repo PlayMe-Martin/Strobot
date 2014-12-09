@@ -896,6 +896,18 @@ void setDMXAnimationsAttributes() {
   DMXAttributes = registerAttribute(DMXAttributes, 53,  "Impulse Flasher - Bass"                              , new String[] { "Strobe", "Center", "Rhythmic", "AudioInput"                                } );
   DMXAttributes = registerAttribute(DMXAttributes, 54,  "Impulse Flasher - Keys"                              , new String[] { "Strobe", "Center", "Rhythmic", "AudioInput"                                } );
   DMXAttributes = registerAttribute(DMXAttributes, 55,  "Impulse Flasher - Guitar"                            , new String[] { "Strobe", "Center", "Rhythmic", "AudioInput"                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 56,  "Atomic FX - Ramp up - Slow Flash"                    , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 57,  "Atomic FX - Ramp up - Medium Flash"                  , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 58,  "Atomic FX - Ramp up - Fast Flash"                    , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 59,  "Atomic FX - Ramp up - Slow Continuous"               , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 60,  "Atomic FX - Ramp up - Medium Continuous"             , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 61,  "Atomic FX - Ramp up - Fast Continuous"               , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 62,  "Atomic FX - Ramp up - Slow Flash"                    , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 63,  "Atomic FX - Ramp up - Medium Flash"                  , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 64,  "Atomic FX - Ramp up - Fast Flash"                    , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 65,  "Atomic FX - Ramp up - Slow Continuous"               , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 66,  "Atomic FX - Ramp up - Medium Continuous"             , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 67,  "Atomic FX - Ramp up - Fast Continuous"               , new String[] { "Strobe", "Center", "Atomic"                                                } );
 }
 
 

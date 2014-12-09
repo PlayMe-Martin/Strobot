@@ -7,72 +7,84 @@
 // Play the DMX animations
 void playDMXAnimation() {
   switch(dmxAnimationNumber) {
-    case 1:   dmxAnim_blackout();                  break;         // 1 -   Full Blackout
-    
-    case 2:   dmxAnim_fullStrobeVerySlow();        break;         // 2 -   Full Strobe - Very Slow
-    case 3:   dmxAnim_fullStrobeSlow();            break;         // 3 -   Full Strobe - Slow
-    case 4:   dmxAnim_fullStrobeMedium();          break;         // 4 -   Full Strobe - Medium
-    case 5:   dmxAnim_fullStrobeFast();            break;         // 5 -   Full Strobe - Fast
-    case 6:   dmxAnim_fullStrobeVeryFast();        break;         // 6 -   Full Strobe - Very Fast
-    
-    case 7:   dmxAnim_leftStrobeVerySlow();        break;         // 7 -   Left Strobe - Very Slow
-    case 8:   dmxAnim_leftStrobeSlow();            break;         // 8 -   Left Strobe - Slow     
-    case 9:   dmxAnim_leftStrobeMedium();          break;         // 9 -   Left Strobe - Medium   
-    case 10:  dmxAnim_leftStrobeFast();            break;         // 10 -  Left Strobe - Fast     
-    case 11:  dmxAnim_leftStrobeVeryFast();        break;         // 11 -  Left Strobe - Very Fast
-    case 12:  dmxAnim_rightStrobeVerySlow();       break;         // 12 -  Right Strobe - Very Slow
-    case 13:  dmxAnim_rightStrobeSlow();           break;         // 13 -  Right Strobe - Slow     
-    case 14:  dmxAnim_rightStrobeMedium();         break;         // 14 -  Right Strobe - Medium   
-    case 15:  dmxAnim_rightStrobeFast();           break;         // 15 -  Right Strobe - Fast     
-    case 16:  dmxAnim_rightStrobeVeryFast();       break;         // 16 -  Right Strobe - Very Fast
-    case 17:  dmxAnim_backStrobeVerySlow();        break;         // 17 -  Back Strobe - Very Slow
-    case 18:  dmxAnim_backStrobeSlow();            break;         // 18 -  Back Strobe - Slow
-    case 19:  dmxAnim_backStrobeMedium();          break;         // 19 -  Back Strobe - Medium
-    case 20:  dmxAnim_backStrobeFast();            break;         // 20 -  Back Strobe - Fast
-    case 21:  dmxAnim_backStrobeVeryFast();        break;         // 21 -  Back Strobe - Very Fast
-
-    case 22:  dmxAnim_leftRightStrobeVerySlow();   break;         // 22 -  Left/Right Strobe - Very Slow
-    case 23:  dmxAnim_leftRightStrobeSlow();       break;         // 23 -  Left/Right Strobe - Slow     
-    case 24:  dmxAnim_leftRightStrobeMedium();     break;         // 24 -  Left/Right Strobe - Medium   
-    case 25:  dmxAnim_leftRightStrobeFast();       break;         // 25 -  Left/Right Strobe - Fast     
-    case 26:  dmxAnim_leftRightStrobeVeryFast();   break;         // 26 -  Left/Right Strobe - Very Fast    
-    
-    case 27:  dmxAnim_alternateStrobe2();          break;         // 27 -  Alternate Strobe - Left/Right - 2/4
-    case 28:  dmxAnim_alternateStrobe4();          break;         // 28 -  Alternate Strobe - Left/Right - 1/4
-    case 29:  dmxAnim_alternateStrobe8();          break;         // 29 -  Alternate Strobe - Left/Right - 1/8
-    case 30:  dmxAnim_alternateStrobe16();         break;         // 30 -  Alternate Strobe - Left/Right - 1/16
-    
-    case 31:  dmxAnim_rotatingStrobe2();           break;         // 31 -  Rotating Strobe - Left/Center/Right - 2/4
-    case 32:  dmxAnim_rotatingStrobe4();           break;         // 32 -  Rotating Strobe - Left/Center/Right - 1/4
-    case 33:  dmxAnim_rotatingStrobe8();           break;         // 33 -  Rotating Strobe - Left/Center/Right - 1/8
-    case 34:  dmxAnim_rotatingStrobe16();          break;         // 34 -  Rotating Strobe - Left/Center/Right - 1/16
-    
-    case 35:  dmxAnim_growingFullStrobe();         break;         // 35 -  Growing Strobe - Full
-    case 36:  dmxAnim_growingLeftStrobe();         break;         // 36 -  Growing Strobe - Left
-    case 37:  dmxAnim_growingRightStrobe();        break;         // 37 -  Growing Strobe - Right
-    case 38:  dmxAnim_growingBackStrobe();         break;         // 38 -  Growing Strobe - Back
-    case 39:  dmxAnim_growingLeftRightStrobe();    break;         // 39 -  Growing Strobe - Left/Right
-    
-    case 40:  dmxAnim_growingAlternateStrobe2();   break;         // 40 -  Growing Strobe - Alternate Left/Right - 2/4
-    case 41:  dmxAnim_growingAlternateStrobe4();   break;         // 41 -  Growing Strobe - Alternate Left/Right - 1/4
-    case 42:  dmxAnim_growingAlternateStrobe8();   break;         // 42 -  Growing Strobe - Alternate Left/Right - 1/8
-    case 43:  dmxAnim_growingAlternateStrobe16();  break;         // 43 -  Growing Strobe - Alternate Left/Right - 1/16
-    
-    case 44:  dmxAnim_growingRotatingStrobe2();    break;         // 44 -  Growing Strobe - Rotating Left/Center/Right - 2/4
-    case 45:  dmxAnim_growingRotatingStrobe4();    break;         // 45 -  Growing Strobe - Rotating Left/Center/Right - 1/4
-    case 46:  dmxAnim_growingRotatingStrobe8();    break;         // 46 -  Growing Strobe - Rotating Left/Center/Right - 1/8
-    case 47:  dmxAnim_growingRotatingStrobe16();   break;         // 47 -  Growing Strobe - Rotating Left/Center/Right - 1/16
-    
-    case 48:  dmxAnim_shortSingleFlash();          break;         // 48 -  Short Single Flash - Atomic 3000
-    case 49:  dmxAnim_longSingleFlash();           break;         // 49 -  Long Single Flash - Atomic 3000
-    case 50:  dmxAnim_impulseFlasher_kick();       break;         // 50 -  Impulse Flasher - Kick    : flash once the Atomic 3000 when an impulse is processed
-    case 51:  dmxAnim_impulseFlasher_snare();      break;         // 51 -  Impulse Flasher - Snare   : flash once the Atomic 3000 when an impulse is processed
-    case 52:  dmxAnim_impulseFlasher_cymbals();    break;         // 52 -  Impulse Flasher - Cymbals : flash once the Atomic 3000 when an impulse is processed
-    case 53:  dmxAnim_impulseFlasher_bass();       break;         // 53 -  Impulse Flasher - Bass    : flash once the Atomic 3000 when an impulse is processed
-    case 54:  dmxAnim_impulseFlasher_keys();       break;         // 54 -  Impulse Flasher - Keys    : flash once the Atomic 3000 when an impulse is processed
-    case 55:  dmxAnim_impulseFlasher_guitar();     break;         // 55 -  Impulse Flasher - Guitar  : flash once the Atomic 3000 when an impulse is processed
-    
-    case 56:  dmxAnim_atomicFX_rampUp_Slow();      break;         // 56 -  Atomic 3000 SpecialFX - Ramp up - Slow
+    case 1:   dmxAnim_blackout();                                break;         // 1 -   Full Blackout
+                                                                 
+    case 2:   dmxAnim_fullStrobeVerySlow();                      break;         // 2 -   Full Strobe - Very Slow
+    case 3:   dmxAnim_fullStrobeSlow();                          break;         // 3 -   Full Strobe - Slow
+    case 4:   dmxAnim_fullStrobeMedium();                        break;         // 4 -   Full Strobe - Medium
+    case 5:   dmxAnim_fullStrobeFast();                          break;         // 5 -   Full Strobe - Fast
+    case 6:   dmxAnim_fullStrobeVeryFast();                      break;         // 6 -   Full Strobe - Very Fast
+                                                                 
+    case 7:   dmxAnim_leftStrobeVerySlow();                      break;         // 7 -   Left Strobe - Very Slow
+    case 8:   dmxAnim_leftStrobeSlow();                          break;         // 8 -   Left Strobe - Slow     
+    case 9:   dmxAnim_leftStrobeMedium();                        break;         // 9 -   Left Strobe - Medium   
+    case 10:  dmxAnim_leftStrobeFast();                          break;         // 10 -  Left Strobe - Fast     
+    case 11:  dmxAnim_leftStrobeVeryFast();                      break;         // 11 -  Left Strobe - Very Fast
+    case 12:  dmxAnim_rightStrobeVerySlow();                     break;         // 12 -  Right Strobe - Very Slow
+    case 13:  dmxAnim_rightStrobeSlow();                         break;         // 13 -  Right Strobe - Slow     
+    case 14:  dmxAnim_rightStrobeMedium();                       break;         // 14 -  Right Strobe - Medium   
+    case 15:  dmxAnim_rightStrobeFast();                         break;         // 15 -  Right Strobe - Fast     
+    case 16:  dmxAnim_rightStrobeVeryFast();                     break;         // 16 -  Right Strobe - Very Fast
+    case 17:  dmxAnim_backStrobeVerySlow();                      break;         // 17 -  Back Strobe - Very Slow
+    case 18:  dmxAnim_backStrobeSlow();                          break;         // 18 -  Back Strobe - Slow
+    case 19:  dmxAnim_backStrobeMedium();                        break;         // 19 -  Back Strobe - Medium
+    case 20:  dmxAnim_backStrobeFast();                          break;         // 20 -  Back Strobe - Fast
+    case 21:  dmxAnim_backStrobeVeryFast();                      break;         // 21 -  Back Strobe - Very Fast
+                                                                 
+    case 22:  dmxAnim_leftRightStrobeVerySlow();                 break;         // 22 -  Left/Right Strobe - Very Slow
+    case 23:  dmxAnim_leftRightStrobeSlow();                     break;         // 23 -  Left/Right Strobe - Slow     
+    case 24:  dmxAnim_leftRightStrobeMedium();                   break;         // 24 -  Left/Right Strobe - Medium   
+    case 25:  dmxAnim_leftRightStrobeFast();                     break;         // 25 -  Left/Right Strobe - Fast     
+    case 26:  dmxAnim_leftRightStrobeVeryFast();                 break;         // 26 -  Left/Right Strobe - Very Fast    
+                                                                 
+    case 27:  dmxAnim_alternateStrobe2();                        break;         // 27 -  Alternate Strobe - Left/Right - 2/4
+    case 28:  dmxAnim_alternateStrobe4();                        break;         // 28 -  Alternate Strobe - Left/Right - 1/4
+    case 29:  dmxAnim_alternateStrobe8();                        break;         // 29 -  Alternate Strobe - Left/Right - 1/8
+    case 30:  dmxAnim_alternateStrobe16();                       break;         // 30 -  Alternate Strobe - Left/Right - 1/16
+                                                                 
+    case 31:  dmxAnim_rotatingStrobe2();                         break;         // 31 -  Rotating Strobe - Left/Center/Right - 2/4
+    case 32:  dmxAnim_rotatingStrobe4();                         break;         // 32 -  Rotating Strobe - Left/Center/Right - 1/4
+    case 33:  dmxAnim_rotatingStrobe8();                         break;         // 33 -  Rotating Strobe - Left/Center/Right - 1/8
+    case 34:  dmxAnim_rotatingStrobe16();                        break;         // 34 -  Rotating Strobe - Left/Center/Right - 1/16
+                                                                 
+    case 35:  dmxAnim_growingFullStrobe();                       break;         // 35 -  Growing Strobe - Full
+    case 36:  dmxAnim_growingLeftStrobe();                       break;         // 36 -  Growing Strobe - Left
+    case 37:  dmxAnim_growingRightStrobe();                      break;         // 37 -  Growing Strobe - Right
+    case 38:  dmxAnim_growingBackStrobe();                       break;         // 38 -  Growing Strobe - Back
+    case 39:  dmxAnim_growingLeftRightStrobe();                  break;         // 39 -  Growing Strobe - Left/Right
+                                                                 
+    case 40:  dmxAnim_growingAlternateStrobe2();                 break;         // 40 -  Growing Strobe - Alternate Left/Right - 2/4
+    case 41:  dmxAnim_growingAlternateStrobe4();                 break;         // 41 -  Growing Strobe - Alternate Left/Right - 1/4
+    case 42:  dmxAnim_growingAlternateStrobe8();                 break;         // 42 -  Growing Strobe - Alternate Left/Right - 1/8
+    case 43:  dmxAnim_growingAlternateStrobe16();                break;         // 43 -  Growing Strobe - Alternate Left/Right - 1/16
+                                                                 
+    case 44:  dmxAnim_growingRotatingStrobe2();                  break;         // 44 -  Growing Strobe - Rotating Left/Center/Right - 2/4
+    case 45:  dmxAnim_growingRotatingStrobe4();                  break;         // 45 -  Growing Strobe - Rotating Left/Center/Right - 1/4
+    case 46:  dmxAnim_growingRotatingStrobe8();                  break;         // 46 -  Growing Strobe - Rotating Left/Center/Right - 1/8
+    case 47:  dmxAnim_growingRotatingStrobe16();                 break;         // 47 -  Growing Strobe - Rotating Left/Center/Right - 1/16
+                                                                 
+    case 48:  dmxAnim_shortSingleFlash();                        break;         // 48 -  Short Single Flash - Atomic 3000
+    case 49:  dmxAnim_longSingleFlash();                         break;         // 49 -  Long Single Flash - Atomic 3000
+    case 50:  dmxAnim_impulseFlasher_kick();                     break;         // 50 -  Impulse Flasher - Kick    : flash once the Atomic 3000 when an impulse is processed
+    case 51:  dmxAnim_impulseFlasher_snare();                    break;         // 51 -  Impulse Flasher - Snare   : flash once the Atomic 3000 when an impulse is processed
+    case 52:  dmxAnim_impulseFlasher_cymbals();                  break;         // 52 -  Impulse Flasher - Cymbals : flash once the Atomic 3000 when an impulse is processed
+    case 53:  dmxAnim_impulseFlasher_bass();                     break;         // 53 -  Impulse Flasher - Bass    : flash once the Atomic 3000 when an impulse is processed
+    case 54:  dmxAnim_impulseFlasher_keys();                     break;         // 54 -  Impulse Flasher - Keys    : flash once the Atomic 3000 when an impulse is processed
+    case 55:  dmxAnim_impulseFlasher_guitar();                   break;         // 55 -  Impulse Flasher - Guitar  : flash once the Atomic 3000 when an impulse is processed
+                                                                 
+    case 56:  dmxAnim_atomicFX_rampUp_SlowFlash();               break;         // 56 -  Atomic 3000 SpecialFX - Ramp up - Slow Flash
+    case 57:  dmxAnim_atomicFX_rampUp_MediumFlash();             break;         // 57 -  Atomic 3000 SpecialFX - Ramp up - Medium Flash
+    case 58:  dmxAnim_atomicFX_rampUp_FastFlash();               break;         // 58 -  Atomic 3000 SpecialFX - Ramp up - Fast Flash
+    case 59:  dmxAnim_atomicFX_rampUp_SlowContinuous();          break;         // 59 -  Atomic 3000 SpecialFX - Ramp up - Slow Continuous
+    case 60:  dmxAnim_atomicFX_rampUp_MediumContinuous();        break;         // 60 -  Atomic 3000 SpecialFX - Ramp up - Medium Continuous
+    case 61:  dmxAnim_atomicFX_rampUp_FastContinuous();          break;         // 61 -  Atomic 3000 SpecialFX - Ramp up - Fast Continuous
+                                                                 
+    case 62:  dmxAnim_atomicFX_rampDown_SlowFlash();             break;         // 62 -  Atomic 3000 SpecialFX - Ramp down - Slow Flash
+    case 63:  dmxAnim_atomicFX_rampDown_MediumFlash();           break;         // 63 -  Atomic 3000 SpecialFX - Ramp down - Medium Flash
+    case 64:  dmxAnim_atomicFX_rampDown_FastFlash();             break;         // 64 -  Atomic 3000 SpecialFX - Ramp down - Fast Flash
+    case 65:  dmxAnim_atomicFX_rampDown_SlowContinuous();        break;         // 65 -  Atomic 3000 SpecialFX - Ramp down - Slow Continuous
+    case 66:  dmxAnim_atomicFX_rampDown_MediumContinuous();      break;         // 66 -  Atomic 3000 SpecialFX - Ramp down - Medium Continuous
+    case 67:  dmxAnim_atomicFX_rampDown_FastContinuous();        break;         // 67 -  Atomic 3000 SpecialFX - Ramp down - Fast Continuous
     
     // PAR animations must start from 128
     
@@ -553,9 +565,73 @@ void dmxAnim_impulseFlasher(int signalID) {
 // Special FX using the Atomic 3000 stroboscopes
 /////////////////////////////////////////////////////////////////////////////////
 
-void dmxAnim_atomicFX_rampUp_Slow() {
-  dmxAnim_atomicFX(255, 255, 60, 10);
+final int ATOMICFX_RAMPUP       = 10;
+final int ATOMICFX_RAMPDOWN     = 50;
+final int ATOMICFX_RAMPUPDOWN   = 100;
+final int ATOMICFX_RANDOM       = 150;
+final int ATOMICFX_LIGHTNING    = 200;
+final int ATOMICFX_SPIKES       = 250;
+///////////////////////////////////////
+final int ATOMICFX_SPEED_SLOW   = 60;
+final int ATOMICFX_SPEED_MEDIUM = 160;
+final int ATOMICFX_SPEED_FAST   = 250;
+final int ATOMICFX_INTENSITY    = 255;
+final int ATOMICFX_FLASH        = 150;
+final int ATOMICFX_CONTINUOUS   = 150;
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_atomicFX_rampUp_SlowFlash() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_SLOW, ATOMICFX_RAMPUP);
 }
+
+void dmxAnim_atomicFX_rampUp_MediumFlash() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_MEDIUM, ATOMICFX_RAMPUP);
+}
+
+void dmxAnim_atomicFX_rampUp_FastFlash() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_FAST, ATOMICFX_RAMPUP);
+}
+
+void dmxAnim_atomicFX_rampUp_SlowContinuous() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_SLOW, ATOMICFX_RAMPUP);
+}
+
+void dmxAnim_atomicFX_rampUp_MediumContinuous() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_MEDIUM, ATOMICFX_RAMPUP);
+}
+
+void dmxAnim_atomicFX_rampUp_FastContinuous() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_RAMPUP);
+}
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_atomicFX_rampDown_SlowFlash() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_SLOW, ATOMICFX_RAMPDOWN);
+}
+
+void dmxAnim_atomicFX_rampDown_MediumFlash() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_MEDIUM, ATOMICFX_RAMPDOWN);
+}
+
+void dmxAnim_atomicFX_rampDown_FastFlash() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_FAST, ATOMICFX_RAMPDOWN);
+}
+
+void dmxAnim_atomicFX_rampDown_SlowContinuous() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_SLOW, ATOMICFX_RAMPDOWN);
+}
+
+void dmxAnim_atomicFX_rampDown_MediumContinuous() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_MEDIUM, ATOMICFX_RAMPDOWN);
+}
+
+void dmxAnim_atomicFX_rampDown_FastContinuous() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_RAMPDOWN);
+}
+
+////////////////////////////////////////////////////////////
 
 void dmxAnim_atomicFX(int intensity, int flashLength, int speed, int fxNumber) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
