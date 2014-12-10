@@ -914,6 +914,9 @@ void setDMXAnimationsAttributes() {
   DMXAttributes = registerAttribute(DMXAttributes, 71,  "Atomic FX - Ramp up/down - Slow Continuous"          , new String[] { "Strobe", "Center", "Atomic"                                                } );
   DMXAttributes = registerAttribute(DMXAttributes, 72,  "Atomic FX - Ramp up/down - Medium Continuous"        , new String[] { "Strobe", "Center", "Atomic"                                                } );
   DMXAttributes = registerAttribute(DMXAttributes, 73,  "Atomic FX - Ramp up/down - Fast Continuous"          , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  
+  
+  DMXAttributes = registerAttribute(DMXAttributes, 99,  "Atomic FX - Blinder"                                 , new String[] { "Strobe", "Center", "Atomic"                                                } );
 }
 
 

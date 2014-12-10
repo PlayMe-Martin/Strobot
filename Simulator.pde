@@ -70,6 +70,10 @@ int[] gui_LEDTube8Position = {6,180,0,gui_ledTubePositionY};
 int[][] gui_LEDTubesPosition = {gui_LEDTube1Position, gui_LEDTube2Position, gui_LEDTube3Position, gui_LEDTube4Position, gui_LEDTube5Position, gui_LEDTube6Position, gui_LEDTube7Position, gui_LEDTube8Position};
 
 
+//Variables used by the GUI to simulate special animated FX, which cannot be purely deduced using the DMX channels' value
+int atomicStrobe_animCpt = 0;
+final int ATOMICSTROBE_ANIMCPT_SINGLEFLASH = 10;
+
 void init_panelSimulatorList() {
   //Initialize parameters will shall be used to display the simulator
   gui_panelSimulatorList = new ArrayList<PanelSimulator>();
@@ -130,6 +134,10 @@ void draw_simulator(int x, int y) {
     gui_LEDTubeList.get(i).drawFullLEDTube(CustomDeviceList_LEDTubes.get(i).lastAnimationExecuted, x, y);
   }
   
+}
+
+void simuResetAnimCpt_AtomicStrobe() {
+  atomicStrobe_animCpt = 0;
 }
 
 class PanelSimulator {
@@ -286,19 +294,40 @@ void drawSimuBackStroboscope(int positionX, int positionY) {
   if (drawStrobe == true) {
     int simuSpeed = 0;
     int simuBrightness = 0;
+    int simuFlashLength = 0;
+    int simuSpecialFx = 0;
     //Get the maximum speed/brightness of this strobe group
     for (DMX_Stroboscope stroboscope : DMXList_BackStroboscopes) {
-      simuSpeed = max(simuSpeed, stroboscope.currentSpeed);
-      simuBrightness = max(simuBrightness, stroboscope.currentBrightness);
+      simuSpeed       = max(simuSpeed, stroboscope.currentSpeed);
+      simuBrightness  = max(simuBrightness, stroboscope.currentBrightness);
+      simuFlashLength = max(simuFlashLength, stroboscope.currentFlashLength);
+      simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
     }
-    //Map simuSpeed to a more usable value
-    simuSpeed = int(map(simuSpeed, 0, 255, 12, 2));
-    
-    if (auxControlFrame.frameCount%simuSpeed == 0) {
-      auxControlFrame.fill(simuBrightness);
+    // The device is set to active, but with a null speed -> special case : single flash
+    if (simuSpeed == 0) {      
+      if (atomicStrobe_animCpt < ATOMICSTROBE_ANIMCPT_SINGLEFLASH) {
+        auxControlFrame.fill(simuBrightness);
+        atomicStrobe_animCpt += 1;
+      }
+      else {
+        auxControlFrame.fill(0);
+      }
     }
+    // No effect is currently active, normal strobe
+    else if (simuSpecialFx == DMXStroboscope_defaultSpecialFXValue) {
+      //Map simuSpeed to a more usable value
+      simuSpeed = int(map(simuSpeed, 0, 255, 12, 2));
+      
+      if (auxControlFrame.frameCount%simuSpeed == 0) {
+        auxControlFrame.fill(simuBrightness);
+      }
+      else {
+        auxControlFrame.fill(0);
+      }
+    }
+    // A special effect is being played using the Atomic strobes
     else {
-      auxControlFrame.fill(0);
+      // TBIL
     }
   }
   else {
