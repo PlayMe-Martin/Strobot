@@ -913,10 +913,13 @@ void setDMXAnimationsAttributes() {
   DMXAttributes = registerAttribute(DMXAttributes, 70,  "Atomic FX - Ramp up/down - Fast Flash"               , new String[] { "Strobe", "Center", "Atomic"                                                } );
   DMXAttributes = registerAttribute(DMXAttributes, 71,  "Atomic FX - Ramp up/down - Slow Continuous"          , new String[] { "Strobe", "Center", "Atomic"                                                } );
   DMXAttributes = registerAttribute(DMXAttributes, 72,  "Atomic FX - Ramp up/down - Medium Continuous"        , new String[] { "Strobe", "Center", "Atomic"                                                } );
-  DMXAttributes = registerAttribute(DMXAttributes, 73,  "Atomic FX - Ramp up/down - Fast Continuous"          , new String[] { "Strobe", "Center", "Atomic"                                                } );
-  
-  
-  DMXAttributes = registerAttribute(DMXAttributes, 99,  "Atomic FX - Blinder"                                 , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 73,  "Atomic FX - Ramp up/down - Fast Continuous"          , new String[] { "Strobe", "Center", "Atomic"                                                } );  
+  DMXAttributes = registerAttribute(DMXAttributes, 74,  "Atomic FX - Random"                                  , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 75,  "Atomic FX - Lightning"                               , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 76,  "Atomic FX - Slow Spikes"                             , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 77,  "Atomic FX - Medium Spikes"                           , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 78,  "Atomic FX - Fast Spikes"                             , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 79,  "Atomic FX - Blinder"                                 , new String[] { "Strobe", "Center", "Atomic"                                                } );
 }
 
 
