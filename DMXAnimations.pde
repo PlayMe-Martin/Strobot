@@ -4,6 +4,8 @@
 ///////////////////////////////////////////////////////////////
 
 
+final int SINGLEFLASH_INITVAL = 6;
+
 // Play the DMX animations
 void playDMXAnimation() {
   switch(dmxAnimationNumber) {
@@ -93,6 +95,7 @@ void playDMXAnimation() {
     case 72:  dmxAnim_atomicFX_rampUpDown_MediumContinuous();    break;         // 72 -  Atomic 3000 SpecialFX - Ramp up/down - Medium Continuous
     case 73:  dmxAnim_atomicFX_rampUpDown_FastContinuous();      break;         // 73 -  Atomic 3000 SpecialFX - Ramp up/down - Fast Continuous
     
+    case 99:  dmxAnim_atomicFX_Blinder();                        break;         // 99 -  Atomic 3000 SpecialFX - Blinder
     // PAR animations must start from 128
     
     default:  dmxAnim_blackout();                  break;
@@ -116,7 +119,26 @@ void setupDMXAnimation() {
     case 45:  growingStrobe_speed = 255; growingStrobe_intensity = 0; break;
     case 46:  growingStrobe_speed = 255; growingStrobe_intensity = 0; break;
     case 47:  growingStrobe_speed = 255; growingStrobe_intensity = 0; break;
-    case 48:  singleFlash_cpt = 1;
+    case 48:  singleFlash_cpt = SINGLEFLASH_INITVAL; simuResetAnimCpt_AtomicStrobe(); break;
+    case 49:  singleFlash_cpt = SINGLEFLASH_INITVAL; simuResetAnimCpt_AtomicStrobe(); break;
+    case 56:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 57:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 58:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 59:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 60:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 61:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 62:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 63:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 64:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 65:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 66:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 67:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 68:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 69:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 70:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 71:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 72:  simuResetAnimCpt_AtomicStrobe(); break;
+    case 73:  simuResetAnimCpt_AtomicStrobe(); break;
     default:  break;
   } 
 }
@@ -487,7 +509,6 @@ void dmxAnim_singleFlash(int flashLength) {
       }
     }
     for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-      stroboscope.stopDMX();
       if (stroboscope.numberOfChannels == 4) {
         stroboscope.startDMX(0, 255, flashLength, 0);    //Speed = 0, Intensity = Max, specialFX = 0
       }
@@ -557,7 +578,9 @@ void dmxAnim_impulseFlasher(int signalID) {
   else if (signalID == SIGNAL_ID_GUITAR)  { impulse = impulse_Guitar;  }
   
   if (impulse) {
+    singleFlash_cpt = SINGLEFLASH_INITVAL;
     dmxAnim_longSingleFlash();
+    simuResetAnimCpt_AtomicStrobe();    // Make the simulator understand the strobe just flashed
   }
   else {
     dmxAnim_blackout();
@@ -584,7 +607,7 @@ final int ATOMICFX_SPEED_MEDIUM = 160;
 final int ATOMICFX_SPEED_FAST   = 250;
 final int ATOMICFX_INTENSITY    = 255;
 final int ATOMICFX_FLASH        = 150;
-final int ATOMICFX_CONTINUOUS   = 150;
+final int ATOMICFX_CONTINUOUS   = 255;
 
 ////////////////////////////////////////////////////////////
 
@@ -662,6 +685,10 @@ void dmxAnim_atomicFX_rampUpDown_MediumContinuous() {
 
 void dmxAnim_atomicFX_rampUpDown_FastContinuous() {
   dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_RAMPUPDOWN);
+}
+
+void dmxAnim_atomicFX_Blinder() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, 0);
 }
 
 ////////////////////////////////////////////////////////////
