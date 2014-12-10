@@ -95,7 +95,15 @@ void playDMXAnimation() {
     case 72:  dmxAnim_atomicFX_rampUpDown_MediumContinuous();    break;         // 72 -  Atomic 3000 SpecialFX - Ramp up/down - Medium Continuous
     case 73:  dmxAnim_atomicFX_rampUpDown_FastContinuous();      break;         // 73 -  Atomic 3000 SpecialFX - Ramp up/down - Fast Continuous
     
-    case 99:  dmxAnim_atomicFX_Blinder();                        break;         // 99 -  Atomic 3000 SpecialFX - Blinder
+    case 74:  dmxAnim_atomicFX_random();                         break;         // 74 -  Atomic 3000 SpecialFX - Random
+    case 75:  dmxAnim_atomicFX_lightning();                      break;         // 75 -  Atomic 3000 SpecialFX - Lightning
+    
+    case 76:  dmxAnim_atomicFX_slowSpikes();                     break;         // 76 -  Atomic 3000 SpecialFX - Spikes - Slow
+    case 77:  dmxAnim_atomicFX_mediumSpikes();                   break;         // 77 -  Atomic 3000 SpecialFX - Spikes - Medium
+    case 78:  dmxAnim_atomicFX_fastSpikes();                     break;         // 78 -  Atomic 3000 SpecialFX - Spikes - Fast
+    
+    case 79:  dmxAnim_atomicFX_Blinder();                        break;         // 79 -  Atomic 3000 SpecialFX - Blinder
+    
     // PAR animations must start from 128
     
     default:  dmxAnim_blackout();                  break;
@@ -595,19 +603,20 @@ void dmxAnim_impulseFlasher(int signalID) {
 // Special FX using the Atomic 3000 stroboscopes
 /////////////////////////////////////////////////////////////////////////////////
 
-final int ATOMICFX_RAMPUP       = 10;
-final int ATOMICFX_RAMPDOWN     = 50;
-final int ATOMICFX_RAMPUPDOWN   = 100;
-final int ATOMICFX_RANDOM       = 150;
-final int ATOMICFX_LIGHTNING    = 200;
-final int ATOMICFX_SPIKES       = 250;
+final int ATOMICFX_RAMPUP         = 10;
+final int ATOMICFX_RAMPDOWN       = 50;
+final int ATOMICFX_RAMPUPDOWN     = 100;
+final int ATOMICFX_RANDOM         = 150;
+final int ATOMICFX_LIGHTNING      = 200;
+final int ATOMICFX_SPIKES         = 250;
 ///////////////////////////////////////
-final int ATOMICFX_SPEED_SLOW   = 60;
-final int ATOMICFX_SPEED_MEDIUM = 160;
-final int ATOMICFX_SPEED_FAST   = 250;
-final int ATOMICFX_INTENSITY    = 255;
-final int ATOMICFX_FLASH        = 150;
-final int ATOMICFX_CONTINUOUS   = 255;
+final int ATOMICFX_SPEED_VERYSLOW = 25;
+final int ATOMICFX_SPEED_SLOW     = 60;
+final int ATOMICFX_SPEED_MEDIUM   = 160;
+final int ATOMICFX_SPEED_FAST     = 250;
+final int ATOMICFX_INTENSITY      = 255;
+final int ATOMICFX_FLASH          = 150;
+final int ATOMICFX_CONTINUOUS     = 255;
 
 ////////////////////////////////////////////////////////////
 
@@ -686,6 +695,32 @@ void dmxAnim_atomicFX_rampUpDown_MediumContinuous() {
 void dmxAnim_atomicFX_rampUpDown_FastContinuous() {
   dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_RAMPUPDOWN);
 }
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_atomicFX_random() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_FAST, ATOMICFX_RANDOM);
+}
+
+void dmxAnim_atomicFX_lightning() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_FAST, ATOMICFX_LIGHTNING);
+}
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_atomicFX_slowSpikes() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_VERYSLOW, ATOMICFX_SPIKES);
+}
+
+void dmxAnim_atomicFX_mediumSpikes() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_SLOW, ATOMICFX_SPIKES);
+}
+
+void dmxAnim_atomicFX_fastSpikes() {
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_FLASH, ATOMICFX_SPEED_MEDIUM, ATOMICFX_SPIKES);
+}
+
+////////////////////////////////////////////////////////////
 
 void dmxAnim_atomicFX_Blinder() {
   dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, 0);
