@@ -69,7 +69,7 @@ final boolean printSystemDebugData = false;
 float HI_LO_RATIO_THRESHOLD = 100;
 
 //Automatic mode flag : set to true or false by input MIDI notes
-boolean AUTOMATIC_MODE = true;
+boolean AUTOMATIC_MODE = false;
 
 
 class PlayMeSequencer {

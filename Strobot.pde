@@ -525,6 +525,9 @@ void draw()
       if (dmxAutomaticControl == true || AUTOMATIC_MODE == true) {
         playDMXAnimation();
       }
+      if (dmxAutomaticControl == false) {
+        specific_draw_dmx();                    //Send commands to individual DMX devices, without using the DMX animations
+      }
       
       //Reset the Audio flags if requested by the animation
       if (impulseMessageProcessed) {

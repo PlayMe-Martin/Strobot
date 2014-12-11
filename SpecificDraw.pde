@@ -111,8 +111,6 @@ void actionControlled_postSpecificDraw() {
 }
 
 void specific_draw() {
-    
-  specific_draw_dmx();                    //Send commands to DMX devices (useful to have in the draw because the values may evolve when dealing with complex stuff)
   
   if (drawImage == 1)                     //Draw the image whose filename is specified by imagenumber
   {

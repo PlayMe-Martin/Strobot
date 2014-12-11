@@ -304,7 +304,7 @@ void drawSimuBackStroboscope(int positionX, int positionY) {
       simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
     }
     // The device is set to active, but with a null speed -> special case : single flash
-    if (simuSpeed == 0) {      
+    if (simuSpeed == 0) {
       if (atomicStrobe_animCpt < ATOMICSTROBE_ANIMCPT_SINGLEFLASH) {
         auxControlFrame.fill(simuBrightness);
         atomicStrobe_animCpt += 1;
@@ -327,13 +327,44 @@ void drawSimuBackStroboscope(int positionX, int positionY) {
     }
     // A special effect is being played using the Atomic strobes
     else {
-      // TBIL
+      switch(simuSpecialFx) {
+        case ATOMICFX_RAMPUP:     simu_drawAtomicStroboFX_rampUp(); break;
+        case ATOMICFX_RAMPDOWN:   simu_drawAtomicStroboFX_rampDown(); break;
+        case ATOMICFX_RAMPUPDOWN: simu_drawAtomicStroboFX_rampUpDown(); break;
+        case ATOMICFX_RANDOM:     break;
+        case ATOMICFX_LIGHTNING:  break;
+        case ATOMICFX_SPIKES:     break;
+        default:                  auxControlFrame.fill(0); break;
+      }
+      atomicStrobe_animCpt += 1;
     }
   }
   else {
     auxControlFrame.fill(0);
   }
   auxControlFrame.rect(positionX - strobe_sizeX/2 + strobe_borderSize,positionY + strobe_borderSize,strobe_sizeX - strobe_borderSize*2,strobe_sizeY - strobe_borderSize*2);
+}
+
+void simu_drawAtomicStroboFX_rampUp() {
+  auxControlFrame.fill(min(atomicStrobe_animCpt*10, 255));
+}
+
+void simu_drawAtomicStroboFX_rampDown() {
+  auxControlFrame.fill(max(255 - atomicStrobe_animCpt*10, 0));
+}
+
+void simu_drawAtomicStroboFX_rampUpDown() {
+  if (dmxAnimationNumber >= 68 && dmxAnimationNumber <= 70) {
+    if (auxControlFrame.frameCount%4 == 0 || auxControlFrame.frameCount%4 == 1) {
+      auxControlFrame.fill(255*(sin(atomicStrobe_animCpt*(dmxAnimationNumber-67)) + 1) * 0.5);
+    }
+    else {
+      auxControlFrame.fill(0);
+    }
+  }
+  else {
+    auxControlFrame.fill(abs(255*((sin(atomicStrobe_animCpt*3*(dmxAnimationNumber-70)*TWO_PI/360)))));
+  }
 }
 
 ////////////////////////////////////////////////
