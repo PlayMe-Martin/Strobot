@@ -252,9 +252,11 @@ void dmxAnim_leftStrobeVeryFast() {
 // Switch the right stroboscopes on
 void dmxAnim_rightStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
+    println("Start the front left strobes");
     stroboscope.stopDMX();
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
+    println("Start the front right strobes");
     stroboscope.startDMX(speed,intensity);
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {

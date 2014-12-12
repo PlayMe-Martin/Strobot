@@ -219,23 +219,22 @@ void drawSimuFrontLeftStroboscope(int positionX, int positionY) {
     }
   }
   
+  println("drawStrobe front left : " + drawStrobe);
+  
   if (drawStrobe == true) {
     int simuSpeed = 0;
     int simuBrightness = 0;
+    int simuFlashLength = 0;
+    int simuSpecialFx = 0;
     //Get the maximum speed/brightness of this strobe group
     for (DMX_Stroboscope stroboscope : DMXList_FrontLeftStroboscopes) {
-      simuSpeed = max(simuSpeed, stroboscope.currentSpeed);
-      simuBrightness = max(simuBrightness, stroboscope.currentBrightness);
+      simuSpeed       = max(simuSpeed, stroboscope.currentSpeed);
+      simuBrightness  = max(simuBrightness, stroboscope.currentBrightness);
+      simuFlashLength = max(simuFlashLength, stroboscope.currentFlashLength);
+      simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
     }
-    //Map simuSpeed to a more usable value
-    simuSpeed = int(map(simuSpeed, 0, 255, 12, 2));
     
-    if (auxControlFrame.frameCount%simuSpeed == 0) {
-      auxControlFrame.fill(simuBrightness);
-    }
-    else {
-      auxControlFrame.fill(0);
-    }
+    simu_computeStrobeColor(simuSpeed, simuBrightness, simuFlashLength, simuSpecialFx);
   }
   else {
     auxControlFrame.fill(0);
@@ -255,23 +254,22 @@ void drawSimuFrontRightStroboscope(int positionX, int positionY) {
     }
   }
   
+  println("drawStrobe front right : " + drawStrobe);
+  
   if (drawStrobe == true) {
     int simuSpeed = 0;
     int simuBrightness = 0;
+    int simuFlashLength = 0;
+    int simuSpecialFx = 0;
     //Get the maximum speed/brightness of this strobe group
     for (DMX_Stroboscope stroboscope : DMXList_FrontRightStroboscopes) {
-      simuSpeed = max(simuSpeed, stroboscope.currentSpeed);
-      simuBrightness = max(simuBrightness, stroboscope.currentBrightness);
+      simuSpeed       = max(simuSpeed, stroboscope.currentSpeed);
+      simuBrightness  = max(simuBrightness, stroboscope.currentBrightness);
+      simuFlashLength = max(simuFlashLength, stroboscope.currentFlashLength);
+      simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
     }
-    //Map simuSpeed to a more usable value
-    simuSpeed = int(map(simuSpeed, 0, 255, 12, 2));
     
-    if (auxControlFrame.frameCount%simuSpeed == 0) {
-      auxControlFrame.fill(simuBrightness);
-    }
-    else {
-      auxControlFrame.fill(0);
-    }
+    simu_computeStrobeColor(simuSpeed, simuBrightness, simuFlashLength, simuSpecialFx);
   }
   else {
     auxControlFrame.fill(0);
@@ -303,46 +301,51 @@ void drawSimuBackStroboscope(int positionX, int positionY) {
       simuFlashLength = max(simuFlashLength, stroboscope.currentFlashLength);
       simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
     }
-    // The device is set to active, but with a null speed -> special case : single flash
-    if (simuSpeed == 0) {
-      if (atomicStrobe_animCpt < ATOMICSTROBE_ANIMCPT_SINGLEFLASH) {
-        auxControlFrame.fill(simuBrightness);
-        atomicStrobe_animCpt += 1;
-      }
-      else {
-        auxControlFrame.fill(0);
-      }
-    }
-    // No effect is currently active, normal strobe
-    else if (simuSpecialFx == DMXStroboscope_defaultSpecialFXValue) {
-      //Map simuSpeed to a more usable value
-      simuSpeed = int(map(simuSpeed, 0, 255, 12, 2));
-      
-      if (auxControlFrame.frameCount%simuSpeed == 0) {
-        auxControlFrame.fill(simuBrightness);
-      }
-      else {
-        auxControlFrame.fill(0);
-      }
-    }
-    // A special effect is being played using the Atomic strobes
-    else {
-      switch(simuSpecialFx) {
-        case ATOMICFX_RAMPUP:     simu_drawAtomicStroboFX_rampUp(); break;
-        case ATOMICFX_RAMPDOWN:   simu_drawAtomicStroboFX_rampDown(); break;
-        case ATOMICFX_RAMPUPDOWN: simu_drawAtomicStroboFX_rampUpDown(); break;
-        case ATOMICFX_RANDOM:     break;
-        case ATOMICFX_LIGHTNING:  break;
-        case ATOMICFX_SPIKES:     break;
-        default:                  auxControlFrame.fill(0); break;
-      }
-      atomicStrobe_animCpt += 1;
-    }
+    
+    simu_computeStrobeColor(simuSpeed, simuBrightness, simuFlashLength, simuSpecialFx);
   }
   else {
     auxControlFrame.fill(0);
   }
   auxControlFrame.rect(positionX - strobe_sizeX/2 + strobe_borderSize,positionY + strobe_borderSize,strobe_sizeX - strobe_borderSize*2,strobe_sizeY - strobe_borderSize*2);
+}
+
+void simu_computeStrobeColor(int simuSpeed, int simuBrightness, int simuFlashLength, int simuSpecialFx) {
+  // The device is set to active, but with a null speed -> special case : single flash
+  if (simuSpeed == 0) {
+    if (atomicStrobe_animCpt < ATOMICSTROBE_ANIMCPT_SINGLEFLASH) {
+      auxControlFrame.fill(simuBrightness);
+      atomicStrobe_animCpt += 1;
+    }
+    else {
+      auxControlFrame.fill(0);
+    }
+  }
+  // No effect is currently active, normal strobe
+  else if (simuSpecialFx == DMXStroboscope_defaultSpecialFXValue) {
+    //Map simuSpeed to a more usable value
+    simuSpeed = int(map(simuSpeed, 0, 255, 12, 2));
+    
+    if (auxControlFrame.frameCount%simuSpeed == 0) {
+      auxControlFrame.fill(simuBrightness);
+    }
+    else {
+      auxControlFrame.fill(0);
+    }
+  }
+  // A special effect is being played using the Atomic strobes
+  else {
+    switch(simuSpecialFx) {
+      case ATOMICFX_RAMPUP:     simu_drawAtomicStroboFX_rampUp(); break;
+      case ATOMICFX_RAMPDOWN:   simu_drawAtomicStroboFX_rampDown(); break;
+      case ATOMICFX_RAMPUPDOWN: simu_drawAtomicStroboFX_rampUpDown(); break;
+      case ATOMICFX_RANDOM:     simu_drawAtomicStroboFX_random(); break;
+      case ATOMICFX_LIGHTNING:  simu_drawAtomicStroboFX_lightning(); break;
+      case ATOMICFX_SPIKES:     simu_drawAtomicStroboFX_spikes(simuSpeed, simuBrightness); break;
+      default:                  auxControlFrame.fill(0); break;
+    }
+    atomicStrobe_animCpt += 1;
+  }
 }
 
 void simu_drawAtomicStroboFX_rampUp() {
@@ -365,6 +368,39 @@ void simu_drawAtomicStroboFX_rampUpDown() {
   else {
     auxControlFrame.fill(abs(255*((sin(atomicStrobe_animCpt*3*(dmxAnimationNumber-70)*TWO_PI/360)))));
   }
+}
+
+void simu_drawAtomicStroboFX_random() {
+  if (auxControlFrame.frameCount%4 == 0 || auxControlFrame.frameCount%4 == 1) {
+    auxControlFrame.fill(random(255));
+  }
+  else {
+    auxControlFrame.fill(0);
+  }
+}
+
+void simu_drawAtomicStroboFX_lightning() {
+  if (auxControlFrame.frameCount%4 == 0 || auxControlFrame.frameCount%4 == 1) {
+    auxControlFrame.fill(max(0,random(255 - atomicStrobe_animCpt*3)));
+  }
+  else {
+    auxControlFrame.fill(0);
+  }
+}
+
+void simu_drawAtomicStroboFX_spikes(int simuSpeed, int simuBrightness) {
+  //Map simuSpeed to a more usable value
+  simuSpeed = int(map(simuSpeed, 0, 255, 20, 6));
+  
+  if (auxControlFrame.frameCount%simuSpeed == 0) {
+    auxControlFrame.fill(simuBrightness);
+  }
+  else if (auxControlFrame.frameCount%2 == 0) {
+    auxControlFrame.fill(80);
+  }
+  else {
+    auxControlFrame.fill(0);
+  }  
 }
 
 ////////////////////////////////////////////////
