@@ -218,9 +218,7 @@ void drawSimuFrontLeftStroboscope(int positionX, int positionY) {
       break;
     }
   }
-  
-  println("drawStrobe front left : " + drawStrobe);
-  
+    
   if (drawStrobe == true) {
     int simuSpeed = 0;
     int simuBrightness = 0;
@@ -253,9 +251,7 @@ void drawSimuFrontRightStroboscope(int positionX, int positionY) {
       break;
     }
   }
-  
-  println("drawStrobe front right : " + drawStrobe);
-  
+    
   if (drawStrobe == true) {
     int simuSpeed = 0;
     int simuBrightness = 0;
@@ -336,6 +332,7 @@ void simu_computeStrobeColor(int simuSpeed, int simuBrightness, int simuFlashLen
   // A special effect is being played using the Atomic strobes
   else {
     switch(simuSpecialFx) {
+      case ATOMICFX_BLINDER:    simu_drawAtomicStroboFX_blinder(); break;
       case ATOMICFX_RAMPUP:     simu_drawAtomicStroboFX_rampUp(); break;
       case ATOMICFX_RAMPDOWN:   simu_drawAtomicStroboFX_rampDown(); break;
       case ATOMICFX_RAMPUPDOWN: simu_drawAtomicStroboFX_rampUpDown(); break;
@@ -346,6 +343,10 @@ void simu_computeStrobeColor(int simuSpeed, int simuBrightness, int simuFlashLen
     }
     atomicStrobe_animCpt += 1;
   }
+}
+
+void simu_drawAtomicStroboFX_blinder() {
+  auxControlFrame.fill(255);
 }
 
 void simu_drawAtomicStroboFX_rampUp() {

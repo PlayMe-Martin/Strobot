@@ -216,7 +216,7 @@ void dmxAnim_fullStrobeVeryFast() {
   dmxAnim_fullStrobe(255,255);
 }
 
-// Switch the left stroboscopes on
+// Switch only the left stroboscopes on
 void dmxAnim_leftStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
     stroboscope.startDMX(speed,intensity);
@@ -226,6 +226,13 @@ void dmxAnim_leftStrobe(int speed, int intensity) {
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
     stroboscope.stopDMX();
+  }
+}
+
+// Switch the left stroboscopes on, but do not touch the other strobes
+void dmxAnim_leftStrobe_noStop(int speed, int intensity) {
+  for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
+    stroboscope.startDMX(speed,intensity);
   }
 }
 
@@ -249,18 +256,23 @@ void dmxAnim_leftStrobeVeryFast() {
   dmxAnim_leftStrobe(255,255);
 }
 
-// Switch the right stroboscopes on
+// Switch only the right stroboscopes on
 void dmxAnim_rightStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    println("Start the front left strobes");
     stroboscope.stopDMX();
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    println("Start the front right strobes");
     stroboscope.startDMX(speed,intensity);
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
     stroboscope.stopDMX();
+  }
+}
+
+// Switch the right stroboscopes on, but do not touch the other strobes
+void dmxAnim_rightStrobe_noStop(int speed, int intensity) {
+  for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
+    stroboscope.startDMX(speed,intensity);
   }
 }
 
@@ -284,7 +296,7 @@ void dmxAnim_rightStrobeVeryFast() {
   dmxAnim_rightStrobe(255,255);
 }
 
-// Switch the back stroboscopes on
+// Switch only the back stroboscopes on
 void dmxAnim_backStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
     stroboscope.stopDMX();
@@ -292,6 +304,13 @@ void dmxAnim_backStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
     stroboscope.stopDMX();
   }
+  for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
+    stroboscope.startDMX(speed,intensity);
+  }
+}
+
+// Switch the back stroboscopes on, but do not touch the other strobes
+void dmxAnim_backStrobe_noStop(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
     stroboscope.startDMX(speed,intensity);
   }
@@ -320,28 +339,28 @@ void dmxAnim_backStrobeVeryFast() {
 // Switch both the left and the right sides on
 
 void dmxAnim_leftRightStrobeVerySlow() {
-  dmxAnim_leftStrobe(80,255);
-  dmxAnim_rightStrobe(80,255);
+  dmxAnim_leftStrobe_noStop(80,255);
+  dmxAnim_rightStrobe_noStop(80,255);
 }
 
 void dmxAnim_leftRightStrobeSlow() {
-  dmxAnim_leftStrobe(125,255);
-  dmxAnim_rightStrobe(125,255);
+  dmxAnim_leftStrobe_noStop(125,255);
+  dmxAnim_rightStrobe_noStop(125,255);
 }
 
 void dmxAnim_leftRightStrobeMedium() {
-  dmxAnim_leftStrobe(170,255);
-  dmxAnim_rightStrobe(170,255);
+  dmxAnim_leftStrobe_noStop(170,255);
+  dmxAnim_rightStrobe_noStop(170,255);
 }
 
 void dmxAnim_leftRightStrobeFast() {
-  dmxAnim_leftStrobe(215,255);
-  dmxAnim_rightStrobe(215,255);
+  dmxAnim_leftStrobe_noStop(215,255);
+  dmxAnim_rightStrobe_noStop(215,255);
 }
 
 void dmxAnim_leftRightStrobeVeryFast() {
-  dmxAnim_leftStrobe(255,255);
-  dmxAnim_rightStrobe(255,255);
+  dmxAnim_leftStrobe_noStop(255,255);
+  dmxAnim_rightStrobe_noStop(255,255);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -605,6 +624,7 @@ void dmxAnim_impulseFlasher(int signalID) {
 // Special FX using the Atomic 3000 stroboscopes
 /////////////////////////////////////////////////////////////////////////////////
 
+final int ATOMICFX_BLINDER        = 1;    //Not a real FX per se, but it's easier to deal with the simulator's implementation this way
 final int ATOMICFX_RAMPUP         = 10;
 final int ATOMICFX_RAMPDOWN       = 50;
 final int ATOMICFX_RAMPUPDOWN     = 100;
@@ -725,7 +745,7 @@ void dmxAnim_atomicFX_fastSpikes() {
 ////////////////////////////////////////////////////////////
 
 void dmxAnim_atomicFX_Blinder() {
-  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, 0);
+  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_BLINDER);
 }
 
 ////////////////////////////////////////////////////////////

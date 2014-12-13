@@ -274,7 +274,7 @@ class PlayMeSequencer {
     }
     else if (eventType == NOTE_OFF) {
       switch (actionNumber) {
-        case PITCH_GENERAL_STROBO_FRONT_LEFT:  stopStrobe_FrontLeft();break;
+        case PITCH_GENERAL_STROBO_FRONT_LEFT:  stopStrobe_FrontLeft();println("stopStrobe_FrontLeft() coming from the auto engine"); break;
         case PITCH_GENERAL_STROBO_FRONT_RIGHT: stopStrobe_FrontRight();break;
         case PITCH_GENERAL_STROBO_BACK:        stopStrobe_Back();break;
         

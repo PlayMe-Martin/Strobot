@@ -186,9 +186,7 @@ class DMX_Stroboscope {
     this.isActive = false;
     this.currentSpeed = strobelist[0][0];
     this.currentBrightness = strobelist[0][1];
-    
-    println("Stop DMX : " + this.DMXAddress_stroboscopeSpeed);
-    
+        
     if (this.exceptionRaisedDMX == false) {
       try {
         if (this.numberOfChannels == 2) { 
