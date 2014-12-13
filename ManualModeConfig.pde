@@ -298,7 +298,7 @@ void setManualAnimation(int channel, int pitch) {
     }
     else if (animationToBePlayed == PADKILLER) {
       myDMX.stopStrobe_FrontLeft();
-      myDMX.stopStrobe_FrontLeft();
+      myDMX.stopStrobe_FrontRight();
       strobepreset_frontleft = 0;
       strobepreset_frontright = 0;
       setupcomplete = false;
