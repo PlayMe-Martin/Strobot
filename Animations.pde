@@ -17107,3 +17107,20 @@ class WoubLine {
   }
 }
 
+
+//////////////////////////////////////////
+// Specific actions for the Signal Waveform animation
+//////////////////////////////////////////
+
+// Still work to be done !
+
+void draw_signalWaveform_white_bass() {
+  background(0);
+  stroke(255);
+  int signalLevelGain = 100;
+  for (int i=1; i<=min(width/4,audioInputBuffer_instantVal_Bass.size()); i++) {
+    float sample = audioInputBuffer_instantVal_Bass.get(audioInputBuffer_instantVal_Bass.size()-i);
+    line(i*4, height/2, i*4, height/2 + min(sample*signalLevelGain, height/2));
+    line(i*4, height/2, i*4, height/2 - min(sample*signalLevelGain, height/2));
+  }
+}
