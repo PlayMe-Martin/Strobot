@@ -16,13 +16,21 @@ int SIGNAL_ID_BASS    = 4;
 int SIGNAL_ID_KEYS    = 5;
 int SIGNAL_ID_GUITAR  = 6;
 
-//Ring buffers used to store audio data 
+//Ring buffers used to store audio data - energy average
 CircularArrayList<Float> audioInputBuffer_Kick;
 CircularArrayList<Float> audioInputBuffer_Snare;
 CircularArrayList<Float> audioInputBuffer_Cymbals;
 CircularArrayList<Float> audioInputBuffer_Bass;
 CircularArrayList<Float> audioInputBuffer_Keys;
 CircularArrayList<Float> audioInputBuffer_Guitar;
+
+//Ring buffers used to store audio data - signal instant value
+CircularArrayList<Float> audioInputBuffer_instantVal_Kick;
+CircularArrayList<Float> audioInputBuffer_instantVal_Snare;
+CircularArrayList<Float> audioInputBuffer_instantVal_Cymbals;
+CircularArrayList<Float> audioInputBuffer_instantVal_Bass;
+CircularArrayList<Float> audioInputBuffer_instantVal_Keys;
+CircularArrayList<Float> audioInputBuffer_instantVal_Guitar;
 
 //Containers to hold the FFT values
 SignalFFT signalFFT_Kick;
@@ -49,20 +57,23 @@ boolean impulseMessageProcessed = false;        //Flag set by the animations whi
 long OUTDATED_IMPULSE_AGE = 250*1000*1000;      //Consider that after OUTDATED_IMPULSE_AGE ns, the previous impulse is outdated, and should be invalidated
 
 // Port number must be greater than 1000
-int audioDataPortNumber = 7001;
-int impulsePortNumber   = 7002;
-int timeInfoPortNumber  = 7003;
-int fftPortNumber       = 7004;
-DatagramSocket AudioDataServer = null;
-DatagramSocket ImpulseServer   = null;
-DatagramSocket TimeInfoServer  = null;
-DatagramSocket FFTServer       = null;
+int audioDataPortNumber       = 7001;
+int audioInstantValPortNumber = 7002;
+int impulsePortNumber         = 7003;
+int timeInfoPortNumber        = 7004;
+int fftPortNumber             = 7005;
+DatagramSocket AudioDataServer       = null;
+DatagramSocket AudioInstantValServer = null;
+DatagramSocket ImpulseServer         = null;
+DatagramSocket TimeInfoServer        = null;
+DatagramSocket FFTServer             = null;
  
-final int timeInfoMessageSize    = 12;
-final int signalLevelMessageSize = 7;
-final int impulseMessageSize     = 2;
-final int fftMessageSize         = 67;
-final int THREAD_SLEEP_TIME      = 5;    //5 ms (for reference, 50 fps means a 20ms period)
+final int timeInfoMessageSize         = 12;
+final int signalLevelMessageSize      = 7;
+final int signalInstantValMessageSize = 7;
+final int impulseMessageSize          = 2;
+final int fftMessageSize              = 67;
+final int THREAD_SLEEP_TIME           = 5;    //5 ms (for reference, 50 fps means a 20ms period)
 //Audio buffer size, big enough to have one value for each LED pixel (= 4 pixels in Processing)
 //Important note : the number of panels is hard coded, so that even when using 3 panels, the buffer is the same
 //This is important, as the thresholds set in the Auto mode depend on this value
@@ -92,6 +103,13 @@ void initializeCircularBuffers() {
   audioInputBuffer_Keys    = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
   audioInputBuffer_Guitar  = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
   
+  audioInputBuffer_instantVal_Kick    = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  audioInputBuffer_instantVal_Snare   = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  audioInputBuffer_instantVal_Cymbals = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  audioInputBuffer_instantVal_Bass    = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  audioInputBuffer_instantVal_Keys    = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  audioInputBuffer_instantVal_Guitar  = new CircularArrayList<Float>(AUDIO_BUFFER_SIZE);
+  
   // Initialize all the buffers with 0s
   for (int i = 0; i<AUDIO_BUFFER_SIZE; i++) {
     audioInputBuffer_Kick.addAndRemoveLast(0f);
@@ -100,6 +118,13 @@ void initializeCircularBuffers() {
     audioInputBuffer_Bass.addAndRemoveLast(0f);
     audioInputBuffer_Keys.addAndRemoveLast(0f);
     audioInputBuffer_Guitar.addAndRemoveLast(0f);
+    
+    audioInputBuffer_instantVal_Kick.addAndRemoveLast(0f);
+    audioInputBuffer_instantVal_Snare.addAndRemoveLast(0f);
+    audioInputBuffer_instantVal_Cymbals.addAndRemoveLast(0f);
+    audioInputBuffer_instantVal_Bass.addAndRemoveLast(0f);
+    audioInputBuffer_instantVal_Keys.addAndRemoveLast(0f);
+    audioInputBuffer_instantVal_Guitar.addAndRemoveLast(0f);
   }
 
 }
@@ -120,6 +145,7 @@ void startAudioSignalMonitoringThread() {
   // Create the Java servers which will listen to the different SignalProcessor plugin instances
 
   thread("createAudioDataServer");
+  thread("createAudioInstantValServer");
   thread("createImpulseServer");
   thread("createTimeInfoServer");
   thread("createFFTServer");
@@ -152,6 +178,33 @@ void createAudioDataServer() {
   }
   catch (Exception e) {
     outputLog.println("Audio Data server error : " + e);
+  }
+}
+
+
+void createAudioInstantValServer() {
+  try {
+    outputLog.println("Audio Data (instant signal value) server initialization");
+    AudioInstantValServer = new DatagramSocket(audioInstantValPortNumber);
+    
+    //Specify a timeout for the receive, in order to avoid useless CPU usage
+    AudioInstantValServer.setSoTimeout(THREAD_SLEEP_TIME);
+     
+    //buffer to receive incoming data
+    byte[] bufferAudioInstantVal = new byte[signalInstantValMessageSize];
+    DatagramPacket incomingAudioInstantVal = new DatagramPacket(bufferAudioInstantVal, bufferAudioInstantVal.length);
+
+    while(true)
+    {
+      try {
+        AudioInstantValServer.receive(incomingAudioInstantVal);
+        processSignalInstantValMessage(SignalMessages.SignalInstantVal.parseFrom(incomingAudioInstantVal.getData()));
+      }
+      catch (Exception e) {}
+    }
+  }
+  catch (Exception e) {
+    outputLog.println("Audio Instant Value server error : " + e);
   }
 }
 
@@ -251,6 +304,19 @@ void processSignalLevelMessage(SignalMessages.SignalLevel signalLevel) {
   else if (signalLevel.getSignalID() == SIGNAL_ID_BASS)     { audioInputBuffer_Bass.addAndRemoveLast(signalLevel.getSignalLevel()); }
   else if (signalLevel.getSignalID() == SIGNAL_ID_KEYS)     { audioInputBuffer_Keys.addAndRemoveLast(signalLevel.getSignalLevel()); }
   else if (signalLevel.getSignalID() == SIGNAL_ID_GUITAR)   { audioInputBuffer_Guitar.addAndRemoveLast(signalLevel.getSignalLevel()); }
+}
+
+void processSignalInstantValMessage(SignalMessages.SignalInstantVal signalInstantVal) {
+  //Store the signal information in the correct ring buffer
+  
+  println("Instant sig : " + signalInstantVal.getSignalID() + " -- " + signalInstantVal.getSignalInstantVal());
+  
+  if (signalInstantVal.getSignalID() == SIGNAL_ID_KICK)          { audioInputBuffer_instantVal_Kick.addAndRemoveLast(signalInstantVal.getSignalInstantVal()); }
+  else if (signalInstantVal.getSignalID() == SIGNAL_ID_SNARE)    { audioInputBuffer_instantVal_Snare.addAndRemoveLast(signalInstantVal.getSignalInstantVal()); }
+  else if (signalInstantVal.getSignalID() == SIGNAL_ID_CYMBALS)  { audioInputBuffer_instantVal_Cymbals.addAndRemoveLast(signalInstantVal.getSignalInstantVal()); }
+  else if (signalInstantVal.getSignalID() == SIGNAL_ID_BASS)     { audioInputBuffer_instantVal_Bass.addAndRemoveLast(signalInstantVal.getSignalInstantVal()); }
+  else if (signalInstantVal.getSignalID() == SIGNAL_ID_KEYS)     { audioInputBuffer_instantVal_Keys.addAndRemoveLast(signalInstantVal.getSignalInstantVal()); }
+  else if (signalInstantVal.getSignalID() == SIGNAL_ID_GUITAR)   { audioInputBuffer_instantVal_Guitar.addAndRemoveLast(signalInstantVal.getSignalInstantVal()); }
 }
 
 void processImpulseMessage(SignalMessages.Impulse impulse) {

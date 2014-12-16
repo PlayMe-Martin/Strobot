@@ -140,7 +140,7 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes,  18, "Fadeout Center"                      , new String[] {"Fade In/Out", "Very Dark"}                                                           );
   animationAttributes = registerAttribute(animationAttributes,  19, "Fadeout Right"                       , new String[] {"Fade In/Out", "Very Dark"}                                                           );
   animationAttributes = registerAttribute(animationAttributes,  20, "Fadeout ExtremeRight"                , new String[] {"Fade In/Out", "Very Dark"}                                                           );
-  animationAttributes = registerAttribute(animationAttributes,  21, "Fadeout"                             , new String[] {"Fade In/Out", "Very Dark"}                                                           );
+  animationAttributes = registerAttribute(animationAttributes,  21, "Fadeout"                             , new String[] {"Fade In/Out", "Very Dark", "B&W"}                                                    );
   animationAttributes = registerAttribute(animationAttributes,  22, "Fadein"                              , new String[] {"Fade In/Out", "Very Bright"}                                                         );
   animationAttributes = registerAttribute(animationAttributes,  23, "ExtremeLowLeft"                      , new String[] {"Still", "Rhythmic", "B&W"}                                                           );
   animationAttributes = registerAttribute(animationAttributes,  24, "ExtremeHiLeft"                       , new String[] {"Still", "Rhythmic", "B&W"}                                                           );
@@ -536,6 +536,9 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 414, "Woublines - Red Inwards"             , new String[] {"Geometric", "Simple", "Lines", "Red", "Rhythmic"}                                    );
   animationAttributes = registerAttribute(animationAttributes, 415, "Woublines - Red Outwards"            , new String[] {"Geometric", "Simple", "Lines", "Red", "Rhythmic"}                                    );
   animationAttributes = registerAttribute(animationAttributes, 416, "Woublines - Audio"                   , new String[] {"Geometric", "Simple", "Lines", "B&W", "Red", "AudioInput"}                           );
+  
+  animationAttributes = registerAttribute(animationAttributes, 417, "Audio instant signal - Bass - White" , new String[] {"B&W", "AudioInput"}                                                                  );
+  
   animationAttributes = registerAttribute(animationAttributes, 509, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                            );
   animationAttributes = registerAttribute(animationAttributes, 510, "Display FFT - Bass"                  , new String[] {"Geometric", "Simple", "AudioInput"}                                                  );  
 }

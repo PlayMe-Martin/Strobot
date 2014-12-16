@@ -536,7 +536,7 @@ void specific_draw() {
       case 414: draw_woublines();break;                            //Woublines - Red Inwards
       case 415: draw_woublines();break;                            //Woublines - Red Outwards
       case 416: draw_woublines();break;                            //Woublines - Audio
-      
+      case 417: draw_signalWaveform_white_bass();break;            //Signal waveform - White - Bass
       
       case 509: draw_dirtyAudioProcessing();break;                 //Audio Monitoring
       case 510: draw_displayFFT_bass();break;                      //DisplayFFT - Bass

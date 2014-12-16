@@ -4544,6 +4544,13 @@ void specificActions() {
         woublines_audio = true;
         break;
         
+      case 417:    //Signal Waveform - Bass
+
+        strokeWeight(4);
+        smooth();
+        frameRate(50);
+        break;
+        
       case 509:    //Audio Monitoring
 
         background(0);

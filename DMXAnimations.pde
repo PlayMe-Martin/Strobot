@@ -450,8 +450,8 @@ void dmxAnim_growingBackStrobe() {
 }
 
 void dmxAnim_growingLeftRightStrobe() {
-  dmxAnim_leftStrobe(growingStrobe_speed, min(growingStrobe_intensity, 255));
-  dmxAnim_rightStrobe(growingStrobe_speed, min(growingStrobe_intensity, 255));
+  dmxAnim_leftStrobe_noStop(growingStrobe_speed, min(growingStrobe_intensity, 255));
+  dmxAnim_rightStrobe_noStop(growingStrobe_speed, min(growingStrobe_intensity, 255));
   growingStrobe_intensity += growingStrobe_increment;
 }
 
