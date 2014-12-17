@@ -308,9 +308,7 @@ void processSignalLevelMessage(SignalMessages.SignalLevel signalLevel) {
 
 void processSignalInstantValMessage(SignalMessages.SignalInstantVal signalInstantVal) {
   //Store the signal information in the correct ring buffer
-  
-  println("Instant sig : " + signalInstantVal.getSignalID() + " -- " + signalInstantVal.getSignalInstantVal());
-  
+    
   if (signalInstantVal.getSignalID() == SIGNAL_ID_KICK)          { audioInputBuffer_instantVal_Kick.addAndRemoveLast(signalInstantVal.getSignalInstantVal()); }
   else if (signalInstantVal.getSignalID() == SIGNAL_ID_SNARE)    { audioInputBuffer_instantVal_Snare.addAndRemoveLast(signalInstantVal.getSignalInstantVal()); }
   else if (signalInstantVal.getSignalID() == SIGNAL_ID_CYMBALS)  { audioInputBuffer_instantVal_Cymbals.addAndRemoveLast(signalInstantVal.getSignalInstantVal()); }

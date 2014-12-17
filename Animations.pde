@@ -17117,10 +17117,23 @@ class WoubLine {
 void draw_signalWaveform_white_bass() {
   background(0);
   stroke(255);
-  int signalLevelGain = 100;
+  noFill();
+  int signalLevelGain = 40;
+  
+  beginShape();
+  
   for (int i=1; i<=min(width/4,audioInputBuffer_instantVal_Bass.size()); i++) {
     float sample = audioInputBuffer_instantVal_Bass.get(audioInputBuffer_instantVal_Bass.size()-i);
-    line(i*4, height/2, i*4, height/2 + min(sample*signalLevelGain, height/2));
-    line(i*4, height/2, i*4, height/2 - min(sample*signalLevelGain, height/2));
+    //point(i*4, height/2 + sample*signalLevelGain);
+    
+    vertex(i*4, height/2 + sample*signalLevelGain);
+    
+    //line( i*4,    height/2 + audioInputBuffer_instantVal_Bass.get(audioInputBuffer_instantVal_Bass.size()-i)*signalLevelGain,
+    //     (i-1)*4, height/2 + audioInputBuffer_instantVal_Bass.get(audioInputBuffer_instantVal_Bass.size()-i-1)*signalLevelGain);
+    
+    //line(i*4, height/2, i*4, height/2 + min(sample*signalLevelGain, height/2));
+    //line(i*4, height/2, i*4, height/2 - min(sample*signalLevelGain, height/2));
   }
+  
+  endShape();
 }
