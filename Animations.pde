@@ -17112,28 +17112,80 @@ class WoubLine {
 // Specific actions for the Signal Waveform animation
 //////////////////////////////////////////
 
-// Still work to be done !
+void draw_signalWaveform_white_kick() {
+  stroke(255);
+  draw_signalWaveform(audioInputBuffer_instantVal_Kick);
+}
+
+void draw_signalWaveform_red_kick() {
+  stroke(255,0,0);
+  draw_signalWaveform(audioInputBuffer_instantVal_Kick);
+}
+
+void draw_signalWaveform_white_snare() {
+  stroke(255);
+  draw_signalWaveform(audioInputBuffer_instantVal_Snare);
+}
+
+void draw_signalWaveform_red_snare() {
+  stroke(255,0,0);
+  draw_signalWaveform(audioInputBuffer_instantVal_Snare);
+}
+
+void draw_signalWaveform_white_cymbals() {
+  stroke(255);
+  draw_signalWaveform(audioInputBuffer_instantVal_Cymbals);
+}
+
+void draw_signalWaveform_red_cymbals() {
+  stroke(255,0,0);
+  draw_signalWaveform(audioInputBuffer_instantVal_Cymbals);
+}
 
 void draw_signalWaveform_white_bass() {
-  background(0);
   stroke(255);
-  noFill();
-  int signalLevelGain = 40;
-  
+  draw_signalWaveform(audioInputBuffer_instantVal_Bass);
+}
+
+void draw_signalWaveform_red_bass() {
+  stroke(255,0,0);
+  draw_signalWaveform(audioInputBuffer_instantVal_Bass);
+}
+
+void draw_signalWaveform_white_keys() {
+  stroke(255);
+  draw_signalWaveform(audioInputBuffer_instantVal_Keys);
+}
+
+void draw_signalWaveform_red_keys() {
+  stroke(255,0,0);
+  draw_signalWaveform(audioInputBuffer_instantVal_Keys);
+}
+
+void draw_signalWaveform_white_guitar() {
+  stroke(255);
+  draw_signalWaveform(audioInputBuffer_instantVal_Guitar);
+}
+
+void draw_signalWaveform_red_guitar() {
+  stroke(255,0,0);
+  draw_signalWaveform(audioInputBuffer_instantVal_Guitar);
+}
+
+
+void draw_signalWaveform(CircularArrayList<Float> audioBuffer) {
+  background(0);
   beginShape();
-  
-  for (int i=1; i<=min(width/4,audioInputBuffer_instantVal_Bass.size()); i++) {
-    float sample = audioInputBuffer_instantVal_Bass.get(audioInputBuffer_instantVal_Bass.size()-i);
-    //point(i*4, height/2 + sample*signalLevelGain);
-    
-    vertex(i*4, height/2 + sample*signalLevelGain);
-    
-    //line( i*4,    height/2 + audioInputBuffer_instantVal_Bass.get(audioInputBuffer_instantVal_Bass.size()-i)*signalLevelGain,
-    //     (i-1)*4, height/2 + audioInputBuffer_instantVal_Bass.get(audioInputBuffer_instantVal_Bass.size()-i-1)*signalLevelGain);
-    
-    //line(i*4, height/2, i*4, height/2 + min(sample*signalLevelGain, height/2));
-    //line(i*4, height/2, i*4, height/2 - min(sample*signalLevelGain, height/2));
+  for (int i=1; i<=min(width/4,audioBuffer.size()); i++) {
+    float sample = audioBuffer.get(audioBuffer.size()-i);
+    vertex(i*4, signalWaveForm_offsetY + audioBuffer.get(audioBuffer.size()-i));
   }
-  
   endShape();
+}
+
+void setup_signalWaveform() {
+  strokeWeight(DISPLAY_SCALING_FACTOR);
+  smooth();
+  noFill();
+  frameRate(50);
 }

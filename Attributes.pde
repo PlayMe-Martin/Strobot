@@ -536,8 +536,18 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 414, "Woublines - Red Inwards"             , new String[] {"Geometric", "Simple", "Lines", "Red", "Rhythmic"}                                    );
   animationAttributes = registerAttribute(animationAttributes, 415, "Woublines - Red Outwards"            , new String[] {"Geometric", "Simple", "Lines", "Red", "Rhythmic"}                                    );
   animationAttributes = registerAttribute(animationAttributes, 416, "Woublines - Audio"                   , new String[] {"Geometric", "Simple", "Lines", "B&W", "Red", "AudioInput"}                           );
-  
-  animationAttributes = registerAttribute(animationAttributes, 417, "Audio instant signal - Bass - White" , new String[] {"B&W", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 417, "Audio instant signal - Kick - White" , new String[] {"B&W", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 418, "Audio instant signal - Kick - Red"   , new String[] {"Red", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 419, "Audio instant signal - Snare - White", new String[] {"B&W", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 420, "Audio instant signal - Snare - Red"  , new String[] {"Red", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 421, "Audio instant signal - Cymbals - White",new String[]{"B&W", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 422, "Audio instant signal - Cymbals - Red", new String[] {"Red", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 423, "Audio instant signal - Bass - White" , new String[] {"B&W", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 424, "Audio instant signal - Bass - Red"   , new String[] {"Red", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 425, "Audio instant signal - Keys - White" , new String[] {"B&W", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 426, "Audio instant signal - Keys - Red"   , new String[] {"Red", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 427, "Audio instant signal - Guitar - White",new String[] {"B&W", "AudioInput"}                                                                  );
+  animationAttributes = registerAttribute(animationAttributes, 428, "Audio instant signal - Guitar - Red" , new String[] {"Red", "AudioInput"}                                                                  );
   
   animationAttributes = registerAttribute(animationAttributes, 509, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                            );
   animationAttributes = registerAttribute(animationAttributes, 510, "Display FFT - Bass"                  , new String[] {"Geometric", "Simple", "AudioInput"}                                                  );  

@@ -4544,14 +4544,47 @@ void specificActions() {
         woublines_audio = true;
         break;
         
-      case 417:    //Signal Waveform - Bass
+      case 417:    //Signal Waveform
 
-        strokeWeight(4);
-        smooth();
-        frameRate(50);
+        setup_signalWaveform();
         break;
         
-      case 509:    //Audio Monitoring
+      case 418:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+        
+      case 419:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+        
+      case 420:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+        
+      case 421:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+        
+      case 422:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+        
+      case 423:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+        
+      case 424:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+        
+      case 525:    //Audio Monitoring
 
         background(0);
         uglyImpulseKickList = new ArrayList<UglyImpulseKick>();

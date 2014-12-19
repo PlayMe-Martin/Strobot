@@ -1436,3 +1436,6 @@ ArrayList<WoubLine> woublines_list;
 boolean woublines_init  = false;
 boolean woublines_audio = false;
 float woublines_speed   = 2;
+
+// Signal Waveform
+final int signalWaveForm_offsetY = (PANEL_RESOLUTION_Y * DISPLAY_SCALING_FACTOR)/2 - DISPLAY_SCALING_FACTOR/2;
