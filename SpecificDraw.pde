@@ -536,7 +536,18 @@ void specific_draw() {
       case 414: draw_woublines();break;                            //Woublines - Red Inwards
       case 415: draw_woublines();break;                            //Woublines - Red Outwards
       case 416: draw_woublines();break;                            //Woublines - Audio
-      case 417: draw_signalWaveform_white_bass();break;            //Signal waveform - White - Bass
+      case 417: draw_signalWaveform_white_kick();break;            //Signal waveform - White - Kick
+      case 418: draw_signalWaveform_red_kick();break;              //Signal waveform - Red - Kick
+      case 419: draw_signalWaveform_white_snare();break;           //Signal waveform - White - Snare
+      case 420: draw_signalWaveform_red_snare();break;             //Signal waveform - Red - Snare
+      case 421: draw_signalWaveform_white_cymbals();break;         //Signal waveform - White - Cymbals
+      case 422: draw_signalWaveform_red_cymbals();break;           //Signal waveform - Red - Cymbals
+      case 423: draw_signalWaveform_white_bass();break;            //Signal waveform - White - Bass
+      case 424: draw_signalWaveform_red_bass();break;              //Signal waveform - Red - Bass
+      case 425: draw_signalWaveform_white_keys();break;            //Signal waveform - White - Keys
+      case 426: draw_signalWaveform_red_keys();break;              //Signal waveform - Red - Keys
+      case 427: draw_signalWaveform_white_guitar();break;          //Signal waveform - White - Guitar
+      case 428: draw_signalWaveform_red_guitar();break;            //Signal waveform - Red - Guitar
       
       case 509: draw_dirtyAudioProcessing();break;                 //Audio Monitoring
       case 510: draw_displayFFT_bass();break;                      //DisplayFFT - Bass
