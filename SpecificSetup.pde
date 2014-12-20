@@ -4584,6 +4584,42 @@ void specificActions() {
         setup_signalWaveform();
         break;
         
+      case 425:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+
+      case 426:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+
+      case 427:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+
+      case 428:    //Signal Waveform
+
+        setup_signalWaveform();
+        break;
+        
+      case 429:    //Simple Spiral - White
+      
+        frameRate(60);
+        noFill();
+        background(0);
+        strokeWeight(6);
+        break;
+
+      case 430:    //Simple Spiral - Red
+      
+        frameRate(60);
+        noFill();
+        background(0);
+        strokeWeight(6);
+        break;
+        
       case 525:    //Audio Monitoring
 
         background(0);
