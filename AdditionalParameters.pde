@@ -1439,3 +1439,7 @@ float woublines_speed   = 2;
 
 // Signal Waveform
 final int signalWaveForm_offsetY = (PANEL_RESOLUTION_Y * DISPLAY_SCALING_FACTOR)/2 - DISPLAY_SCALING_FACTOR/2;
+
+// Simple Spiral
+float simplespiral_theta = 0;
+int simplespiral_num = 20;

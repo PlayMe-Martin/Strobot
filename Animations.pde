@@ -17189,3 +17189,21 @@ void setup_signalWaveform() {
   noFill();
   frameRate(50);
 }
+
+
+//////////////////////////////////////////
+// Specific actions for the Simple Spiral animations
+//////////////////////////////////////////
+
+void draw_simplespiral(int r, int g, int b) {
+  background(0);
+  pushMatrix();
+  translate(width/2, height/2);
+  for (int i=0; i<simplespiral_num; i++) {
+    rotate(simplespiral_theta);
+    stroke(r, g, b);
+    arc(0, 0, width*1.2-i*10, width*1.2-i*10, 0, PI);
+  }
+  popMatrix();
+  simplespiral_theta += PI/90;
+}

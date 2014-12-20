@@ -548,7 +548,8 @@ void specific_draw() {
       case 426: draw_signalWaveform_red_keys();break;              //Signal waveform - Red - Keys
       case 427: draw_signalWaveform_white_guitar();break;          //Signal waveform - White - Guitar
       case 428: draw_signalWaveform_red_guitar();break;            //Signal waveform - Red - Guitar
-      
+      case 429: draw_simplespiral(255,255,255);break;              //Simple Spiral - White
+      case 430: draw_simplespiral(255,0,0);break;                  //Simple Spiral - Red
       case 509: draw_dirtyAudioProcessing();break;                 //Audio Monitoring
       case 510: draw_displayFFT_bass();break;                      //DisplayFFT - Bass
       

@@ -548,7 +548,8 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 426, "Audio instant signal - Keys - Red"   , new String[] {"Red", "AudioInput"}                                                                  );
   animationAttributes = registerAttribute(animationAttributes, 427, "Audio instant signal - Guitar - White",new String[] {"B&W", "AudioInput"}                                                                  );
   animationAttributes = registerAttribute(animationAttributes, 428, "Audio instant signal - Guitar - Red" , new String[] {"Red", "AudioInput"}                                                                  );
-  
+  animationAttributes = registerAttribute(animationAttributes, 429, "Simple Spiral - White"               , new String[] {"Circles", "Spiral", "B&W", "Fast"}                                                   );
+  animationAttributes = registerAttribute(animationAttributes, 430, "Simple Spiral - Red"                 , new String[] {"Circles", "Spiral", "Red", "Fast"}                                                   );
   animationAttributes = registerAttribute(animationAttributes, 509, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                            );
   animationAttributes = registerAttribute(animationAttributes, 510, "Display FFT - Bass"                  , new String[] {"Geometric", "Simple", "AudioInput"}                                                  );  
 }
