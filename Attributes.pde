@@ -933,7 +933,31 @@ void setDMXAnimationsAttributes() {
   DMXAttributes = registerAttribute(DMXAttributes, 76,  "Atomic FX - Slow Spikes"                             , new String[] { "Strobe", "Center", "Atomic"                                                } );
   DMXAttributes = registerAttribute(DMXAttributes, 77,  "Atomic FX - Medium Spikes"                           , new String[] { "Strobe", "Center", "Atomic"                                                } );
   DMXAttributes = registerAttribute(DMXAttributes, 78,  "Atomic FX - Fast Spikes"                             , new String[] { "Strobe", "Center", "Atomic"                                                } );
-  DMXAttributes = registerAttribute(DMXAttributes, 79,  "Atomic FX - Blinder"                                 , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 79,  "Atomic 3000 SpecialFX - Blinder - Very Weak"         , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 80,  "Atomic 3000 SpecialFX - Blinder - Weak"              , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 81,  "Atomic 3000 SpecialFX - Blinder - Medium"            , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 82,  "Atomic 3000 SpecialFX - Blinder - Strong"            , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 83,  "Atomic 3000 SpecialFX - Blinder - Very Strong"       , new String[] { "Strobe", "Center", "Atomic"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 84,  "Left Strobe - Very Weak / Full speed"                , new String[] { "Strobe", "Left", "Very Fast"                                               } );
+  DMXAttributes = registerAttribute(DMXAttributes, 85,  "Right Strobe - Very Weak / Full speed"               , new String[] { "Strobe", "Right", "Very Fast"                                              } );
+  DMXAttributes = registerAttribute(DMXAttributes, 86,  "Center Strobe - Very Weak / Full speed"              , new String[] { "Strobe", "Center", "Very Fast"                                             } );
+  DMXAttributes = registerAttribute(DMXAttributes, 87,  "Left/Right Strobe - Very Weak / Full speed"          , new String[] { "Strobe", "Left", "Right", "Very Fast"                                      } );
+  DMXAttributes = registerAttribute(DMXAttributes, 88,  "Full Strobe - Very Weak / Full speed"                , new String[] { "Strobe", "All", "Very Fast"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 89,  "Left Strobe - Weak / Full speed"                     , new String[] { "Strobe", "Left", "Very Fast"                                               } );
+  DMXAttributes = registerAttribute(DMXAttributes, 90,  "Right Strobe - Weak / Full speed"                    , new String[] { "Strobe", "Right", "Very Fast"                                              } );
+  DMXAttributes = registerAttribute(DMXAttributes, 91,  "Center Strobe - Weak / Full speed"                   , new String[] { "Strobe", "Center", "Very Fast"                                             } );
+  DMXAttributes = registerAttribute(DMXAttributes, 92,  "Left/Right Strobe - Weak / Full speed"               , new String[] { "Strobe", "Left", "Right", "Very Fast"                                      } );
+  DMXAttributes = registerAttribute(DMXAttributes, 93,  "Full Strobe - Weak / Full speed"                     , new String[] { "Strobe", "All", "Very Fast"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 94,  "Left Strobe - Moderate / Full speed"                 , new String[] { "Strobe", "Left", "Very Fast"                                               } );
+  DMXAttributes = registerAttribute(DMXAttributes, 95,  "Right Strobe - Moderate / Full speed"                , new String[] { "Strobe", "Right", "Very Fast"                                              } );
+  DMXAttributes = registerAttribute(DMXAttributes, 96,  "Center Strobe - Moderate / Full speed"               , new String[] { "Strobe", "Center", "Very Fast"                                             } );
+  DMXAttributes = registerAttribute(DMXAttributes, 97,  "Left/Right Strobe - Moderate / Full speed"           , new String[] { "Strobe", "Left", "Right", "Very Fast"                                      } );
+  DMXAttributes = registerAttribute(DMXAttributes, 98,  "Full Strobe - Moderate / Full speed"                 , new String[] { "Strobe", "All", "Very Fast"                                                } );
+  DMXAttributes = registerAttribute(DMXAttributes, 99,  "Left Strobe - Strong / Full speed"                   , new String[] { "Strobe", "Left", "Very Fast"                                               } );
+  DMXAttributes = registerAttribute(DMXAttributes, 100, "Right Strobe - Strong / Full speed"                  , new String[] { "Strobe", "Right", "Very Fast"                                              } );
+  DMXAttributes = registerAttribute(DMXAttributes, 101, "Center Strobe - Strong / Full speed"                 , new String[] { "Strobe", "Center", "Very Fast"                                             } );
+  DMXAttributes = registerAttribute(DMXAttributes, 102, "Left/Right Strobe - Strong / Full speed"             , new String[] { "Strobe", "Left", "Right", "Very Fast"                                      } );
+  DMXAttributes = registerAttribute(DMXAttributes, 103, "Full Strobe - Strong / Full speed"                   , new String[] { "Strobe", "All", "Very Fast"                                                } );
 }
 
 
