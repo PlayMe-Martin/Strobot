@@ -102,7 +102,35 @@ void playDMXAnimation() {
     case 77:  dmxAnim_atomicFX_mediumSpikes();                   break;         // 77 -  Atomic 3000 SpecialFX - Spikes - Medium
     case 78:  dmxAnim_atomicFX_fastSpikes();                     break;         // 78 -  Atomic 3000 SpecialFX - Spikes - Fast
     
-    case 79:  dmxAnim_atomicFX_Blinder();                        break;         // 79 -  Atomic 3000 SpecialFX - Blinder
+    case 79:  dmxAnim_atomicFX_Blinder_VeryWeak();               break;         // 79 -  Atomic 3000 SpecialFX - Blinder - Very Weak
+    case 80:  dmxAnim_atomicFX_Blinder_Weak();                   break;         // 80 -  Atomic 3000 SpecialFX - Blinder - Weak
+    case 81:  dmxAnim_atomicFX_Blinder_Medium();                 break;         // 81 -  Atomic 3000 SpecialFX - Blinder - Medium
+    case 82:  dmxAnim_atomicFX_Blinder_Strong();                 break;         // 82 -  Atomic 3000 SpecialFX - Blinder - Strong
+    case 83:  dmxAnim_atomicFX_Blinder_VeryStrong();             break;         // 83 -  Atomic 3000 SpecialFX - Blinder - Very Strong
+    
+    case 84:  dmxAnim_leftStrobeVeryWeak();                      break;         // 84 -  Left Strobe - Very Weak / Full speed
+    case 85:  dmxAnim_rightStrobeVeryWeak();                     break;         // 85 -  Right Strobe - Very Weak / Full speed
+    case 86:  dmxAnim_backStrobeVeryWeak();                      break;         // 86 -  Center Strobe - Very Weak / Full speed
+    case 87:  dmxAnim_leftRightStrobeVeryWeak();                 break;         // 87 -  Left/Right Strobe - Very Weak / Full speed
+    case 88:  dmxAnim_fullStrobeVeryWeak();                      break;         // 88 -  Full Strobe - Very Weak / Full speed
+    
+    case 89:  dmxAnim_leftStrobeWeak();                          break;         // 89 -  Left Strobe - Weak / Full speed
+    case 90:  dmxAnim_rightStrobeWeak();                         break;         // 90 -  Right Strobe - Weak / Full speed
+    case 91:  dmxAnim_backStrobeWeak();                          break;         // 91 -  Center Strobe - Weak / Full speed
+    case 92:  dmxAnim_leftRightStrobeWeak();                     break;         // 92 -  Left/Right Strobe - Weak / Full speed
+    case 93:  dmxAnim_fullStrobeWeak();                          break;         // 93 -  Full Strobe - Weak / Full speed
+    
+    case 94:  dmxAnim_leftStrobeModerate();                      break;         // 94 -  Left Strobe - Moderate / Full speed
+    case 95:  dmxAnim_rightStrobeModerate();                     break;         // 95 -  Right Strobe - Moderate / Full speed
+    case 96:  dmxAnim_backStrobeModerate();                      break;         // 96 -  Center Strobe - Moderate / Full speed
+    case 97:  dmxAnim_leftRightStrobeModerate();                 break;         // 97 -  Left/Right Strobe - Moderate / Full speed
+    case 98:  dmxAnim_fullStrobeModerate();                      break;         // 98 -  Full Strobe - Moderate / Full speed
+
+    case 99:  dmxAnim_leftStrobeStrong();                        break;         // 99 -  Left Strobe - Strong / Full speed
+    case 100: dmxAnim_rightStrobeStrong();                       break;         // 100 - Right Strobe - Strong / Full speed
+    case 101: dmxAnim_backStrobeStrong();                        break;         // 101 - Center Strobe - Strong / Full speed
+    case 102: dmxAnim_leftRightStrobeStrong();                   break;         // 102 - Left/Right Strobe - Strong / Full speed
+    case 103: dmxAnim_fullStrobeStrong();                        break;         // 103 - Full Strobe - Strong / Full speed
     
     // PAR animations must start from 128
     
@@ -744,8 +772,24 @@ void dmxAnim_atomicFX_fastSpikes() {
 
 ////////////////////////////////////////////////////////////
 
-void dmxAnim_atomicFX_Blinder() {
-  dmxAnim_atomicFX(ATOMICFX_INTENSITY, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_BLINDER);
+void dmxAnim_atomicFX_Blinder_VeryWeak() {
+  dmxAnim_atomicFX(70, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_BLINDER);
+}
+
+void dmxAnim_atomicFX_Blinder_Weak() {
+  dmxAnim_atomicFX(110, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_BLINDER);
+}
+
+void dmxAnim_atomicFX_Blinder_Medium() {
+  dmxAnim_atomicFX(160, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_BLINDER);
+}
+
+void dmxAnim_atomicFX_Blinder_Strong() {
+  dmxAnim_atomicFX(210, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_BLINDER);
+}
+
+void dmxAnim_atomicFX_Blinder_VeryStrong() {
+  dmxAnim_atomicFX(255, ATOMICFX_CONTINUOUS, ATOMICFX_SPEED_FAST, ATOMICFX_BLINDER);
 }
 
 ////////////////////////////////////////////////////////////
@@ -779,3 +823,99 @@ void dmxAnim_atomicFX(int intensity, int flashLength, int speed, int fxNumber) {
     }
   }
 }
+
+
+////////////////////////////////////////////////////////////
+
+final int STROBEINTENSITY_VERYWEAK   = 70;
+final int STROBEINTENSITY_WEAK       = 110;
+final int STROBEINTENSITY_MODERATE   = 150;
+final int STROBEINTENSITY_STRONG     = 200;
+
+void dmxAnim_leftStrobeVeryWeak() {
+  dmxAnim_leftStrobe(255,STROBEINTENSITY_VERYWEAK);
+}
+
+void dmxAnim_rightStrobeVeryWeak() {
+  dmxAnim_rightStrobe(255,STROBEINTENSITY_VERYWEAK);
+}
+
+void dmxAnim_backStrobeVeryWeak() {
+  dmxAnim_backStrobe(255,STROBEINTENSITY_VERYWEAK);
+}
+
+void dmxAnim_leftRightStrobeVeryWeak() {
+  dmxAnim_leftStrobe_noStop(255,STROBEINTENSITY_VERYWEAK);
+  dmxAnim_rightStrobe_noStop(255,STROBEINTENSITY_VERYWEAK);
+}
+
+void dmxAnim_fullStrobeVeryWeak() {
+  dmxAnim_fullStrobe(255,STROBEINTENSITY_VERYWEAK);
+}
+
+
+void dmxAnim_leftStrobeWeak() {
+  dmxAnim_leftStrobe(255,STROBEINTENSITY_WEAK);
+}
+
+void dmxAnim_rightStrobeWeak() {
+  dmxAnim_rightStrobe(255,STROBEINTENSITY_WEAK);
+}
+
+void dmxAnim_backStrobeWeak() {
+  dmxAnim_backStrobe(255,STROBEINTENSITY_WEAK);
+}
+
+void dmxAnim_leftRightStrobeWeak() {
+  dmxAnim_leftStrobe_noStop(255,STROBEINTENSITY_WEAK);
+  dmxAnim_rightStrobe_noStop(255,STROBEINTENSITY_WEAK);
+}
+
+void dmxAnim_fullStrobeWeak() {
+  dmxAnim_fullStrobe(255,STROBEINTENSITY_WEAK);
+}
+
+
+void dmxAnim_leftStrobeModerate() {
+  dmxAnim_leftStrobe(255,STROBEINTENSITY_MODERATE);
+}
+
+void dmxAnim_rightStrobeModerate() {
+  dmxAnim_rightStrobe(255,STROBEINTENSITY_MODERATE);
+}
+
+void dmxAnim_backStrobeModerate() {
+  dmxAnim_backStrobe(255,STROBEINTENSITY_MODERATE);
+}
+
+void dmxAnim_leftRightStrobeModerate() {
+  dmxAnim_leftStrobe_noStop(255,STROBEINTENSITY_MODERATE);
+  dmxAnim_rightStrobe_noStop(255,STROBEINTENSITY_MODERATE);
+}
+
+void dmxAnim_fullStrobeModerate() {
+  dmxAnim_fullStrobe(255,STROBEINTENSITY_MODERATE);
+}
+
+
+void dmxAnim_leftStrobeStrong() {
+  dmxAnim_leftStrobe(255,STROBEINTENSITY_STRONG);
+}
+
+void dmxAnim_rightStrobeStrong() {
+  dmxAnim_rightStrobe(255,STROBEINTENSITY_STRONG);
+}
+
+void dmxAnim_backStrobeStrong() {
+  dmxAnim_backStrobe(255,STROBEINTENSITY_STRONG);
+}
+
+void dmxAnim_leftRightStrobeStrong() {
+  dmxAnim_leftStrobe_noStop(255,STROBEINTENSITY_STRONG);
+  dmxAnim_rightStrobe_noStop(255,STROBEINTENSITY_STRONG);
+}
+
+void dmxAnim_fullStrobeStrong() {
+  dmxAnim_fullStrobe(255,STROBEINTENSITY_STRONG);
+}
+
