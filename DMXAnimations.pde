@@ -207,6 +207,12 @@ void dmxAnim_blackout() {
   }
 }
 
+void dmxAnim_backStrobe_stop() {
+  for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
+    stroboscope.stopDMX();
+  }
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 // Generic continuous stroboscopes
 /////////////////////////////////////////////////////////////////////////////////
@@ -369,26 +375,31 @@ void dmxAnim_backStrobeVeryFast() {
 void dmxAnim_leftRightStrobeVerySlow() {
   dmxAnim_leftStrobe_noStop(80,255);
   dmxAnim_rightStrobe_noStop(80,255);
+  dmxAnim_backStrobe_stop();
 }
 
 void dmxAnim_leftRightStrobeSlow() {
   dmxAnim_leftStrobe_noStop(125,255);
   dmxAnim_rightStrobe_noStop(125,255);
+  dmxAnim_backStrobe_stop();
 }
 
 void dmxAnim_leftRightStrobeMedium() {
   dmxAnim_leftStrobe_noStop(170,255);
   dmxAnim_rightStrobe_noStop(170,255);
+  dmxAnim_backStrobe_stop();
 }
 
 void dmxAnim_leftRightStrobeFast() {
   dmxAnim_leftStrobe_noStop(215,255);
   dmxAnim_rightStrobe_noStop(215,255);
+  dmxAnim_backStrobe_stop();
 }
 
 void dmxAnim_leftRightStrobeVeryFast() {
   dmxAnim_leftStrobe_noStop(255,255);
   dmxAnim_rightStrobe_noStop(255,255);
+  dmxAnim_backStrobe_stop();
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -480,6 +491,7 @@ void dmxAnim_growingBackStrobe() {
 void dmxAnim_growingLeftRightStrobe() {
   dmxAnim_leftStrobe_noStop(growingStrobe_speed, min(growingStrobe_intensity, 255));
   dmxAnim_rightStrobe_noStop(growingStrobe_speed, min(growingStrobe_intensity, 255));
+  dmxAnim_backStrobe_stop();
   growingStrobe_intensity += growingStrobe_increment;
 }
 
@@ -847,6 +859,7 @@ void dmxAnim_backStrobeVeryWeak() {
 void dmxAnim_leftRightStrobeVeryWeak() {
   dmxAnim_leftStrobe_noStop(255,STROBEINTENSITY_VERYWEAK);
   dmxAnim_rightStrobe_noStop(255,STROBEINTENSITY_VERYWEAK);
+  dmxAnim_backStrobe_stop();
 }
 
 void dmxAnim_fullStrobeVeryWeak() {
@@ -869,6 +882,7 @@ void dmxAnim_backStrobeWeak() {
 void dmxAnim_leftRightStrobeWeak() {
   dmxAnim_leftStrobe_noStop(255,STROBEINTENSITY_WEAK);
   dmxAnim_rightStrobe_noStop(255,STROBEINTENSITY_WEAK);
+  dmxAnim_backStrobe_stop();
 }
 
 void dmxAnim_fullStrobeWeak() {
@@ -891,6 +905,7 @@ void dmxAnim_backStrobeModerate() {
 void dmxAnim_leftRightStrobeModerate() {
   dmxAnim_leftStrobe_noStop(255,STROBEINTENSITY_MODERATE);
   dmxAnim_rightStrobe_noStop(255,STROBEINTENSITY_MODERATE);
+  dmxAnim_backStrobe_stop();
 }
 
 void dmxAnim_fullStrobeModerate() {
@@ -913,6 +928,7 @@ void dmxAnim_backStrobeStrong() {
 void dmxAnim_leftRightStrobeStrong() {
   dmxAnim_leftStrobe_noStop(255,STROBEINTENSITY_STRONG);
   dmxAnim_rightStrobe_noStop(255,STROBEINTENSITY_STRONG);
+  dmxAnim_backStrobe_stop();
 }
 
 void dmxAnim_fullStrobeStrong() {
