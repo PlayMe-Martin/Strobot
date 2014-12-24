@@ -218,8 +218,10 @@ class DMX_Stroboscope {
   void startDMX(int stroboscopeSpeed, int stroboscopeBrightness) {
     //Consider that the strobe is active
     this.isActive = true;
-    this.currentSpeed = stroboscopeSpeed;
-    this.currentBrightness = stroboscopeBrightness;
+    this.currentSpeed       = stroboscopeSpeed;
+    this.currentBrightness  = stroboscopeBrightness;
+    this.currentFlashLength = DMXStroboscope_defaultFlashLengthValue; 
+    this.currentSpecialFX   = DMXStroboscope_defaultSpecialFXValue;
       
     if (this.exceptionRaisedDMX == false) {
       

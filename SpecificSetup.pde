@@ -2490,7 +2490,7 @@ void specificActions() {
         colorMode(RGB);
         strokeCap(ROUND);
         thunderline_setupcomplete = false;
-        thunderline_density = 5;
+        thunderline_density = 25;
         setup_thunderlines();
         thunderline_init = true;
         thunderline_setupcomplete = true;
@@ -2505,7 +2505,7 @@ void specificActions() {
         colorMode(RGB);
         strokeCap(ROUND);
         thunderline_setupcomplete = false;
-        if (thunderline_density < 30) {
+        if (thunderline_density < 60) {
           thunderline_density += 1;
         }
         setup_thunderlines();
@@ -2513,21 +2513,13 @@ void specificActions() {
         thunderline_setupcomplete = true;
         break;
       
-      case 237:    //ThunderLines - Less lines
+      case 237:    //Opening Whiteout
 
-        frameRate(60);
-        stroke(255); 
-        noFill();
-        strokeWeight(4);
-        colorMode(RGB);
-        strokeCap(ROUND);
-        thunderline_setupcomplete = false;
-        if (thunderline_density > 4) {
-          thunderline_density -= 1;
-        }
-        setup_thunderlines();
-        thunderline_init = true;
-        thunderline_setupcomplete = true;
+        frameRate(40);
+        noStroke(); 
+        fill(255);
+        background(0);
+        openingWhiteout_cpt = 0;
         break;
       
       case 238:    //DarkSnakes
