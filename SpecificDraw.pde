@@ -356,7 +356,7 @@ void specific_draw() {
       case 234: draw_sonar(true);break;                            //SonarAllWhite
       case 235: draw_thunderlines();break;                         //ThunderLinesInit
       case 236: draw_thunderlines();break;                         //ThunderLines - More Lines
-      case 237: draw_thunderlines();break;                         //ThunderLines - Less Lines
+      case 237: draw_openingWhiteOut();break;                      //Opening Whiteout
       case 238: draw_darksnakes();break;                           //DarkSnakes
       case 239: draw_brightsnakes();break;                         //BrightSnakes
       case 240: draw_milktank();break;                             //Milktank

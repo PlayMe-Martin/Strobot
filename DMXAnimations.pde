@@ -853,7 +853,7 @@ void dmxAnim_rightStrobeVeryWeak() {
 }
 
 void dmxAnim_backStrobeVeryWeak() {
-  dmxAnim_backStrobe(255,STROBEINTENSITY_VERYWEAK);
+  dmxAnim_backStrobe(254,STROBEINTENSITY_VERYWEAK);
 }
 
 void dmxAnim_leftRightStrobeVeryWeak() {
@@ -863,7 +863,7 @@ void dmxAnim_leftRightStrobeVeryWeak() {
 }
 
 void dmxAnim_fullStrobeVeryWeak() {
-  dmxAnim_fullStrobe(255,STROBEINTENSITY_VERYWEAK);
+  dmxAnim_fullStrobe(254,STROBEINTENSITY_VERYWEAK);
 }
 
 
@@ -876,7 +876,7 @@ void dmxAnim_rightStrobeWeak() {
 }
 
 void dmxAnim_backStrobeWeak() {
-  dmxAnim_backStrobe(255,STROBEINTENSITY_WEAK);
+  dmxAnim_backStrobe(254,STROBEINTENSITY_WEAK);
 }
 
 void dmxAnim_leftRightStrobeWeak() {
@@ -886,7 +886,7 @@ void dmxAnim_leftRightStrobeWeak() {
 }
 
 void dmxAnim_fullStrobeWeak() {
-  dmxAnim_fullStrobe(255,STROBEINTENSITY_WEAK);
+  dmxAnim_fullStrobe(254,STROBEINTENSITY_WEAK);
 }
 
 
@@ -899,7 +899,7 @@ void dmxAnim_rightStrobeModerate() {
 }
 
 void dmxAnim_backStrobeModerate() {
-  dmxAnim_backStrobe(255,STROBEINTENSITY_MODERATE);
+  dmxAnim_backStrobe(254,STROBEINTENSITY_MODERATE);
 }
 
 void dmxAnim_leftRightStrobeModerate() {
@@ -909,7 +909,7 @@ void dmxAnim_leftRightStrobeModerate() {
 }
 
 void dmxAnim_fullStrobeModerate() {
-  dmxAnim_fullStrobe(255,STROBEINTENSITY_MODERATE);
+  dmxAnim_fullStrobe(254,STROBEINTENSITY_MODERATE);
 }
 
 
@@ -922,7 +922,7 @@ void dmxAnim_rightStrobeStrong() {
 }
 
 void dmxAnim_backStrobeStrong() {
-  dmxAnim_backStrobe(255,STROBEINTENSITY_STRONG);
+  dmxAnim_backStrobe(254,STROBEINTENSITY_STRONG);
 }
 
 void dmxAnim_leftRightStrobeStrong() {
@@ -932,6 +932,6 @@ void dmxAnim_leftRightStrobeStrong() {
 }
 
 void dmxAnim_fullStrobeStrong() {
-  dmxAnim_fullStrobe(255,STROBEINTENSITY_STRONG);
+  dmxAnim_fullStrobe(254,STROBEINTENSITY_STRONG);
 }
 

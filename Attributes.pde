@@ -356,7 +356,7 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 234, "SonarAllWhite"                       , new String[] {"Fade In/Out", "Slow", "Smooth", "B&W"}                                               );
   animationAttributes = registerAttribute(animationAttributes, 235, "Thunder Lines Init"                  , new String[] {"Atmospheric", "Lines", "Fast", "B&W", "Smooth"}                                      );
   animationAttributes = registerAttribute(animationAttributes, 236, "Thunder Lines - More Lines"          , new String[] {"Atmospheric", "Lines", "Fast", "B&W", "Smooth"}                                      );
-  animationAttributes = registerAttribute(animationAttributes, 237, "Thunder Lines - Less Lines"          , new String[] {"Atmospheric", "Lines", "Fast", "B&W", "Smooth"}                                      );
+  animationAttributes = registerAttribute(animationAttributes, 237, "Opening Whiteout"                    , new String[] {"Fade In/Out", "Simple", "Slow", "B&W", "Smooth"}                                     );
   animationAttributes = registerAttribute(animationAttributes, 238, "Dark Snakes"                         , new String[] {"Fade In/Out", "Slow", "Smooth"}                                                      );
   animationAttributes = registerAttribute(animationAttributes, 239, "Bright Snakes"                       , new String[] {"Fade In/Out", "Slow", "Smooth"}                                                      );
   animationAttributes = registerAttribute(animationAttributes, 240, "Milktank"                            , new String[] {"Atmospheric", "Objects", "Fast", "B&W", "Evolving"}                                  );

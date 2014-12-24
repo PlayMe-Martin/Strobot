@@ -9082,6 +9082,17 @@ class ThunderLine {
 
 
 //////////////////////////////////////////
+// Specific actions for the OpeningWhiteout animation
+//////////////////////////////////////////
+
+void draw_openingWhiteOut() {
+  fill(min(170 + openingWhiteout_cpt, 255));
+  rect(width/2,0,openingWhiteout_cpt,height);
+  rect(width/2,0,-openingWhiteout_cpt,height);
+  openingWhiteout_cpt += openingWhiteout_speed; 
+}
+
+//////////////////////////////////////////
 // Specific actions for the DoubleFusee animation
 //////////////////////////////////////////
 
