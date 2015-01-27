@@ -3,6 +3,10 @@
 //   DMX functions - Commands for Teensy2   //
 //////////////////////////////////////////////
 
+//The Atomic strobes have a maximum speed which is way too fast compared to the regular ones
+//Harmonize the speeds using the two using this factor
+final float ATOMICSTROBE_SPEEDFACTOR = 0.37;
+
 //Create a DMX object - initialize the serial port for the microcontroller responsible for the DMX equipments
 DMX myDMX;
 
@@ -30,7 +34,7 @@ final int strobelist[][] = { {10,0},
     {255,25},{255,50},{255,75},{255,100},{255,125},{255,150},{255,175},{255,200},{255,225},{255,255},{255,255}};
 
 //For 4 channel stroboscopes, default values for the special channels
-final int DMXStroboscope_defaultFlashLengthValue = 127;
+final int DMXStroboscope_defaultFlashLengthValue = 50;
 final int DMXStroboscope_defaultSpecialFXValue   = 0;      // No effect  
 
 //General DMX object, serves as en entry point to send actual DMX data over the network
@@ -167,7 +171,7 @@ class DMX_Stroboscope {
         else if (this.numberOfChannels == 4) {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,int(this.currentSpeed*ATOMICSTROBE_SPEEDFACTOR));
           if (this.DMXAddress_stroboscopeSpecialFX != -1) {
             myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,this.currentSpeed);
           }
@@ -189,21 +193,17 @@ class DMX_Stroboscope {
         
     if (this.exceptionRaisedDMX == false) {
       try {
-        if (this.numberOfChannels == 2) { 
+        if (this.numberOfChannels == 2) {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
         }
         else if (this.numberOfChannels == 4) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,int(this.currentSpeed*ATOMICSTROBE_SPEEDFACTOR));
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength, DMXStroboscope_defaultFlashLengthValue);
           if (this.DMXAddress_stroboscopeSpecialFX != -1) {
             myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX, DMXStroboscope_defaultSpecialFXValue);
           }
-        }
-        
-        else if (this.numberOfChannels == 4) {
-          //TBIL
         }
         
       }
@@ -222,7 +222,7 @@ class DMX_Stroboscope {
     this.currentBrightness  = stroboscopeBrightness;
     this.currentFlashLength = DMXStroboscope_defaultFlashLengthValue; 
     this.currentSpecialFX   = DMXStroboscope_defaultSpecialFXValue;
-      
+        
     if (this.exceptionRaisedDMX == false) {
       
       try {
@@ -231,7 +231,7 @@ class DMX_Stroboscope {
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
         }
         else if (this.numberOfChannels == 4) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,int(this.currentSpeed*ATOMICSTROBE_SPEEDFACTOR));
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
           myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
           if (this.DMXAddress_stroboscopeSpecialFX != -1) {
@@ -247,6 +247,7 @@ class DMX_Stroboscope {
   }
   
   //Alternate function, with additional parameters
+  //This function is only used by the Atomic 3000 functions, as such the ATOMICSTROBE_SPEEDFACTOR is not used : the rate is not restrained anymore 
   void startDMX(int stroboscopeSpeed, int stroboscopeBrightness, int stroboscopeFlashLength, int stroboscopeSpecialFX) {
     //Consider that the strobe is active
     this.isActive = true;
@@ -254,6 +255,9 @@ class DMX_Stroboscope {
     this.currentBrightness  = stroboscopeBrightness;
     this.currentFlashLength = stroboscopeFlashLength;
     this.currentSpecialFX   = stroboscopeSpecialFX;
+
+    //Debug
+    //println(this.currentSpeed + " - " + this.currentBrightness + " - " + this.currentFlashLength + " - " + this.currentSpecialFX);
       
     if (this.exceptionRaisedDMX == false) {
       try {

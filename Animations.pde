@@ -12206,11 +12206,11 @@ void draw_vertical_impulsewhiterectangle() {
   rect(0,0,width,height);
   fill(255);
   noStroke();
-  rect(width/6, 0, width/6, impulserectangles_posy);
-  rect(4*width/6, height, width/6, height - impulserectangles_posy);
+  rect(((NUMBER_OF_PANELS/2)-1)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, impulserectangles_posy);
+  rect(((NUMBER_OF_PANELS/2)+1)*width/NUMBER_OF_PANELS, height, width/NUMBER_OF_PANELS, height - impulserectangles_posy);
   fill(0);
-  rect(width/6, 0, width/6, impulserectangles_posy - impulserectangles_rectanglesize);
-  rect(4*width/6, height, width/6, height - impulserectangles_posy + impulserectangles_rectanglesize);
+  rect(((NUMBER_OF_PANELS/2)-1)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, impulserectangles_posy - impulserectangles_rectanglesize);
+  rect(((NUMBER_OF_PANELS/2)+1)*width/NUMBER_OF_PANELS, height, width/NUMBER_OF_PANELS, height - impulserectangles_posy + impulserectangles_rectanglesize);
   
   impulserectangles_posy += impulserectangles_incrementy;
 }
@@ -16529,7 +16529,7 @@ void setup_dynamicAngleLines() {
   frameRate(25);
   colorMode(RGB);
   dynamicAngleLines_maxLineWidth = height/4;
-  dynamicAngleLines_angle = random(PI);
+  dynamicAngleLines_angle = dynamicAngleLines_angle + random(PI/3,2*PI/3);
   dynamicAngleLines_positiveInc = !dynamicAngleLines_positiveInc;
 }
 
