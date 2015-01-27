@@ -16438,11 +16438,13 @@ void draw_periodicNoise() {
 
 void draw_tumbler() {
   background(0);
+  pushMatrix();
   pushStyle();
   rectMode(CENTER);
   fill(255);
   draw_tumblerLines(width/2, height/2,10);
   popStyle();
+  popMatrix();
   tumbler_theta += 0.0523;
 }
  
