@@ -42,6 +42,11 @@ int PITCH_KNOB_WHITENOISE      = 7;
 final int PITCH_SET_AUTOMODE_OFF           = 90;
 final int PITCH_SET_AUTOMODE_ON            = 91;
 
+final int PITCH_LOAD_ANIMATION_BANK1_TEMP  = 96;
+final int PITCH_LOAD_ANIMATION_BANK2_TEMP  = 97;
+final int PITCH_LOAD_ANIMATION_BANK3_TEMP  = 98;
+final int PITCH_LOAD_ANIMATION_BANK4_TEMP  = 99;
+
 final int PITCH_CHANGE_STROBO_FRONT        = 100;
 final int PITCH_START_STROBO_FRONT         = 101;
 final int PITCH_STOP_STROBO_FRONT          = 102;
@@ -73,6 +78,9 @@ final int PITCH_CHANGE_OUTPUTMAPPING       = 127;
 boolean authorizePanelRemappingUsingKeyboard = false;
 int[] manualLEDPanelRemappingNoteArray;
 int manualLEDPanelRemappingNoteCounter = 0;
+
+// Buffer variable used to serve as a memory for temporary panel animations
+int previousLEDPanelAnimation = 0;
 
 void midiInit() {
   outputLog.println("--- Initializing MIDI Control ---");
@@ -176,6 +184,12 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
         case PITCH_CUSTOM_DEVICE_BANK2:        loadCustomDeviceAnimation2(velocity);break;                              //B8
         case PITCH_CUSTOM_DEVICE_BANK3:        loadCustomDeviceAnimation3(velocity);break;                              //C9
         case PITCH_DISPLAY_EFFECT:             activateAdditionalEffect(velocity);break;                                //C#9
+        
+        case PITCH_LOAD_ANIMATION_BANK1_TEMP:  loadTempAnimation1(velocity);break;                                      //C7    - Load a temporary animation using the LED panels
+        case PITCH_LOAD_ANIMATION_BANK2_TEMP:  loadTempAnimation2(velocity);break;                                      //C#7
+        case PITCH_LOAD_ANIMATION_BANK3_TEMP:  loadTempAnimation3(velocity);break;                                      //D7
+        case PITCH_LOAD_ANIMATION_BANK4_TEMP:  loadTempAnimation4(velocity);break;                                      //D#7
+        
         case PITCH_LOAD_ANIMATION_BANK1:       loadAnimation1(velocity);break;                                          //D#9   - Load an animation using the LED panels
         case PITCH_LOAD_ANIMATION_BANK2:       loadAnimation2(velocity);break;                                          //E9
         case PITCH_LOAD_ANIMATION_BANK3:       loadAnimation3(velocity);break;                                          //F9
@@ -498,11 +512,66 @@ void loadAnimation (int number) {
   //Reset the flag to prevent any nullpointer exception
   setupcomplete = false;
   
+  //Update the memory of the previous animation
+  previousLEDPanelAnimation = animationnumber;
+  
   //Update the animation number
   animationnumber = number;
   
   //Kept for debug, not necessary in the release version
   //outputLog.println("Semi-auto action : Change current animation to " + animationnumber);
+  
+  //Execute specific actions related to this particular animation
+  specificActions();  
+}
+
+void loadTempAnimation1(int velocity) {
+  //Update the animation number
+  loadTempAnimation(velocity);
+}
+
+void loadTempAnimation2(int velocity) {
+  //Update the animation number
+  loadTempAnimation(velocity + 127);
+}
+
+void loadTempAnimation3(int velocity) {
+  //Update the animation number
+  loadTempAnimation(velocity + 254);
+}
+
+void loadTempAnimation4(int velocity) {  
+  //Update the animation number
+  loadTempAnimation(velocity + 381);
+}
+
+void loadTempAnimation (int number) {
+  drawImage = 0;
+  drawAnimation = 1;
+  
+  //Reset the flag to prevent any nullpointer exception
+  setupcomplete = false; 
+  
+  //Update the animation number
+  animationnumber = number;
+  
+  //Kept for debug, not necessary in the release version
+  //outputLog.println("Semi-auto action : Change current animation to " + animationnumber);
+  
+  //Execute specific actions related to this particular animation
+  specificActions();  
+}
+
+// Reinitialize the LED Panel animation in case of a temporary command
+void unloadAnimation() {
+  drawImage = 0;
+  drawAnimation = 1;
+  
+  //Reset the flag to prevent any nullpointer exception
+  setupcomplete = false;
+  
+  //Reset the animation number
+  animationnumber = previousLEDPanelAnimation;
   
   //Execute specific actions related to this particular animation
   specificActions();  
@@ -629,6 +698,11 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
         case PITCH_DMX_ANIMATION_BANK1:        unloadDMXAnimation(); break;                                //A#7   - Unload an animation using DMX devices : noteOff releases DMX
         case PITCH_DMX_ANIMATION_BANK2:        unloadDMXAnimation(); break;                                //B7
         case PITCH_DMX_ANIMATION_BANK3:        unloadDMXAnimation(); break;                                //C8
+
+        case PITCH_LOAD_ANIMATION_BANK1_TEMP:  unloadAnimation();break;                                    //C7    - Unload a temporary animation using the LED panels
+        case PITCH_LOAD_ANIMATION_BANK2_TEMP:  unloadAnimation();break;                                    //C#7
+        case PITCH_LOAD_ANIMATION_BANK3_TEMP:  unloadAnimation();break;                                    //D7
+        case PITCH_LOAD_ANIMATION_BANK4_TEMP:  unloadAnimation();break;                                    //D#7
         
         case PITCH_DISPLAY_EFFECT:             deactivateAdditionalEffect(velocity);break;                 //C9    - Reset the effect
         default: break;
