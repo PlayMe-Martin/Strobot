@@ -933,9 +933,9 @@ void specificActions() {
         }
         crecy_init = true;
         crecy_internalCounter = 1;
-        int numberOfCrecys = 1+int(random(2));
-        if (NUMBER_OF_PANELS == 5) {
-          numberOfCrecys = 1+int(random(3));
+        int numberOfCrecys = int(random(4,7));
+        if (NUMBER_OF_PANELS >= 5) {
+          numberOfCrecys = int(random(6,10));
         }
         for (int j=0; j<numberOfCrecys;j++) {
           crecy_list.add(new Crecy(1));
@@ -954,16 +954,16 @@ void specificActions() {
         }
         crecy_init = true;
         crecy_internalCounter = 1;
-        int numberOfCrecys_1 = 1+int(random(2));
-        if (NUMBER_OF_PANELS == 5) {
-          numberOfCrecys_1 = 1+int(random(3));
+        int numberOfCrecys_1 = int(random(2,4));
+        if (NUMBER_OF_PANELS >= 5) {
+          numberOfCrecys_1 = int(random(3,6));
         }
         for (int j=0; j<numberOfCrecys_1;j++) {
           crecy_list.add(new Crecy(1));
         }
-        int numberOfCrecys2 = 1;
-        if (NUMBER_OF_PANELS == 5) {
-          numberOfCrecys2 = 2;
+        int numberOfCrecys2 = 2;
+        if (NUMBER_OF_PANELS >= 5) {
+          numberOfCrecys2 = 4;
         }
         for (int j=0; j<numberOfCrecys2;j++) {
           crecy_list.add(new Crecy(2));
@@ -982,13 +982,13 @@ void specificActions() {
         }
         crecy_init = true;
         crecy_internalCounter = 0;
-        int numberOfCrecys_2 = 1+int(random(2));
+        int numberOfCrecys_2 = int(random(4,7));
         for (int j=0; j<numberOfCrecys_2;j++) {
           crecy_list.add(new Crecy(1));
         }
-        int numberOfCrecys2_1 = 1;
-        if (NUMBER_OF_PANELS == 5) {
-          numberOfCrecys2_1 = 2;
+        int numberOfCrecys2_1 = 2;
+        if (NUMBER_OF_PANELS >= 5) {
+          numberOfCrecys2_1 = 3;
         }
         for (int j=0; j<numberOfCrecys2_1;j++) {
           crecy_list.add(new Crecy(2));
@@ -1008,17 +1008,17 @@ void specificActions() {
           crecy_list = new ArrayList<Crecy>();
         }
         crecy_init = true;
-        crecy_internalCounter = 2;
-        int numberOfCrecys_3 = 1+int(random(2));
-        if (NUMBER_OF_PANELS == 5) {
-          numberOfCrecys_3 = 1+int(random(3));
+        crecy_internalCounter = 3;
+        int numberOfCrecys_3 = int(random(2,3));
+        if (NUMBER_OF_PANELS >= 5) {
+          numberOfCrecys_3 = int(random(3,6));
         }
         for (int j=0; j<numberOfCrecys_3;j++) {
           crecy_list.add(new Crecy(4));
         }
-        int numberOfCrecys2_2 = 1;
-        if (NUMBER_OF_PANELS == 5) {
-          numberOfCrecys2_2 = 2;
+        int numberOfCrecys2_2 = 2;
+        if (NUMBER_OF_PANELS >= 5) {
+          numberOfCrecys2_2 = 4;
         }
         for (int j=0; j<numberOfCrecys2_2;j++) {      
           crecy_list.add(new Crecy(2));
@@ -1042,9 +1042,9 @@ void specificActions() {
         }
         crecy_init = true;
         crecy_internalCounter = 4;
-        int numberOfCrecys4 = 1+int(random(2));
-        if (NUMBER_OF_PANELS== 5) {
-          numberOfCrecys4 = 1+int(random(3));
+        int numberOfCrecys4 = int(random(2,4));
+        if (NUMBER_OF_PANELS >= 5) {
+          numberOfCrecys4 = int(random(3,7));
         }
         for (int j=0; j<numberOfCrecys4;j++) {
           crecy_list.add(new Crecy(4));
@@ -1067,12 +1067,14 @@ void specificActions() {
         }
         crecy_init = true;
         crecy_internalCounter = 4;
-        int numberOfCrecys6 = 1+int(random(2));
+        int numberOfCrecys6 = int(random(4,6));
         for (int j=0; j<numberOfCrecys6;j++) {
           crecy_list.add(new Crecy(1));
         }
         crecy_list.add(new Crecy(2));
-        crecy_list.add(new Crecy(3));
+        for (int k=0; k<2; k++) {
+          crecy_list.add(new Crecy(3));
+        }
         break;
       
       case 103:    //Snake1
@@ -2733,7 +2735,7 @@ void specificActions() {
       case 257:    //SpotsMultiColor
 
         frameRate(50);
-        stroke(255);
+        noStroke();
         colorMode(RGB);
         spots_tailleCone = 4;
         strokeWeight(4);

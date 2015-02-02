@@ -14686,19 +14686,28 @@ class Firefly {
 
 void crecy_setColor() {
 if (crecy_internalCounter == 0) {
+//    crecy_red   = 255;
+//    crecy_green = 255;
+//    crecy_blue  = 255;
     crecy_red   = 255;
-    crecy_green = 255;
-    crecy_blue  = 255;
+    crecy_green = 0;
+    crecy_blue  = 0;
   }
   else if (crecy_internalCounter == 1) {
-    crecy_red   = 0;
+//    crecy_red   = 0;
+//    crecy_green = 0;
+//    crecy_blue  = 255;
+    crecy_red   = 255;
     crecy_green = 0;
-    crecy_blue  = 255;
+    crecy_blue  = 0;
   }
   else if (crecy_internalCounter == 2) {
-    crecy_red   = 0;
-    crecy_green = 150;
-    crecy_blue  = 255;
+//    crecy_red   = 0;
+//    crecy_green = 150;
+//    crecy_blue  = 255;
+    crecy_red   = 255;
+    crecy_green = 0;
+    crecy_blue  = 0;
   }
   else if (crecy_internalCounter == 3) {
     crecy_red   = 255;
@@ -14770,7 +14779,7 @@ class Crecy {
         case 3: type = 20 + int(random(3)); break;
         case 4: type = 23 + int(random(6)); break;
         case 5: type = 33 + int(random(6));break;
-        case 6: type = 39 + int(random(1.99));break;
+        case 6: type = 39 + crecy_chooseNewDouble();break;
         default: break;
       }
     }
@@ -14781,12 +14790,33 @@ class Crecy {
         case 3: type = 20 + int(random(3)); break;
         case 4: type = 23 + int(random(10)); break;
         case 5: type = 33 + int(random(6));break;
-        case 6: type = 39 + int(random(2.99));break;
+        case 6: type = 39 + crecy_chooseNewDouble();break;
         default: break;
       }      
     }
     direction = int(random(4));
     maxProgress = crecy_maxProgressList[type];
+  }
+  
+  int crecy_chooseNewDouble() {
+    if (NUMBER_OF_PANELS >= 5) {
+      if (crecy_previousDouble == 0) {
+        if (random(1) > 0.5) { crecy_previousDouble = 1; return crecy_previousDouble; }
+        else                 { crecy_previousDouble = 2; return crecy_previousDouble; }
+      }
+      else if (crecy_previousDouble == 1) {
+        if (random(1) > 0.5) { crecy_previousDouble = 0; return crecy_previousDouble; }
+        else                 { crecy_previousDouble = 2; return crecy_previousDouble; } 
+      }
+      else {
+        if (random(1) > 0.5) { crecy_previousDouble = 0; return crecy_previousDouble; }
+        else                 { crecy_previousDouble = 1; return crecy_previousDouble; } 
+      }
+    }
+    else {
+      crecy_previousDouble = (crecy_previousDouble + 1)%2 ;
+      return crecy_previousDouble;
+    }
   }
   
   void draw_crecy() {
@@ -15198,7 +15228,7 @@ class Crecy {
     }
     strokeWeight(4);
     pushMatrix();
-    translate(NUMBER_OF_PANELS,height/2);
+    translate(width/NUMBER_OF_PANELS,height/2);
     if (progress*4 < width/NUMBER_OF_PANELS) { 
       rect(width/(2*NUMBER_OF_PANELS) - progress*2,height/4 - progress*2, progress*4, progress*4);
     }
