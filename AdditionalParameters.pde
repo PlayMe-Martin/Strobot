@@ -1322,6 +1322,7 @@ int crecy_green = 255;
 int crecy_blue  = 0;
 boolean crecy_init = false;
 int crecy_colorcounter = 0;
+int crecy_previousDouble = 0;
 
 //Snake parameters
 ArrayList<SnakeObjective> snake_objectives;
