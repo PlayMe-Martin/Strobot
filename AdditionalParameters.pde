@@ -866,8 +866,10 @@ boolean thunderline_init = false;
 boolean thunderline_setupcomplete = false;
 
 //Opening Whiteout parameters
-float openingWhiteout_cpt = 0;
-float openingWhiteout_speed = 0.15;
+float openingWhiteout_cpt = 4;
+float openingWhiteout_verticalCpt = 0;
+float openingWhiteout_speed = 0.19;
+float openingWhiteout_verticalSpeed = 0.35;
 
 //DoubleFusee parameters
 int doublefusee_a;
