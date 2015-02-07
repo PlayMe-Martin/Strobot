@@ -2521,6 +2521,7 @@ void specificActions() {
         noStroke(); 
         fill(255);
         background(0);
+        openingWhiteout_verticalCpt = 0;
         openingWhiteout_cpt = 0;
         break;
       

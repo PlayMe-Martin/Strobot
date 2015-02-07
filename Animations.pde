@@ -9086,10 +9086,18 @@ class ThunderLine {
 //////////////////////////////////////////
 
 void draw_openingWhiteOut() {
-  fill(min(170 + openingWhiteout_cpt, 255));
-  rect(width/2,0,openingWhiteout_cpt,height);
-  rect(width/2,0,-openingWhiteout_cpt,height);
-  openingWhiteout_cpt += openingWhiteout_speed; 
+  if (openingWhiteout_verticalCpt <= height) {
+    fill(170);
+    rect(width/2,height - openingWhiteout_verticalCpt,4,height);
+    rect(width/2,height - openingWhiteout_verticalCpt,-4,height);
+    openingWhiteout_verticalCpt += openingWhiteout_verticalSpeed;
+  }
+  else {
+    fill(min(170 + openingWhiteout_cpt, 255));
+    rect(width/2,0,openingWhiteout_cpt,height);
+    rect(width/2,0,-openingWhiteout_cpt,height);
+    openingWhiteout_cpt += openingWhiteout_speed;
+  } 
 }
 
 //////////////////////////////////////////
