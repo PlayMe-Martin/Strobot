@@ -3942,7 +3942,7 @@ void draw_spiraltriangle()
   noStroke();
   //smooth();
   frameRate(50);
-  int layers = 12;
+  int layers = 4*NUMBER_OF_PANELS;
    
   for(int i=layers; i>0; i--)
   {
