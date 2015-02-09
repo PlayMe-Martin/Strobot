@@ -4789,7 +4789,7 @@ void draw_particlesflow() {
   particlesflow_noiseZ += 2*particlesflow_noiseScale;
    
   imgProc.blur(particlesflow_prevFrame, particlesflow_tempFrame, width, height);
-  imgProc.scaleBrightness(particlesflow_tempFrame, particlesflow_tempFrame, width, height, 0.99); 
+  imgProc.scaleBrightness(particlesflow_tempFrame, particlesflow_tempFrame, width, height, 0.995); 
   arrayCopy(particlesflow_tempFrame, particlesflow_currFrame);
    
   for(int i=0; i<particlesflow_particles.length; i++) {
@@ -4820,16 +4820,16 @@ class ParticleFlow {
     x += speed * cos(angle);
     y += speed * sin(angle);
      
-    if (x < -particlesflow_particleMargin){
-      x += width + 2*particlesflow_particleMargin;
-    } else if (x > width + particlesflow_particleMargin){
-      x -= width + 2*particlesflow_particleMargin;
+    if (x < -particlesflow_particleMargin/4){
+      x += width + particlesflow_particleMargin/4;
+    } else if (x > width + particlesflow_particleMargin/4){
+      x -= width + particlesflow_particleMargin/4;
     }
      
-    if (y < -particlesflow_particleMargin){
-      y += height + 2*particlesflow_particleMargin;
-    } else if (y > height + particlesflow_particleMargin){
-      y -= height + 2*particlesflow_particleMargin;
+    if (y < -particlesflow_particleMargin/4){
+      y += height + particlesflow_particleMargin/4;
+    } else if (y > height + particlesflow_particleMargin/4){
+      y -= height + particlesflow_particleMargin/4;
     }
   }
   void draw() {
@@ -5390,6 +5390,9 @@ void draw_dualsquarespiral(){
 //////////////////////////////////////////
 
 void draw_complexspiral() {
+  strokeWeight(6);
+  stroke(0,0,0);
+  fill(0);
   background(5*sin(complexspiral_counter*0.01), 245 + 10*sin(complexspiral_counter*0.05),230 + 25*sin(complexspiral_counter*0.1));
   translate(width/2,height/2);
   pushMatrix();  
@@ -8559,7 +8562,7 @@ void nekojiru_draweyes() {
 void nekojiru_drawpupils() {
  
   //Pupil movement
-  float targetx = constrain(nekojiru_posX, 19*width/24, 22*width/24);
+  float targetx = constrain(nekojiru_posX, 19*width/(NUMBER_OF_PANELS*8), 22*width/(NUMBER_OF_PANELS*3));
   float targety = constrain(nekojiru_posY, 7*height/24,9*height/24);
   float easing = 0.15;
   nekojiru_mx = nekojiru_mx + (targetx-nekojiru_mx)*easing;

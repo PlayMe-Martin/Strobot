@@ -411,7 +411,7 @@ void specificActions() {
 
         rectMode(CORNER);
         colorMode(RGB, 255);
-        frameRate(30);
+        frameRate(25);
         stroke(0);
         strokeWeight(16);
         background(255);
@@ -424,7 +424,7 @@ void specificActions() {
         stroke(255);
         strokeWeight(8);
         line_height = height;
-        frameRate(30);
+        frameRate(25);
         break;
 
       case 46:    //Lines
@@ -3956,15 +3956,15 @@ void specificActions() {
         colorMode(RGB);
         frameRate(50);
         
-        nekojiru_mx = 5*width/6;
+        nekojiru_mx = 5*width/(2*NUMBER_OF_PANELS);
         nekojiru_my = 6*height/8;
         nekojiru_eyearcparam1 = height/8;
-        nekojiru_eyearcparam2 = width/6;
-        nekojiru_bulgesize = width/32;
-        nekojiru_bulgedistance = width/6;
+        nekojiru_eyearcparam2 = width/(2*NUMBER_OF_PANELS);
+        nekojiru_bulgesize = width/(32*NUMBER_OF_PANELS/3);
+        nekojiru_bulgedistance = width/(2*NUMBER_OF_PANELS);
         nekojiru_eyesizeX = 2*height/5;
-        nekojiru_eyesizeY = 2*width/9;
-        nekojiru_eyedistance = 2*width/3;
+        nekojiru_eyesizeY = 2*width/(3*NUMBER_OF_PANELS);
+        nekojiru_eyedistance = 2*width/NUMBER_OF_PANELS;
         nekojiru_blinkyMax = height;
         nekojiru_blinkyNasty = height/2;
         
