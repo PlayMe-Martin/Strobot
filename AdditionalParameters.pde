@@ -463,10 +463,10 @@ int colorvertex_distance =50;
 //ParticlesFlow parameters
 ImgProc imgProc = new ImgProc();
  
-float particlesflow_noiseScale = 0.005;
+float particlesflow_noiseScale = 0.01;
 float particlesflow_noiseZ = 0;
 int particlesflow_particlesDensity = 1;
-int particlesflow_particleMargin = 8; 
+int particlesflow_particleMargin = 30; 
 ParticleFlow[] particlesflow_particles;
 int[] particlesflow_currFrame;
 int[] particlesflow_prevFrame;

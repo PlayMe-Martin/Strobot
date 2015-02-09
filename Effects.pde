@@ -20,6 +20,10 @@ int flutterEffect_slices = 16;
 float flutterEffect_unit = 64/flutterEffect_slices;
 float flutterEffect_theta = 0;
 
+int fadeout_counter = 0;
+int fadein_counter = 0;
+int fadeout_speed = 1;
+
 
 //General effect switcher
 void draw_effects() {
@@ -46,8 +50,24 @@ void draw_effects() {
       case 19:  draw_invertFilterEffect();break;
       case 20:  draw_onlyLeftEffect();break;
       case 21:  draw_onlyRightEffect();break;
+      case 22:  draw_randomPanelFlicker();break;
+      case 23:  draw_rainbowColor();break;
+      case 24:  draw_additionalfadeout();break;
+      case 25:  draw_additionalfadein();break;
+      case 26:  draw_additionalfadeout_red();break;
+      case 27:  draw_additionalfadein_red();break;
       default: break;
     }
+  }
+}
+
+void initSpecificEffectParams() {
+  switch(currentEffectNumber) {
+    case 24: fadeout_counter = 0;break;
+    case 25: fadein_counter = 0;break;
+    case 26: fadeout_counter = 0;break;
+    case 27: fadein_counter = 0;break;
+    default: break;
   }
 }
 
@@ -256,6 +276,18 @@ void draw_flickerSinglePanelEffect(int panel) {
   popStyle();
 }
 
+void draw_randomPanelFlicker() {
+  for (int panelNb=0; panelNb < NUMBER_OF_PANELS; panelNb++) {
+    if (random(1) > 0.8) {
+      draw_flickerSinglePanelEffect(panelNb);
+    }
+    else if (random(1) > 0.8) {
+      fill(0);
+      rect(panelNb*width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS, height);
+    }
+  }
+}
+
 void draw_flutterEffect() {
   for (int flutter_i=0; flutter_i<flutterEffect_slices; flutter_i++) {
     float flutter_edgeX = map(sin(flutterEffect_theta+flutter_i*(TWO_PI/flutterEffect_slices)), -1, 1, 0, width*.05);
@@ -288,4 +320,57 @@ void draw_onlyRightEffect() {
   fill(0);
   rect(width - (NUMBER_OF_PANELS/2)*width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS/2)*width/NUMBER_OF_PANELS,height);
   popStyle();
+}
+
+void draw_rainbowColor() {
+  pushStyle();
+  noStroke();
+  colorMode(HSB);
+  fill(frameCount%255, 255, 255, 80);
+  rect(0,0,width,height);
+  
+  popStyle();
+}
+
+
+void draw_additionalfadeout() {
+  pushStyle();
+  noStroke();
+  fill(0, 0, 0, min(255, fadeout_counter));
+  rect(0,0,width,height);
+  popStyle();
+  
+  fadeout_counter += fadeout_speed;
+}
+
+void draw_additionalfadein() {
+  pushStyle();
+  noStroke();
+  fill(0, 0, 0, max(0, 255 - fadein_counter));
+  rect(0,0,width,height);
+  popStyle();
+  
+  fadein_counter += fadeout_speed;
+}
+
+void draw_additionalfadeout_red() {
+  draw_redocalypseEffect();
+  pushStyle();
+  noStroke();
+  fill(0, 0, 0, min(255, fadeout_counter));
+  rect(0,0,width,height);
+  popStyle();
+  
+  fadeout_counter += fadeout_speed;
+}
+
+void draw_additionalfadein_red() {
+  draw_redocalypseEffect();
+  pushStyle();
+  noStroke();
+  fill(0, 0, 0, max(0, 255 - fadein_counter));
+  rect(0,0,width,height);
+  popStyle();
+  
+  fadein_counter += fadeout_speed;
 }

@@ -29,7 +29,7 @@ int PITCH_PAD_STROBE_8TH       = 37;
 int PITCH_PAD_STROBE_16TH      = 41;
 int PITCH_PAD_STROBE_32ND      = 42;
 int PITCH_PAD_STROBE_64TH      = 38;
-int PITCH_KNOB_BRIGHTNESS      = -1;      //Might be used again in the future, but for now, is pretty useless
+int PITCH_KNOB_BRIGHTNESS      = 11;
 int PITCH_KNOB_BLACKOUT        = 1;
 int PITCH_KNOB_WHITEOUT        = 2;
 int PITCH_KNOB_SHREDDER        = 5;
@@ -445,6 +445,7 @@ void setAutomaticModeOn() {
 void activateAdditionalEffect(int velocity) {
   effectToBeDrawn = true;
   currentEffectNumber = velocity;
+  initSpecificEffectParams();
   effectNumberToDeactivateEffects = velocity;
 }
 
@@ -998,16 +999,25 @@ void deactivatePadStrobe64th(int channel, int pitch, int velocity) {
 //////////////  CONTROLLER CHANGE  //////////////
 /////////////////////////////////////////////////
 
+// Filter CC messages : do not take in more than 1 message every 40 ms
+final int DELTA_FILTER_MS = 40;
+long lastMillisecond_cc_in = 0;
+
 // Receive a controllerChange  
 void controllerChange(int channel, int number, int value, long timestamp, String bus_name) {
-  if (bus_name == MIDI_BUS_CONTROLLER_INPUT || bus_name == MIDI_BUS_KEYBOARD_INPUT) {    //Filter the panic all-notes-off messages sent to other channels
-    if (number == PITCH_KNOB_BRIGHTNESS)         {changeBrightness(channel, number, value);}          //Modulation wheel : change global brightness
-    else if (number == PITCH_KNOB_BLACKOUT)      {setBlackOutAutoMode(channel, number, value);}       //Low-pass filter knob : blackout
-    else if (number == PITCH_KNOB_WHITEOUT)      {setWhiteOutAutoMode(channel, number, value);}       //Hi-pass filter knob : whiteout
-    else if (number == PITCH_KNOB_SHREDDER)      {setShredderAutoMode(channel, number, value);}       //Repeat knob : depending on the value, set splitter or shredder on
-    else if (number == PITCH_KNOB_COLORCHANGE)   {setColorChangeAutoMode(channel, number, value);}    //Color change : when the phaser is set, tint the screen with a cycling color
-    else if (number == PITCH_KNOB_WHITEJAMAMONO) {setWhiteJamaMonoAutoMode(channel, number, value);}  //WhiteJamaMono : when the pitch shift is set, a white rectangle enters the screen
-    else if (number == PITCH_KNOB_WHITENOISE)    {setWhiteNoiseAutoMode(channel, number, value);}     //White noise : pixelize the output accordingly to the input value 
+  if (filterTimeElapsed(lastMillisecond_cc_in) || value == 0 || value == 127) {
+    
+    lastMillisecond_cc_in = System.currentTimeMillis();
+    
+    if (bus_name == myControllerBus.getBusName() || bus_name == myKeyboardBus.getBusName() || bus_name == myMainBus.getBusName()) {    //Filter the panic all-notes-off messages sent by non-related devices
+      if (number == PITCH_KNOB_BRIGHTNESS)         {changeBrightness(channel, number, value);}          //Modulation wheel : change global brightness
+      else if (number == PITCH_KNOB_BLACKOUT)      {setBlackOutAutoMode(channel, number, value);}       //Low-pass filter knob : blackout
+      else if (number == PITCH_KNOB_WHITEOUT)      {setWhiteOutAutoMode(channel, number, value);}       //Hi-pass filter knob : whiteout
+      else if (number == PITCH_KNOB_SHREDDER)      {setShredderAutoMode(channel, number, value);}       //Repeat knob : depending on the value, set splitter or shredder on
+      else if (number == PITCH_KNOB_COLORCHANGE)   {setColorChangeAutoMode(channel, number, value);}    //Color change : when the phaser is set, tint the screen with a cycling color
+      else if (number == PITCH_KNOB_WHITEJAMAMONO) {setWhiteJamaMonoAutoMode(channel, number, value);}  //WhiteJamaMono : when the pitch shift is set, a white rectangle enters the screen
+      else if (number == PITCH_KNOB_WHITENOISE)    {setWhiteNoiseAutoMode(channel, number, value);}     //White noise : pixelize the output accordingly to the input value 
+    }
   }
 }
 
@@ -1173,6 +1183,21 @@ void setWhiteNoiseAutoMode(int channel, int number, int value) {
     }
   }
 
+}
+
+
+/////////////////////////////////////////////////
+/////////////  FILTER TOOL FUNCTION  ////////////
+/////////////////////////////////////////////////
+
+boolean filterTimeElapsed(long lastTimeStamp) {
+  long delta = System.currentTimeMillis() - lastTimeStamp;
+  if (delta > DELTA_FILTER_MS) {
+    return true;
+  }
+  else {
+    return false;
+  }
 }
 
 
