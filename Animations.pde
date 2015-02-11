@@ -5329,6 +5329,7 @@ void draw_whitenoise() {
 // Specific actions for the SingleSquareSpiral animation
 //////////////////////////////////////////
 void draw_singlesquarespiral(){
+  noStroke();
   singleSquareSpiral_tick = frameCount/100.0 * PI;
    for(int boxRadius_i = singleSquareSpiral_windowSize*2;  boxRadius_i > 5; boxRadius_i -=singleSquareSpiral_boxSize-singleSquareSpiral_boxSize/2){
      for(int windowRadius_i = -singleSquareSpiral_windowSize;  windowRadius_i <= singleSquareSpiral_windowSize; windowRadius_i +=singleSquareSpiral_windowSize){
@@ -5354,12 +5355,39 @@ void draw_singlesquarespiral(){
  } 
 }
 
+void draw_singlesquarespiralwhite(){
+  noStroke();
+  singleSquareSpiral_tick = frameCount/100.0 * PI;
+   for(int boxRadius_i = singleSquareSpiral_windowSize*2;  boxRadius_i > 5; boxRadius_i -=singleSquareSpiral_boxSize-singleSquareSpiral_boxSize/2){
+     for(int windowRadius_i = -singleSquareSpiral_windowSize;  windowRadius_i <= singleSquareSpiral_windowSize; windowRadius_i +=singleSquareSpiral_windowSize){
+                  
+        singleSquareSpiral_altCol = !singleSquareSpiral_altCol;
+        int col = singleSquareSpiral_altCol ? 0 : 1;
+        fill(
+        255 * col,
+        255 * col,
+        255 * col
+        );
+       
+      pushMatrix();
+      translate(windowRadius_i+width/2, height/2);
+      rotate(singleSquareSpiral_tick*boxRadius_i/40);
+      quad( -boxRadius_i/2, 0,
+             0, boxRadius_i/2,
+             boxRadius_i/2, 0,
+             0, -boxRadius_i/2
+          );       
+       popMatrix();
+   }
+ } 
+}
 
 //////////////////////////////////////////
 // Specific actions for the DualSquareSpiral animation
 //////////////////////////////////////////
 
 void draw_dualsquarespiral(){
+  noStroke();
   dualSquareSpiral_tick = frameCount/100.0 * PI;
    for(int boxRadius_i = width*2;  boxRadius_i > 5; boxRadius_i -=dualSquareSpiral_boxSize-dualSquareSpiral_boxSize/2){
      for(int windowRadius_i = -width;  windowRadius_i <= width; windowRadius_i +=dualSquareSpiral_windowSize){
@@ -5370,6 +5398,33 @@ void draw_dualsquarespiral(){
         255 * col,
         12 * col,
         12 * col
+        );
+      
+      pushMatrix();
+      translate(windowRadius_i, height/2);
+      rotate(dualSquareSpiral_tick*boxRadius_i/40);
+      quad( -boxRadius_i/2, 0,
+             0, boxRadius_i/2,
+             boxRadius_i/2, 0,
+             0, -boxRadius_i/2
+          );       
+       popMatrix();
+   }
+ } 
+}
+
+void draw_dualsquarespiralwhite(){
+  noStroke();
+  dualSquareSpiral_tick = frameCount/100.0 * PI;
+   for(int boxRadius_i = width*2;  boxRadius_i > 5; boxRadius_i -=dualSquareSpiral_boxSize-dualSquareSpiral_boxSize/2){
+     for(int windowRadius_i = -width;  windowRadius_i <= width; windowRadius_i +=dualSquareSpiral_windowSize){
+                  
+        dualSquareSpiral_altCol = !dualSquareSpiral_altCol;
+        int col = dualSquareSpiral_altCol ? 0 : 1;
+        fill(
+        255 * col,
+        255 * col,
+        255 * col
         );
       
       pushMatrix();
@@ -16925,6 +16980,7 @@ void draw_hypnoAudio() {
     }
   }
   
+  pushMatrix();
   background(0);
   translate(width/2, height/2);
   for (int i = 0; i < 360; i+=6) {
@@ -16954,6 +17010,7 @@ void draw_hypnoAudio() {
       line(-y, x, -y2, x2);
     }
   }
+  popMatrix();
   
   // Easing towards the target coordinate
   for (int j = 0; j < 2; j++) {
