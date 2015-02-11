@@ -493,8 +493,8 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 371, "Arc Rot Red"                         , new String[] {"Atmospheric", "Rhythmic", "Geometric", "Circles", "Slow", "Red", "Rotating"}         );
   animationAttributes = registerAttribute(animationAttributes, 372, "Hypno Pendulum"                      , new String[] {"Spiral", "Red", "Lines", "Geometric"}                                                );
   animationAttributes = registerAttribute(animationAttributes, 373, "LargeWheel Pendulum"                 , new String[] {"Spiral", "Red", "Lines", "Geometric"}                                                );
-  animationAttributes = registerAttribute(animationAttributes, 374, "Single Square Spiral"                , new String[] {"Geometric", "Spiral", "Rotating", "Red", "Rhythmic"}                                 );
-  animationAttributes = registerAttribute(animationAttributes, 375, "Dual Square Spiral"                  , new String[] {"Geometric", "Spiral", "Rotating", "Red", "Rhythmic"}                                 );
+  animationAttributes = registerAttribute(animationAttributes, 374, "Single Square Spiral"                , new String[] {"Geometric", "Spiral", "Rotating", "Red"}                                             );
+  animationAttributes = registerAttribute(animationAttributes, 375, "Dual Square Spiral"                  , new String[] {"Geometric", "Spiral", "Rotating", "Red"}                                             );
   animationAttributes = registerAttribute(animationAttributes, 376, "Complex Spiral Reinit"               , new String[] {"Atmospheric", "Spiral", "Rotating", "Complex", "Red"}                                );
   animationAttributes = registerAttribute(animationAttributes, 377, "Complex Spiral"                      , new String[] {"Atmospheric", "Spiral", "Rotating", "Complex", "Red"}                                );
   animationAttributes = registerAttribute(animationAttributes, 378, "Outward Spiral White"                , new String[] {"Fade In/Out", "Spiral", "Slow", "Evolving", "B&W"}                                   );
@@ -550,6 +550,8 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 428, "Audio instant signal - Guitar - Red" , new String[] {"Red", "AudioInput"}                                                                  );
   animationAttributes = registerAttribute(animationAttributes, 429, "Simple Spiral - White"               , new String[] {"Circles", "Spiral", "B&W", "Fast"}                                                   );
   animationAttributes = registerAttribute(animationAttributes, 430, "Simple Spiral - Red"                 , new String[] {"Circles", "Spiral", "Red", "Fast"}                                                   );
+  animationAttributes = registerAttribute(animationAttributes, 431, "Single Square Spiral - White"        , new String[] {"Geometric", "Spiral", "Rotating", "White"}                                           );
+  animationAttributes = registerAttribute(animationAttributes, 432, "Dual Square Spiral - White"          , new String[] {"Geometric", "Spiral", "Rotating", "White"}                                           );  
   animationAttributes = registerAttribute(animationAttributes, 509, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                            );
   animationAttributes = registerAttribute(animationAttributes, 510, "Display FFT - Bass"                  , new String[] {"Geometric", "Simple", "AudioInput"}                                                  );  
 }

@@ -23,6 +23,10 @@ float flutterEffect_theta = 0;
 int fadeout_counter = 0;
 int fadein_counter = 0;
 int fadeout_speed = 1;
+int whiteout_speed = 8;
+
+int blackWaveCircle_counter = 0;
+int blackWaveCircle_speed = 16;
 
 
 //General effect switcher
@@ -56,6 +60,9 @@ void draw_effects() {
       case 25:  draw_additionalfadein();break;
       case 26:  draw_additionalfadeout_red();break;
       case 27:  draw_additionalfadein_red();break;
+      case 28:  draw_additionalwhiteout();break;
+      case 29:  draw_additionalredout();break;
+      case 30:  draw_blackWaveCircle();break;
       default: break;
     }
   }
@@ -63,10 +70,13 @@ void draw_effects() {
 
 void initSpecificEffectParams() {
   switch(currentEffectNumber) {
-    case 24: fadeout_counter = 0;break;
-    case 25: fadein_counter = 0;break;
-    case 26: fadeout_counter = 0;break;
-    case 27: fadein_counter = 0;break;
+    case 24: fadeout_counter         = 0; break;
+    case 25: fadein_counter          = 0; break;
+    case 26: fadeout_counter         = 0; break;
+    case 27: fadein_counter          = 0; break;
+    case 28: fadeout_counter         = 0; break;
+    case 29: fadeout_counter         = 0; break;
+    case 30: blackWaveCircle_counter = 0; break;
     default: break;
   }
 }
@@ -277,15 +287,18 @@ void draw_flickerSinglePanelEffect(int panel) {
 }
 
 void draw_randomPanelFlicker() {
+  pushStyle();
   for (int panelNb=0; panelNb < NUMBER_OF_PANELS; panelNb++) {
     if (random(1) > 0.8) {
       draw_flickerSinglePanelEffect(panelNb);
     }
     else if (random(1) > 0.8) {
       fill(0);
+      noStroke();
       rect(panelNb*width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS, height);
     }
   }
+  popStyle();
 }
 
 void draw_flutterEffect() {
@@ -374,3 +387,34 @@ void draw_additionalfadein_red() {
   
   fadein_counter += fadeout_speed;
 }
+
+void draw_additionalwhiteout() {
+  pushStyle();
+  noStroke();
+  fill(255, 255, 255, min(255, fadeout_counter));
+  rect(0,0,width,height);
+  popStyle();
+  
+  fadeout_counter += whiteout_speed;
+}
+
+void draw_additionalredout() {
+  pushStyle();
+  noStroke();
+  fill(255, 0, 0, min(255, fadeout_counter));
+  rect(0,0,width,height);
+  popStyle();
+  
+  fadeout_counter += whiteout_speed;
+}
+
+void draw_blackWaveCircle() {
+  pushStyle();
+  noFill();
+  stroke(0);
+  strokeWeight(32);
+  ellipse(width/2, height/2, blackWaveCircle_counter, blackWaveCircle_counter); 
+  popStyle();
+  blackWaveCircle_counter += blackWaveCircle_speed; 
+}
+

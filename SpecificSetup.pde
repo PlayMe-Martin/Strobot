@@ -4615,6 +4615,20 @@ void specificActions() {
         strokeWeight(6);
         break;
         
+      case 431:    //SingleSquareSpiralWhite
+
+        frameRate(50);
+        noStroke();
+        rectMode(CORNER);
+        break;
+      
+      case 432:    //DualSquareSpiralWhite
+
+        frameRate(50);
+        noStroke();
+        rectMode(CORNER);
+        break;
+        
       case 525:    //Audio Monitoring
 
         background(0);

@@ -1545,12 +1545,15 @@ public class ControlFrame extends PApplet {
     addEffectBang("19 - Invert Filter", 19);
     addEffectBang("20 - Only Left", 20);
     addEffectBang("21 - Only Right", 21);
-    addEffectBang("22 - General Random Panel Flicker", 22);
+    addEffectBang("22 - General Random Flicker", 22);
     addEffectBang("23 - Rainbow Color", 23);
     addEffectBang("24 - Fadeout", 24);
     addEffectBang("25 - Fadein", 25);
     addEffectBang("26 - Fadeout", 26);
     addEffectBang("27 - Fadein", 27);
+    addEffectBang("28 - Whiteout", 28);
+    addEffectBang("29 - Redout", 29);
+    addEffectBang("30 - BlackWave Circle", 30);
 
   }
   
