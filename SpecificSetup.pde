@@ -2603,16 +2603,18 @@ void specificActions() {
 
         frameRate(50); 
         background(0);
-        strokeWeight(0.1);
+        //strokeWeight(0.1);
+        noStroke();
         createParticleSystem();
         break;
 
       case 244:    //ColorVertex
 
         smooth();
+        frameRate(60);
         colorvertex_pointarray = new ArrayList();
         for (int j=0;j<30;j++) {
-          colorvertex_pointarray.add(new colorvertex_Dots(new PVector(random(-50, 50), random(-50, 50))));
+          colorvertex_pointarray.add(new colorvertex_Dots(new PVector(random(-64, 64), random(-50, 50))));
         }
         break;
 
@@ -2780,7 +2782,7 @@ void specificActions() {
 
       case 262:    //HypnoTriangle
 
-        frameRate(50);
+        frameRate(40);
         if (hypnotriangle_init == true) {
           hypnotriangle_init = false;
           hypnotriangle_list = new ArrayList<HypnoTriangle>();
@@ -2979,9 +2981,12 @@ void specificActions() {
         smooth();
         noStroke();
         colorMode(HSB,255);
-        worms = new Worm[numWorms];
-        for (int j=0; j<numWorms; j++) {
-          worms[j] = new Worm(random(0,width),random(0,height),random(0,2*PI));
+        if (worms_init == false) {
+          worms = new Worm[numWorms];
+          for (int j=0; j<numWorms; j++) {
+            worms[j] = new Worm(random(0,width),random(0,height),random(0,2*PI));
+          }
+          worms_init = true;
         }
         pulsed = false;
         break;
@@ -3691,15 +3696,16 @@ void specificActions() {
         frameRate(50);
         strokeCap(ROUND);
         smooth();
+        
         thirdDimension_colorlist3d[0] = color(0,255,255);
         thirdDimension_colorlist3d[1] = color(0,0,255);
         
         thirdDimension_viewer3d = new ProjectionViewer();  
         if (random(1) > 0.5) {
-        thirdDimension_viewer3d.create_pyramid(width/2, color(0,0,255), color(0,0,255), 3, 6, false, width/2, height/2, 0, 0, 0, random(0.02, 0.05), random(0.02, 0.05), random(0.02, 0.05), true, true, true, true, false);
+        thirdDimension_viewer3d.create_pyramid(width/2, color(0,0,255), color(0,0,255), 3, 6, false, width/2, height/2, 0, 0, 0, random(0.02, 0.05), random(0.02, 0.05), random(0.02, 0.05), true, true, false, true, false);
         }
         else {
-        thirdDimension_viewer3d.create_pyramid(width/2, color(0,0,255), color(0,0,255), 3, 6, false, width/2, height/2, 0, 0, 0, -random(0.02, 0.05), -random(0.02, 0.05), -random(0.02, 0.05), true, true, true, true, false); 
+        thirdDimension_viewer3d.create_pyramid(width/2, color(0,0,255), color(0,0,255), 3, 6, false, width/2, height/2, 0, 0, 0, -random(0.02, 0.05), -random(0.02, 0.05), -random(0.02, 0.05), true, true, false, true, false); 
         }
         thirdDimension_jerkyinit = false;
         thirdDimension_noglitchcubeinit = false;

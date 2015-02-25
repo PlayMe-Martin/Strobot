@@ -25,9 +25,15 @@ int fadein_counter = 0;
 int fadeout_speed = 1;
 int whiteout_speed = 8;
 
-int blackWaveCircle_counter = 0;
-int blackWaveCircle_speed = 16;
+float blackWaveCircle_counter = 0;
+float blackWaveCircle_speed = 16;
 
+float windmill_randAngle = 0;
+int windmill_intensity = 0;
+int windmill_growthSpeed = 10;
+
+int whiteflash_cpt = 0;
+int redflash_cpt = 0;
 
 //General effect switcher
 void draw_effects() {
@@ -63,6 +69,10 @@ void draw_effects() {
       case 28:  draw_additionalwhiteout();break;
       case 29:  draw_additionalredout();break;
       case 30:  draw_blackWaveCircle();break;
+      case 31:  draw_windmill();break;
+      case 32:  draw_whiteflash();break;
+      case 33:  draw_redflash();break;
+      case 34:  draw_randomRedPanelFlicker();break;
       default: break;
     }
   }
@@ -77,6 +87,9 @@ void initSpecificEffectParams() {
     case 28: fadeout_counter         = 0; break;
     case 29: fadeout_counter         = 0; break;
     case 30: blackWaveCircle_counter = 0; break;
+    case 31: windmill_randAngle     += 0.3*PI; windmill_intensity = 0; break;
+    case 32: whiteflash_cpt          = 0; break;
+    case 33: redflash_cpt            = 0; break;
     default: break;
   }
 }
@@ -286,7 +299,40 @@ void draw_flickerSinglePanelEffect(int panel) {
   popStyle();
 }
 
+void draw_flickerSinglePanelRedEffect(int panel) {
+  pushStyle();
+  noStroke();
+  float rand = random(1);
+  if (rand > 0.9) {
+//    fill(0);
+//    rect(panel*width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS, height);
+  }
+  else if (rand > 0.75) {
+    fill(int(random(150,255)),0,0);
+    rect(panel*width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS, height);
+  }
+  else if (rand > 0.65) {
+    fill(int(random(150,255)),0,0);
+    rect(panel*width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS, height/2);
+  }
+  else if (rand > 0.55) {
+    fill(int(random(150,255)),0,0);
+    rect(panel*width/NUMBER_OF_PANELS,height/2,width/NUMBER_OF_PANELS, height/2);
+  }
+  else if (rand > 0.50) {
+    fill(int(random(150,255)),0,0);
+    rect(panel*width/NUMBER_OF_PANELS,0,width/(2*NUMBER_OF_PANELS), height);
+  }
+  else if (rand > 0.45) {
+    fill(int(random(150,255)),0,0);
+    rect((2*panel+1)*width/(2*NUMBER_OF_PANELS),0,width/(2*NUMBER_OF_PANELS), height);
+  }
+  popStyle();
+}
+
 void draw_randomPanelFlicker() {
+  pushMatrix();
+  resetMatrix();
   pushStyle();
   for (int panelNb=0; panelNb < NUMBER_OF_PANELS; panelNb++) {
     if (random(1) > 0.8) {
@@ -299,6 +345,25 @@ void draw_randomPanelFlicker() {
     }
   }
   popStyle();
+  popMatrix();
+}
+
+void draw_randomRedPanelFlicker() {
+  pushMatrix();
+  resetMatrix();
+  pushStyle();
+  for (int panelNb=0; panelNb < NUMBER_OF_PANELS; panelNb++) {
+    if (random(1) > 0.8) {
+      draw_flickerSinglePanelRedEffect(panelNb);
+    }
+    else if (random(1) > 0.8) {
+      fill(0);
+      noStroke();
+      rect(panelNb*width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS, height);
+    }
+  }
+  popStyle();
+  popMatrix();
 }
 
 void draw_flutterEffect() {
@@ -410,11 +475,57 @@ void draw_additionalredout() {
 
 void draw_blackWaveCircle() {
   pushStyle();
+  pushMatrix();
+  resetMatrix();
   noFill();
   stroke(0);
   strokeWeight(32);
-  ellipse(width/2, height/2, blackWaveCircle_counter, blackWaveCircle_counter); 
+  ellipse(width/2, height/2, blackWaveCircle_counter, blackWaveCircle_counter);
+  popMatrix(); 
   popStyle();
   blackWaveCircle_counter += blackWaveCircle_speed; 
 }
 
+
+void draw_windmill() {
+  pushStyle();
+  colorMode(RGB);
+  fill(windmill_intensity);
+  noStroke();
+  pushMatrix();
+  resetMatrix();
+  translate(width*0.5, height*0.5);
+  rotate(frameCount / 100.0 + windmill_randAngle);
+  star(0, 0, 8, 2000, 3); 
+  popMatrix();
+  popStyle();
+  windmill_intensity = min(windmill_intensity + windmill_growthSpeed, 255);
+}
+
+void draw_whiteflash() {
+  if (whiteflash_cpt < 3) {
+    pushStyle(); 
+    pushMatrix();
+    fill(255);
+    noStroke();
+    rect(0,0,width,height);
+    resetMatrix();
+    popStyle();
+    popMatrix();
+  }
+  whiteflash_cpt += 1;
+}
+
+void draw_redflash() {
+  if (redflash_cpt < 3) {
+    pushStyle(); 
+    pushMatrix();
+    fill(255,0,0);
+    noStroke();
+    rect(0,0,width,height);
+    resetMatrix();
+    popStyle();
+    popMatrix();
+  }
+  redflash_cpt += 1;
+}
