@@ -654,7 +654,7 @@ void draw_worms(){
     rect (0, 0, width, height);
   //background(0);
   for (int i=0; i<numWorms; i++) {
-    fill(map(noise(0.01*worms[i].loc.x,0.01*worms[i].loc.y),0,1,0,255),100,255);
+    fill(map(noise(0.01*worms[i].loc.x,0.01*worms[i].loc.y),0,1,0,255),80,255);
     ellipse(worms[i].loc.x,worms[i].loc.y,8,8);
     if (pulsed) {
       worms[i].move(pulse);
@@ -2885,7 +2885,7 @@ void dessinerCarre(float carreMarshall_a, float carreMarshall_x, float carreMars
 
 void fusee_init(int direction)
 {
-  frameRate(50);
+  frameRate(60);
   fusee_a = 0;
   // initialisation des parametres
   fusee_epaisseurLigne = 4;
@@ -6759,7 +6759,7 @@ class ParticleSystem {
   void update() {
     history = new ArrayList();// on vide le tableau precedent
  
-      fill(0, shadowLevel);
+    fill(0, shadowLevel);
     rect(0, 0, width, height);
  
     //On  deplace les particules
@@ -6796,11 +6796,11 @@ class ParticleSystem {
         if (q != i) {
           PVector v = (PVector) history.get(q);
           float joinchance = q/history.size() + t.dist(v)/60;
-          stroke(255, 70);
+          //stroke(255, 70);
  
           //On trace la ligne et on ajoute le point pour la verif triangle
           if (joinchance < distPoint) {
-            if (traceTraits)line(t.x, t.y, v.x, v.y);
+            //if (traceTraits)line(t.x, t.y, v.x, v.y);
             if (traceTriangles)joints.add(q);
           }
           //si la boucle est finit on verifie pour le point les triangles
@@ -6824,7 +6824,7 @@ class ParticleSystem {
         PVector v = (PVector)history.get(p2);
         float joinchance = l/history.size() + t.dist(v)/60;
         if (joinchance < distPoint) {
-          stroke(255, 40);
+          //stroke(255, 40);
           fill(255, 40);
           triangle(t.x, t.y, v.x, v.y, p.x, p.y);
         }
@@ -7716,13 +7716,22 @@ void circlepusher_initialize_circles() {
 }
 
 void draw_circlepusher(){
-
+  
+//  pushStyle();
+//  rectMode(CENTER);
   background(0);
   strokeWeight(1);
   noStroke();
 
   for(int i=0;i<circlepusher_num;i++){
     ellipse(width/2+circlepusher_loc[i].x,height/2+circlepusher_loc[i].y,2*circlepusher_rad[i],2*circlepusher_rad[i]);
+    
+    //rect(width/2+circlepusher_loc[i].x,height/2+circlepusher_loc[i].y,2*circlepusher_rad[i],2*circlepusher_rad[i]);
+//    pushMatrix();
+//    translate(width/2,height/2);
+//    rotate(atan2(circlepusher_loc[i].y,circlepusher_loc[i].x));
+//    rect(circlepusher_loc[i].x,circlepusher_loc[i].y,2*circlepusher_rad[i],circlepusher_rad[i]);
+//    popMatrix();
     
     float circlepusher_angle;
     if (circlepusher_setAngleRotate) {
@@ -10532,7 +10541,7 @@ void draw_strobocolor() {
   {
     int randomcol = (int) spotsmulticolor_colorselection[floor(random(spotsmulticolor_colorselection.length))];
     fill(randomcol);
-    stroke(randomcol);
+    noStroke();
     rect(0,0,width,height);
   }
   else
@@ -12300,11 +12309,11 @@ void draw_vertical_impulseredrectangle() {
   rect(0,0,width,height);
   fill(255,0,0);
   noStroke();
-  rect(width/6, 0, width/6, impulserectangles_posy);
-  rect(4*width/6, height, width/6, height - impulserectangles_posy);
+  rect(((NUMBER_OF_PANELS/2)-1)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, impulserectangles_posy);
+  rect(((NUMBER_OF_PANELS/2)+1)*width/NUMBER_OF_PANELS, height, width/NUMBER_OF_PANELS, height - impulserectangles_posy);
   fill(0);
-  rect(width/6, 0, width/6, impulserectangles_posy - impulserectangles_rectanglesize);
-  rect(4*width/6, height, width/6, height - impulserectangles_posy + impulserectangles_rectanglesize);
+  rect(((NUMBER_OF_PANELS/2)-1)*width/NUMBER_OF_PANELS, 0, width/NUMBER_OF_PANELS, impulserectangles_posy - impulserectangles_rectanglesize);
+  rect(((NUMBER_OF_PANELS/2)+1)*width/NUMBER_OF_PANELS, height, width/NUMBER_OF_PANELS, height - impulserectangles_posy + impulserectangles_rectanglesize);
   
   impulserectangles_posy += impulserectangles_incrementy;
 }
@@ -13466,7 +13475,7 @@ class HypnoTriangle {
   
   float size;
   float position;
-  float growthRate = 1.1;
+  float growthRate = 1.13;
   int instance;
   
   HypnoTriangle(int instancecounter) {
@@ -14755,30 +14764,30 @@ if (crecy_internalCounter == 0) {
 //    crecy_red   = 255;
 //    crecy_green = 255;
 //    crecy_blue  = 255;
-    crecy_red   = 255;
-    crecy_green = 0;
-    crecy_blue  = 0;
+    crecy_red   = 160;
+    crecy_green = 220;
+    crecy_blue  = 255;
   }
   else if (crecy_internalCounter == 1) {
 //    crecy_red   = 0;
 //    crecy_green = 0;
 //    crecy_blue  = 255;
-    crecy_red   = 255;
-    crecy_green = 0;
-    crecy_blue  = 0;
+    crecy_red   = 160;
+    crecy_green = 220;
+    crecy_blue  = 255;
   }
   else if (crecy_internalCounter == 2) {
 //    crecy_red   = 0;
 //    crecy_green = 150;
 //    crecy_blue  = 255;
-    crecy_red   = 255;
-    crecy_green = 0;
-    crecy_blue  = 0;
+    crecy_red   = 160;
+    crecy_green = 220;
+    crecy_blue  = 255;
   }
   else if (crecy_internalCounter == 3) {
-    crecy_red   = 255;
-    crecy_green = 0;
-    crecy_blue  = 0;
+    crecy_red   = 160;
+    crecy_green = 220;
+    crecy_blue  = 255;
   }
   else {
     crecy_colorcounter += 1;
@@ -15584,8 +15593,10 @@ class Crecy {
     else {
       if ((progress % 4 == 0 || progress % 4 == 1) && progress < 12) {
         if (crecy_internalCounter == 4) {
-          colorMode(HSB);
-          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+//          colorMode(HSB);
+//          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+          colorMode(RGB);
+          fill(crecy_red, crecy_green, crecy_blue);
         }
         else {
           colorMode(RGB);
@@ -15613,8 +15624,10 @@ class Crecy {
     else {
       if ((progress % 4 == 0 || progress % 4 == 1) && progress < 12) {
         if (crecy_internalCounter == 4) {
-          colorMode(HSB);
-          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+//          colorMode(HSB);
+//          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+          colorMode(RGB);
+          fill(crecy_red, crecy_green, crecy_blue);
         }
         else {
           colorMode(RGB);
@@ -15642,8 +15655,10 @@ class Crecy {
     else {
       if ((progress % 4 == 0 || progress % 4 == 1) && progress < 12) {
         if (crecy_internalCounter == 4) {
-          colorMode(HSB);
-          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+//          colorMode(HSB);
+//          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+          colorMode(RGB);
+          fill(crecy_red, crecy_green, crecy_blue);
         }
         else {
           colorMode(RGB);
@@ -15672,8 +15687,10 @@ class Crecy {
     else {
       if ((progress % 4 == 0 || progress % 4 == 1) && progress < 12) {
         if (crecy_internalCounter == 4) {
-          colorMode(HSB);
-          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+//          colorMode(HSB);
+//          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+          colorMode(RGB);
+          fill(crecy_red, crecy_green, crecy_blue);
         }
         else {
           colorMode(RGB);
@@ -15702,8 +15719,10 @@ class Crecy {
     else {
       if ((progress % 4 == 0 || progress % 4 == 1) && progress < 12) {
         if (crecy_internalCounter == 4) {
-          colorMode(HSB);
-          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+//          colorMode(HSB);
+//          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+          colorMode(RGB);
+          fill(crecy_red, crecy_green, crecy_blue);
         }
         else {
           colorMode(RGB);
@@ -15731,8 +15750,10 @@ class Crecy {
     else {
       if ((progress % 4 == 0 || progress % 4 == 1) && progress < 12) {
         if (crecy_internalCounter == 4) {
-          colorMode(HSB);
-          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+//          colorMode(HSB);
+//          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+          colorMode(RGB);
+          fill(crecy_red, crecy_green, crecy_blue);
         }
         else {
           colorMode(RGB);
@@ -15760,8 +15781,10 @@ class Crecy {
     else {
       if ((progress % 4 == 0 || progress % 4 == 1) && progress < 12) {
         if (crecy_internalCounter == 4) {
-          colorMode(HSB);
-          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+//          colorMode(HSB);
+//          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+          colorMode(RGB);
+          fill(crecy_red, crecy_green, crecy_blue);
         }
         else {
           colorMode(RGB);
@@ -15789,8 +15812,10 @@ class Crecy {
     else {
       if ((progress % 4 == 0 || progress % 4 == 1) && progress < 12) {
         if (crecy_internalCounter == 4) {
-          colorMode(HSB);
-          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+//          colorMode(HSB);
+//          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+          colorMode(RGB);
+          fill(crecy_red, crecy_green, crecy_blue);
         }
         else {
           colorMode(RGB);
@@ -15818,8 +15843,10 @@ class Crecy {
     else {
       if ((progress % 4 == 0 || progress % 4 == 1) && progress < 12) {
         if (crecy_internalCounter == 4) {
-          colorMode(HSB);
-          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+//          colorMode(HSB);
+//          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+          colorMode(RGB);
+          fill(crecy_red, crecy_green, crecy_blue);
         }
         else {
           colorMode(RGB);
@@ -15847,8 +15874,10 @@ class Crecy {
     else {
       if ((progress % 4 == 0 || progress % 4 == 1) && progress < 12) {
         if (crecy_internalCounter == 4) {
-          colorMode(HSB);
-          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+//          colorMode(HSB);
+//          fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+          colorMode(RGB);
+          fill(crecy_red, crecy_green, crecy_blue);
         }
         else {
           colorMode(RGB);
@@ -16095,24 +16124,27 @@ class Crecy {
   /////////////////////////////////////////////////////////////////////////////////
   
   void draw_type39() {
-    colorMode(HSB);
-    fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+    //colorMode(HSB);
+    //fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+    fill(crecy_red, crecy_green, crecy_blue);
     noStroke();
     rect(0, height - progress*8, width/NUMBER_OF_PANELS, height);
     progress += 1;
   }
   
   void draw_type40() {
-    colorMode(HSB);
-    fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+    //colorMode(HSB);
+    //fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+    fill(crecy_red, crecy_green, crecy_blue);
     noStroke();
     rect((NUMBER_OF_PANELS-1)*width/NUMBER_OF_PANELS, height - progress*8, width/NUMBER_OF_PANELS, height);
     progress += 1;
   }
   
   void draw_type41() {
-    colorMode(HSB);
-    fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+    //colorMode(HSB);
+    //fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+    fill(crecy_red, crecy_green, crecy_blue);
     noStroke();
     rect(((NUMBER_OF_PANELS-1)/2)*width/NUMBER_OF_PANELS, height - progress*8, width/NUMBER_OF_PANELS, height);
     progress += 1;

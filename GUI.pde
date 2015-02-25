@@ -1549,11 +1549,15 @@ public class ControlFrame extends PApplet {
     addEffectBang("23 - Rainbow Color", 23);
     addEffectBang("24 - Fadeout", 24);
     addEffectBang("25 - Fadein", 25);
-    addEffectBang("26 - Fadeout", 26);
-    addEffectBang("27 - Fadein", 27);
+    addEffectBang("26 - Redout", 26);
+    addEffectBang("27 - Redin", 27);
     addEffectBang("28 - Whiteout", 28);
     addEffectBang("29 - Redout", 29);
     addEffectBang("30 - BlackWave Circle", 30);
+    addEffectBang("31 - Windmill", 31);
+    addEffectBang("32 - WhiteFlash", 32);
+    addEffectBang("33 - RedFlash", 33);
+    addEffectBang("34 - General Red Random Flicker", 34);
 
   }
   

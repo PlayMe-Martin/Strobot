@@ -84,6 +84,7 @@ float waveform_y_growing = 32.0;
 //Worms parameters
 Worm[] worms;
 int numWorms = 4*NUMBER_OF_PANELS;
+boolean worms_init = false;
 PVector pulse;
 boolean pulsed;
 
@@ -624,7 +625,7 @@ int warpspeed_i,warpspeed_x,warpspeed_y,warpspeed_b;
 
 //BWTriangles parameters
 ParticleSystem bwtriangles_particles;
-int bwtriangles_nbrParticles = 5 + (NUMBER_OF_PANELS-3);
+int bwtriangles_nbrParticles = 5 + (NUMBER_OF_PANELS-2);
 int bwtriangles_vit = 2;
 float bwtriangles_boxDist = 2;
 
@@ -917,7 +918,7 @@ float perfect_circlebeatprotosize;
 boolean perfect_circleredprotocolor = true;
 
 //HyperSpeed parameters
-int hyperspeed_numberofstars = 25 + 6*(NUMBER_OF_PANELS - 3);
+int hyperspeed_numberofstars = 32 + 9*(NUMBER_OF_PANELS - 3);
 int hyperspeed_blur = 30;
 int hyperspeed_maxspeed = 6;
 ArrayList<NagareBoshi> hyperspeed_nagarelist;

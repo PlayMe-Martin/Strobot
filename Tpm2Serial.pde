@@ -261,7 +261,7 @@ public class Tpm2Serial {
      */
     public boolean sendFrame(byte data[]) throws IllegalArgumentException {
       
-      if (didFrameChange(data) || (drawImage == 1 && imagenumber == 0) || (drawAnimation == 1 && animationnumber == 110)) {
+      if (didFrameChange(data) || (drawImage == 1 && imagenumber == 0) || (drawAnimation == 1 && animationnumber == 1) || (drawAnimation == 1 && animationnumber == 2)) {
           writeSerialData(data);
        }
        return false;
