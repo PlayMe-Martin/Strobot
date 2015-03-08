@@ -871,6 +871,8 @@ float openingWhiteout_cpt = 4;
 float openingWhiteout_verticalCpt = 0;
 float openingWhiteout_speed = 0.19;
 float openingWhiteout_verticalSpeed = 0.35;
+long openingWhiteout_lastInitTimestamp = System.nanoTime();
+final long TEN_SECONDS = 10000000000l;
 
 //DoubleFusee parameters
 int doublefusee_a;

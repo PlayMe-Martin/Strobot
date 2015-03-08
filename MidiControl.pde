@@ -120,33 +120,6 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
       else if (pitch == PITCH_PAD_STROBE_32ND)     {activatePadStrobe32nd(channel, pitch, velocity);}
       else if (pitch == PITCH_PAD_STROBE_64TH)     {activatePadStrobe64th(channel, pitch, velocity);}
       
-      //Custom function : Remapping using the keyboard, record the input notes 
-      if (authorizePanelRemappingUsingKeyboard == true) {
-        //Do not allow the same panel to be mapped to two different outputs
-        boolean pitchAlreadyInArray = false;
-        for (int element: manualLEDPanelRemappingNoteArray) {
-          if (pitch == element) {
-            pitchAlreadyInArray = true;
-          }
-        }
-        
-        if (manualLEDPanelRemappingNoteCounter == 0) {
-          manualLEDPanelRemappingNoteArray[manualLEDPanelRemappingNoteCounter] = pitch;
-          manualLEDPanelRemappingNoteCounter += 1;
-          imagenumber = 0 - manualLEDPanelRemappingNoteCounter - 1;
-        }
-        else if (pitchAlreadyInArray == false) {
-          manualLEDPanelRemappingNoteArray[manualLEDPanelRemappingNoteCounter] = pitch;
-          manualLEDPanelRemappingNoteCounter += 1;
-          imagenumber = 0 - manualLEDPanelRemappingNoteCounter - 1;
-        }
-        
-        if (manualLEDPanelRemappingNoteCounter == NUMBER_OF_PANELS) {
-          finalizeLEDPanelRemappingProcedure();
-          imagenumber = 0;
-        }
-        
-      }
     }
     
     if (channel == CHANNEL_MANUALMODE_1 || channel == CHANNEL_MANUALMODE_2 || channel == CHANNEL_MANUALMODE_3 || channel == CHANNEL_MANUALMODE_4) {
@@ -197,6 +170,36 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
         case PITCH_LOAD_IMAGE_BANK1:           loadImage1(velocity);break;                                              //F#9
         case PITCH_CHANGE_OUTPUTMAPPING:       activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
         default: break;
+      }
+    }
+    
+    else if (channel == CHANNEL_KEYBOARD) {
+    //Custom function : Remapping using the keyboard, record the input notes 
+      if (authorizePanelRemappingUsingKeyboard == true) {
+        //Do not allow the same panel to be mapped to two different outputs
+        boolean pitchAlreadyInArray = false;
+        for (int element: manualLEDPanelRemappingNoteArray) {
+          if (pitch == element) {
+            pitchAlreadyInArray = true;
+          }
+        }
+        
+        if (manualLEDPanelRemappingNoteCounter == 0) {
+          manualLEDPanelRemappingNoteArray[manualLEDPanelRemappingNoteCounter] = pitch;
+          manualLEDPanelRemappingNoteCounter += 1;
+          imagenumber = 0 - manualLEDPanelRemappingNoteCounter - 1;
+        }
+        else if (pitchAlreadyInArray == false) {
+          manualLEDPanelRemappingNoteArray[manualLEDPanelRemappingNoteCounter] = pitch;
+          manualLEDPanelRemappingNoteCounter += 1;
+          imagenumber = 0 - manualLEDPanelRemappingNoteCounter - 1;
+        }
+        
+        if (manualLEDPanelRemappingNoteCounter == NUMBER_OF_PANELS) {
+          finalizeLEDPanelRemappingProcedure();
+          imagenumber = 0;
+        }
+        
       }
     }
   }
