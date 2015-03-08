@@ -1041,7 +1041,7 @@ void specificActions() {
           crecy_list = new ArrayList<Crecy>();
         }
         crecy_init = true;
-        crecy_internalCounter = 4;
+        crecy_internalCounter = 3;
         int numberOfCrecys4 = int(random(2,4));
         if (NUMBER_OF_PANELS >= 5) {
           numberOfCrecys4 = int(random(3,7));
@@ -2520,9 +2520,15 @@ void specificActions() {
         frameRate(40);
         noStroke(); 
         fill(255);
-        background(0);
-        openingWhiteout_verticalCpt = 0;
-        openingWhiteout_cpt = 0;
+        
+        //If enough time (10s) has passed since the last animation call, reinit the parameters
+        if (System.nanoTime() - openingWhiteout_lastInitTimestamp > TEN_SECONDS) {
+          background(0);
+          openingWhiteout_verticalCpt = 0;
+          openingWhiteout_cpt = 0;
+        }
+        
+        openingWhiteout_lastInitTimestamp = System.nanoTime();
         break;
       
       case 238:    //DarkSnakes
