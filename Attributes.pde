@@ -551,7 +551,8 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 429, "Simple Spiral - White"               , new String[] {"Circles", "Spiral", "B&W", "Fast"}                                                   );
   animationAttributes = registerAttribute(animationAttributes, 430, "Simple Spiral - Red"                 , new String[] {"Circles", "Spiral", "Red", "Fast"}                                                   );
   animationAttributes = registerAttribute(animationAttributes, 431, "Single Square Spiral - White"        , new String[] {"Geometric", "Spiral", "Rotating", "White"}                                           );
-  animationAttributes = registerAttribute(animationAttributes, 432, "Dual Square Spiral - White"          , new String[] {"Geometric", "Spiral", "Rotating", "White"}                                           );  
+  animationAttributes = registerAttribute(animationAttributes, 432, "Dual Square Spiral - White"          , new String[] {"Geometric", "Spiral", "Rotating", "White"}                                           );
+  animationAttributes = registerAttribute(animationAttributes, 433, "TV Power Off"                        , new String[] {"Simple", "Fade In/Out", "Simple", "White"}                                           );  
   animationAttributes = registerAttribute(animationAttributes, 509, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                            );
   animationAttributes = registerAttribute(animationAttributes, 510, "Display FFT - Bass"                  , new String[] {"Geometric", "Simple", "AudioInput"}                                                  );  
 }

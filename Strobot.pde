@@ -105,7 +105,7 @@ int NUMBER_OF_PANELS = 5;                       //Number of panels - TBIL : auto
 //String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
 //All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
 String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
-String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem170381", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem265461", "/dev/tty.usbmodem479061"};
+String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem170381", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem265461", "/dev/tty.usbmodem479061"}; // 707701 to add
 String[] devicesToParse;
 
 //Define the Gamma value to be used for the panels - recommended for WS2801 modules : gamma_25

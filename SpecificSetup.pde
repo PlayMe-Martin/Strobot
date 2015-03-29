@@ -2432,6 +2432,7 @@ void specificActions() {
       case 229:    //RandomBWFlow
 
         frameRate(50);
+        colorMode(HSB);
         for (int y = 0; y < randomBWFlow_resolutionY; y ++) {
           randomBWFlow_wind[y] = 1 * sin(4 * PI * y / randomBWFlow_resolutionY);
           for (int x = 0; x < randomBWFlow_resolutionX; x ++) {
@@ -4640,8 +4641,16 @@ void specificActions() {
         noStroke();
         rectMode(CORNER);
         break;
+      
+      case 433:    //TV Power Off
+      
+        tvpoweroff_progress = 0;
+        background(0);
+        noStroke();
+        fill(255);
+        break;
         
-      case 525:    //Audio Monitoring
+      case 509:    //Audio Monitoring
 
         background(0);
         uglyImpulseKickList = new ArrayList<UglyImpulseKick>();

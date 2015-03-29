@@ -552,6 +552,7 @@ void specific_draw() {
       case 430: draw_simplespiral(255,0,0);break;                  //Simple Spiral - Red
       case 431: draw_singlesquarespiralwhite();break;              //SingleSquareSpiralWhite
       case 432: draw_dualsquarespiralwhite();break;                //DualSquareSpiralWhite
+      case 433: draw_tvpoweroff();break;                           //TV Power Off
       case 509: draw_dirtyAudioProcessing();break;                 //Audio Monitoring
       case 510: draw_displayFFT_bass();break;                      //DisplayFFT - Bass
       
