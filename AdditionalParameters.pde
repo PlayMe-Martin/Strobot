@@ -1453,3 +1453,7 @@ final int signalWaveForm_offsetY = (PANEL_RESOLUTION_Y * DISPLAY_SCALING_FACTOR)
 // Simple Spiral
 float simplespiral_theta = 0;
 int simplespiral_num = 20;
+
+// TV Power off
+int tvpoweroff_progress = 0;
+int tvpoweroff_speed = 3;

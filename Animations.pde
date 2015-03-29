@@ -5726,6 +5726,8 @@ void draw_inwardsspiralreverse() {
 void draw_explodingcircle() {
   background(0);
   fill(0);
+  stroke(255);
+  strokeWeight(28);
   ellipse(width/2, height/2, explodingcircle_counter, explodingcircle_counter);
   explodingcircle_counter += explodingcircle_speed; 
 }
@@ -7197,10 +7199,16 @@ void draw_randombwflow() {
   noStroke();
   for (int y = 0; y < randomBWFlow_resolutionY; y ++) {
     for (int x = 0; x < randomBWFlow_resolutionX; x ++) {
+//      fill(
+//        min(255, int(255 * abs(randomBWFlow_flow[x][y].x) / 0.2)),
+//        min(255, int(255 * abs(randomBWFlow_flow[x][y].y / 0.2))),
+//        int(max(0, min(255, 255 * randomBWFlow_density[x][y]))));
+//      println(randomBWFlow_flow[x][y].x + "  -  " + randomBWFlow_flow[x][y].y + " ------ " + noise(0.01*randomBWFlow_flow[x][y].x,0.01*randomBWFlow_flow[x][y].y));
       fill(
-        /*min(255, int(255 * abs(randomBWFlow_flow[x][y].x) / 0.2)),
-        min(255, int(255 * abs(randomBWFlow_flow[x][y].y / 0.2))),*/
+        map(noise(0.4*randomBWFlow_flow[x][y].x * width,0.4*randomBWFlow_flow[x][y].y * height),0,1,0,255),80,
         int(max(0, min(255, 255 * randomBWFlow_density[x][y]))));
+        
+
       rect(x * zoom, y * zoom, zoom, zoom);
     }
   }
@@ -17349,4 +17357,19 @@ void draw_simplespiral(int r, int g, int b) {
   }
   popMatrix();
   simplespiral_theta += PI/90;
+}
+
+//////////////////////////////////////////
+// Specific actions for the Cathodic TV Off animations
+//////////////////////////////////////////
+
+void draw_tvpoweroff() {
+  background(0);  
+  pushMatrix();
+  translate(width/2,height/2);
+  ellipse(0,0,max(0, 1.2*width - tvpoweroff_progress), max(0,(1.2*height - tvpoweroff_progress) / 4));
+  ellipse(0,0,max(0, 0.2*width - tvpoweroff_progress), max(0,(2.2*height - tvpoweroff_progress) / 4));
+  popMatrix();
+  tvpoweroff_progress += tvpoweroff_speed;
+  filter(BLUR,6);
 }
