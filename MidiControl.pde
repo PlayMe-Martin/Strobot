@@ -174,8 +174,10 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
     }
     
     else if (channel == CHANNEL_KEYBOARD) {
+      
     //Custom function : Remapping using the keyboard, record the input notes 
       if (authorizePanelRemappingUsingKeyboard == true) {
+                
         //Do not allow the same panel to be mapped to two different outputs
         boolean pitchAlreadyInArray = false;
         for (int element: manualLEDPanelRemappingNoteArray) {
@@ -616,15 +618,15 @@ void finalizeLEDPanelRemappingProcedure() {
   
   int[] sortedNoteList = sort(manualLEDPanelRemappingNoteArray);
   int[] sortedArray = new int[sortedNoteList.length];
-  
+    
   for (int i=0; i<sortedNoteList.length; i++) {
     for (int panelNb=0; panelNb<manualLEDPanelRemappingNoteArray.length; panelNb++) {
       if (sortedNoteList[i] == manualLEDPanelRemappingNoteArray[panelNb]) {
-        sortedArray[i] = panelNb;
+        sortedArray[panelNb] = i;
       }
     }
   }
-    
+      
   // Most critical part : update the panelNumber directly inside the Output objects !
   for (int i=0; i<outputDevices.length; i++) {
     outputDevices[i].panelNumber = sortedArray[i];
@@ -634,14 +636,20 @@ void finalizeLEDPanelRemappingProcedure() {
   manualLEDPanelRemappingNoteCounter = 0;
   authorizePanelRemappingUsingKeyboard = false;
   
+  for (int i=0; i<outputDevices.length; i++) {
+    outputLog.println("Microcontroller reconfiguration - device " + outputDevices[i].serialPort + " is now affected to output #" + outputDevices[i].panelNumber);
+  }
+  
   //Make the configuration change persistant
   writeScreenOrderInConfigurationFile();
 }
 
 //Reset the output order of the panels back to their original pre-conf value
 void resetLEDPanelMapping() {
+  //Reset the display in addition to this
   for (int i=0; i<outputDevices.length; i++) {
     outputDevices[i].panelNumber = i;
+    screen_order_configuration[i] = i;
   }
 }
 
