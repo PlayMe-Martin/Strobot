@@ -105,7 +105,7 @@ int NUMBER_OF_PANELS = 5;                       //Number of panels - TBIL : auto
 //String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
 //All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
 String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
-String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem170381", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem265461", "/dev/tty.usbmodem479061"}; // 707701 to add
+String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem479061", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem707701", "/dev/tty.usbmodem814421"}; // 707701 to add
 String[] devicesToParse;
 
 //Define the Gamma value to be used for the panels - recommended for WS2801 modules : gamma_25
@@ -279,11 +279,11 @@ void setup()
   }
   
   //Useful for debug : initialize the sketch with a specific animation
-  //For the final setup : Initialize the patch by displaying "1 2 3 4 5" on the panels 
-  // -> useful to check if the panel mapping is correct, and if not, to have visual feedback when correcting the panel order
-  animationnumber = 1;
-  drawAnimation = 0;
-  drawImage = 1;
+  //Initial release : display 12345 on the panels -> change this to "light up all the panels in white" ("12345" is hardly elegant if a reset needs to be done live)
+  //The mapping must be requested explicitely using the dedicated procedure
+  animationnumber = 2;
+  drawAnimation = 1;
+  drawImage = 0;
   imagenumber = 0;
     
   //Initialize the frame buffers
@@ -404,6 +404,12 @@ void setup()
     outputDevices[i] = new Tpm2(i);
   }
   
+  //Map the output objects to their respective panel
+  for (int i=0; i<outputDevices.length; i++) {
+    outputDevices[i].panelNumber = screen_order_configuration[i];
+    outputLog.println("Microcontroller init - device " + outputDevices[i].serialPort + " is affected to output #" + outputDevices[i].panelNumber);
+  }
+  
   //Initialize the resize objects
   //--- try out the results with the shitty resize, it might be enough, and the performance could be better
   qualityResize = new QualityResize();
@@ -478,8 +484,7 @@ void setup()
   customDeviceAnimation(4);
   
   //We're finally over !
-  initComplete = true;  
-  
+  initComplete = true;
 }
 
 ////////////////////////////////////////////////////////////////////////////

@@ -1591,6 +1591,10 @@ public class ControlFrame extends PApplet {
       screen_order_configuration[i] = tempLEDPanelMapping_array[i];
     }
     
+    for (int i=0; i<outputDevices.length; i++) {
+      outputLog.println("Microcontroller reconfiguration - device " + outputDevices[i].serialPort + " is now affected to output #" + outputDevices[i].panelNumber);
+    }
+    
     //Make the configuration change persistant
     writeScreenOrderInConfigurationFile();
   }

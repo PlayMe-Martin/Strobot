@@ -191,6 +191,7 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
     private Tpm2Serial tpm2;
     
     private int panelNumber;
+    private String serialPort;
     
     //The panel device will actually output
     public int mappingPanel;
@@ -204,7 +205,7 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
             
             //HINT: on windows you need to (for example) use COM1, com1 will not work! (case sensitive)
             //String serialPort = OutputHelper.getSerialPortName(ph.getTpm2Device().toUpperCase());
-            String serialPort = getSerialPortName(TEENSY_SERIAL_PORT_LIST_5[panelnumber]);      //Initialize it to a possible value
+            serialPort = getSerialPortName(TEENSY_SERIAL_PORT_LIST_5[panelnumber]);      //Initialize it to a possible value
             if (NUMBER_OF_PANELS == 3) {
               serialPort = getSerialPortName(TEENSY_SERIAL_PORT_LIST_3[panelnumber]);
             }
