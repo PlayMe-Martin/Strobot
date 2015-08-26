@@ -850,7 +850,7 @@ int particleletters_printTime = 30;           // number of frames between letter
 boolean particleletters_idle = true;           // particleletters_idle => particles repel and drift around
 boolean particleletters_printing = false;
 String particleletters_buffer = "";
-String particleletters_wordToPrint = "PLAYME";
+String particleletters_wordToPrint = "XI";
 int particleletters_counter = 0;
 PGraphics particleletters_letter;
 PFont particleletters_font;

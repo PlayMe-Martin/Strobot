@@ -266,7 +266,7 @@ public class ControlFrame extends PApplet {
       textFont(minimlFontBig, 48);
       text("SIMULATOR DEACTIVATED", gui_simulatorTextCenterX, gui_simulatorTextMainY);
       textFont(minimlFontMedium, 20);
-      text("ACTIVATE THE SIMULATOR BY CLICKING ON THE PLAYME LOGO", gui_simulatorTextCenterX, gui_simulatorTextSubY);
+      text("ACTIVATE THE SIMULATOR BY CLICKING ON THE XI LOGO", gui_simulatorTextCenterX, gui_simulatorTextSubY);
     }
     
     if (gui_activateAudioMonitoring) {

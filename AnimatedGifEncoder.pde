@@ -32,6 +32,28 @@ final int totalNumberOfAnimations = 385;
 
 void keyPressed()
 {
+  
+  if (keyCode == TAB) {
+//    println("TEST");
+//    myMainBus.clearAll();
+//    myMainBus.dispose();
+//    println("Main Bus closed");
+////    myControllerBus.clearAll();
+////    println("Controller Bus closed");
+////    myKeyboardBus.clearAll();
+////    println("Keyboard Bus closed");
+//    
+//    myMainBus = new MidiBus(this, MIDI_BUS_MAIN_INPUT, MIDI_BUS_MAIN_INPUT, MIDI_BUS_MAIN_INPUT);
+//    
+//    myMainBus.sendNoteOn(5, 50, 50); 
+//    
+//    noteOn(CHANNEL_SEMIAUTOMODE, PITCH_LOAD_ANIMATION_BANK1, 5, 10000000L, myMainBus.getBusName());
+//    
+////    midiInit();
+//    println("wouhou");
+  }
+  
+  
   if (keyCode == BACKSPACE) {
     if (drawImage == 1 && imagenumber == 0) {
       outputLog.println("Setting GIF Recording mode to ON");
@@ -40,8 +62,8 @@ void keyPressed()
     }
   }
   if (keyCode == TAB) {
-    setGifRecording = false;
-    outputLog.println("Setting GIF Recording mode to OFF");
+//    setGifRecording = false;
+//    outputLog.println("Setting GIF Recording mode to OFF");
   }
   if (keyCode == ENTER || keyCode == RETURN) {
     if (animationnumber != 0) {

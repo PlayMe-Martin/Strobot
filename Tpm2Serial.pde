@@ -195,17 +195,6 @@ public class Tpm2Serial {
             return VERSION;
     }
 
-    /**
-     * 
-     * @return
-     */
-    public String getConnectedPort() {
-        if (!connected()) {
-            return null;
-        }
-        
-        return port.port.getName();
-    }
 
     /**
      * return connection state of lib.
@@ -284,7 +273,7 @@ public class Tpm2Serial {
             }
             
             try {
-                    port.output.write(cmdfull);
+                    port.write(cmdfull);
                     //port.output.flush();
                     //DO NOT flush the buffer... hmm not sure about this, processing flush also
                     //and i discovered strange "hangs"...
@@ -302,7 +291,7 @@ private Serial openPort(String portName, int baud) throws NoSerialPortFoundExcep
         Serial myTeensyPort = null;
         try {
                 myTeensyPort = new Serial(this, portName, baud); 
-                myTeensyPort.output.write("PXL".getBytes());
+                myTeensyPort.write("PXL".getBytes());
         } catch (Exception e) {        
                 outputLog.println("Warning : Failed to open port " + portName + "  Exception raised : " + e);
                 if (myTeensyPort != null) {

@@ -5,7 +5,6 @@
 
 import themidibus.*;         //Import MIDI library
 
-
 //MIDI configuration :
 final int CHANNEL_KEYBOARD           = 0;      //MIDI Channel 1
 final int CHANNEL_SEMIAUTOMODE       = 1;      //MIDI Channel 2
@@ -97,8 +96,12 @@ void midiInit() {
   outputLog.println("Configuration --- Keyboard Input MIDI device : " + MIDI_BUS_KEYBOARD_INPUT);
 
   outputLog.println("--- MIDI initialization over ---");
+
 }
 
+void rawMidi() {
+//  println("TEST");
+}
 
 /////////////////////////////////////////////////
 //////////////       NOTE ON       //////////////
