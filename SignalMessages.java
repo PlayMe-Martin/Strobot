@@ -4664,6 +4664,749 @@ public final class SignalMessages {
     // @@protoc_insertion_point(class_scope:TimeInfo)
   }
 
+  public interface MidiDataOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+
+    // required int32 msgType = 1 [default = 1];
+    /**
+     * <code>required int32 msgType = 1 [default = 1];</code>
+     */
+    boolean hasMsgType();
+    /**
+     * <code>required int32 msgType = 1 [default = 1];</code>
+     */
+    int getMsgType();
+
+    // required int32 channel = 2 [default = 1];
+    /**
+     * <code>required int32 channel = 2 [default = 1];</code>
+     */
+    boolean hasChannel();
+    /**
+     * <code>required int32 channel = 2 [default = 1];</code>
+     */
+    int getChannel();
+
+    // required int32 data1 = 3 [default = 1];
+    /**
+     * <code>required int32 data1 = 3 [default = 1];</code>
+     *
+     * <pre>
+     *Pitch or CC number
+     * </pre>
+     */
+    boolean hasData1();
+    /**
+     * <code>required int32 data1 = 3 [default = 1];</code>
+     *
+     * <pre>
+     *Pitch or CC number
+     * </pre>
+     */
+    int getData1();
+
+    // required int32 data2 = 4 [default = 1];
+    /**
+     * <code>required int32 data2 = 4 [default = 1];</code>
+     *
+     * <pre>
+     *Velocity or value
+     * </pre>
+     */
+    boolean hasData2();
+    /**
+     * <code>required int32 data2 = 4 [default = 1];</code>
+     *
+     * <pre>
+     *Velocity or value
+     * </pre>
+     */
+    int getData2();
+  }
+  /**
+   * Protobuf type {@code MidiData}
+   *
+   * <pre>
+   * Forward MIDI Data to Strobot
+   * </pre>
+   */
+  public static final class MidiData extends
+      com.google.protobuf.GeneratedMessage
+      implements MidiDataOrBuilder {
+    // Use MidiData.newBuilder() to construct.
+    private MidiData(com.google.protobuf.GeneratedMessage.Builder<?> builder) {
+      super(builder);
+      this.unknownFields = builder.getUnknownFields();
+    }
+    private MidiData(boolean noInit) { this.unknownFields = com.google.protobuf.UnknownFieldSet.getDefaultInstance(); }
+
+    private static final MidiData defaultInstance;
+    public static MidiData getDefaultInstance() {
+      return defaultInstance;
+    }
+
+    public MidiData getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+
+    private final com.google.protobuf.UnknownFieldSet unknownFields;
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+        getUnknownFields() {
+      return this.unknownFields;
+    }
+    private MidiData(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      initFields();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              bitField0_ |= 0x00000001;
+              msgType_ = input.readInt32();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              channel_ = input.readInt32();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              data1_ = input.readInt32();
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000008;
+              data2_ = input.readInt32();
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e.getMessage()).setUnfinishedMessage(this);
+      } finally {
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return SignalMessages.internal_static_MidiData_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return SignalMessages.internal_static_MidiData_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              SignalMessages.MidiData.class, SignalMessages.MidiData.Builder.class);
+    }
+
+    public static com.google.protobuf.Parser<MidiData> PARSER =
+        new com.google.protobuf.AbstractParser<MidiData>() {
+      public MidiData parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        return new MidiData(input, extensionRegistry);
+      }
+    };
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<MidiData> getParserForType() {
+      return PARSER;
+    }
+
+    private int bitField0_;
+    // required int32 msgType = 1 [default = 1];
+    public static final int MSGTYPE_FIELD_NUMBER = 1;
+    private int msgType_;
+    /**
+     * <code>required int32 msgType = 1 [default = 1];</code>
+     */
+    public boolean hasMsgType() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    /**
+     * <code>required int32 msgType = 1 [default = 1];</code>
+     */
+    public int getMsgType() {
+      return msgType_;
+    }
+
+    // required int32 channel = 2 [default = 1];
+    public static final int CHANNEL_FIELD_NUMBER = 2;
+    private int channel_;
+    /**
+     * <code>required int32 channel = 2 [default = 1];</code>
+     */
+    public boolean hasChannel() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>required int32 channel = 2 [default = 1];</code>
+     */
+    public int getChannel() {
+      return channel_;
+    }
+
+    // required int32 data1 = 3 [default = 1];
+    public static final int DATA1_FIELD_NUMBER = 3;
+    private int data1_;
+    /**
+     * <code>required int32 data1 = 3 [default = 1];</code>
+     *
+     * <pre>
+     *Pitch or CC number
+     * </pre>
+     */
+    public boolean hasData1() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    /**
+     * <code>required int32 data1 = 3 [default = 1];</code>
+     *
+     * <pre>
+     *Pitch or CC number
+     * </pre>
+     */
+    public int getData1() {
+      return data1_;
+    }
+
+    // required int32 data2 = 4 [default = 1];
+    public static final int DATA2_FIELD_NUMBER = 4;
+    private int data2_;
+    /**
+     * <code>required int32 data2 = 4 [default = 1];</code>
+     *
+     * <pre>
+     *Velocity or value
+     * </pre>
+     */
+    public boolean hasData2() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    /**
+     * <code>required int32 data2 = 4 [default = 1];</code>
+     *
+     * <pre>
+     *Velocity or value
+     * </pre>
+     */
+    public int getData2() {
+      return data2_;
+    }
+
+    private void initFields() {
+      msgType_ = 1;
+      channel_ = 1;
+      data1_ = 1;
+      data2_ = 1;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+
+      if (!hasMsgType()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasChannel()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasData1()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasData2()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeInt32(1, msgType_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt32(2, channel_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt32(3, data1_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeInt32(4, data2_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(1, msgType_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, channel_);
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(3, data1_);
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(4, data2_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+
+    public static SignalMessages.MidiData parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static SignalMessages.MidiData parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static SignalMessages.MidiData parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static SignalMessages.MidiData parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static SignalMessages.MidiData parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static SignalMessages.MidiData parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+    public static SignalMessages.MidiData parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input);
+    }
+    public static SignalMessages.MidiData parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseDelimitedFrom(input, extensionRegistry);
+    }
+    public static SignalMessages.MidiData parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input);
+    }
+    public static SignalMessages.MidiData parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return PARSER.parseFrom(input, extensionRegistry);
+    }
+
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(SignalMessages.MidiData prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code MidiData}
+     *
+     * <pre>
+     * Forward MIDI Data to Strobot
+     * </pre>
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements SignalMessages.MidiDataOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return SignalMessages.internal_static_MidiData_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return SignalMessages.internal_static_MidiData_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                SignalMessages.MidiData.class, SignalMessages.MidiData.Builder.class);
+      }
+
+      // Construct using SignalMessages.MidiData.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+
+      public Builder clear() {
+        super.clear();
+        msgType_ = 1;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        channel_ = 1;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        data1_ = 1;
+        bitField0_ = (bitField0_ & ~0x00000004);
+        data2_ = 1;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        return this;
+      }
+
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return SignalMessages.internal_static_MidiData_descriptor;
+      }
+
+      public SignalMessages.MidiData getDefaultInstanceForType() {
+        return SignalMessages.MidiData.getDefaultInstance();
+      }
+
+      public SignalMessages.MidiData build() {
+        SignalMessages.MidiData result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public SignalMessages.MidiData buildPartial() {
+        SignalMessages.MidiData result = new SignalMessages.MidiData(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.msgType_ = msgType_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.channel_ = channel_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.data1_ = data1_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.data2_ = data2_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof SignalMessages.MidiData) {
+          return mergeFrom((SignalMessages.MidiData)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(SignalMessages.MidiData other) {
+        if (other == SignalMessages.MidiData.getDefaultInstance()) return this;
+        if (other.hasMsgType()) {
+          setMsgType(other.getMsgType());
+        }
+        if (other.hasChannel()) {
+          setChannel(other.getChannel());
+        }
+        if (other.hasData1()) {
+          setData1(other.getData1());
+        }
+        if (other.hasData2()) {
+          setData2(other.getData2());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        if (!hasMsgType()) {
+          
+          return false;
+        }
+        if (!hasChannel()) {
+          
+          return false;
+        }
+        if (!hasData1()) {
+          
+          return false;
+        }
+        if (!hasData2()) {
+          
+          return false;
+        }
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        SignalMessages.MidiData parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (SignalMessages.MidiData) e.getUnfinishedMessage();
+          throw e;
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      // required int32 msgType = 1 [default = 1];
+      private int msgType_ = 1;
+      /**
+       * <code>required int32 msgType = 1 [default = 1];</code>
+       */
+      public boolean hasMsgType() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      /**
+       * <code>required int32 msgType = 1 [default = 1];</code>
+       */
+      public int getMsgType() {
+        return msgType_;
+      }
+      /**
+       * <code>required int32 msgType = 1 [default = 1];</code>
+       */
+      public Builder setMsgType(int value) {
+        bitField0_ |= 0x00000001;
+        msgType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 msgType = 1 [default = 1];</code>
+       */
+      public Builder clearMsgType() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        msgType_ = 1;
+        onChanged();
+        return this;
+      }
+
+      // required int32 channel = 2 [default = 1];
+      private int channel_ = 1;
+      /**
+       * <code>required int32 channel = 2 [default = 1];</code>
+       */
+      public boolean hasChannel() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      /**
+       * <code>required int32 channel = 2 [default = 1];</code>
+       */
+      public int getChannel() {
+        return channel_;
+      }
+      /**
+       * <code>required int32 channel = 2 [default = 1];</code>
+       */
+      public Builder setChannel(int value) {
+        bitField0_ |= 0x00000002;
+        channel_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 channel = 2 [default = 1];</code>
+       */
+      public Builder clearChannel() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        channel_ = 1;
+        onChanged();
+        return this;
+      }
+
+      // required int32 data1 = 3 [default = 1];
+      private int data1_ = 1;
+      /**
+       * <code>required int32 data1 = 3 [default = 1];</code>
+       *
+       * <pre>
+       *Pitch or CC number
+       * </pre>
+       */
+      public boolean hasData1() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      /**
+       * <code>required int32 data1 = 3 [default = 1];</code>
+       *
+       * <pre>
+       *Pitch or CC number
+       * </pre>
+       */
+      public int getData1() {
+        return data1_;
+      }
+      /**
+       * <code>required int32 data1 = 3 [default = 1];</code>
+       *
+       * <pre>
+       *Pitch or CC number
+       * </pre>
+       */
+      public Builder setData1(int value) {
+        bitField0_ |= 0x00000004;
+        data1_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 data1 = 3 [default = 1];</code>
+       *
+       * <pre>
+       *Pitch or CC number
+       * </pre>
+       */
+      public Builder clearData1() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        data1_ = 1;
+        onChanged();
+        return this;
+      }
+
+      // required int32 data2 = 4 [default = 1];
+      private int data2_ = 1;
+      /**
+       * <code>required int32 data2 = 4 [default = 1];</code>
+       *
+       * <pre>
+       *Velocity or value
+       * </pre>
+       */
+      public boolean hasData2() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>required int32 data2 = 4 [default = 1];</code>
+       *
+       * <pre>
+       *Velocity or value
+       * </pre>
+       */
+      public int getData2() {
+        return data2_;
+      }
+      /**
+       * <code>required int32 data2 = 4 [default = 1];</code>
+       *
+       * <pre>
+       *Velocity or value
+       * </pre>
+       */
+      public Builder setData2(int value) {
+        bitField0_ |= 0x00000008;
+        data2_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>required int32 data2 = 4 [default = 1];</code>
+       *
+       * <pre>
+       *Velocity or value
+       * </pre>
+       */
+      public Builder clearData2() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        data2_ = 1;
+        onChanged();
+        return this;
+      }
+
+      // @@protoc_insertion_point(builder_scope:MidiData)
+    }
+
+    static {
+      defaultInstance = new MidiData(true);
+      defaultInstance.initFields();
+    }
+
+    // @@protoc_insertion_point(class_scope:MidiData)
+  }
+
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_SignalLevel_descriptor;
   private static
@@ -4694,6 +5437,11 @@ public final class SignalMessages {
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_TimeInfo_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_MidiData_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_MidiData_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -4717,7 +5465,10 @@ public final class SignalMessages {
       "\002\022\r\n\005band9\030\013 \001(\002\022\016\n\006band10\030\014 \001(\002\022\016\n\006band" +
       "11\030\r \001(\002\022\016\n\006band12\030\016 \001(\002\"K\n\010TimeInfo\022\030\n\t" +
       "isPlaying\030\001 \002(\010:\005false\022\020\n\005tempo\030\002 \002(\002:\0010" +
-      "\022\023\n\010position\030\003 \002(\002:\0010B\020B\016SignalMessages"
+      "\022\023\n\010position\030\003 \002(\002:\0010\"V\n\010MidiData\022\022\n\007msg" +
+      "Type\030\001 \002(\005:\0011\022\022\n\007channel\030\002 \002(\005:\0011\022\020\n\005dat" +
+      "a1\030\003 \002(\005:\0011\022\020\n\005data2\030\004 \002(\005:\0011B\020B\016SignalM" +
+      "essages"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -4760,6 +5511,12 @@ public final class SignalMessages {
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_TimeInfo_descriptor,
               new java.lang.String[] { "IsPlaying", "Tempo", "Position", });
+          internal_static_MidiData_descriptor =
+            getDescriptor().getMessageTypes().get(6);
+          internal_static_MidiData_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_MidiData_descriptor,
+              new java.lang.String[] { "MsgType", "Channel", "Data1", "Data2", });
           return null;
         }
       };

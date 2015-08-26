@@ -7,6 +7,10 @@ import java.net.*;
 import java.io.*;
 import com.google.protobuf.*;
 
+//Code used for the MIDI messages transmitted over the network
+final int MIDIDATA_NOTE_OFF = 1;
+final int MIDIDATA_NOTE_ON = 2;
+final int MIDIDATA_CC_CHANGE = 3;
 
 //ID numbers for the incoming signals - these are set according to the configuration file
 int SIGNAL_ID_KICK    = 1;
@@ -57,23 +61,28 @@ boolean impulseMessageProcessed = false;        //Flag set by the animations whi
 long OUTDATED_IMPULSE_AGE = 250*1000*1000;      //Consider that after OUTDATED_IMPULSE_AGE ns, the previous impulse is outdated, and should be invalidated
 
 // Port number must be greater than 1000
+int midiDataPortNumber        = 7000;
 int audioDataPortNumber       = 7001;
 int audioInstantValPortNumber = 7002;
 int impulsePortNumber         = 7003;
 int timeInfoPortNumber        = 7004;
 int fftPortNumber             = 7005;
+DatagramSocket MidiDataServer        = null;
 DatagramSocket AudioDataServer       = null;
 DatagramSocket AudioInstantValServer = null;
 DatagramSocket ImpulseServer         = null;
 DatagramSocket TimeInfoServer        = null;
 DatagramSocket FFTServer             = null;
  
+final int midiDataMessageSize         = 8;
 final int timeInfoMessageSize         = 12;
 final int signalLevelMessageSize      = 7;
 final int signalInstantValMessageSize = 7;
 final int impulseMessageSize          = 2;
 final int fftMessageSize              = 67;
 final int THREAD_SLEEP_TIME           = 5;    //5 ms (for reference, 50 fps means a 20ms period)
+final int THREAD_SLEEP_TIME_MIDI_SVR  = 1;    //1 ms (for the MIDI server, check if messages are available more often : this is important to have no latency between the music and the lights) 
+
 //Audio buffer size, big enough to have one value for each LED pixel (= 4 pixels in Processing)
 //Important note : the number of panels is hard coded, so that even when using 3 panels, the buffer is the same
 //This is important, as the thresholds set in the Auto mode depend on this value
@@ -143,7 +152,8 @@ void initializeSignalFFTBuffers() {
 
 void startAudioSignalMonitoringThread() {
   // Create the Java servers which will listen to the different SignalProcessor plugin instances
-
+  
+  thread("createMidiDataServer");
   thread("createAudioDataServer");
   thread("createAudioInstantValServer");
   thread("createImpulseServer");
@@ -154,6 +164,32 @@ void startAudioSignalMonitoringThread() {
 
 ///////////////////////////////////////////////////////////////////////////
 
+
+void createMidiDataServer() {
+  try {
+    outputLog.println("MIDI-through-UDP server initialization");
+    MidiDataServer = new DatagramSocket(midiDataPortNumber);
+    
+    //Specify a timeout for the receive, in order to avoid useless CPU usage
+    MidiDataServer.setSoTimeout(THREAD_SLEEP_TIME_MIDI_SVR);
+     
+    //buffer to receive incoming data
+    byte[] bufferMidiData = new byte[midiDataMessageSize];
+    DatagramPacket incomingMidiData = new DatagramPacket(bufferMidiData, bufferMidiData.length);
+
+    while(true)
+    {
+      try {
+        MidiDataServer.receive(incomingMidiData);
+        processMidiDataMessage(SignalMessages.MidiData.parseFrom(incomingMidiData.getData()));
+      }
+      catch (Exception e) {}
+    }
+  }
+  catch (Exception e) {
+    outputLog.println("MIDI Data server error : " + e);
+  }  
+}
 
 void createAudioDataServer() {
   try {
@@ -290,6 +326,19 @@ void createFFTServer() {
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+void processMidiDataMessage(SignalMessages.MidiData midiData) {
+  if (midiData.getMsgType() == MIDIDATA_NOTE_OFF) {
+    noteOff(midiData.getChannel(), midiData.getData1(), midiData.getData2(), System.nanoTime(), myMainBus.getBusName());
+  }
+  else if (midiData.getMsgType() == MIDIDATA_NOTE_ON) {
+    noteOn(midiData.getChannel(), midiData.getData1(), midiData.getData2(), System.nanoTime(), myMainBus.getBusName());
+  }
+  else if (midiData.getMsgType() == MIDIDATA_CC_CHANGE) {
+    controllerChange(midiData.getChannel(), midiData.getData1(), midiData.getData2(), System.nanoTime(), myMainBus.getBusName());
+  }
+}
+
 void processTimeInfoMessage(SignalMessages.TimeInfo timeInfo) {
   automaticSequencer.isPlaying = timeInfo.getIsPlaying();
   automaticSequencer.currentBPM = timeInfo.getTempo();

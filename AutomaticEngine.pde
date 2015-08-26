@@ -10,7 +10,7 @@ The plugin is to be put as an effect on each track with a special function :
 - Hats/Cymbals
 - Bass
 - Keys (high synths, leads, piano)
-- Guitar (even if in PlayMe's case, the guitar is not to be routed to the master output)
+- Guitar (even if in Xi's case, the guitar is not to be routed to the master output)
 
 The six plugin instances can send the following messages :
 - Signal level : an instant value of the track's output level, averaged on a user-defined buffer

@@ -23,7 +23,7 @@ void create_PHP_output() {
 
 void print_playmeHeader() {
   phpOutputFile.println("<!--/////////////////////////////////////////-->");
-  phpOutputFile.println("<!--//PlayMe Light Setup - Animation Viewer//-->");
+  phpOutputFile.println("<!--//Xi Light Setup - Animation Viewer//-->");
   phpOutputFile.println("<!--/////////////////////////////////////////-->");
   phpOutputFile.println("");
   phpOutputFile.println(""); 
@@ -35,7 +35,7 @@ void print_htmlHeader() {
   phpOutputFile.println("<html>                                                                                            ");
   phpOutputFile.println("  <head>                                                                                          ");
   phpOutputFile.println("    <meta charset=\"UTF-8\">                                                                      ");
-  phpOutputFile.println("    <title>PlayMe Live Setup - Animation List</title>                                             ");
+  phpOutputFile.println("    <title>Xi Live Setup - Animation List</title>                                             ");
   phpOutputFile.println("    <link rel=\"icon\"                                                                            ");
   phpOutputFile.println("      type=\"image/png\"                                                                          ");
   phpOutputFile.println("      href=\"img/favicon.png\">                                                                   ");

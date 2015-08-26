@@ -1,6 +1,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-/////////          Strobot - Processing application part of the PlayMe live lighting setup        /////////
+/////////          Strobot - Processing application part of the Xi live lighting setup        /////////
 /////////                                 Martin Di Rollo - 2013                                  /////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -200,6 +200,7 @@ int MAXIMAL_UDP_PACKET_SIZE = 65507;
 MidiBus myMainBus;
 MidiBus myControllerBus;
 MidiBus myKeyboardBus;
+MidiBus myBackupBus;
 
 //Control the brightness of the LED panels - 1 for full brightness
 float brightness = 1;
@@ -578,7 +579,7 @@ void create_logfileHeader() {
     outputLog = createWriter("Strobot_logfile.txt");
     
     outputLog.println("///////////////////////////////////////////");
-    outputLog.println("//PlayMe Light Setup - Output logger file//");
+    outputLog.println("//Xi Light Setup - Output logger file//");
     outputLog.println("///////////////////////////////////////////");
     outputLog.println("");
     outputLog.println("");

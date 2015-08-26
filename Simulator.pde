@@ -118,7 +118,7 @@ void draw_simulator(int x, int y) {
     offset += gui_panelSimulatorList.get(i).totalWidth + gui_distanceBetweenPanels;
   }
   auxControlFrame.updatePixels();
- 
+  
   //stroboscopes
   drawSimuFrontLeftStroboscope(gui_simulatorWidth/5 + 7, gui_frontStrobePositionY);
   drawSimuFrontRightStroboscope(4*gui_simulatorWidth/5 + 16, gui_frontStrobePositionY);

@@ -163,7 +163,7 @@ public abstract class OnePanelResolutionAwareOutput extends Output {
     }
 }
 
-//Get the manual mapping (global variable declared in the main file of the sketch, Sketch_PlayMe)
+//Get the manual mapping (global variable declared in Strobot.pde)
 //Warn in case of invalid manual mapping
 public int[] getOutputMappingValues() {            
 
