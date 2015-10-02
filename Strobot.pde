@@ -90,7 +90,7 @@ boolean debug_without_dmx = false;
 boolean debug_without_custom_devices = false;
 
 String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
-String CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/tty.usbserial-A961L7NJ";
+String CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/tty.usbserial-00001014";
 
 //////////////////////////////////////////////////////
 //Define the initial config of the LED matrix here !//
@@ -139,6 +139,7 @@ final String RESIZE_OPTION = "QUALITY";
 //Choose the device from which Processing should receive MIDI commands
 //Standard choice : IEC bus to receive internal MIDI messages from the DAW -> "Bus 1"
 String MIDI_BUS_MAIN_INPUT       = "Bus 1";
+String MIDI_BUS_PIONEER_CONTROLLER_INPUT = "Pioneer RMX-500";
 String MIDI_BUS_CONTROLLER_INPUT = "LPD8";
 String MIDI_BUS_KEYBOARD_INPUT   = "LPK25";
 
@@ -199,6 +200,7 @@ int MAXIMAL_UDP_PACKET_SIZE = 65507;
 //Instanciate MIDI control objects
 MidiBus myMainBus;
 MidiBus myControllerBus;
+MidiBus myPioneerControllerBus;      //Create a specific object for Pioneer RMX-like controllers, which have a special MIDI implementation, and as such specific processing
 MidiBus myKeyboardBus;
 MidiBus myBackupBus;
 
