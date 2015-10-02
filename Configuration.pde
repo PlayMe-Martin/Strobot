@@ -71,6 +71,7 @@ void createConfigFile() {
     configFile_write.println("Output|ScreenOrder:" + getScreenOrderConfiguration());
     configFile_write.println("MIDISettings|MainInputMIDIDevice:" + MIDI_BUS_MAIN_INPUT);
     configFile_write.println("MIDISettings|ControllerInputMIDIDevice:" + MIDI_BUS_CONTROLLER_INPUT);
+    configFile_write.println("MIDISettings|PioneerControllerInputMIDIDevice:" + MIDI_BUS_PIONEER_CONTROLLER_INPUT);
     configFile_write.println();
     configFile_write.println();
     configFile_write.println("This section allows persistant DMX mapping - define custom addresses for the DMX devices below");
@@ -285,6 +286,9 @@ void parseConfigurationFile(String line) {
       }
       else if (lineSplit[0].contains("MIDISettings|MainInputMIDIDevice")) {
         MIDI_BUS_MAIN_INPUT = lineSplit[1];
+      }
+      else if (lineSplit[0].contains("MIDISettings|PioneerControllerInputMIDIDevice")) {
+        MIDI_BUS_PIONEER_CONTROLLER_INPUT = lineSplit[1];
       }
       else if (lineSplit[0].contains("MIDISettings|ControllerInputMIDIDevice")) {
         MIDI_BUS_CONTROLLER_INPUT = lineSplit[1];

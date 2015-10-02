@@ -68,6 +68,34 @@ final int PITCH_LOAD_ANIMATION_BANK4       = 122;
 final int PITCH_LOAD_IMAGE_BANK1           = 126;
 final int PITCH_CHANGE_OUTPUTMAPPING       = 127;
 
+//The RMX has a pretty specific MIDI implementation - only one knob to control a range of effects
+//When activating the effect, a specific note on 127 is sent, afterwards the activated effect is controlled with a single MIDI CC (the same for all effects)
+final int PITCH_RMX_SCENE_HPF = -1;
+final int PITCH_RMX_SCENE_LPF = -1;
+final int PITCH_RMX_SCENE_ZIP = -1;
+final int PITCH_RMX_SCENE_SPIRALDOWN = -1;
+final int PITCH_RMX_SCENE_REVERBDOWN = -1;
+final int PITCH_RMX_SCENE_MOD = -1;
+final int PITCH_RMX_SCENE_ECHO = -1;
+final int PITCH_RMX_SCENE_NOISE = -1;
+final int PITCH_RMX_SCENE_SPIRALUP = -1;
+final int PITCH_RMX_SCENE_REVERBUP = -1;
+final int PITCH_RMX_RHYTHM_ROLL = -1;
+final int PITCH_RMX_RHYTHM_TRANS = -1;
+final int PITCH_RMX_RHYTHM_ADD = -1;
+final int PITCH_RMX_RHYTHM_REVDELAY = -1;
+final int PITCH_RMX_RHYTHM_OFFSET = -1;
+final int[] PIONEER_RMX_SCENEFX_temp = {PITCH_RMX_SCENE_HPF, PITCH_RMX_SCENE_LPF, PITCH_RMX_SCENE_ZIP, PITCH_RMX_SCENE_SPIRALDOWN, PITCH_RMX_SCENE_REVERBDOWN, PITCH_RMX_SCENE_MOD, PITCH_RMX_SCENE_ECHO, PITCH_RMX_SCENE_NOISE, PITCH_RMX_SCENE_SPIRALUP, PITCH_RMX_SCENE_REVERBUP};
+final int[] PIONEER_RMX_RHYTHMFX_temp = {PITCH_RMX_RHYTHM_ROLL, PITCH_RMX_RHYTHM_TRANS, PITCH_RMX_RHYTHM_ADD, PITCH_RMX_RHYTHM_REVDELAY, PITCH_RMX_RHYTHM_OFFSET};
+IntList PIONEER_RMX_SCENEFX = new IntList();    //IntList are easier to use for some specific functions they have
+IntList PIONEER_RMX_RHYTHMFX = new IntList();
+
+int pionnerRMX_LastSeenPitch = -1;              // variable used to store the last MIDI message sent by the RMX
+boolean pionnerRMX_SceneFxOn = false;           // is an effect currently applied at the moment ?
+boolean pionnerRMX_RhythmFxOn = false;          // is an effect currently applied at the moment ?
+int pionnerRMX_CurrentSceneFxCCVal = -1;        // value of the current SceneFX knob
+int pionnerRMX_CurrentRhythmFxCCVal = -1;       // value of the current RhythmFX knob
+
 
 // Allow LED Panel remapping using the keyboard
 // Use case : this boolean is set to true using the Maschine
@@ -82,133 +110,185 @@ int manualLEDPanelRemappingNoteCounter = 0;
 int previousLEDPanelAnimation = 0;
 
 void midiInit() {
+  //Initialize some Pioneer RMX-specific stuff
+  PIONEER_RMX_SCENEFX.append(PIONEER_RMX_SCENEFX_temp);
+  PIONEER_RMX_RHYTHMFX.append(PIONEER_RMX_RHYTHMFX_temp);
+  
   outputLog.println("--- Initializing MIDI Control ---");
   MidiBus.list(); 
   //Arguments to create the MidiBus : Parent Class, IN device, OUT device, NAME
   myMainBus = new MidiBus(this, MIDI_BUS_MAIN_INPUT, MIDI_BUS_MAIN_INPUT, MIDI_BUS_MAIN_INPUT);
   outputLog.println("Configuration --- Main Input MIDI device : " + MIDI_BUS_MAIN_INPUT);
-  try {myControllerBus = new MidiBus(this, MIDI_BUS_CONTROLLER_INPUT, MIDI_BUS_CONTROLLER_INPUT, MIDI_BUS_CONTROLLER_INPUT);}
-  catch (Exception e) {println("Problem during initialization of controller MIDI input port : " + e);}
-  outputLog.println("Configuration --- Controller Input MIDI device : " + MIDI_BUS_CONTROLLER_INPUT);
   
+  boolean controllerConnected = true, pioneerConnected = true, keyboardConnected = true;
+  try {myControllerBus = new MidiBus(this, MIDI_BUS_CONTROLLER_INPUT, MIDI_BUS_CONTROLLER_INPUT, MIDI_BUS_CONTROLLER_INPUT);}
+    catch (Exception e) {println("Problem during initialization of controller MIDI input port : " + e); controllerConnected = false;}
+  try {myPioneerControllerBus = new MidiBus(this, MIDI_BUS_PIONEER_CONTROLLER_INPUT, MIDI_BUS_PIONEER_CONTROLLER_INPUT, MIDI_BUS_PIONEER_CONTROLLER_INPUT);}
+    catch (Exception e) {println("Problem during initialization of the Pioneer controller MIDI input port : " + e); pioneerConnected = false;}
   try {myKeyboardBus = new MidiBus(this, MIDI_BUS_KEYBOARD_INPUT, MIDI_BUS_KEYBOARD_INPUT, MIDI_BUS_KEYBOARD_INPUT);}
-  catch (Exception e) {println("Problem during initialization of controller MIDI input port : " + e);}
-  outputLog.println("Configuration --- Keyboard Input MIDI device : " + MIDI_BUS_KEYBOARD_INPUT);
+    catch (Exception e) {println("Problem during initialization of controller MIDI input port : " + e); keyboardConnected = false;}
+    
+  if (pioneerConnected) { outputLog.println("Device configurated --- Pioneer Controller device : " + MIDI_BUS_PIONEER_CONTROLLER_INPUT); }
+  if (controllerConnected) { outputLog.println("Device configurated --- Controller Input MIDI device : " + MIDI_BUS_CONTROLLER_INPUT); }
+  if (keyboardConnected) { outputLog.println("Configuration --- Keyboard Input MIDI device : " + MIDI_BUS_KEYBOARD_INPUT); }
 
   outputLog.println("--- MIDI initialization over ---");
 
 }
 
-void rawMidi() {
+// May be used in the future
+//void rawMidi() {
 //  println("TEST");
-}
+//}
 
 /////////////////////////////////////////////////
 //////////////       NOTE ON       //////////////
 /////////////////////////////////////////////////
 
-void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_name) {  
+// Receive a noteOn
+void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_name) {
   if (initComplete == true) {
-    // Receive a noteOn
+    
     if (bus_name == myControllerBus.getBusName() || bus_name == myKeyboardBus.getBusName()) {
-      //Drumpad sub-keyboard - couldn't use a switch here because the pitches are not declared as finals 
-      if (pitch == PITCH_P1_LEFT)                  {p1Left(channel, pitch, velocity);}
-      else if (pitch == PITCH_P1_RIGHT)            {p1Right(channel, pitch, velocity);}
-      else if (pitch == PITCH_P2_LEFT)             {p2Left(channel, pitch, velocity);}
-      else if (pitch == PITCH_P2_RIGHT)            {p2Right(channel, pitch, velocity);}
-      else if (pitch == PITCH_PAD_KILL_LED_PANELS) {activateKillLedPanel(channel, pitch, velocity);}
-      else if (pitch == PITCH_PAD_STROBE_4TH)      {activatePadStrobe4th(channel, pitch, velocity);}
-      else if (pitch == PITCH_PAD_STROBE_8TH)      {activatePadStrobe8th(channel, pitch, velocity);}
-      else if (pitch == PITCH_PAD_STROBE_16TH)     {activatePadStrobe16th(channel, pitch, velocity);}
-      else if (pitch == PITCH_PAD_STROBE_32ND)     {activatePadStrobe32nd(channel, pitch, velocity);}
-      else if (pitch == PITCH_PAD_STROBE_64TH)     {activatePadStrobe64th(channel, pitch, velocity);}
-      
+      processMidiInfo_standardControllers(channel, pitch, velocity);
     }
     
-    if (channel == CHANNEL_MANUALMODE_1 || channel == CHANNEL_MANUALMODE_2 || channel == CHANNEL_MANUALMODE_3 || channel == CHANNEL_MANUALMODE_4) {
+    else if (bus_name == myPioneerControllerBus.getBusName()) {
+      processMidiInfo_pioneerController(pitch, velocity);
+    }
+    
+    else if (channel == CHANNEL_MANUALMODE_1 || channel == CHANNEL_MANUALMODE_2 || channel == CHANNEL_MANUALMODE_3 || channel == CHANNEL_MANUALMODE_4) {
       //Release automatic mode in case of explicit input
       //This mode corresponds to a MPC-like controller selecting manually animations
       AUTOMATIC_MODE = false;
       setManualAnimation(channel, pitch);
     }
     
-    if (channel == CHANNEL_SEMIAUTOMODE) {
+    else if (channel == CHANNEL_SEMIAUTOMODE) {
       //Release automatic mode in case of explicit input
       //This mode corresponds to a DAW sending MIDI commands, for example through the use of clips (Ableton Live), scenes (Maschine), or plain old MIDI tracks (Logic)
       AUTOMATIC_MODE = false;
-      switch (pitch) {
-        //Manual input
-        case PITCH_SET_AUTOMODE_OFF:           setAutomaticModeOff();break;                                             //F#5   - Disable the automatic mode
-        case PITCH_SET_AUTOMODE_ON:            setAutomaticModeOn();break;                                              //G5    - Enable the automatic mode
-        
-        case PITCH_CHANGE_STROBO_FRONT:        changeStrobe(velocity);break;                                            //E7    - Deprecated way to use the stroboscope
-        case PITCH_START_STROBO_FRONT:         startStrobe(velocity);break;                                             //F7    - Deprecated way to use the stroboscope
-        case PITCH_STOP_STROBO_FRONT:          stopStrobe();break;                                                      //F#7   - Deprecated way to use the stroboscope
-        
-        case PITCH_GENERAL_STROBO_FRONT_LEFT:  startStrobe_FrontLeft(velocity);break;                                   //G7    - New way to use the stroboscope : noteOff releases the strobe
-        case PITCH_GENERAL_STROBO_FRONT_RIGHT: startStrobe_FrontRight(velocity);break;                                  //G#7   - New way to use the stroboscope : noteOff releases the strobe
-        case PITCH_GENERAL_STROBO_BACK:        startStrobe_Back(velocity);break;                                        //A7    - New way to use the stroboscope : noteOff releases the strobe
-
-        case PITCH_DMX_ANIMATION_BANK1:        loadDMXAnimation1(velocity); break;                                      //A#7   - Load an animation using DMX devices
-        case PITCH_DMX_ANIMATION_BANK2:        loadDMXAnimation2(velocity); break;                                      //B7
-        case PITCH_DMX_ANIMATION_BANK3:        loadDMXAnimation3(velocity); break;                                      //C8
-        
-        case PITCH_ENABLE_MAN_INPUT:           enableManualInput();break;                                               //D8
-        case PITCH_DISABLE_MAN_INPUT:          disableManualInput();break;                                              //D#8
-        
-        case PITCH_CUSTOM_DEVICE_BANK1:        loadCustomDeviceAnimation1(velocity);break;                              //A#8   - Load an animation for the custom devices
-        case PITCH_CUSTOM_DEVICE_BANK2:        loadCustomDeviceAnimation2(velocity);break;                              //B8
-        case PITCH_CUSTOM_DEVICE_BANK3:        loadCustomDeviceAnimation3(velocity);break;                              //C9
-        case PITCH_DISPLAY_EFFECT:             activateAdditionalEffect(velocity);break;                                //C#9
-        
-        case PITCH_LOAD_ANIMATION_BANK1_TEMP:  loadTempAnimation1(velocity);break;                                      //C7    - Load a temporary animation using the LED panels
-        case PITCH_LOAD_ANIMATION_BANK2_TEMP:  loadTempAnimation2(velocity);break;                                      //C#7
-        case PITCH_LOAD_ANIMATION_BANK3_TEMP:  loadTempAnimation3(velocity);break;                                      //D7
-        case PITCH_LOAD_ANIMATION_BANK4_TEMP:  loadTempAnimation4(velocity);break;                                      //D#7
-        
-        case PITCH_LOAD_ANIMATION_BANK1:       loadAnimation1(velocity);break;                                          //D#9   - Load an animation using the LED panels
-        case PITCH_LOAD_ANIMATION_BANK2:       loadAnimation2(velocity);break;                                          //E9
-        case PITCH_LOAD_ANIMATION_BANK3:       loadAnimation3(velocity);break;                                          //F9
-        case PITCH_LOAD_ANIMATION_BANK4:       loadAnimation4(velocity);break;                                          //D9
-        case PITCH_LOAD_IMAGE_BANK1:           loadImage1(velocity);break;                                              //F#9
-        case PITCH_CHANGE_OUTPUTMAPPING:       activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
-        default: break;
-      }
+      processMidiInfo_semiAutoMode(pitch, velocity);
     }
     
     else if (channel == CHANNEL_KEYBOARD) {
-      
-    //Custom function : Remapping using the keyboard, record the input notes 
-      if (authorizePanelRemappingUsingKeyboard == true) {
-                
-        //Do not allow the same panel to be mapped to two different outputs
-        boolean pitchAlreadyInArray = false;
-        for (int element: manualLEDPanelRemappingNoteArray) {
-          if (pitch == element) {
-            pitchAlreadyInArray = true;
-          }
-        }
-        
-        if (manualLEDPanelRemappingNoteCounter == 0) {
-          manualLEDPanelRemappingNoteArray[manualLEDPanelRemappingNoteCounter] = pitch;
-          manualLEDPanelRemappingNoteCounter += 1;
-          imagenumber = 0 - manualLEDPanelRemappingNoteCounter - 1;
-        }
-        else if (pitchAlreadyInArray == false) {
-          manualLEDPanelRemappingNoteArray[manualLEDPanelRemappingNoteCounter] = pitch;
-          manualLEDPanelRemappingNoteCounter += 1;
-          imagenumber = 0 - manualLEDPanelRemappingNoteCounter - 1;
-        }
-        
-        if (manualLEDPanelRemappingNoteCounter == NUMBER_OF_PANELS) {
-          finalizeLEDPanelRemappingProcedure();
-          imagenumber = 0;
-        }
-        
-      }
+      processMidiInfo_keyboard(pitch, velocity);
     }
   }
 }
+
+
+void processMidiInfo_semiAutoMode(int pitch, int velocity) {
+  switch (pitch) {
+    //Standard mode, MIDI incoming from Ableton
+    case PITCH_SET_AUTOMODE_OFF:           setAutomaticModeOff();break;                                             //F#5   - Disable the automatic mode
+    case PITCH_SET_AUTOMODE_ON:            setAutomaticModeOn();break;                                              //G5    - Enable the automatic mode
+    
+    case PITCH_CHANGE_STROBO_FRONT:        changeStrobe(velocity);break;                                            //E7    - Deprecated way to use the stroboscope
+    case PITCH_START_STROBO_FRONT:         startStrobe(velocity);break;                                             //F7    - Deprecated way to use the stroboscope
+    case PITCH_STOP_STROBO_FRONT:          stopStrobe();break;                                                      //F#7   - Deprecated way to use the stroboscope
+    
+    case PITCH_GENERAL_STROBO_FRONT_LEFT:  startStrobe_FrontLeft(velocity);break;                                   //G7    - New way to use the stroboscope : noteOff releases the strobe
+    case PITCH_GENERAL_STROBO_FRONT_RIGHT: startStrobe_FrontRight(velocity);break;                                  //G#7   - New way to use the stroboscope : noteOff releases the strobe
+    case PITCH_GENERAL_STROBO_BACK:        startStrobe_Back(velocity);break;                                        //A7    - New way to use the stroboscope : noteOff releases the strobe
+  
+    case PITCH_DMX_ANIMATION_BANK1:        loadDMXAnimation1(velocity); break;                                      //A#7   - Load an animation using DMX devices
+    case PITCH_DMX_ANIMATION_BANK2:        loadDMXAnimation2(velocity); break;                                      //B7
+    case PITCH_DMX_ANIMATION_BANK3:        loadDMXAnimation3(velocity); break;                                      //C8
+    
+    case PITCH_ENABLE_MAN_INPUT:           enableManualInput();break;                                               //D8
+    case PITCH_DISABLE_MAN_INPUT:          disableManualInput();break;                                              //D#8
+    
+    case PITCH_CUSTOM_DEVICE_BANK1:        loadCustomDeviceAnimation1(velocity);break;                              //A#8   - Load an animation for the custom devices
+    case PITCH_CUSTOM_DEVICE_BANK2:        loadCustomDeviceAnimation2(velocity);break;                              //B8
+    case PITCH_CUSTOM_DEVICE_BANK3:        loadCustomDeviceAnimation3(velocity);break;                              //C9
+    case PITCH_DISPLAY_EFFECT:             activateAdditionalEffect(velocity);break;                                //C#9
+    
+    case PITCH_LOAD_ANIMATION_BANK1_TEMP:  loadTempAnimation1(velocity);break;                                      //C7    - Load a temporary animation using the LED panels
+    case PITCH_LOAD_ANIMATION_BANK2_TEMP:  loadTempAnimation2(velocity);break;                                      //C#7
+    case PITCH_LOAD_ANIMATION_BANK3_TEMP:  loadTempAnimation3(velocity);break;                                      //D7
+    case PITCH_LOAD_ANIMATION_BANK4_TEMP:  loadTempAnimation4(velocity);break;                                      //D#7
+    
+    case PITCH_LOAD_ANIMATION_BANK1:       loadAnimation1(velocity);break;                                          //D#9   - Load an animation using the LED panels
+    case PITCH_LOAD_ANIMATION_BANK2:       loadAnimation2(velocity);break;                                          //E9
+    case PITCH_LOAD_ANIMATION_BANK3:       loadAnimation3(velocity);break;                                          //F9
+    case PITCH_LOAD_ANIMATION_BANK4:       loadAnimation4(velocity);break;                                          //D9
+    case PITCH_LOAD_IMAGE_BANK1:           loadImage1(velocity);break;                                              //F#9
+    case PITCH_CHANGE_OUTPUTMAPPING:       activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
+    default: break;
+  }
+}
+
+void processMidiInfo_keyboard(int pitch, int velocity) {
+  //Custom function : Remapping using the keyboard, record the input notes 
+  if (authorizePanelRemappingUsingKeyboard == true) {
+            
+    //Do not allow the same panel to be mapped to two different outputs
+    boolean pitchAlreadyInArray = false;
+    for (int element: manualLEDPanelRemappingNoteArray) {
+      if (pitch == element) {
+        pitchAlreadyInArray = true;
+      }
+    }
+    
+    if (manualLEDPanelRemappingNoteCounter == 0) {
+      manualLEDPanelRemappingNoteArray[manualLEDPanelRemappingNoteCounter] = pitch;
+      manualLEDPanelRemappingNoteCounter += 1;
+      imagenumber = 0 - manualLEDPanelRemappingNoteCounter - 1;
+    }
+    else if (pitchAlreadyInArray == false) {
+      manualLEDPanelRemappingNoteArray[manualLEDPanelRemappingNoteCounter] = pitch;
+      manualLEDPanelRemappingNoteCounter += 1;
+      imagenumber = 0 - manualLEDPanelRemappingNoteCounter - 1;
+    }
+    
+    if (manualLEDPanelRemappingNoteCounter == NUMBER_OF_PANELS) {
+      finalizeLEDPanelRemappingProcedure();
+      imagenumber = 0;
+    }
+    
+  }
+}
+
+void processMidiInfo_standardControllers(int channel, int pitch, int velocity) {
+    //Drumpad sub-keyboard - couldn't use a switch here because the pitches are not declared as finals 
+    if (pitch == PITCH_P1_LEFT)                  {p1Left(channel, pitch, velocity);}
+    else if (pitch == PITCH_P1_RIGHT)            {p1Right(channel, pitch, velocity);}
+    else if (pitch == PITCH_P2_LEFT)             {p2Left(channel, pitch, velocity);}
+    else if (pitch == PITCH_P2_RIGHT)            {p2Right(channel, pitch, velocity);}
+    else if (pitch == PITCH_PAD_KILL_LED_PANELS) {activateKillLedPanel(channel, pitch, velocity);}
+    else if (pitch == PITCH_PAD_STROBE_4TH)      {activatePadStrobe4th(channel, pitch, velocity);}
+    else if (pitch == PITCH_PAD_STROBE_8TH)      {activatePadStrobe8th(channel, pitch, velocity);}
+    else if (pitch == PITCH_PAD_STROBE_16TH)     {activatePadStrobe16th(channel, pitch, velocity);}
+    else if (pitch == PITCH_PAD_STROBE_32ND)     {activatePadStrobe32nd(channel, pitch, velocity);}
+    else if (pitch == PITCH_PAD_STROBE_64TH)     {activatePadStrobe64th(channel, pitch, velocity);}
+}
+
+void processMidiInfo_pioneerController(int pitch, int velocity) {
+  //In the case of a Pioneer RMX-like controller, the pitches are defined as final values (impossible to remap the controller)
+  switch (pitch) {
+//    case PITCH_RMX_SCENE_HPF:
+//    case PITCH_RMX_SCENE_LPF:
+//    case PITCH_RMX_SCENE_ZIP:
+//    case PITCH_RMX_SCENE_SPIRALDOWN:
+//    case PITCH_RMX_SCENE_REVERBDOWN:
+//    case PITCH_RMX_SCENE_MOD:
+//    case PITCH_RMX_SCENE_ECHO:
+//    case PITCH_RMX_SCENE_NOISE:
+//    case PITCH_RMX_SCENE_SPIRALUP:
+//    case PITCH_RMX_SCENE_REVERBUP:
+//    case PITCH_RMX_RHYTHM_ROLL:
+//    case PITCH_RMX_RHYTHM_TRANS:
+//    case PITCH_RMX_RHYTHM_ADD:
+//    case PITCH_RMX_RHYTHM_REVDELAY:
+//    case PITCH_RMX_RHYTHM_OFFSET:
+
+    default: break;
+  }
+}
+
+//////////////////////////////////////////////////////
+// Specific functions
 
 void p1Left(int channel, int pitch, int velocity) {
   //P1_LEFT 
