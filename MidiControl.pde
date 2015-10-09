@@ -295,12 +295,19 @@ void processMidiInfo_pioneerControllerNoteOn(int pitch, int velocity) {
       pionnerRMX_SceneFxOn = true;
     }
     pionnerRMX_LastSeenScenePitch = pitch;
-    
   }
-  
-  if (pionnerRMX_SceneFxOn || pionnerRMX_RhythmFxOn) {
+
+  //A Pong game is actually going on - the FX knobs hold different meanings here
+  if (animationnumber == 394) {
+    if (pitch == PITCH_RMX_RELEASE_FX) {
+      pong_gameRestart();
+    }
+  }
+  //We're not playing a game, do the regular stuff
+  else {  
     executeRMXSpecificAnimations();
   }
+
 
 }
 
@@ -310,39 +317,31 @@ void processMidiInfo_pioneerControllerNoteOn(int pitch, int velocity) {
 
 // Specific actions 
 void executeRMXSpecificAnimations() {
-  
-  
-  //A Pong game is actually going on - the FX knobs hold different meanings here
-  if (animationnumber == 394) {
-    
+  if (pionnerRMX_RhythmFxOn) {
+    switch (pionnerRMX_LastSeenRhythmPitch) {
+      case PITCH_RMX_RHYTHM_ROLL:           println("roll " + pionnerRMX_RhythmFxOn); break;
+      case PITCH_RMX_RHYTHM_TRANS:          break;
+      case PITCH_RMX_RHYTHM_ADD:            break;
+      case PITCH_RMX_RHYTHM_REVDELAY:       break;
+      case PITCH_RMX_RHYTHM_OFFSET:         break;
+      default: break;
+    }
   }
-  else {
-    if (pionnerRMX_RhythmFxOn) {
-      switch (pionnerRMX_LastSeenRhythmPitch) {
-        case PITCH_RMX_RHYTHM_ROLL:           println("roll " + pionnerRMX_RhythmFxOn); break;
-        case PITCH_RMX_RHYTHM_TRANS:          break;
-        case PITCH_RMX_RHYTHM_ADD:            break;
-        case PITCH_RMX_RHYTHM_REVDELAY:       break;
-        case PITCH_RMX_RHYTHM_OFFSET:         break;
-        default: break;
-      }
-    }
 
-    if (pionnerRMX_SceneFxOn) {
-      switch (pionnerRMX_LastSeenScenePitch) {
-        case PITCH_RMX_SCENE_HPF:             draw_AutoModeWhiteOut(pionnerRMX_CurrentSceneFxCCVal); break;
-        case PITCH_RMX_SCENE_LPF:             draw_AutoModeBlackOut(pionnerRMX_CurrentSceneFxCCVal); break;
-        case PITCH_RMX_SCENE_ZIP:             break;
-        case PITCH_RMX_SCENE_SPIRALDOWN:      break;
-        case PITCH_RMX_SCENE_REVERBDOWN:      break;
-        case PITCH_RMX_SCENE_MOD:             break;
-        case PITCH_RMX_SCENE_ECHO:            break;
-        case PITCH_RMX_SCENE_NOISE:           break;
-        case PITCH_RMX_SCENE_SPIRALUP:        break;
-        case PITCH_RMX_SCENE_REVERBUP:        break;
-        default: break;
-      }  
-    }
+  if (pionnerRMX_SceneFxOn) {
+    switch (pionnerRMX_LastSeenScenePitch) {
+      case PITCH_RMX_SCENE_HPF:             draw_AutoModeWhiteOut(pionnerRMX_CurrentSceneFxCCVal); break;
+      case PITCH_RMX_SCENE_LPF:             draw_AutoModeBlackOut(pionnerRMX_CurrentSceneFxCCVal); break;
+      case PITCH_RMX_SCENE_ZIP:             break;
+      case PITCH_RMX_SCENE_SPIRALDOWN:      break;
+      case PITCH_RMX_SCENE_REVERBDOWN:      break;
+      case PITCH_RMX_SCENE_MOD:             break;
+      case PITCH_RMX_SCENE_ECHO:            break;
+      case PITCH_RMX_SCENE_NOISE:           break;
+      case PITCH_RMX_SCENE_SPIRALUP:        break;
+      case PITCH_RMX_SCENE_REVERBUP:        break;
+      default: break;
+    }  
   }
 }
 
@@ -352,7 +351,7 @@ void p1KnobControl(int value) {
   command_p1_left = false;
   command_p1_right = false;
   if (gamestart) {
-    bottom.x = int((width - bottom.paddle_width) * (value/127));
+    bottom.x = int((width - bottom.paddle_width) * (value/127.0));
   }
 }
 
@@ -360,7 +359,7 @@ void p2KnobControl(int value) {
   command_p2_left = false;
   command_p2_right = false;
   if (gamestart) {
-    top.x = int((width - top.paddle_width) * (value/127));
+    top.x = int((width - top.paddle_width) * (value/127.0));
   }
 }
 

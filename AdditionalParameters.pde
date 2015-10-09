@@ -395,6 +395,7 @@ Ball pongball;
 Paddle top;
 PFont font;
 boolean gamestart = false;
+float pong_sideFactor = 0;
 
 //Rorschach parameters
 int nBalls;

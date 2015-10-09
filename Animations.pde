@@ -1883,6 +1883,31 @@ void keyReleased()
 }
 */
 
+void pong_gameRestart() {
+  pongball.posx=(random((width/2) - randomarea, (width/2) + randomarea));
+  pongball.posy=(random((height/2) - randomarea, (height/2) + randomarea));
+  int xdirection=int(random(2));
+  int ydirection=int(random(2));
+  if (xdirection==0)
+  {
+    pongball.right=true;
+  }
+  else //xidrection==1
+  {
+    pongball.right=false;
+  }
+  if (ydirection==0)
+  {
+    pongball.up=true;
+  }
+  else //ydirection==1
+  {
+    pongball.up=false;
+  }
+  gameover=false;
+  pong_sideFactor = 0;
+}
+
 void draw_pong()
 {
   if (gamestart == true) {
@@ -2020,7 +2045,7 @@ class Ball
   {
     if (up==true)
     {
-      posy=posy-0.5*(2-changespeed/4);
+      posy=posy-0.5*(2+changespeed/4);
       y=int(posy);
     }
     else  //up==false
@@ -2030,12 +2055,12 @@ class Ball
     }
     if (right==true)
     {
-      posx=posx+0.5*(1+changespeed/8);
+      posx=posx+0.5*(1+changespeed/8 + abs(pong_sideFactor));
       x=int(posx);
     }
     else  //right==false
     {
-      posx=posx-0.5*(1-changespeed/8);
+      posx=posx-0.5*(1+changespeed/8 + abs(pong_sideFactor));
       x=int(posx);
     }
   }
@@ -2049,15 +2074,26 @@ class Ball
     {
       right=false;
     }
-    if (get(int(x), int(y)-(ball_size/2))==color(255))
+    if (get(int(x), int(y)-int(1.4*(ball_size/2.0)))==color(255))
     {
+      //Has the ball hit the left or the right side of the paddle ?
+      pong_sideFactor = (2.0*(x - (top.x + top.paddle_width/2.0)))/(float)top.paddle_width;
+      if (pong_sideFactor > 0) {right = true;}
+                          else {right = false;}
       up=false;
+      changespeed=min(changespeed+0.7, 10);
+      println("top: " + pong_sideFactor); 
     }
-    if (get(int(x), int(y)+(ball_size/2))==color(255))
+    if (get(int(x), int(y)+int(1.4*(ball_size/2)))==color(255))
     {
+      pong_sideFactor = (2*(x - (bottom.x + bottom.paddle_width/2.0)))/(float)bottom.paddle_width;
+      if (pong_sideFactor > 0) {right = true;}
+                          else {right = false;}
       up=true;
-      changespeed+=1.0/16;
+      changespeed=min(changespeed+0.7, 10);
+      println("bottom: " + pong_sideFactor);
     }
+    
   }
   void show()
   {
