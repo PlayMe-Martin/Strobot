@@ -1934,8 +1934,8 @@ void draw_pong()
       background(0);
       fill(255, 0, 0);
       changespeed=0;
-      text(topscore, width/2*NUMBER_OF_PANELS, height/2+4);
-      text(bottomscore, (2*NUMBER_OF_PANELS-1)*width/2*NUMBER_OF_PANELS, height/2+4);
+      text(topscore, width/2 - PIXELS_X/NUMBER_OF_PANELS, height/2+4);
+      text(bottomscore, width/2 + PIXELS_X/NUMBER_OF_PANELS, height/2+4);
       
       for (int j=0; j<bottommatchcount;j++) {
         rect(width/NUMBER_OF_PANELS + 4, j*pong_rectspacing + pong_rectheight, pong_rectwidth, pong_rectheight);
