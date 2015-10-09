@@ -70,29 +70,40 @@ final int PITCH_CHANGE_OUTPUTMAPPING       = 127;
 
 //The RMX has a pretty specific MIDI implementation - only one knob to control a range of effects
 //When activating the effect, a specific note on 127 is sent, afterwards the activated effect is controlled with a single MIDI CC (the same for all effects)
-final int PITCH_RMX_SCENE_HPF = -1;
-final int PITCH_RMX_SCENE_LPF = -1;
-final int PITCH_RMX_SCENE_ZIP = -1;
-final int PITCH_RMX_SCENE_SPIRALDOWN = -1;
-final int PITCH_RMX_SCENE_REVERBDOWN = -1;
-final int PITCH_RMX_SCENE_MOD = -1;
-final int PITCH_RMX_SCENE_ECHO = -1;
-final int PITCH_RMX_SCENE_NOISE = -1;
-final int PITCH_RMX_SCENE_SPIRALUP = -1;
-final int PITCH_RMX_SCENE_REVERBUP = -1;
-final int PITCH_RMX_RHYTHM_ROLL = -1;
-final int PITCH_RMX_RHYTHM_TRANS = -1;
-final int PITCH_RMX_RHYTHM_ADD = -1;
-final int PITCH_RMX_RHYTHM_REVDELAY = -1;
-final int PITCH_RMX_RHYTHM_OFFSET = -1;
+final int CC_RMX_RHYTHM_1 = 20;
+final int CC_RMX_RHYTHM_2 = 21;
+final int CC_RMX_SCENE_1 = 22;
+final int CC_RMX_SCENE_2 = 23;
+final int PITCH_RMX_SCENE_HPF = 26;
+final int PITCH_RMX_SCENE_LPF = 27;
+final int PITCH_RMX_SCENE_ZIP = 28;
+final int PITCH_RMX_SCENE_SPIRALDOWN = 29;
+final int PITCH_RMX_SCENE_REVERBDOWN = 30;
+final int PITCH_RMX_SCENE_MOD = 21;
+final int PITCH_RMX_SCENE_ECHO = 22;
+final int PITCH_RMX_SCENE_NOISE = 23;
+final int PITCH_RMX_SCENE_SPIRALUP = 24;
+final int PITCH_RMX_SCENE_REVERBUP = 25;
+final int PITCH_RMX_RHYTHM_ROLL = 6;
+final int PITCH_RMX_RHYTHM_TRANS = 7;
+final int PITCH_RMX_RHYTHM_ADD = 8;
+final int PITCH_RMX_RHYTHM_REVDELAY = 9;
+final int PITCH_RMX_RHYTHM_OFFSET = 10;
+final int PITCH_RMX_RHYTHM_KICK = 11;
+final int PITCH_RMX_RHYTHM_SNARE = 12;
+final int PITCH_RMX_RHYTHM_CLAP = 13;
+final int PITCH_RMX_RHYTHM_HIHAT = 14;
+final int PITCH_RMX_RHYTHM_CYMBAL = 15;
+final int PITCH_RMX_RELEASE_FX  = 37;
 final int[] PIONEER_RMX_SCENEFX_temp = {PITCH_RMX_SCENE_HPF, PITCH_RMX_SCENE_LPF, PITCH_RMX_SCENE_ZIP, PITCH_RMX_SCENE_SPIRALDOWN, PITCH_RMX_SCENE_REVERBDOWN, PITCH_RMX_SCENE_MOD, PITCH_RMX_SCENE_ECHO, PITCH_RMX_SCENE_NOISE, PITCH_RMX_SCENE_SPIRALUP, PITCH_RMX_SCENE_REVERBUP};
-final int[] PIONEER_RMX_RHYTHMFX_temp = {PITCH_RMX_RHYTHM_ROLL, PITCH_RMX_RHYTHM_TRANS, PITCH_RMX_RHYTHM_ADD, PITCH_RMX_RHYTHM_REVDELAY, PITCH_RMX_RHYTHM_OFFSET};
+final int[] PIONEER_RMX_RHYTHMFX_temp = {PITCH_RMX_RHYTHM_ROLL, PITCH_RMX_RHYTHM_TRANS, PITCH_RMX_RHYTHM_ADD, PITCH_RMX_RHYTHM_REVDELAY, PITCH_RMX_RHYTHM_OFFSET, PITCH_RMX_RHYTHM_KICK, PITCH_RMX_RHYTHM_SNARE, PITCH_RMX_RHYTHM_CLAP, PITCH_RMX_RHYTHM_HIHAT, PITCH_RMX_RHYTHM_CYMBAL};
 IntList PIONEER_RMX_SCENEFX = new IntList();    //IntList are easier to use for some specific functions they have
 IntList PIONEER_RMX_RHYTHMFX = new IntList();
 
-int pionnerRMX_LastSeenPitch = -1;              // variable used to store the last MIDI message sent by the RMX
 boolean pionnerRMX_SceneFxOn = false;           // is an effect currently applied at the moment ?
 boolean pionnerRMX_RhythmFxOn = false;          // is an effect currently applied at the moment ?
+int pionnerRMX_LastSeenScenePitch = -1;         // variable used to store the last MIDI message sent by the RMX
+int pionnerRMX_LastSeenRhythmPitch = -1;        // variable used to store the last MIDI message sent by the RMX
 int pionnerRMX_CurrentSceneFxCCVal = -1;        // value of the current SceneFX knob
 int pionnerRMX_CurrentRhythmFxCCVal = -1;       // value of the current RhythmFX knob
 
@@ -154,7 +165,7 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
     }
     
     else if (bus_name == myPioneerControllerBus.getBusName()) {
-      processMidiInfo_pioneerController(pitch, velocity);
+      processMidiInfo_pioneerControllerNoteOn(pitch, velocity);
     }
     
     else if (channel == CHANNEL_MANUALMODE_1 || channel == CHANNEL_MANUALMODE_2 || channel == CHANNEL_MANUALMODE_3 || channel == CHANNEL_MANUALMODE_4) {
@@ -264,31 +275,94 @@ void processMidiInfo_standardControllers(int channel, int pitch, int velocity) {
     else if (pitch == PITCH_PAD_STROBE_64TH)     {activatePadStrobe64th(channel, pitch, velocity);}
 }
 
-void processMidiInfo_pioneerController(int pitch, int velocity) {
+void processMidiInfo_pioneerControllerNoteOn(int pitch, int velocity) {
   //In the case of a Pioneer RMX-like controller, the pitches are defined as final values (impossible to remap the controller)
-  switch (pitch) {
-//    case PITCH_RMX_SCENE_HPF:
-//    case PITCH_RMX_SCENE_LPF:
-//    case PITCH_RMX_SCENE_ZIP:
-//    case PITCH_RMX_SCENE_SPIRALDOWN:
-//    case PITCH_RMX_SCENE_REVERBDOWN:
-//    case PITCH_RMX_SCENE_MOD:
-//    case PITCH_RMX_SCENE_ECHO:
-//    case PITCH_RMX_SCENE_NOISE:
-//    case PITCH_RMX_SCENE_SPIRALUP:
-//    case PITCH_RMX_SCENE_REVERBUP:
-//    case PITCH_RMX_RHYTHM_ROLL:
-//    case PITCH_RMX_RHYTHM_TRANS:
-//    case PITCH_RMX_RHYTHM_ADD:
-//    case PITCH_RMX_RHYTHM_REVDELAY:
-//    case PITCH_RMX_RHYTHM_OFFSET:
+  if (PIONEER_RMX_RHYTHMFX.hasValue(pitch)) {
+    if (pitch == pionnerRMX_LastSeenRhythmPitch) {
+      pionnerRMX_RhythmFxOn = !pionnerRMX_RhythmFxOn;
+    }
+    else {
+      pionnerRMX_RhythmFxOn = true;
+    }
+    pionnerRMX_LastSeenRhythmPitch = pitch;
 
-    default: break;
   }
+  else if (PIONEER_RMX_SCENEFX.hasValue(pitch)) {
+    if (pitch == pionnerRMX_LastSeenScenePitch) {
+      pionnerRMX_SceneFxOn = !pionnerRMX_SceneFxOn;
+    }
+    else {
+      pionnerRMX_SceneFxOn = true;
+    }
+    pionnerRMX_LastSeenScenePitch = pitch;
+    
+  }
+  
+  if (pionnerRMX_SceneFxOn || pionnerRMX_RhythmFxOn) {
+    executeRMXSpecificAnimations();
+  }
+
 }
 
 //////////////////////////////////////////////////////
 // Specific functions
+
+
+// Specific actions 
+void executeRMXSpecificAnimations() {
+  
+  
+  //A Pong game is actually going on - the FX knobs hold different meanings here
+  if (animationnumber == 394) {
+    
+  }
+  else {
+    if (pionnerRMX_RhythmFxOn) {
+      switch (pionnerRMX_LastSeenRhythmPitch) {
+        case PITCH_RMX_RHYTHM_ROLL:           println("roll " + pionnerRMX_RhythmFxOn); break;
+        case PITCH_RMX_RHYTHM_TRANS:          break;
+        case PITCH_RMX_RHYTHM_ADD:            break;
+        case PITCH_RMX_RHYTHM_REVDELAY:       break;
+        case PITCH_RMX_RHYTHM_OFFSET:         break;
+        default: break;
+      }
+    }
+
+    if (pionnerRMX_SceneFxOn) {
+      switch (pionnerRMX_LastSeenScenePitch) {
+        case PITCH_RMX_SCENE_HPF:             draw_AutoModeWhiteOut(pionnerRMX_CurrentSceneFxCCVal); break;
+        case PITCH_RMX_SCENE_LPF:             draw_AutoModeBlackOut(pionnerRMX_CurrentSceneFxCCVal); break;
+        case PITCH_RMX_SCENE_ZIP:             break;
+        case PITCH_RMX_SCENE_SPIRALDOWN:      break;
+        case PITCH_RMX_SCENE_REVERBDOWN:      break;
+        case PITCH_RMX_SCENE_MOD:             break;
+        case PITCH_RMX_SCENE_ECHO:            break;
+        case PITCH_RMX_SCENE_NOISE:           break;
+        case PITCH_RMX_SCENE_SPIRALUP:        break;
+        case PITCH_RMX_SCENE_REVERBUP:        break;
+        default: break;
+      }  
+    }
+  }
+}
+
+
+// Actions related to the integrated games
+void p1KnobControl(int value) {
+  command_p1_left = false;
+  command_p1_right = false;
+  if (gamestart) {
+    bottom.x = int((width - bottom.paddle_width) * (value/127));
+  }
+}
+
+void p2KnobControl(int value) {
+  command_p2_left = false;
+  command_p2_right = false;
+  if (gamestart) {
+    top.x = int((width - top.paddle_width) * (value/127));
+  }
+}
 
 void p1Left(int channel, int pitch, int velocity) {
   //P1_LEFT 
@@ -1099,20 +1173,50 @@ long lastMillisecond_cc_in = 0;
 
 // Receive a controllerChange  
 void controllerChange(int channel, int number, int value, long timestamp, String bus_name) {
-  if (filterTimeElapsed(lastMillisecond_cc_in) || value == 0 || value == 127) {
+  
+  //Special case: a Pong game is currently going on, ignore the time filter, we need to be fast here
+  //Also, do not use any effects for this animation
+  if (animationnumber == 394) {
+    //Player 1 is using the rhythm knob, Player 2 the scene knob
+    if (number == CC_RMX_RHYTHM_1 || number == CC_RMX_RHYTHM_2) {
+        p1KnobControl(value);
+      }
+      else if (number == CC_RMX_SCENE_1 || number == CC_RMX_SCENE_2) {
+        p2KnobControl(value);
+      }
+  } 
+  
+  else if (filterTimeElapsed(lastMillisecond_cc_in) || value == 0 || value == 127) {
     
     lastMillisecond_cc_in = System.currentTimeMillis();
     
+    if (bus_name == myPioneerControllerBus.getBusName()) {
+      if (number == CC_RMX_RHYTHM_1 || number == CC_RMX_RHYTHM_2) {
+        pionnerRMX_CurrentRhythmFxCCVal = value;
+      }
+      else if (number == CC_RMX_SCENE_1 || number == CC_RMX_SCENE_2) {
+        pionnerRMX_CurrentSceneFxCCVal = value;
+      }
+      
+      if (pionnerRMX_SceneFxOn || pionnerRMX_RhythmFxOn) {
+        executeRMXSpecificAnimations();
+      }
+    }
+    
     if (bus_name == myControllerBus.getBusName() || bus_name == myKeyboardBus.getBusName() || bus_name == myMainBus.getBusName()) {    //Filter the panic all-notes-off messages sent by non-related devices
-      if (number == PITCH_KNOB_BRIGHTNESS)         {changeBrightness(channel, number, value);}          //Modulation wheel : change global brightness
-      else if (number == PITCH_KNOB_BLACKOUT)      {setBlackOutAutoMode(channel, number, value);}       //Low-pass filter knob : blackout
-      else if (number == PITCH_KNOB_WHITEOUT)      {setWhiteOutAutoMode(channel, number, value);}       //Hi-pass filter knob : whiteout
-      else if (number == PITCH_KNOB_SHREDDER)      {setShredderAutoMode(channel, number, value);}       //Repeat knob : depending on the value, set splitter or shredder on
-      else if (number == PITCH_KNOB_COLORCHANGE)   {setColorChangeAutoMode(channel, number, value);}    //Color change : when the phaser is set, tint the screen with a cycling color
-      else if (number == PITCH_KNOB_WHITEJAMAMONO) {setWhiteJamaMonoAutoMode(channel, number, value);}  //WhiteJamaMono : when the pitch shift is set, a white rectangle enters the screen
-      else if (number == PITCH_KNOB_WHITENOISE)    {setWhiteNoiseAutoMode(channel, number, value);}     //White noise : pixelize the output accordingly to the input value 
+      processCCInfo_standardControllers(channel, number, value);
     }
   }
+}
+
+void processCCInfo_standardControllers(int channel, int number, int value) {
+  if (number == PITCH_KNOB_BRIGHTNESS)         {changeBrightness(channel, number, value);}          //Modulation wheel : change global brightness
+  else if (number == PITCH_KNOB_BLACKOUT)      {setBlackOutAutoMode(channel, number, value);}       //Low-pass filter knob : blackout
+  else if (number == PITCH_KNOB_WHITEOUT)      {setWhiteOutAutoMode(channel, number, value);}       //Hi-pass filter knob : whiteout
+  else if (number == PITCH_KNOB_SHREDDER)      {setShredderAutoMode(channel, number, value);}       //Repeat knob : depending on the value, set splitter or shredder on
+  else if (number == PITCH_KNOB_COLORCHANGE)   {setColorChangeAutoMode(channel, number, value);}    //Color change : when the phaser is set, tint the screen with a cycling color
+  else if (number == PITCH_KNOB_WHITEJAMAMONO) {setWhiteJamaMonoAutoMode(channel, number, value);}  //WhiteJamaMono : when the pitch shift is set, a white rectangle enters the screen
+  else if (number == PITCH_KNOB_WHITENOISE)    {setWhiteNoiseAutoMode(channel, number, value);}     //White noise : pixelize the output accordingly to the input value 
 }
 
 void changeBrightness(int channel, int number, int value) {

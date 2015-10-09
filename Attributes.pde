@@ -36,7 +36,7 @@ ArrayList<Attribute> registerAttribute(ArrayList<Attribute> attributesArray, int
     printattributes += attributeList[i] + ", ";
   }
   
-  outputLog.println("Registering attributes for animation #" + animationNbr + " -- " + printattributes);
+  //outputLog.println("Registering attributes for animation #" + animationNbr + " -- " + printattributes);
   attributesArray.add(new Attribute(animationNbr, attributeName, attributeList));
   
   return attributesArray;
