@@ -5,6 +5,8 @@
 
 
 final int SINGLEFLASH_INITVAL = 6;
+final float SIDESTROBE_MAX_SPEED = 0.8;    //Max speed ratio for the side strobes (1 -> full speed => 255 DMX speed)
+final float BACKSTROBE_MAX_SPEED = 0.8;
 
 // Play the DMX animations
 void playDMXAnimation() {
@@ -220,13 +222,13 @@ void dmxAnim_backStrobe_stop() {
 // Switch all stroboscopes on
 void dmxAnim_fullStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    stroboscope.startDMX(speed,intensity);
+    stroboscope.startDMX(int(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    stroboscope.startDMX(speed,intensity);
+    stroboscope.startDMX(int(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    stroboscope.startDMX(speed,intensity);
+    stroboscope.startDMX(int(speed*BACKSTROBE_MAX_SPEED),intensity);
   }
 }
 
@@ -253,7 +255,7 @@ void dmxAnim_fullStrobeVeryFast() {
 // Switch only the left stroboscopes on
 void dmxAnim_leftStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    stroboscope.startDMX(speed,intensity);
+    stroboscope.startDMX(int(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
     stroboscope.stopDMX();
@@ -266,7 +268,7 @@ void dmxAnim_leftStrobe(int speed, int intensity) {
 // Switch the left stroboscopes on, but do not touch the other strobes
 void dmxAnim_leftStrobe_noStop(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    stroboscope.startDMX(speed,intensity);
+    stroboscope.startDMX(int(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
 }
 
@@ -296,7 +298,7 @@ void dmxAnim_rightStrobe(int speed, int intensity) {
     stroboscope.stopDMX();
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    stroboscope.startDMX(speed,intensity);
+    stroboscope.startDMX(int(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
     stroboscope.stopDMX();
@@ -306,7 +308,7 @@ void dmxAnim_rightStrobe(int speed, int intensity) {
 // Switch the right stroboscopes on, but do not touch the other strobes
 void dmxAnim_rightStrobe_noStop(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    stroboscope.startDMX(speed,intensity);
+    stroboscope.startDMX(int(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
 }
 
@@ -339,14 +341,14 @@ void dmxAnim_backStrobe(int speed, int intensity) {
     stroboscope.stopDMX();
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    stroboscope.startDMX(speed,intensity);
+    stroboscope.startDMX(int(speed*BACKSTROBE_MAX_SPEED),intensity);
   }
 }
 
 // Switch the back stroboscopes on, but do not touch the other strobes
 void dmxAnim_backStrobe_noStop(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    stroboscope.startDMX(speed,intensity);
+    stroboscope.startDMX(int(speed*BACKSTROBE_MAX_SPEED),intensity);
   }
 }
 

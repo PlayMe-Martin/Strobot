@@ -2082,7 +2082,6 @@ class Ball
                           else {right = false;}
       up=false;
       changespeed=min(changespeed+0.7, 10);
-      println("top: " + pong_sideFactor); 
     }
     if (get(int(x), int(y)+int(1.4*(ball_size/2)))==color(255))
     {
@@ -2091,7 +2090,6 @@ class Ball
                           else {right = false;}
       up=true;
       changespeed=min(changespeed+0.7, 10);
-      println("bottom: " + pong_sideFactor);
     }
     
   }
