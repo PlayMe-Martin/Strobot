@@ -388,7 +388,7 @@ void draw_onlyLeftEffect() {
   pushStyle();
   noStroke();
   fill(0);
-  rect(0,0,(NUMBER_OF_PANELS/2)*width/NUMBER_OF_PANELS,height);
+  rect(0,0,(NUMBER_OF_PANELS/2 + 1)*width/NUMBER_OF_PANELS,height);
   popStyle();
 }
 
@@ -396,7 +396,7 @@ void draw_onlyRightEffect() {
   pushStyle();
   noStroke();
   fill(0);
-  rect(width - (NUMBER_OF_PANELS/2)*width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS/2)*width/NUMBER_OF_PANELS,height);
+  rect(width - (NUMBER_OF_PANELS/2 + 1)*width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS/2 + 1)*width/NUMBER_OF_PANELS,height);
   popStyle();
 }
 

@@ -553,6 +553,8 @@ void specific_draw() {
       case 431: draw_singlesquarespiralwhite();break;              //SingleSquareSpiralWhite
       case 432: draw_dualsquarespiralwhite();break;                //DualSquareSpiralWhite
       case 433: draw_tvpoweroff();break;                           //TV Power Off
+      case 434: draw_whitespread_start();break;                    //White Spread Start
+      case 435: draw_whitespread_end();break;                      //White Spread End
       case 509: draw_dirtyAudioProcessing();break;                 //Audio Monitoring
       case 510: draw_displayFFT_bass();break;                      //DisplayFFT - Bass
       

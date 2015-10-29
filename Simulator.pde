@@ -23,12 +23,12 @@ float SIMU_RACK_SLOW_SMOOTHSINE_FACTOR     = 0.1;
 float SIMU_RACK_FAST_SMOOTHSINE_FACTOR     = 0.5;
 float SIMU_RACK_SHORT_WAVE_LENGTH          = 25;
 float SIMU_RACK_LONG_WAVE_LENGTH           = 100;
-int   SIMU_RACK_FAST_WAVE_SPEED            = 8;
+int   SIMU_RACK_FAST_WAVE_SPEED            = 16;
 
-int   SIMU_RACK_FAST_BUILDUP_SPEED         = 10;
-int   SIMU_RACK_MEDIUM_BUILDUP_SPEED       = 5;
-int   SIMU_RACK_SLOW_BUILDUP_SPEED         = 2;
-int   SIMU_RACK_VERYSLOW_BUILDUP_SPEED     = 1;
+float SIMU_RACK_FAST_BUILDUP_SPEED         = 6;
+float SIMU_RACK_MEDIUM_BUILDUP_SPEED       = 3;
+float SIMU_RACK_SLOW_BUILDUP_SPEED         = 1.5;
+float SIMU_RACK_VERYSLOW_BUILDUP_SPEED     = 0.3;
 float SIMU_RACK_SLOW_SMOOTHNOISE_SPEED     = 0.1;
 float SIMU_RACK_FAST_SMOOTHNOISE_SPEED     = 0.5;
 
@@ -877,7 +877,7 @@ class RackLight {
   void simuDraw_rackLight_verySlowBuildup(color col) {
     simuDraw_rackLight_Buildup(col, SIMU_RACK_VERYSLOW_BUILDUP_SPEED);
   }
-  void simuDraw_rackLight_Buildup(color col, int speed) {
+  void simuDraw_rackLight_Buildup(color col, float speed) {
     for (int i=0; i<this.sidebarUp.width*this.sidebarUp.height; i++) {
       this.sidebarUp.pixels[i] = 0;
     }
@@ -891,28 +891,28 @@ class RackLight {
       this.sidebarLeft.pixels[i] = 0;
     }
 
-    int maxBuildupProgress = min(this.animProgress*speed,this.sidebarUp.width - 1); 
+    int maxBuildupProgress = int(min(this.animProgress*speed,this.sidebarUp.width - 1)); 
     for (int i=0; i<maxBuildupProgress; i++) {
       for (int j=0; j<this.sidebarUp.height; j++) {
         this.sidebarUp.pixels[(i + j*this.sidebarUp.width)] = col;
       }
     }
 
-    maxBuildupProgress = min(this.animProgress*speed - this.sidebarUp.width,this.sidebarRight.height - 1);
+    maxBuildupProgress = int(min(this.animProgress*speed - this.sidebarUp.width,this.sidebarRight.height - 1));
     for (int i=0; i<maxBuildupProgress; i++) {
       for (int j=0; j<this.sidebarRight.width; j++) {
         this.sidebarRight.pixels[(i*this.sidebarRight.width + j)] = col;
       }
     }
     
-    maxBuildupProgress = min(this.animProgress*speed - this.sidebarUp.width - this.sidebarRight.height,this.sidebarDown.width - 1); 
+    maxBuildupProgress = int(min(this.animProgress*speed - this.sidebarUp.width - this.sidebarRight.height,this.sidebarDown.width - 1)); 
     for (int i=0; i<maxBuildupProgress; i++) {
       for (int j=0; j<this.sidebarDown.height; j++) {
         this.sidebarDown.pixels[this.sidebarDown.pixels.length - 1 - (i + j*this.sidebarDown.width)] = col;
       }
     }
     
-    maxBuildupProgress = min(this.animProgress*speed - this.sidebarUp.width - this.sidebarRight.height - this.sidebarDown.width,this.sidebarRight.height - 1); 
+    maxBuildupProgress = int(min(this.animProgress*speed - this.sidebarUp.width - this.sidebarRight.height - this.sidebarDown.width,this.sidebarRight.height - 1)); 
     for (int i=0; i<maxBuildupProgress; i++) {
       for (int j=0; j<this.sidebarLeft.width; j++) {
         this.sidebarLeft.pixels[this.sidebarLeft.pixels.length - 1 - (i*this.sidebarLeft.width + j)] = col;
@@ -1364,12 +1364,12 @@ class LEDTube {
   void simuDraw_LEDTube_verySlowBuildup(color col) {
     simuDraw_LEDTube_Buildup(col, SIMU_RACK_VERYSLOW_BUILDUP_SPEED);
   }
-  void simuDraw_LEDTube_Buildup(color col, int speed) {
+  void simuDraw_LEDTube_Buildup(color col, float speed) {
     for (int i=0; i<this.tubebarUp.width*this.tubebarUp.height; i++) {
       this.tubebarUp.pixels[i] = 0;
     }
         
-    int maxBuildupProgress = min(this.animProgress*speed,this.tubebarUp.height - 1); 
+    int maxBuildupProgress = int(min(this.animProgress*speed,this.tubebarUp.height - 1)); 
     for (int i=0; i<maxBuildupProgress; i++) {
       for (int j=0; j<this.tubebarUp.width; j++) {
         this.tubebarUp.pixels[this.tubebarUp.pixels.length - 1 - (i*this.tubebarUp.width + j)] = col;

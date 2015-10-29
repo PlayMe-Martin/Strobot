@@ -528,6 +528,13 @@ void customDeviceAnimation(int customDevAnimationNumber) {
     case 307: customDev_LEDTubeRandomSlowRedStroboscope();break;
     case 308: customDev_LEDTubeRandomSlowBlueStroboscope();break;
     
+    case 309: customDev_LEDTubeRandomSlowWhiteFlash();break;
+    case 310: customDev_LEDTubeRandomSlowRedFlash();break;
+    case 311: customDev_LEDTubeRandomSlowBlueFlash();break;
+    case 312: customDev_LEDTubeRandomFastWhiteFlash();break;
+    case 313: customDev_LEDTubeRandomFastRedFlash();break;
+    case 314: customDev_LEDTubeRandomFastBlueFlash();break;
+    
     default: break;                                 //Don't do anything
   }
   
@@ -3358,4 +3365,34 @@ void customDev_LEDTubeRandomSlowBlueStroboscope() {
 }
 
 
+//------------------------//
 
+void customDev_LEDTubeRandomFlash(int mainAnim, int fallbackAnim) {
+  int randomTube = getRandomTube();
+  if (CustomDeviceList_LEDTubes.get(randomTube).executionCount % 2 == 0) { CustomDeviceList_LEDTubes.get(randomTube).setDeviceAnimation(mainAnim);   }
+                                                                    else { CustomDeviceList_LEDTubes.get(randomTube).setDeviceAnimation(fallbackAnim); }    
+}
+
+void customDev_LEDTubeRandomSlowWhiteFlash() {
+  customDev_LEDTubeRandomFlash(CUSTOMDEV_ANIM_SLOWWHITEFLASH, CUSTOMDEV_ANIM_SLOWWHITEFLASH_2);
+}
+
+void customDev_LEDTubeRandomSlowRedFlash() {
+  customDev_LEDTubeRandomFlash(CUSTOMDEV_ANIM_SLOWREDFLASH, CUSTOMDEV_ANIM_SLOWREDFLASH_2);  
+}
+
+void customDev_LEDTubeRandomSlowBlueFlash() {
+  customDev_LEDTubeRandomFlash(CUSTOMDEV_ANIM_SLOWBLUEFLASH, CUSTOMDEV_ANIM_SLOWBLUEFLASH_2);  
+}
+
+void customDev_LEDTubeRandomFastWhiteFlash() {
+  customDev_LEDTubeRandomFlash(CUSTOMDEV_ANIM_FASTWHITEFLASH, CUSTOMDEV_ANIM_FASTWHITEFLASH_2);
+}
+
+void customDev_LEDTubeRandomFastRedFlash() {
+  customDev_LEDTubeRandomFlash(CUSTOMDEV_ANIM_FASTREDFLASH, CUSTOMDEV_ANIM_FASTREDFLASH_2);  
+}
+
+void customDev_LEDTubeRandomFastBlueFlash() {
+  customDev_LEDTubeRandomFlash(CUSTOMDEV_ANIM_FASTBLUEFLASH, CUSTOMDEV_ANIM_FASTBLUEFLASH_2);  
+}
