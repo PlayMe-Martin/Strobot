@@ -2719,7 +2719,7 @@ void specificActions() {
       case 254:    //StroboLine
 
         rectMode(CORNER);
-        frameRate(50);
+        frameRate(60);
         colorMode(RGB);
         fill(255);
         stroke(255);
@@ -4044,6 +4044,7 @@ void specificActions() {
 
       case 366:    //SlicedWave - White
 
+        frameRate(60);
         noFill();
         strokeCap(SQUARE); 
         randomSeed(36);
@@ -4061,7 +4062,8 @@ void specificActions() {
         break;
       
       case 367:    //SlicedWave - Red
-
+        
+        frameRate(60);
         noFill();
         strokeCap(SQUARE); 
         randomSeed(36);
@@ -4648,6 +4650,16 @@ void specificActions() {
         background(0);
         noStroke();
         fill(255);
+        break;
+        
+      case 434:    //White Spread - Start
+        frameRate(90);
+        whitespread_progress = 0;
+        break;
+        
+      case 435:    //White Spread - End
+        frameRate(90);
+        whitespread_progress = 0;
         break;
         
       case 509:    //Audio Monitoring

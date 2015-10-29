@@ -17407,3 +17407,26 @@ void draw_tvpoweroff() {
   tvpoweroff_progress += tvpoweroff_speed;
   filter(BLUR,6);
 }
+
+
+//////////////////////////////////////////
+// Specific actions for the WhiteSpread animation
+//////////////////////////////////////////
+
+void draw_whitespread_start() {
+  background(0);
+  noStroke();
+  fill(255);
+  rect(width/2, 0, whitespread_progress, height);
+  rect(width/2 - whitespread_progress, 0, whitespread_progress, height);
+  whitespread_progress += whitespread_speed;
+}
+
+void draw_whitespread_end() {
+  background(0);
+  noStroke();
+  fill(255);
+  rect(0, 0, width/2 - whitespread_progress, height);
+  rect(width/2 + whitespread_progress, 0, width/2 - whitespread_progress, height);
+  whitespread_progress += whitespread_speed;
+}

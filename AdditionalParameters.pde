@@ -921,8 +921,8 @@ float perfect_circlebeatprotosize;
 boolean perfect_circleredprotocolor = true;
 
 //HyperSpeed parameters
-int hyperspeed_numberofstars = 32 + 9*(NUMBER_OF_PANELS - 3);
-int hyperspeed_blur = 30;
+int hyperspeed_numberofstars = 64 + 15*(NUMBER_OF_PANELS - 3);
+int hyperspeed_blur = 25;
 int hyperspeed_maxspeed = 6;
 ArrayList<NagareBoshi> hyperspeed_nagarelist;
 boolean hyperspeed_init = false;
@@ -1458,3 +1458,7 @@ int simplespiral_num = 20;
 // TV Power off
 int tvpoweroff_progress = 0;
 int tvpoweroff_speed = 3;
+
+//White Spread
+int whitespread_progress = 0;
+int whitespread_speed = 4;
