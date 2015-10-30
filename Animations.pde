@@ -17430,3 +17430,81 @@ void draw_whitespread_end() {
   rect(width/2 + whitespread_progress, 0, width/2 - whitespread_progress, height);
   whitespread_progress += whitespread_speed;
 }
+
+//////////////////////////////////////////
+// Specific actions for the ScannerLine animations
+//////////////////////////////////////////
+
+void draw_scannerLine1_fastWhite() {
+  draw_scannerLine1(scannerLine_FastSpeed, 255, 255, 255);
+}
+
+void draw_scannerLine2_fastWhite() {
+  draw_scannerLine2(scannerLine_FastSpeed, 255, 255, 255);
+}
+
+void draw_scannerLine1_fastRed() {
+  draw_scannerLine1(scannerLine_FastSpeed, 255, 0, 0);
+}
+
+void draw_scannerLine2_fastRed() {
+  draw_scannerLine2(scannerLine_FastSpeed, 255, 0, 0);
+}
+
+void draw_scannerLine1_slowWhite() {
+  draw_scannerLine1(scannerLine_SlowSpeed, 255, 255, 255);
+}
+
+void draw_scannerLine2_slowWhite() {
+  draw_scannerLine2(scannerLine_SlowSpeed, 255, 255, 255);
+}
+
+void draw_scannerLine1_slowRed() {
+  draw_scannerLine1(scannerLine_SlowSpeed, 255, 0, 0);
+}
+
+void draw_scannerLine2_slowRed() {
+  draw_scannerLine2(scannerLine_SlowSpeed, 255, 0, 0);
+}
+
+void draw_scannerLine1(float speed, int r, int g, int b) {
+  background(0,40);
+  noFill();
+  pushMatrix();
+  translate(width/2,0);
+  
+  strokeWeight(8);
+  stroke(r,g,b,255);
+  line(scannerLine_progress - width/2,0, scannerLine_progress - width/2,height);
+  
+  //Draw the trail
+  for (float factor = 1.1; factor < 1.6; factor += 0.08) {
+    strokeWeight(6*factor);
+    stroke(r,g,b,255 - int(factor*30));  
+    line(int(factor*(scannerLine_progress - width/2)),0, int(factor*(scannerLine_progress - width/2)),height);
+  }
+
+  popMatrix();
+  scannerLine_progress += speed + (width/2 - scannerLine_progress)*(width/2 - scannerLine_progress)*scannerLine_SpeedVar;
+}
+
+void draw_scannerLine2(float speed, int r, int g, int b) {
+  background(0,40);
+  noFill();
+  pushMatrix();
+  translate(width/2,0);
+  
+  strokeWeight(8);
+  stroke(r,g,b,255);
+  line(width/2 - scannerLine_progress,0, width/2 - scannerLine_progress,height);
+  
+  //Draw the trail
+  for (float factor = 1.1; factor < 1.6; factor += 0.08) {
+    strokeWeight(6*factor);
+    stroke(r,g,b,255 - int(factor*30));  
+    line(int(factor*(width/2 - scannerLine_progress)),0, int(factor*(width/2 - scannerLine_progress)),height);
+  }
+
+  popMatrix();
+  scannerLine_progress += speed + (width/2 - scannerLine_progress)*(width/2 - scannerLine_progress)*scannerLine_SpeedVar;  
+}

@@ -553,8 +553,16 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 431, "Single Square Spiral - White"        , new String[] {"Geometric", "Spiral", "Rotating", "White"}                                           );
   animationAttributes = registerAttribute(animationAttributes, 432, "Dual Square Spiral - White"          , new String[] {"Geometric", "Spiral", "Rotating", "White"}                                           );
   animationAttributes = registerAttribute(animationAttributes, 433, "TV Power Off"                        , new String[] {"Simple", "Fade In/Out", "White"}                                                     );
-  animationAttributes = registerAttribute(animationAttributes, 434, "White Spread - Start"                , new String[] {"Simple", "Fade In/Out", "White"}                                                     );
-  animationAttributes = registerAttribute(animationAttributes, 435, "White Spread - End"                  , new String[] {"Simple", "Fade In/Out", "White"}                                                     );  
+  animationAttributes = registerAttribute(animationAttributes, 434, "White Spread - Start"                , new String[] {"Simple", "Fade In/Out", "White", "Fast"}                                             );
+  animationAttributes = registerAttribute(animationAttributes, 435, "White Spread - End"                  , new String[] {"Simple", "Fade In/Out", "White", "Fast"}                                             );
+  animationAttributes = registerAttribute(animationAttributes, 436, "ScannerLine 1 - Fast White"          , new String[] {"Simple", "Fast", "White"}                                                            );
+  animationAttributes = registerAttribute(animationAttributes, 437, "ScannerLine 2 - Fast White"          , new String[] {"Simple", "Fast", "White"}                                                            );
+  animationAttributes = registerAttribute(animationAttributes, 438, "ScannerLine 1 - Fast Red"            , new String[] {"Simple", "Fast", "Red"}                                                              );
+  animationAttributes = registerAttribute(animationAttributes, 439, "ScannerLine 2 - Fast Red"            , new String[] {"Simple", "Fast", "Red"}                                                              );  
+  animationAttributes = registerAttribute(animationAttributes, 440, "ScannerLine 1 - Slow White"          , new String[] {"Simple", "Slow", "White"}                                                            );
+  animationAttributes = registerAttribute(animationAttributes, 441, "ScannerLine 2 - Slow White"          , new String[] {"Simple", "Slow", "White"}                                                            );
+  animationAttributes = registerAttribute(animationAttributes, 442, "ScannerLine 1 - Slow Red"            , new String[] {"Simple", "Slow", "Red"}                                                              );
+  animationAttributes = registerAttribute(animationAttributes, 443, "ScannerLine 2 - Slow Red"            , new String[] {"Simple", "Slow", "Red"}                                                              );
   animationAttributes = registerAttribute(animationAttributes, 509, "Audio Monitoring"                    , new String[] {"Atmospheric", "Red", "Circles", "Rhythmic", "AudioInput"}                            );
   animationAttributes = registerAttribute(animationAttributes, 510, "Display FFT - Bass"                  , new String[] {"Geometric", "Simple", "AudioInput"}                                                  );  
 }
@@ -875,6 +883,34 @@ void setCustomDevicesActionsAttributes() {
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 312, "LED Tubes   - Random Fast White Flash"              , new String[] { "LED Tubes",   "Random", "White", "Fast", "Flash"        } );
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 313, "LED Tubes   - Random Fast Red Flash"                , new String[] { "LED Tubes",   "Random", "Red", "Fast", "Flash"          } );
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 314, "LED Tubes   - Random Fast Blue Flash"               , new String[] { "LED Tubes",   "Random", "Blue", "Fast", "Flash"         } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 315, "LED Tubes   - Left Side Whiteout"                   , new String[] { "LED Tubes",   "Left", "White", "Plain"                  } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 316, "LED Tubes   - Left Side Redout"                     , new String[] { "LED Tubes",   "Left", "Red", "Plain"                    } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 317, "LED Tubes   - Left Side White Flash"                , new String[] { "LED Tubes",   "Left", "White", "Flash"                  } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 318, "LED Tubes   - Left Side Red Flash"                  , new String[] { "LED Tubes",   "Left", "Red", "Flash"                    } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 319, "LED Tubes   - Left Side White Stroboscope"          , new String[] { "LED Tubes",   "Left", "White", "Stroboscope"            } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 320, "LED Tubes   - Left Side Red Stroboscope"            , new String[] { "LED Tubes",   "Left", "Red", "Stroboscope"              } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 321, "LED Tubes   - Left Side White Upwards Short Wave"   , new String[] { "LED Tubes",   "Left", "White", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 322, "LED Tubes   - Left Side Red Upwards Short Wave"     , new String[] { "LED Tubes",   "Left", "Red", "Wave"                     } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 323, "LED Tubes   - Left Side White Downwards Short Wave" , new String[] { "LED Tubes",   "Left", "White", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 324, "LED Tubes   - Left Side Red Downwards Short Wave"   , new String[] { "LED Tubes",   "Left", "Red", "Wave"                     } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 325, "LED Tubes   - Left Side White Upwards Long Wave"    , new String[] { "LED Tubes",   "Left", "White", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 326, "LED Tubes   - Left Side Red Upwards Long Wave"      , new String[] { "LED Tubes",   "Left", "Red", "Wave"                     } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 327, "LED Tubes   - Left Side White Downwards Long Wave"  , new String[] { "LED Tubes",   "Left", "White", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 328, "LED Tubes   - Left Side Red Downwards Long Wave"    , new String[] { "LED Tubes",   "Left", "Red", "Wave"                     } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 329, "LED Tubes   - Right Side Whiteout"                  , new String[] { "LED Tubes",   "Right", "White", "Plain"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 330, "LED Tubes   - Right Side Redout"                    , new String[] { "LED Tubes",   "Right", "Red", "Plain"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 331, "LED Tubes   - Right Side White Flash"               , new String[] { "LED Tubes",   "Right", "White", "Flash"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 332, "LED Tubes   - Right Side Red Flash"                 , new String[] { "LED Tubes",   "Right", "Red", "Flash"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 333, "LED Tubes   - Right Side White Stroboscope"         , new String[] { "LED Tubes",   "Right", "White", "Stroboscope"           } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 334, "LED Tubes   - Right Side Red Stroboscope"           , new String[] { "LED Tubes",   "Right", "Red", "Stroboscope"             } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 335, "LED Tubes   - Right Side White Upwards Short Wave"  , new String[] { "LED Tubes",   "Right", "White", "Wave"                  } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 336, "LED Tubes   - Right Side Red Upwards Short Wave"    , new String[] { "LED Tubes",   "Right", "Red", "Wave"                    } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 337, "LED Tubes   - Right Side White Downwards Short Wave", new String[] { "LED Tubes",   "Right", "White", "Wave"                  } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 338, "LED Tubes   - Right Side Red Downwards Short Wave"  , new String[] { "LED Tubes",   "Right", "Red", "Wave"                    } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 339, "LED Tubes   - Right Side White Upwards Long Wave"   , new String[] { "LED Tubes",   "Right", "White", "Wave"                  } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 340, "LED Tubes   - Right Side Red Upwards Long Wave"     , new String[] { "LED Tubes",   "Right", "Red", "Wave"                    } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 341, "LED Tubes   - Right Side White Downwards Long Wave" , new String[] { "LED Tubes",   "Right", "White", "Wave"                  } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 342, "LED Tubes   - Right Side Red Downwards Long Wave"   , new String[] { "LED Tubes",   "Right", "Red", "Wave"                    } );
 }
 
 void setDMXAnimationsAttributes() {

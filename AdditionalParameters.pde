@@ -1462,3 +1462,9 @@ int tvpoweroff_speed = 3;
 //White Spread
 int whitespread_progress = 0;
 int whitespread_speed = 4;
+
+//ScannerLine
+float scannerLine_progress = 0;
+float scannerLine_SlowSpeed = 1;
+float scannerLine_FastSpeed = 3;
+float scannerLine_SpeedVar = 0.0007;
