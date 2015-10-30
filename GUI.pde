@@ -108,6 +108,8 @@ final int GUI_ATTR_CUSTOMDEV_WAVE          = 20;
 final int GUI_ATTR_CUSTOMDEV_BUILDUP       = 21;
 final int GUI_ATTR_CUSTOMDEV_NOISE         = 22;
 final int GUI_ATTR_CUSTOMDEV_SMOOTHNOISE   = 23;
+final int GUI_ATTR_CUSTOMDEV_LEFTSIDE      = 24;
+final int GUI_ATTR_CUSTOMDEV_RIGHTSIDE     = 25;
 
 //Attributes for the DMX animations
 final int GUI_ATTR_DMX_ALL       = 0;
@@ -1228,6 +1230,8 @@ public class ControlFrame extends PApplet {
                                                   .addItem("buildup",        21)
                                                   .addItem("noise",          22)
                                                   .addItem("smooth noise",   23)
+                                                  .addItem("left side",      24)
+                                                  .addItem("right side",     25)
                                                   .setGroup(CustomDeviceAnimations_animListGroup)
                                                   ;
 
@@ -2600,6 +2604,8 @@ String[] createCustomDeviceAnimationListFilter(float[] checkBoxArrayvalue) {
         case GUI_ATTR_CUSTOMDEV_BUILDUP       : temp.append("BuildUp");break;
         case GUI_ATTR_CUSTOMDEV_NOISE         : temp.append("Noise");break;
         case GUI_ATTR_CUSTOMDEV_SMOOTHNOISE   : temp.append("Smooth Noise");break;
+        case GUI_ATTR_CUSTOMDEV_LEFTSIDE      : temp.append("Left");break;
+        case GUI_ATTR_CUSTOMDEV_RIGHTSIDE     : temp.append("Right");break;
         default: break;
       }
     }

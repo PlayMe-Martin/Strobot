@@ -555,6 +555,14 @@ void specific_draw() {
       case 433: draw_tvpoweroff();break;                           //TV Power Off
       case 434: draw_whitespread_start();break;                    //White Spread Start
       case 435: draw_whitespread_end();break;                      //White Spread End
+      case 436: draw_scannerLine1_fastWhite();break;               //ScannerLine 1 - Fast White
+      case 437: draw_scannerLine2_fastWhite();break;               //ScannerLine 2 - Fast White
+      case 438: draw_scannerLine1_fastRed();break;                 //ScannerLine 1 - Fast Red
+      case 439: draw_scannerLine2_fastRed();break;                 //ScannerLine 2 - Fast Red
+      case 440: draw_scannerLine1_slowWhite();break;               //ScannerLine 1 - Slow White
+      case 441: draw_scannerLine2_slowWhite();break;               //ScannerLine 2 - Slow White
+      case 442: draw_scannerLine1_slowRed();break;                 //ScannerLine 1 - Slow Red
+      case 443: draw_scannerLine2_slowRed();break;                 //ScannerLine 2 - Slow Red
       case 509: draw_dirtyAudioProcessing();break;                 //Audio Monitoring
       case 510: draw_displayFFT_bass();break;                      //DisplayFFT - Bass
       

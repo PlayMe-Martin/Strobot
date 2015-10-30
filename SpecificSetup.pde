@@ -2296,7 +2296,7 @@ void specificActions() {
       
       case 214:    //Shadows
       
-        frameRate(50);
+        frameRate(60);
         noStroke();
         break;
       
@@ -4660,6 +4660,54 @@ void specificActions() {
       case 435:    //White Spread - End
         frameRate(90);
         whitespread_progress = 0;
+        break;
+      
+      case 436:    //ScannerLine 1 - Fast White
+        frameRate(90);
+        colorMode(RGB);
+        scannerLine_progress = 0;
+        break;
+      
+      case 437:    //ScannerLine 2 - Fast White
+        frameRate(90);
+        colorMode(RGB);
+        scannerLine_progress = 0;
+        break;
+        
+      case 438:    //ScannerLine 1 - Fast Red
+        frameRate(90);
+        colorMode(RGB);
+        scannerLine_progress = 0;
+        break;
+        
+      case 439:    //ScannerLine 2 - Fast Red
+        frameRate(90);
+        colorMode(RGB);
+        scannerLine_progress = 0;
+        break;
+        
+      case 440:    //ScannerLine 1 - Slow White
+        frameRate(90);
+        colorMode(RGB);
+        scannerLine_progress = 0;
+        break;
+      
+      case 441:    //ScannerLine 2 - Slow White
+        frameRate(90);
+        colorMode(RGB);
+        scannerLine_progress = 0;
+        break;
+        
+      case 442:    //ScannerLine 1 - Slow Red
+        frameRate(90);
+        colorMode(RGB);
+        scannerLine_progress = 0;
+        break;
+        
+      case 443:    //ScannerLine 2 - Slow Red
+        frameRate(90);
+        colorMode(RGB);
+        scannerLine_progress = 0;
         break;
         
       case 509:    //Audio Monitoring
