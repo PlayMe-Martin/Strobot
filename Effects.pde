@@ -35,6 +35,9 @@ int windmill_growthSpeed = 10;
 int whiteflash_cpt = 0;
 int redflash_cpt = 0;
 
+final float lightBlue_reductionFactor_red = 0.75;
+final float lightBlue_reductionFactor_green = 0.8;
+
 //General effect switcher
 void draw_effects() {
   if (effectToBeDrawn == true) {
@@ -73,6 +76,7 @@ void draw_effects() {
       case 32:  draw_whiteflash();break;
       case 33:  draw_redflash();break;
       case 34:  draw_randomRedPanelFlicker();break;
+      case 35:  draw_lightBlueFilter(); break;
       default: break;
     }
   }
@@ -93,6 +97,7 @@ void initSpecificEffectParams() {
     default: break;
   }
 }
+
 
 ////////////////////////////////////////////////////////////
 // Effects implementation
@@ -137,8 +142,11 @@ void draw_rgbGlitcherEffect() {
   int randomiserYRed   = int(glitcherEffect_noiseFactor*(noise(glitcherEffect_noiseSpeed*(frameCount + 1000))-0.5));
   int randomiserXGreen = int(glitcherEffect_noiseFactor*(noise(glitcherEffect_noiseSpeed*(frameCount + 2000))-0.5));
   int randomiserYGreen = int(glitcherEffect_noiseFactor*(noise(glitcherEffect_noiseSpeed*(frameCount + 3000))-0.5));
-  int randomiserXBlue  = int(glitcherEffect_noiseFactor*(noise(glitcherEffect_noiseSpeed*(frameCount + 4000))-0.5));
-  int randomiserYBlue  = int(glitcherEffect_noiseFactor*(noise(glitcherEffect_noiseSpeed*(frameCount + 5000))-0.5));
+  //For XI: it is best not to show too much yellow, because it does not fit the band's visual identity
+  //int randomiserXBlue  = int(glitcherEffect_noiseFactor*(noise(glitcherEffect_noiseSpeed*(frameCount + 4000))-0.5));
+  //int randomiserYBlue  = int(glitcherEffect_noiseFactor*(noise(glitcherEffect_noiseSpeed*(frameCount + 5000))-0.5));
+  int randomiserXBlue = randomiserXGreen;
+  int randomiserYBlue = randomiserYGreen;
   for (int i = 0; i<height; i++) {
     for (int j = 0; j<width; j++) {
       if ((i+randomiserXRed)*width + (j+randomiserYRed) < pixels.length && (i+randomiserXRed)*width + (j+randomiserYRed) >= 0) {
@@ -187,6 +195,17 @@ void draw_redocalypseEffect() {
   loadPixels();
   for (int i=0; i<pixels.length; i++) {
     pixels[i] = pixels[i]<<16;
+  }
+  updatePixels();
+}
+
+void draw_lightBlueFilter() {
+  loadPixels();
+  for (int i=0; i<pixels.length; i++) {
+    pixels[i] = color(int(lightBlue_reductionFactor_red * ((pixels[i] >> 16) & 0xFF)), 
+                      int(lightBlue_reductionFactor_green * ((pixels[i] >> 8) & 0xFF)), 
+                      pixels[i] & 0xFF, 
+                      (pixels[i] >> 24) & 0xFF); 
   }
   updatePixels();
 }

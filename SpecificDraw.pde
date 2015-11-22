@@ -18,6 +18,7 @@ boolean authorizeColorChangeManualMode   = true;
 boolean authorizeWhiteNoiseManualMode    = true;
 boolean authorizeDMXStrobe               = true;
 boolean authorizePanelStrobe             = true;
+boolean authorizeRMXControl              = false;
 
 boolean setStrobeManualMode4th           = false;
 boolean setStrobeManualMode8th           = false;
@@ -103,11 +104,22 @@ void actionControlled_postSpecificDraw() {
       draw_whiteNoiseEffect(whiteNoisePowerManualMode);
     }
   }
+  //Effects controlled by the RMX
+  if (authorizeRMXControl == true) {
+    //A Pong game is actually going on - the FX knobs hold different meanings here
+    if (animationnumber == 394) {
+    }
+    //We're not playing a game, do the regular stuff
+    else {  
+      executeRMXSpecificAnimations();
+    }
+  }
   if (authorizeKillLedPanelManualMode == true) {
     if (setKillLedPanelManualMode == true) {
       draw_killLedPanels();
     }
   }
+  
 }
 
 void specific_draw() {

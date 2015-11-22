@@ -2,6 +2,7 @@
 // Special animations resulting from user interaction //
 ////////////////////////////////////////////////////////
 
+final float RAD_FACTOR = 6.28318;
 
 //////////////////////////////////////////
 // Tempo-synced color stroboscope
@@ -76,8 +77,12 @@ void setup_stroboAutoPad(int colorset, float tempo, int noteSpeed) {
 //////////////////////////////////////////
 
 void draw_AutoModeWhiteOut(int whiteout) {
+  draw_AutoModeWhiteOut(whiteout, 0);
+}
+
+void draw_AutoModeWhiteOut(int whiteout, int modulation) {
   pushStyle();  // Start a new style
-  colorMode(RGB);
+  
   if (random(255) > whiteout) {  //Make the screen glitch when the hipass gets stronger - whiteoutPower is between 0 and 127 
     fill(255, map(whiteout,0,127,0,255));  
   }
@@ -86,7 +91,28 @@ void draw_AutoModeWhiteOut(int whiteout) {
   } 
   noStroke();
   rect(0,0,width,height);
+  
+  
+  if (modulation > RMX_CC_VAL_THR_1) {
+    float blackout_modulation = 0;
+    //4th
+    if (modulation <= RMX_CC_VAL_THR_2) {
+      blackout_modulation = cos(1*RAD_FACTOR*(automaticSequencer.currentPosition % 1.0));
+    }
+    //8th
+    else if (modulation <= RMX_CC_VAL_THR_3) {
+      blackout_modulation = cos(2*RAD_FACTOR*(automaticSequencer.currentPosition % 0.5));
+    }
+    //16th
+    else if (modulation <= RMX_CC_VAL_THR_4) {
+      blackout_modulation = cos(4*RAD_FACTOR*(automaticSequencer.currentPosition % 0.25));
+    }
+    fill(0, blackout_modulation*map(whiteout,0,100,130,255));
+    rect(0,0,width,height);
+  }
+  
   popStyle();
+  
 }
 
 //////////////////////////////////////////
@@ -94,12 +120,36 @@ void draw_AutoModeWhiteOut(int whiteout) {
 //////////////////////////////////////////
 
 void draw_AutoModeBlackOut(int blackout) {
+  draw_AutoModeBlackOut(blackout, 0);
+}
+
+void draw_AutoModeBlackOut(int blackout, int modulation) {
   pushStyle();  // Start a new style
-  colorMode(RGB);
+  //colorMode(RGB);
   fill(0, map(blackout,0,127,0,255));
   noStroke();
   rect(0,0,width,height);
+  
+  //Modulate with a black/white sine flash
+  if (modulation > RMX_CC_VAL_THR_1) {
+    float whiteout_modulation = 0;
+    //4th
+    if (modulation <= RMX_CC_VAL_THR_2) {
+      whiteout_modulation = cos(1*RAD_FACTOR*(automaticSequencer.currentPosition % 1.0));
+    }
+    //8th
+    else if (modulation <= RMX_CC_VAL_THR_3) {
+      whiteout_modulation = cos(2*RAD_FACTOR*(automaticSequencer.currentPosition % 0.5));
+    }
+    //16th
+    else if (modulation <= RMX_CC_VAL_THR_4) {
+      whiteout_modulation = cos(4*RAD_FACTOR*(automaticSequencer.currentPosition % 0.25));
+    }
+    fill(255, whiteout_modulation*map(blackout,0,127,130,255));
+    rect(0,0,width,height);
+  }
   popStyle();
+  
 }
 
 //////////////////////////////////////////

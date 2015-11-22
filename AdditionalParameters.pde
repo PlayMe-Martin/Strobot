@@ -665,6 +665,8 @@ int currentRandomBWFlowParticle;
 int randomBWFlow_oldMouseX;
 int randomBWFlow_oldMouseY;
 int randomBWFlow_alpha = 255;
+float randomBWFlow_varSpeed = 0.03;
+boolean randomBWFlow_initComplete = false;
 
 //Tesselate parameters
 color tesselate_palette[] = { #3415B0, #FFCF00,

@@ -122,19 +122,19 @@ PImage getimage(int imagenumber)
     case -5: temp = getConfigSpecificImage("Startup_5.jpg");break;
     
     case 0 : temp = getConfigSpecificImage("Startup.jpg");break;
-    case 1 : temp = getConfigSpecificImage("DTL/01.01. No.png");break;
-    case 2 : temp = getConfigSpecificImage("DTL/01.02. Way.png");break;
-    case 3 : temp = getConfigSpecificImage("DTL/01.03. To.png");break;
-    case 4 : temp = getConfigSpecificImage("DTL/01.04. Break.png");break;
-    case 5 : temp = getConfigSpecificImage("DTL/01.05. Through.png");break;
-    case 6 : temp = getConfigSpecificImage("DTL/02.01. When.png");break;
-    case 7 : temp = getConfigSpecificImage("DTL/02.02. The.png");break;
-    case 8 : temp = getConfigSpecificImage("DTL/03.01. Un.png");break;
-    case 9 : temp = getConfigSpecificImage("DTL/03.02. A.png");break;
-    case 10: temp = getConfigSpecificImage("DTL/03.03. Able.png");break;
-    case 11: temp = getConfigSpecificImage("DTL/03.04. To.png");break;
-    case 12: temp = getConfigSpecificImage("DTL/03.05. Chase.png");break;
-    case 13: temp = getConfigSpecificImage("DTL/04.01. When.png");break;
+    case 1 : temp = getConfigSpecificImage("Startup_1.jpg");break;
+    case 2 : temp = getConfigSpecificImage("Startup_2.jpg");break;
+    case 3 : temp = getConfigSpecificImage("Startup_3.jpg");break;
+    case 4 : temp = getConfigSpecificImage("Startup_4.jpg");break;
+    case 5 : temp = getConfigSpecificImage("Startup_5.jpg");break;
+    case 6 : temp = getConfigSpecificImage("Degeneration/01.png");break;
+    case 7 : temp = getConfigSpecificImage("Degeneration/02.png");break;
+    case 8 : temp = getConfigSpecificImage("Degeneration/03.png");break;
+    case 9 : temp = getConfigSpecificImage("Degeneration/04.png");break;
+    case 10: temp = getConfigSpecificImage("Degeneration/05.png");break;
+    case 11: temp = getConfigSpecificImage("Degeneration/06.png");break;
+    case 12: temp = getConfigSpecificImage("Degeneration/07.png");break;
+    case 13: temp = getConfigSpecificImage("Degeneration/08.png");break;
     case 14: temp = getConfigSpecificImage("DTL/04.02. You.png");break;
     case 15: temp = getConfigSpecificImage("DTL/04.03. Want.png");break;
     case 16: temp = getConfigSpecificImage("DTL/04.04. Me.png");break;
@@ -171,34 +171,34 @@ PImage getimage(int imagenumber)
     case 47: temp = getConfigSpecificImage("DTL/10.04. Lose.png");break;
     case 48: temp = getConfigSpecificImage("DTL/10.05. Our.png");break;
     case 49: temp = getConfigSpecificImage("DTL/10.06. Minds.png");break;
-    case 50: temp = getConfigSpecificImage("Botch/01. Red.jpg");break;
-    case 51: temp = getConfigSpecificImage("Botch/02. Red.jpg");break;
-    case 52: temp = getConfigSpecificImage("Botch/03. Red.jpg");break;
-    case 53: temp = getConfigSpecificImage("Botch/04. Red.jpg");break;
-    case 54: temp = getConfigSpecificImage("Botch/05. Red.jpg");break;
-    case 55: temp = getConfigSpecificImage("Botch/06. Red.jpg");break;
-    case 56: temp = getConfigSpecificImage("Botch/07. Red.jpg");break;
-    case 57: temp = getConfigSpecificImage("Botch/08. Red.jpg");break;
-    case 58: temp = getConfigSpecificImage("Botch/09. Red.jpg");break;
-    case 59: temp = getConfigSpecificImage("Botch/10. Red.jpg");break;
-    case 60: temp = getConfigSpecificImage("Botch/11. Red.jpg");break;
-    case 61: temp = getConfigSpecificImage("Botch/12. Red.jpg");break;
-    case 62: temp = getConfigSpecificImage("Botch/13. Red.jpg");break;
-    case 63: temp = getConfigSpecificImage("Botch/14. Red.jpg");break;
-    case 64: temp = getConfigSpecificImage("Botch/15. Red.jpg");break;
-    case 65: temp = getConfigSpecificImage("Botch/16. Red.jpg");break;
-    case 66: temp = getConfigSpecificImage("Botch/17. Red.jpg");break;
-    case 67: temp = getConfigSpecificImage("Botch/18. Red.jpg");break;
-    case 69: temp = getConfigSpecificImage("Botch/19. Red.jpg");break;
-    case 70: temp = getConfigSpecificImage("Botch/20. Red.jpg");break;
-    case 71: temp = getConfigSpecificImage("Botch/21. Red.jpg");break;
-    case 72: temp = getConfigSpecificImage("Botch/22. Red.jpg");break;
-    case 73: temp = getConfigSpecificImage("Botch/23. Red.jpg");break;
-    case 74: temp = getConfigSpecificImage("Botch/01. Custom.jpg");break;
-    case 75: temp = getConfigSpecificImage("Botch/02. Custom.jpg");break;
-    case 76: temp = getConfigSpecificImage("Botch/03. Custom.jpg");break;
-    case 77: temp = getConfigSpecificImage("Botch/04. Custom.jpg");break;
-    case 78: temp = getConfigSpecificImage("Botch/05. Custom.jpg");break;
+    case 50: temp = getConfigSpecificImage("Generic/01. Red.jpg");break;
+    case 51: temp = getConfigSpecificImage("Generic/02. Red.jpg");break;
+    case 52: temp = getConfigSpecificImage("Generic/03. Red.jpg");break;
+    case 53: temp = getConfigSpecificImage("Generic/04. Red.jpg");break;
+    case 54: temp = getConfigSpecificImage("Generic/05. Red.jpg");break;
+    case 55: temp = getConfigSpecificImage("Generic/06. Red.jpg");break;
+    case 56: temp = getConfigSpecificImage("Generic/07. Red.jpg");break;
+    case 57: temp = getConfigSpecificImage("Generic/08. Red.jpg");break;
+    case 58: temp = getConfigSpecificImage("Generic/09. Red.jpg");break;
+    case 59: temp = getConfigSpecificImage("Generic/10. Red.jpg");break;
+    case 60: temp = getConfigSpecificImage("Generic/11. Red.jpg");break;
+    case 61: temp = getConfigSpecificImage("Generic/12. Red.jpg");break;
+    case 62: temp = getConfigSpecificImage("Generic/13. Red.jpg");break;
+    case 63: temp = getConfigSpecificImage("Generic/14. Red.jpg");break;
+    case 64: temp = getConfigSpecificImage("Generic/15. Red.jpg");break;
+    case 65: temp = getConfigSpecificImage("Generic/16. Red.jpg");break;
+    case 66: temp = getConfigSpecificImage("Generic/17. Red.jpg");break;
+    case 67: temp = getConfigSpecificImage("Generic/18. Red.jpg");break;
+    case 69: temp = getConfigSpecificImage("Generic/19. Red.jpg");break;
+    case 70: temp = getConfigSpecificImage("Generic/20. Red.jpg");break;
+    case 71: temp = getConfigSpecificImage("Generic/21. Red.jpg");break;
+    case 72: temp = getConfigSpecificImage("Generic/22. Red.jpg");break;
+    case 73: temp = getConfigSpecificImage("Generic/23. Red.jpg");break;
+    case 74: temp = getConfigSpecificImage("Generic/01. Custom.jpg");break;
+    case 75: temp = getConfigSpecificImage("Generic/02. Custom.jpg");break;
+    case 76: temp = getConfigSpecificImage("Generic/03. Custom.jpg");break;
+    case 77: temp = getConfigSpecificImage("Generic/04. Custom.jpg");break;
+    case 78: temp = getConfigSpecificImage("Generic/05. Custom.jpg");break;
     case 79: temp = getConfigSpecificImage("PlayMe/01.P-white-black.jpg");break;
     case 80: temp = getConfigSpecificImage("PlayMe/02.L-white-black.jpg");break;
     case 81: temp = getConfigSpecificImage("PlayMe/03.A-white-black.jpg");break;
@@ -652,9 +652,11 @@ void draw_worms(){
     fill (0, 35);
     noStroke ();
     rect (0, 0, width, height);
+    pushStyle();
+    colorMode(HSB);
   //background(0);
   for (int i=0; i<numWorms; i++) {
-    fill(map(noise(0.01*worms[i].loc.x,0.01*worms[i].loc.y),0,1,0,255),80,255);
+    fill(map(noise(0.01*worms[i].loc.x,0.01*worms[i].loc.y),0,1,100,190),158,255);
     ellipse(worms[i].loc.x,worms[i].loc.y,8,8);
     if (pulsed) {
       worms[i].move(pulse);
@@ -662,6 +664,7 @@ void draw_worms(){
     else
       worms[i].move();
   }
+  popStyle();
   pulsed = false;
 }
 
@@ -4504,7 +4507,7 @@ class growingTriangle {
 
 void draw_moire(){
   background(255);
-  float fSpeed = 0.01;
+  float fSpeed = 0.015;
   moireOne.drawSegments(-1*((float)frameCount)*fSpeed*QUARTER_PI);
   moireTwo.drawSegments(((float)frameCount)*fSpeed*QUARTER_PI);
 }
@@ -7252,12 +7255,10 @@ void draw_randombwflow() {
     = new PVector(-1 + random(2), -1 + random(2));
      
   // Painting
-  //int cellX = mouseX / zoom;
-  //int cellY = mouseY / zoom;
-  int cellX = 0;
-  int cellY = 0;
+  int cellX = int(map(cos(frameCount*randomBWFlow_varSpeed),-1,1, 0, width));
+
+  int cellY = int(map(sin(frameCount*randomBWFlow_varSpeed),-1,1, 0, height)); 
    
-  // Make mouse movement affect randomBWFlow_flow
   float dX = cellX - randomBWFlow_oldMouseX;
   float dY = cellY - randomBWFlow_oldMouseY;
   for (int y = -8; y < 8; y ++) {
@@ -12173,15 +12174,15 @@ void draw_rednoise_glitchtriangle() {
   float offsety = random(-8,8);
   float randomcol = random(1);
   if (randomcol > 0.66) {
-    strokeWeight(12);
+    strokeWeight(16);
     stroke(0);
   }
   else if (randomcol > 0.33) {
-    strokeWeight(12);
+    strokeWeight(16);
     stroke(255);
   }
   else {
-    strokeWeight(12);
+    strokeWeight(16);
     stroke(255,0,0);
   }
   beginShape();
@@ -14687,8 +14688,9 @@ class ParallelWorldLine {
   void drawline() {
     //For this animation, the fact that width/3 is used instead of width/NUMBER_OF_PANELS is intentional !
     noStroke();
-    colorMode(HSB);
-    fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower),255);
+    colorMode(RGB);
+    //fill(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower),255);
+    fill(crecy_red, crecy_green, crecy_blue);
     beginShape();
     vertex(0,map(y,-2*height/4,6*height/4,-6*height/4,10*height/4));
     vertex(width/3, y);
@@ -14832,7 +14834,10 @@ if (crecy_internalCounter == 0) {
     crecy_blue  = 255;
   }
   else {
-    crecy_colorcounter += 1;
+    //crecy_colorcounter += 1;
+    crecy_red   = 160;
+    crecy_green = 220;
+    crecy_blue  = 255;
   }  
 }
 
@@ -14990,14 +14995,14 @@ class Crecy {
   
   void draw_type0() {
     noFill();
-    if (crecy_internalCounter == 4) {
-      colorMode(HSB);
-      stroke(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
-    }
-    else {
+    //if (crecy_internalCounter == 4) {
+    //  colorMode(HSB);
+    //  stroke(crecy_colorcounter % 255, min(255, 255 - parallelworlds_flashpower), 255);
+    //}
+    //else {
       colorMode(RGB);
       stroke(crecy_red, crecy_green, crecy_blue);
-    }
+    //}
     strokeWeight(4);
     pushMatrix();
     translate(0,0);
