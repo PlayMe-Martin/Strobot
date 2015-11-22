@@ -911,6 +911,8 @@ void setCustomDevicesActionsAttributes() {
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 340, "LED Tubes   - Right Side Red Upwards Long Wave"     , new String[] { "LED Tubes",   "Right", "Red", "Wave"                    } );
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 341, "LED Tubes   - Right Side White Downwards Long Wave" , new String[] { "LED Tubes",   "Right", "White", "Wave"                  } );
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 342, "LED Tubes   - Right Side Red Downwards Long Wave"   , new String[] { "LED Tubes",   "Right", "Red", "Wave"                    } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 343, "LED Tubes   - Random White Upwards Short Wave"      , new String[] { "LED Tubes",   "Random", "White", "Wave"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 344, "LED Tubes   - Random Red Upwards Short Wave"        , new String[] { "LED Tubes",   "Random", "Red", "Wave"                 } );
 }
 
 void setDMXAnimationsAttributes() {

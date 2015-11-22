@@ -862,7 +862,7 @@ void specificActions() {
         parallelworlds_list.add(new ParallelWorldLine(true));
         parallelworlds_speed = 2;
         parallelworlds_reverse = false;
-        crecy_internalCounter = 4;
+        crecy_internalCounter = 3;
         break;
       
       case 94:    //ParallelWorlds - Flash
@@ -879,7 +879,7 @@ void specificActions() {
         parallelworlds_list.add(new ParallelWorldLine(true));
         parallelworlds_flashpower = 255;
         parallelworlds_reverse = false;
-        crecy_internalCounter = 4;
+        crecy_internalCounter = 3;
         break;
       
       case 95:    //ParallelWorlds - Reverse
@@ -896,7 +896,7 @@ void specificActions() {
         parallelworlds_init = true;
         parallelworlds_list.add(new ParallelWorldLine(false));
         parallelworlds_reverse = true;
-        crecy_internalCounter = 4;
+        crecy_internalCounter = 3;
         break;
 
       case 96:    //MultiCrecy - Very light intensity
@@ -915,7 +915,7 @@ void specificActions() {
         }
         crecy_init = true;
         crecy_internalCounter = 3;
-        int numberOfCrecys3 = 3;
+        int numberOfCrecys3 = 5;
         for (int j=0; j<numberOfCrecys3;j++) {
           crecy_list.add(new Crecy(5));
         }
@@ -933,9 +933,9 @@ void specificActions() {
         }
         crecy_init = true;
         crecy_internalCounter = 1;
-        int numberOfCrecys = int(random(4,7));
+        int numberOfCrecys = int(random(5,8));
         if (NUMBER_OF_PANELS >= 5) {
-          numberOfCrecys = int(random(6,10));
+          numberOfCrecys = int(random(7,12));
         }
         for (int j=0; j<numberOfCrecys;j++) {
           crecy_list.add(new Crecy(1));
@@ -954,16 +954,16 @@ void specificActions() {
         }
         crecy_init = true;
         crecy_internalCounter = 1;
-        int numberOfCrecys_1 = int(random(2,4));
+        int numberOfCrecys_1 = int(random(3,6));
         if (NUMBER_OF_PANELS >= 5) {
-          numberOfCrecys_1 = int(random(3,6));
+          numberOfCrecys_1 = int(random(4,8));
         }
         for (int j=0; j<numberOfCrecys_1;j++) {
           crecy_list.add(new Crecy(1));
         }
-        int numberOfCrecys2 = 2;
+        int numberOfCrecys2 = 3;
         if (NUMBER_OF_PANELS >= 5) {
-          numberOfCrecys2 = 4;
+          numberOfCrecys2 = 6;
         }
         for (int j=0; j<numberOfCrecys2;j++) {
           crecy_list.add(new Crecy(2));
@@ -1066,7 +1066,7 @@ void specificActions() {
           crecy_list = new ArrayList<Crecy>();
         }
         crecy_init = true;
-        crecy_internalCounter = 4;
+        crecy_internalCounter = 3;
         int numberOfCrecys6 = int(random(4,6));
         for (int j=0; j<numberOfCrecys6;j++) {
           crecy_list.add(new Crecy(1));
@@ -2433,17 +2433,32 @@ void specificActions() {
 
         frameRate(50);
         colorMode(HSB);
-        for (int y = 0; y < randomBWFlow_resolutionY; y ++) {
-          randomBWFlow_wind[y] = 1 * sin(4 * PI * y / randomBWFlow_resolutionY);
-          for (int x = 0; x < randomBWFlow_resolutionX; x ++) {
-            randomBWFlow_flow[x][y] = new PVector();
-            //randomBWFlow_flow[x][y] = new PVector(0.2 - random(0.4), 0.2 - random(0.4));
+        if (randomBWFlow_initComplete == false) {
+          for (int y = 0; y < randomBWFlow_resolutionY; y ++) {
+            randomBWFlow_wind[y] = 1 * sin(4 * PI * y / randomBWFlow_resolutionY);
+            for (int x = 0; x < randomBWFlow_resolutionX; x ++) {
+              randomBWFlow_flow[x][y] = new PVector();
+              //randomBWFlow_flow[x][y] = new PVector(0.2 - random(0.4), 0.2 - random(0.4));
+            }
           }
         }
-        for (int j = 0; j < randomBWFlow_particleCount; j ++) {
-          bwflowparticle[j] = new RandomBWFlowParticle(random(randomBWFlow_resolutionX),
-            random(randomBWFlow_resolutionY));
+        else {
+          for (int y = 0; y < randomBWFlow_resolutionY; y ++) {
+            randomBWFlow_wind[y] = -randomBWFlow_wind[y];
+            for (int x = 0; x < randomBWFlow_resolutionX; x ++) {
+              randomBWFlow_flow[x][y].x = random(-1,1);
+              randomBWFlow_flow[x][y].y = randomBWFlow_flow[x][y].y;
+              println(randomBWFlow_flow[x][y].x + " -- " + randomBWFlow_flow[x][y].y);
+            }
+          }
         }
+        if (randomBWFlow_initComplete == false) {
+          for (int j = 0; j < randomBWFlow_particleCount; j ++) {
+            bwflowparticle[j] = new RandomBWFlowParticle(random(randomBWFlow_resolutionX),
+              random(randomBWFlow_resolutionY));
+          }
+        }
+        randomBWFlow_initComplete = true; 
         break;
 
       case 230:    //RandomSmokeParticles
@@ -2987,7 +3002,6 @@ void specificActions() {
         frameRate(25);
         smooth();
         noStroke();
-        colorMode(HSB,255);
         if (worms_init == false) {
           worms = new Worm[numWorms];
           for (int j=0; j<numWorms; j++) {

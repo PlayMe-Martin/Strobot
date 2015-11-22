@@ -100,12 +100,20 @@ final int[] PIONEER_RMX_RHYTHMFX_temp = {PITCH_RMX_RHYTHM_ROLL, PITCH_RMX_RHYTHM
 IntList PIONEER_RMX_SCENEFX = new IntList();    //IntList are easier to use for some specific functions they have
 IntList PIONEER_RMX_RHYTHMFX = new IntList();
 
+// Special CC values used for the RMX effects
+final int RMX_CC_VAL_THR_1 = 22;
+final int RMX_CC_VAL_THR_2 = 77;
+final int RMX_CC_VAL_THR_3 = 126;
+final int RMX_CC_VAL_THR_4 = 127;
+
 boolean pionnerRMX_SceneFxOn = false;           // is an effect currently applied at the moment ?
 boolean pionnerRMX_RhythmFxOn = false;          // is an effect currently applied at the moment ?
 int pionnerRMX_LastSeenScenePitch = -1;         // variable used to store the last MIDI message sent by the RMX
 int pionnerRMX_LastSeenRhythmPitch = -1;        // variable used to store the last MIDI message sent by the RMX
-int pionnerRMX_CurrentSceneFxCCVal = -1;        // value of the current SceneFX knob
-int pionnerRMX_CurrentRhythmFxCCVal = -1;       // value of the current RhythmFX knob
+int pionnerRMX_CurrentSceneFxCCVal = -1;        // value of the current SceneFX knob #1
+int pionnerRMX_CurrentSceneFxCCVal2 = -1;       // value of the current SceneFX knob #2
+int pionnerRMX_CurrentRhythmFxCCVal = -1;       // value of the current RhythmFX knob #1
+int pionnerRMX_CurrentRhythmFxCCVal2 = -1;      // value of the current RhythmFX knob #2
 
 
 // Allow LED Panel remapping using the keyboard
@@ -296,18 +304,18 @@ void processMidiInfo_pioneerControllerNoteOn(int pitch, int velocity) {
     }
     pionnerRMX_LastSeenScenePitch = pitch;
   }
-
+  else if (pitch == PITCH_RMX_RELEASE_FX) {
+    //Release all FX -> release all visual effects
+    pionnerRMX_RhythmFxOn = false;
+    pionnerRMX_SceneFxOn = false;
+  }
+  
   //A Pong game is actually going on - the FX knobs hold different meanings here
   if (animationnumber == 394) {
     if (pitch == PITCH_RMX_RELEASE_FX) {
       pong_gameRestart();
     }
   }
-  //We're not playing a game, do the regular stuff
-  else {  
-    executeRMXSpecificAnimations();
-  }
-
 
 }
 
@@ -319,7 +327,7 @@ void processMidiInfo_pioneerControllerNoteOn(int pitch, int velocity) {
 void executeRMXSpecificAnimations() {
   if (pionnerRMX_RhythmFxOn) {
     switch (pionnerRMX_LastSeenRhythmPitch) {
-      case PITCH_RMX_RHYTHM_ROLL:           println("roll " + pionnerRMX_RhythmFxOn); break;
+      case PITCH_RMX_RHYTHM_ROLL:           break;
       case PITCH_RMX_RHYTHM_TRANS:          break;
       case PITCH_RMX_RHYTHM_ADD:            break;
       case PITCH_RMX_RHYTHM_REVDELAY:       break;
@@ -330,8 +338,8 @@ void executeRMXSpecificAnimations() {
 
   if (pionnerRMX_SceneFxOn) {
     switch (pionnerRMX_LastSeenScenePitch) {
-      case PITCH_RMX_SCENE_HPF:             draw_AutoModeWhiteOut(pionnerRMX_CurrentSceneFxCCVal); break;
-      case PITCH_RMX_SCENE_LPF:             draw_AutoModeBlackOut(pionnerRMX_CurrentSceneFxCCVal); break;
+      case PITCH_RMX_SCENE_HPF:             draw_AutoModeWhiteOut(pionnerRMX_CurrentSceneFxCCVal, pionnerRMX_CurrentSceneFxCCVal2); break;
+      case PITCH_RMX_SCENE_LPF:             draw_AutoModeBlackOut(pionnerRMX_CurrentSceneFxCCVal, pionnerRMX_CurrentSceneFxCCVal2); break;
       case PITCH_RMX_SCENE_ZIP:             break;
       case PITCH_RMX_SCENE_SPIRALDOWN:      break;
       case PITCH_RMX_SCENE_REVERBDOWN:      break;
@@ -1177,10 +1185,10 @@ void controllerChange(int channel, int number, int value, long timestamp, String
   //Also, do not use any effects for this animation
   if (animationnumber == 394) {
     //Player 1 is using the rhythm knob, Player 2 the scene knob
-    if (number == CC_RMX_RHYTHM_1 || number == CC_RMX_RHYTHM_2) {
+    if (number == CC_RMX_RHYTHM_1) {
         p1KnobControl(value);
       }
-      else if (number == CC_RMX_SCENE_1 || number == CC_RMX_SCENE_2) {
+      else if (number == CC_RMX_SCENE_1) {
         p2KnobControl(value);
       }
   } 
@@ -1190,21 +1198,25 @@ void controllerChange(int channel, int number, int value, long timestamp, String
     lastMillisecond_cc_in = System.currentTimeMillis();
     
     if (bus_name == myPioneerControllerBus.getBusName()) {
-      if (number == CC_RMX_RHYTHM_1 || number == CC_RMX_RHYTHM_2) {
-        pionnerRMX_CurrentRhythmFxCCVal = value;
-      }
-      else if (number == CC_RMX_SCENE_1 || number == CC_RMX_SCENE_2) {
-        pionnerRMX_CurrentSceneFxCCVal = value;
-      }
-      
-      if (pionnerRMX_SceneFxOn || pionnerRMX_RhythmFxOn) {
-        executeRMXSpecificAnimations();
-      }
+      processCCInfo_RMX500(channel, number, value);
     }
     
     if (bus_name == myControllerBus.getBusName() || bus_name == myKeyboardBus.getBusName() || bus_name == myMainBus.getBusName()) {    //Filter the panic all-notes-off messages sent by non-related devices
       processCCInfo_standardControllers(channel, number, value);
     }
+  }
+}
+
+void processCCInfo_RMX500(int channel, int number, int value) {
+  switch(number) {
+    case CC_RMX_RHYTHM_1:  pionnerRMX_CurrentRhythmFxCCVal = value; break;
+    case CC_RMX_RHYTHM_2:  pionnerRMX_CurrentRhythmFxCCVal2 = value; break;
+    case CC_RMX_SCENE_1:   pionnerRMX_CurrentSceneFxCCVal = value; break;
+    case CC_RMX_SCENE_2:   pionnerRMX_CurrentSceneFxCCVal2 = value; break;
+    default:               break;
+  }
+  if (pionnerRMX_SceneFxOn || pionnerRMX_RhythmFxOn) {
+    executeRMXSpecificAnimations();
   }
 }
 
@@ -1411,6 +1423,7 @@ void disableManualInput(){
   authorizeColorChangeManualMode   = false;
   authorizeWhiteJamaMonoManualMode = false;
   authorizeWhiteNoiseManualMode    = true;
+  authorizeRMXControl              = false;
 }
 
 void enableManualInput(){
@@ -1422,4 +1435,5 @@ void enableManualInput(){
   authorizeColorChangeManualMode   = true;
   authorizeWhiteJamaMonoManualMode = false;
   authorizeWhiteNoiseManualMode    = true;
+  authorizeRMXControl              = true;
 }
