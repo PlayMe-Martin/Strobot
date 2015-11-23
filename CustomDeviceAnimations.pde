@@ -564,8 +564,24 @@ void customDeviceAnimation(int customDevAnimationNumber) {
     case 340: customDev_LEDTubeRightSideLongRedUpwardSingleWave();break;
     case 341: customDev_LEDTubeRightSideLongWhiteDownwardSingleWave();break;
     case 342: customDev_LEDTubeRightSideLongRedDownwardSingleWave();break;
+    
     case 343: customDev_LEDTubeRandomShortWhiteUpwardSingleWave();break;
     case 344: customDev_LEDTubeRandomShortRedUpwardSingleWave();break;
+    case 345: customDev_LEDTubeRandomLongWhiteUpwardSingleWave();break;
+    case 346: customDev_LEDTubeRandomLongRedUpwardSingleWave();break;
+    case 347: customDev_LEDTubeRandomShortWhiteDownwardSingleWave();break;
+    case 348: customDev_LEDTubeRandomShortRedDownwardSingleWave();break;
+    case 349: customDev_LEDTubeRandomLongWhiteDownwardSingleWave();break;
+    case 350: customDev_LEDTubeRandomLongRedDownwardSingleWave();break;
+    
+    case 351: customDev_LEDTubeSingleShortWhiteUpwardSingleWave();break;
+    case 352: customDev_LEDTubeSingleShortRedUpwardSingleWave();break;
+    case 353: customDev_LEDTubeSingleLongWhiteUpwardSingleWave();break;
+    case 354: customDev_LEDTubeSingleLongRedUpwardSingleWave();break;
+    case 355: customDev_LEDTubeSingleShortWhiteDownwardSingleWave();break;
+    case 356: customDev_LEDTubeSingleShortRedDownwardSingleWave();break;
+    case 357: customDev_LEDTubeSingleLongWhiteDownwardSingleWave();break;
+    case 358: customDev_LEDTubeSingleLongRedDownwardSingleWave();break;
     default: break;                                 //Don't do anything
   }
   
@@ -3606,4 +3622,73 @@ void customDev_LEDTubeRandomShortWhiteUpwardSingleWave() {
 
 void customDev_LEDTubeRandomShortRedUpwardSingleWave() {
   customDev_LEDTubeRandomRhythmicAnim(CUSTOMDEV_ANIM_SINGLEREDSHORTUPWARDWAVE, CUSTOMDEV_ANIM_SINGLEREDSHORTUPWARDWAVE_2);
+}
+
+void customDev_LEDTubeRandomLongWhiteUpwardSingleWave() {
+  customDev_LEDTubeRandomRhythmicAnim(CUSTOMDEV_ANIM_SINGLEWHITELONGUPWARDWAVE, CUSTOMDEV_ANIM_SINGLEWHITELONGUPWARDWAVE_2);
+}
+
+void customDev_LEDTubeRandomLongRedUpwardSingleWave() {
+  customDev_LEDTubeRandomRhythmicAnim(CUSTOMDEV_ANIM_SINGLEREDLONGUPWARDWAVE, CUSTOMDEV_ANIM_SINGLEREDLONGUPWARDWAVE_2);
+}
+
+
+void customDev_LEDTubeRandomShortWhiteDownwardSingleWave() {
+  customDev_LEDTubeRandomRhythmicAnim(CUSTOMDEV_ANIM_SINGLEWHITESHORTDOWNWARDWAVE, CUSTOMDEV_ANIM_SINGLEWHITESHORTDOWNWARDWAVE_2);
+}
+
+void customDev_LEDTubeRandomShortRedDownwardSingleWave() {
+  customDev_LEDTubeRandomRhythmicAnim(CUSTOMDEV_ANIM_SINGLEREDSHORTDOWNWARDWAVE, CUSTOMDEV_ANIM_SINGLEREDSHORTDOWNWARDWAVE_2);
+}
+
+void customDev_LEDTubeRandomLongWhiteDownwardSingleWave() {
+  customDev_LEDTubeRandomRhythmicAnim(CUSTOMDEV_ANIM_SINGLEWHITELONGDOWNWARDWAVE, CUSTOMDEV_ANIM_SINGLEWHITELONGDOWNWARDWAVE_2);
+}
+
+void customDev_LEDTubeRandomLongRedDownwardSingleWave() {
+  customDev_LEDTubeRandomRhythmicAnim(CUSTOMDEV_ANIM_SINGLEREDLONGDOWNWARDWAVE, CUSTOMDEV_ANIM_SINGLEREDLONGDOWNWARDWAVE_2);
+}
+
+
+/////////////////////////////////////////////////////////////////
+
+
+void customDev_LEDTubeSingleRhythmicAnim(int mainAnim, int fallbackAnim) {
+  if (CustomDeviceList_LEDTubes.get(currentRandomLEDTube).executionCount % 2 == 0) { CustomDeviceList_LEDTubes.get(currentRandomLEDTube).setDeviceAnimation(mainAnim);   }
+                                                                              else { CustomDeviceList_LEDTubes.get(currentRandomLEDTube).setDeviceAnimation(fallbackAnim); }
+  incrementLEDTubeCpt(customDevicesRandomDirection);
+}
+
+
+void customDev_LEDTubeSingleShortWhiteUpwardSingleWave() {
+  customDev_LEDTubeSingleRhythmicAnim(CUSTOMDEV_ANIM_SINGLEWHITESHORTUPWARDWAVE, CUSTOMDEV_ANIM_SINGLEWHITESHORTUPWARDWAVE_2);
+}
+
+void customDev_LEDTubeSingleShortRedUpwardSingleWave() {
+  customDev_LEDTubeSingleRhythmicAnim(CUSTOMDEV_ANIM_SINGLEREDSHORTUPWARDWAVE, CUSTOMDEV_ANIM_SINGLEREDSHORTUPWARDWAVE_2);
+}
+
+void customDev_LEDTubeSingleLongWhiteUpwardSingleWave() {
+  customDev_LEDTubeSingleRhythmicAnim(CUSTOMDEV_ANIM_SINGLEWHITELONGUPWARDWAVE, CUSTOMDEV_ANIM_SINGLEWHITELONGUPWARDWAVE_2);
+}
+
+void customDev_LEDTubeSingleLongRedUpwardSingleWave() {
+  customDev_LEDTubeSingleRhythmicAnim(CUSTOMDEV_ANIM_SINGLEREDLONGUPWARDWAVE, CUSTOMDEV_ANIM_SINGLEREDLONGUPWARDWAVE_2);
+}
+
+
+void customDev_LEDTubeSingleShortWhiteDownwardSingleWave() {
+  customDev_LEDTubeSingleRhythmicAnim(CUSTOMDEV_ANIM_SINGLEWHITESHORTDOWNWARDWAVE, CUSTOMDEV_ANIM_SINGLEWHITESHORTDOWNWARDWAVE_2);
+}
+
+void customDev_LEDTubeSingleShortRedDownwardSingleWave() {
+  customDev_LEDTubeSingleRhythmicAnim(CUSTOMDEV_ANIM_SINGLEREDSHORTDOWNWARDWAVE, CUSTOMDEV_ANIM_SINGLEREDSHORTDOWNWARDWAVE_2);
+}
+
+void customDev_LEDTubeSingleLongWhiteDownwardSingleWave() {
+  customDev_LEDTubeSingleRhythmicAnim(CUSTOMDEV_ANIM_SINGLEWHITELONGDOWNWARDWAVE, CUSTOMDEV_ANIM_SINGLEWHITELONGDOWNWARDWAVE_2);
+}
+
+void customDev_LEDTubeSingleLongRedDownwardSingleWave() {
+  customDev_LEDTubeSingleRhythmicAnim(CUSTOMDEV_ANIM_SINGLEREDLONGDOWNWARDWAVE, CUSTOMDEV_ANIM_SINGLEREDLONGDOWNWARDWAVE_2);
 }

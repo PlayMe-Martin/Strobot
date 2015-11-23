@@ -20,9 +20,9 @@ int flutterEffect_slices = 16;
 float flutterEffect_unit = 64/flutterEffect_slices;
 float flutterEffect_theta = 0;
 
-int fadeout_counter = 0;
-int fadein_counter = 0;
-int fadeout_speed = 1;
+float fadeout_counter = 0;
+float fadein_counter = 0;
+float fadeout_speed = 0.7;
 int whiteout_speed = 8;
 
 float blackWaveCircle_counter = 0;
@@ -35,8 +35,8 @@ int windmill_growthSpeed = 10;
 int whiteflash_cpt = 0;
 int redflash_cpt = 0;
 
-final float lightBlue_reductionFactor_red = 0.75;
-final float lightBlue_reductionFactor_green = 0.8;
+final float lightBlue_reductionFactor_red = 0.4;
+final float lightBlue_reductionFactor_green = 0.4;
 
 //General effect switcher
 void draw_effects() {
@@ -77,6 +77,7 @@ void draw_effects() {
       case 33:  draw_redflash();break;
       case 34:  draw_randomRedPanelFlicker();break;
       case 35:  draw_lightBlueFilter(); break;
+      case 36:  draw_panelsOff(); break;
       default: break;
     }
   }
@@ -547,4 +548,15 @@ void draw_redflash() {
     popMatrix();
   }
   redflash_cpt += 1;
+}
+
+void draw_panelsOff() {
+  pushStyle(); 
+  pushMatrix();
+  fill(0);
+  noStroke();
+  rect(0,0,width,height);
+  resetMatrix();
+  popStyle();
+  popMatrix();
 }

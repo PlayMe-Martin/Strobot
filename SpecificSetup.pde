@@ -2969,7 +2969,7 @@ void specificActions() {
         noFill();
         strokeWeight(8);
         colorMode(RGB);
-        stroke(0,172,255);
+        stroke(255,255,255);
        
         dropcircle_x = width/2;
         dropcircle_y = height/2;
@@ -2983,7 +2983,7 @@ void specificActions() {
         noFill();
         strokeWeight(8);
         colorMode(RGB);
-        stroke(0,172,255);
+        stroke(255,255,255);
        
         dropcircle_x = width/2;
         dropcircle_y = height/2;
@@ -3290,7 +3290,7 @@ void specificActions() {
                //println(counter);
                break;
              }
-             int c = color((255+20*sin(PI*x/width))%255, 240, 255*sin(PI*y/width));
+             int c = color((253+12*sin(PI*x/width))%255, 255, 255*sin(PI*y/width));
              particlesflow_particles[counter++] = new ParticleFlow(x, y, c);
           }
         }
@@ -4142,7 +4142,7 @@ void specificActions() {
 
       case 372:    //HypnoPendulum
 
-        frameRate(50);
+        frameRate(40);
         colorMode(RGB);
         hypnopendulum_lengths[0] = 400;
         for(int n=1;n<pendulum_n;n++){

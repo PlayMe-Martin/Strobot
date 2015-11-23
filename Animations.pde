@@ -656,7 +656,7 @@ void draw_worms(){
     colorMode(HSB);
   //background(0);
   for (int i=0; i<numWorms; i++) {
-    fill(map(noise(0.01*worms[i].loc.x,0.01*worms[i].loc.y),0,1,100,190),158,255);
+    fill(map(noise(0.01*worms[i].loc.x,0.01*worms[i].loc.y),0,1,130,190),158,255);
     ellipse(worms[i].loc.x,worms[i].loc.y,8,8);
     if (pulsed) {
       worms[i].move(pulse);
@@ -7242,8 +7242,8 @@ void draw_randombwflow() {
 //        int(max(0, min(255, 255 * randomBWFlow_density[x][y]))));
 //      println(randomBWFlow_flow[x][y].x + "  -  " + randomBWFlow_flow[x][y].y + " ------ " + noise(0.01*randomBWFlow_flow[x][y].x,0.01*randomBWFlow_flow[x][y].y));
       fill(
-        map(noise(0.4*randomBWFlow_flow[x][y].x * width,0.4*randomBWFlow_flow[x][y].y * height),0,1,0,255),80,
-        int(max(0, min(255, 255 * randomBWFlow_density[x][y]))));
+        map(noise(0.4*randomBWFlow_flow[x][y].x * width,0.4*randomBWFlow_flow[x][y].y * height),0,1,110,220),120,
+        int(max(0, min(180, 180 * randomBWFlow_density[x][y]))));
         
 
       rect(x * zoom, y * zoom, zoom, zoom);
@@ -12571,7 +12571,8 @@ void draw_invertexplode() {
   rect(0,0,width,height);
   
   strokeWeight(16);
-  stroke(invertexplode_circlehue, 255, 255);
+  //stroke(invertexplode_circlehue, 255, 255);
+  stroke(0, 255, 255);
   if (invertexplode_circlewidth > 0) {
     ellipse(width/2, height/2, invertexplode_circlewidth, invertexplode_circlewidth);
   }
@@ -13791,7 +13792,7 @@ void draw_reverseTriangles() {
   reverseTriangles_green.noStroke();
   reverseTriangles_green.rect(0,0,width,height);
   reverseTriangles_green.noFill();
-  reverseTriangles_green.stroke(255,205,0);
+  reverseTriangles_green.stroke(255,255,255);
   reverseTriangles_green.strokeWeight(min(8 * reverseTriangles_size, 16));
   reverseTriangles_green.beginShape();
   reverseTriangles_green.vertex(width/(NUMBER_OF_PANELS*2) + reverseTriangles_size*width/(NUMBER_OF_PANELS*4),height /2 - reverseTriangles_size*height/12);
@@ -14804,41 +14805,44 @@ class Firefly {
 //////////////////////////////////////////
 
 void crecy_setColor() {
-if (crecy_internalCounter == 0) {
-//    crecy_red   = 255;
-//    crecy_green = 255;
+//if (crecy_internalCounter == 0) {
+////    crecy_red   = 255;
+////    crecy_green = 255;
+////    crecy_blue  = 255;
+//    crecy_red   = 160;
+//    crecy_green = 220;
 //    crecy_blue  = 255;
-    crecy_red   = 160;
-    crecy_green = 220;
-    crecy_blue  = 255;
-  }
-  else if (crecy_internalCounter == 1) {
-//    crecy_red   = 0;
-//    crecy_green = 0;
+//  }
+//  else if (crecy_internalCounter == 1) {
+////    crecy_red   = 0;
+////    crecy_green = 0;
+////    crecy_blue  = 255;
+//    crecy_red   = 160;
+//    crecy_green = 220;
 //    crecy_blue  = 255;
-    crecy_red   = 160;
-    crecy_green = 220;
-    crecy_blue  = 255;
-  }
-  else if (crecy_internalCounter == 2) {
-//    crecy_red   = 0;
-//    crecy_green = 150;
+//  }
+//  else if (crecy_internalCounter == 2) {
+////    crecy_red   = 0;
+////    crecy_green = 150;
+////    crecy_blue  = 255;
+//    crecy_red   = 160;
+//    crecy_green = 220;
 //    crecy_blue  = 255;
-    crecy_red   = 160;
-    crecy_green = 220;
+//  }
+//  else if (crecy_internalCounter == 3) {
+//    crecy_red   = 160;
+//    crecy_green = 220;
+//    crecy_blue  = 255;
+//  }
+//  else {
+//    //crecy_colorcounter += 1;
+//    crecy_red   = 160;
+//    crecy_green = 220;
+//    crecy_blue  = 255;
+//  }  
+    crecy_red   = 120;
+    crecy_green = 140;
     crecy_blue  = 255;
-  }
-  else if (crecy_internalCounter == 3) {
-    crecy_red   = 160;
-    crecy_green = 220;
-    crecy_blue  = 255;
-  }
-  else {
-    //crecy_colorcounter += 1;
-    crecy_red   = 160;
-    crecy_green = 220;
-    crecy_blue  = 255;
-  }  
 }
 
 void draw_multicrecy() {

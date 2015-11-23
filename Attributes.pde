@@ -404,8 +404,8 @@ void setAnimationAttributes() {
   animationAttributes = registerAttribute(animationAttributes, 282, "Fusee Center Vertical Red"           , new String[] {"Fade In/Out", "Fast", "Red"}                                                         );
   animationAttributes = registerAttribute(animationAttributes, 283, "Responsive Circles BW"               , new String[] {"Atmospheric", "Slow", "B&W"}                                                         );
   animationAttributes = registerAttribute(animationAttributes, 284, "Responsive Circles"                  , new String[] {"Atmospheric", "Slow", "Blue"}                                                        );
-  animationAttributes = registerAttribute(animationAttributes, 285, "Manual Circle"                       , new String[] {"Fade In/Out", "Geometric", "Circles", "Simple", "Slow", "Blue"}                      );
-  animationAttributes = registerAttribute(animationAttributes, 286, "Automatic Circle"                    , new String[] {"Geometric", "Circles", "Simple", "Slow", "Blue"}                                     );
+  animationAttributes = registerAttribute(animationAttributes, 285, "Manual Circle"                       , new String[] {"Fade In/Out", "Geometric", "Circles", "Simple", "Slow", "White"}                     );
+  animationAttributes = registerAttribute(animationAttributes, 286, "Automatic Circle"                    , new String[] {"Geometric", "Circles", "Simple", "Slow", "White"}                                    );
   animationAttributes = registerAttribute(animationAttributes, 287, "Waveform"                            , new String[] {"Atmospheric", "Colorful"}                                                            );
   animationAttributes = registerAttribute(animationAttributes, 288, "Worms"                               , new String[] {"Objects", "Circles", "Smooth", "Blue", "Slow"}                                       );
   animationAttributes = registerAttribute(animationAttributes, 289, "Kaleido Triangle"                    , new String[] {"Geometric", "Blue", "Complex", "Evolving"}                                           );
@@ -912,7 +912,21 @@ void setCustomDevicesActionsAttributes() {
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 341, "LED Tubes   - Right Side White Downwards Long Wave" , new String[] { "LED Tubes",   "Right", "White", "Wave"                  } );
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 342, "LED Tubes   - Right Side Red Downwards Long Wave"   , new String[] { "LED Tubes",   "Right", "Red", "Wave"                    } );
   customDevicesAttributes = registerAttribute(customDevicesAttributes, 343, "LED Tubes   - Random White Upwards Short Wave"      , new String[] { "LED Tubes",   "Random", "White", "Wave"                 } );
-  customDevicesAttributes = registerAttribute(customDevicesAttributes, 344, "LED Tubes   - Random Red Upwards Short Wave"        , new String[] { "LED Tubes",   "Random", "Red", "Wave"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 344, "LED Tubes   - Random Red Upwards Short Wave"        , new String[] { "LED Tubes",   "Random", "Red", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 345, "LED Tubes   - Random White Upwards Long Wave"       , new String[] { "LED Tubes",   "Random", "White", "Wave"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 346, "LED Tubes   - Random Red Upwards Long Wave"         , new String[] { "LED Tubes",   "Random", "Red", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 347, "LED Tubes   - Random White Downwards Short Wave"    , new String[] { "LED Tubes",   "Random", "White", "Wave"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 348, "LED Tubes   - Random Red Downwards Short Wave"      , new String[] { "LED Tubes",   "Random", "Red", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 349, "LED Tubes   - Random White Downwards Long Wave"     , new String[] { "LED Tubes",   "Random", "White", "Wave"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 350, "LED Tubes   - Random Red Downwards Long Wave"       , new String[] { "LED Tubes",   "Random", "Red", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 351, "LED Tubes   - Random White Upwards Short Wave"      , new String[] { "LED Tubes",   "Random", "White", "Wave"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 352, "LED Tubes   - Single Tube Red Upwards Short Wave"   , new String[] { "LED Tubes",   "Random", "Red", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 353, "LED Tubes   - Single Tube White Upwards Long Wave"  , new String[] { "LED Tubes",   "Random", "White", "Wave"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 354, "LED Tubes   - Single Tube Red Upwards Long Wave"    , new String[] { "LED Tubes",   "Random", "Red", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 355, "LED Tubes   - Single Tube White Downwards Short Wave",new String[] { "LED Tubes",   "Random", "White", "Wave"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 356, "LED Tubes   - Single Tube Red Downwards Short Wave" , new String[] { "LED Tubes",   "Random", "Red", "Wave"                   } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 357, "LED Tubes   - Single Tube White Downwards Long Wave", new String[] { "LED Tubes",   "Random", "White", "Wave"                 } );
+  customDevicesAttributes = registerAttribute(customDevicesAttributes, 358, "LED Tubes   - Single Tube Red Downwards Long Wave"  , new String[] { "LED Tubes",   "Random", "Red", "Wave"                   } );
 }
 
 void setDMXAnimationsAttributes() {
