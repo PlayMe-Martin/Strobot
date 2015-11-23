@@ -1116,7 +1116,7 @@ float colorbeat_transitionpos;
 int invertexplode_numberoflines = 6;
 float invertexplode_maxcirclewidth;
 float invertexplode_circlewidth;
-float invertexplode_circlespeed = 5;
+float invertexplode_circlespeed = 8;
 float invertexplode_maxcirclehue = 90;
 float invertexplode_circlehue;
 float invertexplode_huespeed = 7;

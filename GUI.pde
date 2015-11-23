@@ -1563,6 +1563,7 @@ public class ControlFrame extends PApplet {
     addEffectBang("33 - RedFlash", 33);
     addEffectBang("34 - General Red Random Flicker", 34);
     addEffectBang("35 - Light Blue Filter", 35);
+    addEffectBang("36 - Panels Off", 36);
   }
   
   void addEffectBang(String name, int i) {
