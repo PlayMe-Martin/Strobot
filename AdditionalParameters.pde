@@ -579,6 +579,8 @@ float hypnopendulum_t = 0.0;
 ArrayList hypnopendulum_pends;
 float[] hypnopendulum_lengths = new float[pendulum_n];
 float hypnopendulum_g = 9.8;
+float hypnopendulum_fadein = 0;
+float hypnopendulum_fadeinSpeed = 0.05;
 
 //Mugen parameters
 float mugen_xamp, mugen_yamp, mugen_x, mugen_y, mugen_px, mugen_py;

@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////
 
 final float RAD_FACTOR = 6.28318;
+boolean userInputAnim_enableDrawForCurrentCycle = true;      //Set to true at the beginning of each cycle, this variable is set to false whenever a userInputAnim draw is called. This way, only one draw can be called per cycle
 
 //////////////////////////////////////////
 // Tempo-synced color stroboscope
@@ -14,34 +15,24 @@ boolean stroboAutoPadNoteOff = false;
 
 void draw_stroboAutoPad(int colorset, float tempo, int noteSpeed) {
   if (authorizePanelStrobe == true) {
-    pushStyle();
-    colorMode(HSB);
-    noStroke();
-    
+
     //Update the tempo
     frameRate(2 * noteSpeed * tempo/60);
     
     if (frameCount % 2 == 0)
     {
-      if (colorset == COLORSET_WHITE) {
-        fill(255);
-      }
       if (colorset == COLORSET_RED) {
-        fill(0,255,255);
+        background(255,0,0);
       }
-      if (colorset == COLORSET_COLORFUL) {
-        fill(int(random(0,360)),255,255);
+      else {
+        background(255);        
       }
-      
-      rect(0,0,width,height);
+      rect(-width,-height,3*width,3*height);
     }
     else
     {
-      fill(0);
-      rect(0,0,width,height);
+      background(0);
     }
-    
-    popStyle();
     
     if (stroboAutoPadNoteOff == true) {
       tempo = registeredTempo;
@@ -49,7 +40,7 @@ void draw_stroboAutoPad(int colorset, float tempo, int noteSpeed) {
     }
   }
   if (authorizeDMXStrobe == true) {
-    //DMX
+    //DMX - TBIL
     if (noteSpeed<=1) {
       
     }
@@ -81,40 +72,87 @@ void draw_AutoModeWhiteOut(int whiteout) {
 }
 
 void draw_AutoModeWhiteOut(int whiteout, int modulation) {
-  pushStyle();  // Start a new style
   
-  if (random(255) > whiteout) {  //Make the screen glitch when the hipass gets stronger - whiteoutPower is between 0 and 127 
-    fill(255, map(whiteout,0,127,0,255));  
+  if (userInputAnim_enableDrawForCurrentCycle == true) {
+    //pushStyle();  // Start a new style
+    
+    if (random(255) > whiteout) {  //Make the screen glitch when the hipass gets stronger - whiteoutPower is between 0 and 127 
+      fill(255, map(whiteout,0,127,0,255));  
+    }
+    else {
+      fill(0);
+    } 
+    rect(-width,-height,3*width,3*height);
+  
+    if (modulation > RMX_CC_VAL_THR_1) {
+      float blackout_modulation = 0;
+      //4th
+      if (modulation <= RMX_CC_VAL_THR_2) {
+        blackout_modulation = cos(1*RAD_FACTOR*(automaticSequencer.currentPosition % 1.0));
+      }
+      //8th
+      else if (modulation <= RMX_CC_VAL_THR_3) {
+        blackout_modulation = cos(2*RAD_FACTOR*(automaticSequencer.currentPosition % 0.5));
+      }
+      //16th
+      else if (modulation <= RMX_CC_VAL_THR_4) {
+        blackout_modulation = cos(4*RAD_FACTOR*(automaticSequencer.currentPosition % 0.25));
+      }
+      fill(0, blackout_modulation*map(whiteout,0,100,130,255));
+      rect(-width,-height,3*width,3*height);
+    }
+    userInputAnim_enableDrawForCurrentCycle = false;
+    //popStyle();
   }
-  else {
-    fill(0);
-  } 
-  noStroke();
-  rect(0,0,width,height);
-  
-  
-  if (modulation > RMX_CC_VAL_THR_1) {
-    float blackout_modulation = 0;
-    //4th
-    if (modulation <= RMX_CC_VAL_THR_2) {
-      blackout_modulation = cos(1*RAD_FACTOR*(automaticSequencer.currentPosition % 1.0));
-    }
-    //8th
-    else if (modulation <= RMX_CC_VAL_THR_3) {
-      blackout_modulation = cos(2*RAD_FACTOR*(automaticSequencer.currentPosition % 0.5));
-    }
-    //16th
-    else if (modulation <= RMX_CC_VAL_THR_4) {
-      blackout_modulation = cos(4*RAD_FACTOR*(automaticSequencer.currentPosition % 0.25));
-    }
-    fill(0, blackout_modulation*map(whiteout,0,100,130,255));
-    rect(0,0,width,height);
-  }
-  
-  popStyle();
-  
 }
 
+//////////////////////////////////////////
+// Red-Out
+//////////////////////////////////////////
+
+void draw_AutoModeRedOut(int whiteout) {
+  draw_AutoModeRedOut(whiteout, 0);
+}
+
+void draw_AutoModeRedOut(int whiteout, int modulation) {
+  
+  if (userInputAnim_enableDrawForCurrentCycle == true) {
+    //pushStyle();  // Start a new style
+    //colorMode(RGB);
+    
+    if (random(255) > whiteout) {  //Make the screen glitch when the hipass gets stronger - whiteoutPower is between 0 and 127 
+      fill(255,0,0, map(whiteout,0,127,0,255));  
+    }
+    else {
+      fill(0);
+    } 
+    //noStroke();
+    rect(-width,height,3*width,3*height);
+    
+    
+    if (modulation > RMX_CC_VAL_THR_1) {
+      float blackout_modulation = 0;
+      //4th
+      if (modulation <= RMX_CC_VAL_THR_2) {
+        blackout_modulation = cos(1*RAD_FACTOR*(automaticSequencer.currentPosition % 1.0));
+      }
+      //8th
+      else if (modulation <= RMX_CC_VAL_THR_3) {
+        blackout_modulation = cos(2*RAD_FACTOR*(automaticSequencer.currentPosition % 0.5));
+      }
+      //16th
+      else if (modulation <= RMX_CC_VAL_THR_4) {
+        blackout_modulation = cos(4*RAD_FACTOR*(automaticSequencer.currentPosition % 0.25));
+      }
+      fill(0, blackout_modulation*map(whiteout,0,100,130,255));
+      rect(-width,-height,3*width,3*height);
+    }
+  
+    userInputAnim_enableDrawForCurrentCycle = false;
+    //popStyle();
+  }
+  
+}
 //////////////////////////////////////////
 // BlackOut
 //////////////////////////////////////////
@@ -124,32 +162,34 @@ void draw_AutoModeBlackOut(int blackout) {
 }
 
 void draw_AutoModeBlackOut(int blackout, int modulation) {
-  pushStyle();  // Start a new style
-  //colorMode(RGB);
-  fill(0, map(blackout,0,127,0,255));
-  noStroke();
-  rect(0,0,width,height);
-  
-  //Modulate with a black/white sine flash
-  if (modulation > RMX_CC_VAL_THR_1) {
-    float whiteout_modulation = 0;
-    //4th
-    if (modulation <= RMX_CC_VAL_THR_2) {
-      whiteout_modulation = cos(1*RAD_FACTOR*(automaticSequencer.currentPosition % 1.0));
+  if (userInputAnim_enableDrawForCurrentCycle == true) {
+    //pushStyle();  // Start a new style
+    //colorMode(RGB);
+    fill(0, map(blackout,0,127,0,255));
+    //noStroke();
+    rect(-width,-height,3*width,3*height);
+    
+    //Modulate with a black/white sine flash
+    if (modulation > RMX_CC_VAL_THR_1) {
+      float whiteout_modulation = 0;
+      //4th
+      if (modulation <= RMX_CC_VAL_THR_2) {
+        whiteout_modulation = cos(1*RAD_FACTOR*(automaticSequencer.currentPosition % 1.0));
+      }
+      //8th
+      else if (modulation <= RMX_CC_VAL_THR_3) {
+        whiteout_modulation = cos(2*RAD_FACTOR*(automaticSequencer.currentPosition % 0.5));
+      }
+      //16th
+      else if (modulation <= RMX_CC_VAL_THR_4) {
+        whiteout_modulation = cos(4*RAD_FACTOR*(automaticSequencer.currentPosition % 0.25));
+      }
+      fill(255, whiteout_modulation*map(blackout,0,127,130,255));
+      rect(-width,-height,3*width,3*height);
     }
-    //8th
-    else if (modulation <= RMX_CC_VAL_THR_3) {
-      whiteout_modulation = cos(2*RAD_FACTOR*(automaticSequencer.currentPosition % 0.5));
-    }
-    //16th
-    else if (modulation <= RMX_CC_VAL_THR_4) {
-      whiteout_modulation = cos(4*RAD_FACTOR*(automaticSequencer.currentPosition % 0.25));
-    }
-    fill(255, whiteout_modulation*map(blackout,0,127,130,255));
-    rect(0,0,width,height);
+    userInputAnim_enableDrawForCurrentCycle = false;
+    //popStyle();
   }
-  popStyle();
-  
 }
 
 //////////////////////////////////////////

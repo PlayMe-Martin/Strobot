@@ -346,7 +346,7 @@ void executeRMXSpecificAnimations() {
       case PITCH_RMX_SCENE_MOD:             break;
       case PITCH_RMX_SCENE_ECHO:            break;
       case PITCH_RMX_SCENE_NOISE:           break;
-      case PITCH_RMX_SCENE_SPIRALUP:        draw_AutoModeWhiteOut(pionnerRMX_CurrentSceneFxCCVal, pionnerRMX_CurrentSceneFxCCVal2); break;
+      case PITCH_RMX_SCENE_SPIRALUP:        draw_AutoModeRedOut(pionnerRMX_CurrentSceneFxCCVal, pionnerRMX_CurrentSceneFxCCVal2); break;
       case PITCH_RMX_SCENE_REVERBUP:        draw_AutoModeWhiteOut(pionnerRMX_CurrentSceneFxCCVal, pionnerRMX_CurrentSceneFxCCVal2); break;
       default: break;
     }  

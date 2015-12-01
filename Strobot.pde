@@ -502,6 +502,8 @@ void draw()
     //Execute the draw function for the animation corresponding to animationnumber
     //The specific setup is executed once, upon reception of an MIDI message changing the animation
     try {
+      //retrigger every cycle the possibility to call a user input animation
+      userInputAnim_enableDrawForCurrentCycle = true;
       
       //Panel graphic generation
       if (AUTOMATIC_MODE == false) {

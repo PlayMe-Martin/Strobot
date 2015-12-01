@@ -2448,7 +2448,6 @@ void specificActions() {
             for (int x = 0; x < randomBWFlow_resolutionX; x ++) {
               randomBWFlow_flow[x][y].x = random(-1,1);
               randomBWFlow_flow[x][y].y = randomBWFlow_flow[x][y].y;
-              println(randomBWFlow_flow[x][y].x + " -- " + randomBWFlow_flow[x][y].y);
             }
           }
         }
@@ -4149,6 +4148,7 @@ void specificActions() {
           //arrange lengths so frequency difference between HypnoWheelPendulums is constant
           hypnopendulum_lengths[n] = hypnopendulum_lengths[n-1] - 2;
         }
+        hypnopendulum_fadein = 0;
          
          
         hypnopendulum_pends = new ArrayList();

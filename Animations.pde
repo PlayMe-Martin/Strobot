@@ -4332,11 +4332,15 @@ void draw_fillextremehiright(){
 //////////////////////////////////////////
 
 void draw_whiteout(){
-  rect(0,0,width,height);
+  noStroke();
+  fill(255);
+  rect(-width,-height,3*width,3*height);
 }
 
 void draw_blackout(){
-  rect(0,0,width,height);
+  noStroke();
+  fill(0);
+  rect(-width,-height,3*width,3*height);
 }
 
 //////////////////////////////////////////
@@ -5846,6 +5850,12 @@ void draw_hypnopendulum() {
     hypnopendulum_p.update(hypnopendulum_t);
     // draw HypnoWheelPendulum
     hypnopendulum_p.render();
+  }
+  
+  if (hypnopendulum_fadein < 255) {
+    fill(0, 255 - hypnopendulum_fadein);
+    rect(0,0,width,height);
+    hypnopendulum_fadein += hypnopendulum_fadeinSpeed;
   }
 }
 
