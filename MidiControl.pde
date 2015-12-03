@@ -327,7 +327,7 @@ void processMidiInfo_pioneerControllerNoteOn(int pitch, int velocity) {
 void executeRMXSpecificAnimations() {
   if (pionnerRMX_RhythmFxOn) {
     switch (pionnerRMX_LastSeenRhythmPitch) {
-      case PITCH_RMX_RHYTHM_ROLL:           break;
+      case PITCH_RMX_RHYTHM_ROLL:           draw_AutoModeDMXStrobe(pionnerRMX_CurrentRhythmFxCCVal, pionnerRMX_CurrentRhythmFxCCVal2); break;
       case PITCH_RMX_RHYTHM_TRANS:          break;
       case PITCH_RMX_RHYTHM_ADD:            break;
       case PITCH_RMX_RHYTHM_REVDELAY:       break;
@@ -637,7 +637,6 @@ void loadDMXAnimation3(int velocity) {
 void loadDMXAnimation(int dmxAnimNumber) {
   //When such a command is received, and while the note continues, the DMX control is up to Strobot
   dmxAutomaticControl = true;
-  
   dmxAnimationNumber = dmxAnimNumber;
   setupDMXAnimation();
 }
