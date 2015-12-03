@@ -4,7 +4,7 @@
 
 final float RAD_FACTOR = 6.28318;
 boolean userInputAnim_enableDrawForCurrentCycle = true;      //Set to true at the beginning of each cycle, this variable is set to false whenever a userInputAnim draw is called. This way, only one draw can be called per cycle
-
+boolean userInputAnim_activateAutoModeDMXStrobe = false;
 //////////////////////////////////////////
 // Tempo-synced color stroboscope
 //////////////////////////////////////////
@@ -184,7 +184,7 @@ void draw_AutoModeBlackOut(int blackout, int modulation) {
       else if (modulation <= RMX_CC_VAL_THR_4) {
         whiteout_modulation = cos(4*RAD_FACTOR*(automaticSequencer.currentPosition % 0.25));
       }
-      fill(255, whiteout_modulation*map(blackout,0,127,130,255));
+      fill(255, min(255, whiteout_modulation*map(blackout,0,100,130,255)));
       rect(-width,-height,3*width,3*height);
     }
     userInputAnim_enableDrawForCurrentCycle = false;
@@ -285,4 +285,25 @@ void draw_whiteNoiseEffect(int noiseIntensity) {
     }
   }
   popStyle();
+}
+
+//////////////////////////////////////////
+// RMX responsive auto DMX strobe
+//////////////////////////////////////////
+
+void draw_AutoModeDMXStrobe(int val, int modulation) {
+  //Only use the modulation for this animation
+  
+  if (modulation > RMX_CC_VAL_THR_1) {
+    if (userInputAnim_activateAutoModeDMXStrobe == false || dmxAnimationNumber != 26) {
+      loadDMXAnimation(26);
+    }
+    userInputAnim_activateAutoModeDMXStrobe = true;
+  }
+  else {
+    if (userInputAnim_activateAutoModeDMXStrobe == true) {
+      loadDMXAnimation(0);
+      userInputAnim_activateAutoModeDMXStrobe = false;
+    }
+  }
 }
