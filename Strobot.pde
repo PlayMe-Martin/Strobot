@@ -481,7 +481,9 @@ void setup()
   setLocation(gui_width, 0);
   
   //Initialize the GUI
-  setup_gui();
+  if (DISPLAY_GUI == true) {
+     setup_gui();
+  }
 
   //Set all the custom devices to light up
   customDeviceAnimation(4);
