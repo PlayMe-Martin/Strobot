@@ -16,6 +16,8 @@ PFont minimlFont;
 PFont minimlFontMedium;
 PFont minimlFontBig;
 
+boolean DISPLAY_GUI = true;
+
 boolean gui_activateSimulator = false;
 boolean gui_activateAudioMonitoring = false;
 boolean gui_initComplete = false;

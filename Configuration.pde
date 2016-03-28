@@ -83,6 +83,8 @@ void createConfigFile() {
     configFile_write.println();
     printDMXDeviceConfiguration();
     configFile_write.println();
+    configFile_write.println("Choose to display the graphic user interface or not - not displaying it will result in a lighter CPU usage");
+    configFile_write.println("GeneralSettings|DisplayGUI:" + DISPLAY_GUI);
     configFile_write.println();
     configFile_write.println("This section allows to activate or disable special manual actions during the regular semi-automatic and manual modes, using the keyboard");
     configFile_write.println();
@@ -292,6 +294,13 @@ void parseConfigurationFile(String line) {
       }
       else if (lineSplit[0].contains("MIDISettings|ControllerInputMIDIDevice")) {
         MIDI_BUS_CONTROLLER_INPUT = lineSplit[1];
+      }
+      
+      //////////////////////////////////////////////////
+      
+      
+      else if (lineSplit[0].contains("GeneralSettings|DisplayGUI")) {
+        DISPLAY_GUI = getBooleanFromString(lineSplit[1]);
       }
         
       //////////////////////////////////////////////////
