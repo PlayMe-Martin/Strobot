@@ -809,10 +809,6 @@ public class ControlFrame extends PApplet {
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK2        + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK2       ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK3        + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK3       ) + "\n" +
                                   "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_FRONT_RIGHT + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_FRONT_RIGHT) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_FRONT_LEFT  + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_FRONT_LEFT ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_GENERAL_STROBO_BACK        + " | " + getStringFromNoteInt(PITCH_GENERAL_STROBO_BACK       ) + "\n" +
-                                  "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_ENABLE_MAN_INPUT           + " | " + getStringFromNoteInt(PITCH_ENABLE_MAN_INPUT          ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DISABLE_MAN_INPUT          + " | " + getStringFromNoteInt(PITCH_DISABLE_MAN_INPUT         ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_CHANGE_OUTPUTMAPPING       + " | " + getStringFromNoteInt(PITCH_CHANGE_OUTPUTMAPPING      ) + "\n" +
@@ -2204,43 +2200,46 @@ public class ControlFrame extends PApplet {
       // Device test : using the corresponding buttons, light up the devices to check proper connection
       // For DMX devices, it's normal the simulator won't light up
       
-      else if (theEvent.getName().contains("Test FrontLeftStroboscope ")) {
-        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
-        float toggleValue =  cp5.getController(theEvent.getName()).getValue();
-        if (toggleValue == 1.0) {
-          //Start the corresponding stroboscope, full power
-          DMXList_FrontLeftStroboscopes.get(devNumber).startDMX(100);
-        }
-        else {
-          //Stop it once we're done
-          DMXList_FrontLeftStroboscopes.get(devNumber).stopDMX();
-        }
-      }
-      else if (theEvent.getName().contains("Test FrontRightStroboscope ")) {
-        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
-        float toggleValue =  cp5.getController(theEvent.getName()).getValue();
-        if (toggleValue == 1.0) {
-          //Start the corresponding stroboscope, full power
-          DMXList_FrontRightStroboscopes.get(devNumber).startDMX(100);
-        }
-        else {
-          //Stop it once we're done
-          DMXList_FrontRightStroboscopes.get(devNumber).stopDMX();
-        }
-      }
-      else if (theEvent.getName().contains("Test BackStroboscope ")) {
-        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
-        float toggleValue =  cp5.getController(theEvent.getName()).getValue();
-        if (toggleValue == 1.0) {
-          //Start the corresponding stroboscope, full power
-          DMXList_BackStroboscopes.get(devNumber).startDMX(100);
-        }
-        else {
-          //Stop it once we're done
-          DMXList_BackStroboscopes.get(devNumber).stopDMX();
-        }
-      }
-      else if (theEvent.getName().contains("Test LEDTube ")) {
+      // TBIL - needs to be redone after the proper DMX implementation
+      // VERY important function !!! Do not forget to do it !!
+      
+//      else if (theEvent.getName().contains("Test FrontLeftStroboscope ")) {
+//        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
+//        float toggleValue =  cp5.getController(theEvent.getName()).getValue();
+//        if (toggleValue == 1.0) {
+//          //Start the corresponding stroboscope, full power
+//          DMXList_FrontLeftStroboscopes.get(devNumber).startDMX(100);
+//        }
+//        else {
+//          //Stop it once we're done
+//          DMXList_FrontLeftStroboscopes.get(devNumber).stopDMX();
+//        }
+//      }
+//      else if (theEvent.getName().contains("Test FrontRightStroboscope ")) {
+//        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
+//        float toggleValue =  cp5.getController(theEvent.getName()).getValue();
+//        if (toggleValue == 1.0) {
+//          //Start the corresponding stroboscope, full power
+//          DMXList_FrontRightStroboscopes.get(devNumber).startDMX(100);
+//        }
+//        else {
+//          //Stop it once we're done
+//          DMXList_FrontRightStroboscopes.get(devNumber).stopDMX();
+//        }
+//      }
+//      else if (theEvent.getName().contains("Test BackStroboscope ")) {
+//        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
+//        float toggleValue =  cp5.getController(theEvent.getName()).getValue();
+//        if (toggleValue == 1.0) {
+//          //Start the corresponding stroboscope, full power
+//          DMXList_BackStroboscopes.get(devNumber).startDMX(100);
+//        }
+//        else {
+//          //Stop it once we're done
+//          DMXList_BackStroboscopes.get(devNumber).stopDMX();
+//        }
+//      }
+      if (theEvent.getName().contains("Test LEDTube ")) {
         int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
         float toggleValue =  cp5.getController(theEvent.getName()).getValue();
         if (toggleValue == 1.0) {

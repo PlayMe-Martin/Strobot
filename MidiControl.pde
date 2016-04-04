@@ -46,13 +46,7 @@ final int PITCH_LOAD_ANIMATION_BANK2_TEMP  = 97;
 final int PITCH_LOAD_ANIMATION_BANK3_TEMP  = 98;
 final int PITCH_LOAD_ANIMATION_BANK4_TEMP  = 99;
 
-final int PITCH_CHANGE_STROBO_FRONT        = 100;
-final int PITCH_START_STROBO_FRONT         = 101;
-final int PITCH_STOP_STROBO_FRONT          = 102;
-final int PITCH_GENERAL_STROBO_FRONT_LEFT  = 103;
-final int PITCH_GENERAL_STROBO_FRONT_RIGHT = 104;
-final int PITCH_GENERAL_STROBO_BACK        = 105;
-final int PITCH_DMX_ANIMATION_BANK1        = 106;
+final int PITCH_DMX_ANIMATION_BANK1        = 106;    //DMX bank mainly used for the strobes
 final int PITCH_DMX_ANIMATION_BANK2        = 107;
 final int PITCH_DMX_ANIMATION_BANK3        = 108;
 final int PITCH_ENABLE_MAN_INPUT           = 110;
@@ -202,16 +196,8 @@ void processMidiInfo_semiAutoMode(int pitch, int velocity) {
     //Standard mode, MIDI incoming from Ableton
     case PITCH_SET_AUTOMODE_OFF:           setAutomaticModeOff();break;                                             //F#5   - Disable the automatic mode
     case PITCH_SET_AUTOMODE_ON:            setAutomaticModeOn();break;                                              //G5    - Enable the automatic mode
-    
-    case PITCH_CHANGE_STROBO_FRONT:        changeStrobe(velocity);break;                                            //E7    - Deprecated way to use the stroboscope
-    case PITCH_START_STROBO_FRONT:         startStrobe(velocity);break;                                             //F7    - Deprecated way to use the stroboscope
-    case PITCH_STOP_STROBO_FRONT:          stopStrobe();break;                                                      //F#7   - Deprecated way to use the stroboscope
-    
-    case PITCH_GENERAL_STROBO_FRONT_LEFT:  startStrobe_FrontLeft(velocity);break;                                   //G7    - New way to use the stroboscope : noteOff releases the strobe
-    case PITCH_GENERAL_STROBO_FRONT_RIGHT: startStrobe_FrontRight(velocity);break;                                  //G#7   - New way to use the stroboscope : noteOff releases the strobe
-    case PITCH_GENERAL_STROBO_BACK:        startStrobe_Back(velocity);break;                                        //A7    - New way to use the stroboscope : noteOff releases the strobe
-  
-    case PITCH_DMX_ANIMATION_BANK1:        loadDMXAnimation1(velocity); break;                                      //A#7   - Load an animation using DMX devices
+      
+    case PITCH_DMX_ANIMATION_BANK1:        loadDMXAnimation1(velocity); break;                                      //A#7   - Load an animation using DMX devices - Strobe bank
     case PITCH_DMX_ANIMATION_BANK2:        loadDMXAnimation2(velocity); break;                                      //B7
     case PITCH_DMX_ANIMATION_BANK3:        loadDMXAnimation3(velocity); break;                                      //C8
     
@@ -406,13 +392,14 @@ void activateKillLedPanel(int channel, int pitch, int velocity) {
     automaticSequencer.setKillLedPanel = true;
   }
   if (authorizeKillLedPanelManualMode == true) {
-    setKillLedPanelManualMode = true;
-    if (authorizeDMXStrobe == true) {
-      strobepreset_frontleft = 0;
-      strobepreset_frontright = 0;
-      stopStrobe_FrontLeft();
-      stopStrobe_FrontRight();
-    }
+    //TBIL - needs to be redone with the new DMX functions
+//    setKillLedPanelManualMode = true;
+//    if (authorizeDMXStrobe == true) {
+//      strobepreset_frontleft = 0;
+//      strobepreset_frontright = 0;
+//      stopStrobe_FrontLeft();
+//      stopStrobe_FrontRight();
+//    }
   }
 }
 
@@ -424,22 +411,23 @@ void activatePadStrobe4th(int channel, int pitch, int velocity) {
     registeredTempo = frameRate;
   }
   if (authorizeStrobeManualMode4th == true) {
-    if (authorizePanelStrobe == true) {
-      setStrobeManualMode4th = true;
-    }
-    if (authorizeDMXStrobe == true) {
-      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
-        previousFrontLeftStrobePreset = strobepreset_frontleft;
-        previousFrontRightStrobeState = drawStrobe_FrontRight;
-        previousFrontRightStrobePreset = strobepreset_frontright;
-      }
-      strobepreset_frontleft = 40;
-      strobepreset_frontright = 40;
-      //Only need to call this function once
-      startStrobe(strobepreset_frontleft);
-    }
-    registeredTempo = frameRate;
+    //TBIL - needs to be redone with the new DMX functions
+//    if (authorizePanelStrobe == true) {
+//      setStrobeManualMode4th = true;
+//    }
+//    if (authorizeDMXStrobe == true) {
+//      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+//        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
+//        previousFrontLeftStrobePreset = strobepreset_frontleft;
+//        previousFrontRightStrobeState = drawStrobe_FrontRight;
+//        previousFrontRightStrobePreset = strobepreset_frontright;
+//      }
+//      strobepreset_frontleft = 40;
+//      strobepreset_frontright = 40;
+//      //Only need to call this function once
+//      startStrobe(strobepreset_frontleft);
+//    }
+//    registeredTempo = frameRate;
   }
 }
 
@@ -451,21 +439,22 @@ void activatePadStrobe8th(int channel, int pitch, int velocity) {
     registeredTempo = frameRate;
   }
   if (authorizeStrobeManualMode8th == true) {
-    if (authorizePanelStrobe == true) {
-      registeredTempo = frameRate;
-    }
-    if (authorizeDMXStrobe == true) {
-      if ((setStrobeManualMode4th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
-        previousFrontLeftStrobePreset = strobepreset_frontleft;
-        previousFrontRightStrobeState = drawStrobe_FrontRight;
-        previousFrontRightStrobePreset = strobepreset_frontright;
-      }
-      strobepreset_frontleft = 60;
-      strobepreset_frontright = 60;
-      startStrobe(strobepreset_frontleft);
-    }
-    setStrobeManualMode8th = true;
+    //TBIL - needs to be redone with the new DMX functions
+//    if (authorizePanelStrobe == true) {
+//      registeredTempo = frameRate;
+//    }
+//    if (authorizeDMXStrobe == true) {
+//      if ((setStrobeManualMode4th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+//        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
+//        previousFrontLeftStrobePreset = strobepreset_frontleft;
+//        previousFrontRightStrobeState = drawStrobe_FrontRight;
+//        previousFrontRightStrobePreset = strobepreset_frontright;
+//      }
+//      strobepreset_frontleft = 60;
+//      strobepreset_frontright = 60;
+//      startStrobe(strobepreset_frontleft);
+//    }
+//    setStrobeManualMode8th = true;
   }
 }
 
@@ -477,21 +466,22 @@ void activatePadStrobe16th(int channel, int pitch, int velocity) {
     registeredTempo = frameRate;
   }
   if (authorizeStrobeManualMode16th == true) {
-    if (authorizePanelStrobe == true) {
-      registeredTempo = frameRate;
-    }
-    if (authorizeDMXStrobe == true) {
-      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
-        previousFrontLeftStrobePreset = strobepreset_frontleft;
-        previousFrontRightStrobeState = drawStrobe_FrontRight;
-        previousFrontRightStrobePreset = strobepreset_frontright;
-      }
-      strobepreset_frontleft = 80;
-      strobepreset_frontright = 80;
-      startStrobe(strobepreset_frontleft);
-    }
-    setStrobeManualMode16th = true;
+    //TBIL - needs to be redone with the new DMX functions
+//    if (authorizePanelStrobe == true) {
+//      registeredTempo = frameRate;
+//    }
+//    if (authorizeDMXStrobe == true) {
+//      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+//        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
+//        previousFrontLeftStrobePreset = strobepreset_frontleft;
+//        previousFrontRightStrobeState = drawStrobe_FrontRight;
+//        previousFrontRightStrobePreset = strobepreset_frontright;
+//      }
+//      strobepreset_frontleft = 80;
+//      strobepreset_frontright = 80;
+//      startStrobe(strobepreset_frontleft);
+//    }
+//    setStrobeManualMode16th = true;
   }
 }
 
@@ -503,21 +493,22 @@ void activatePadStrobe32nd(int channel, int pitch, int velocity) {
     registeredTempo = frameRate;
   }
   if (authorizeStrobeManualMode32nd == true) {
-    if (authorizePanelStrobe == true) {
-      registeredTempo = frameRate;
-    }
-    if (authorizeDMXStrobe == true) {
-      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode64th == true) == false) {
-        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
-        previousFrontLeftStrobePreset = strobepreset_frontleft;
-        previousFrontRightStrobeState = drawStrobe_FrontRight;
-        previousFrontRightStrobePreset = strobepreset_frontright;
-      }
-      strobepreset_frontleft = 100;
-      strobepreset_frontright = 100;
-      startStrobe(strobepreset_frontleft);
-    }
-    setStrobeManualMode32nd = true;
+    //TBIL - needs to be redone with the new DMX functions
+//    if (authorizePanelStrobe == true) {
+//      registeredTempo = frameRate;
+//    }
+//    if (authorizeDMXStrobe == true) {
+//      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode64th == true) == false) {
+//        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
+//        previousFrontLeftStrobePreset = strobepreset_frontleft;
+//        previousFrontRightStrobeState = drawStrobe_FrontRight;
+//        previousFrontRightStrobePreset = strobepreset_frontright;
+//      }
+//      strobepreset_frontleft = 100;
+//      strobepreset_frontright = 100;
+//      startStrobe(strobepreset_frontleft);
+//    }
+//    setStrobeManualMode32nd = true;
   }
 }
 
@@ -529,75 +520,31 @@ void activatePadStrobe64th(int channel, int pitch, int velocity) {
     registeredTempo = frameRate;
   }
   if (authorizeStrobeManualMode64th == true) {
-    if (authorizePanelStrobe == true) {
-      registeredTempo = frameRate;
-    }
-    if (authorizeDMXStrobe == true) {
-      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true) == false) {
-        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
-        previousFrontLeftStrobePreset = strobepreset_frontleft;
-        previousFrontRightStrobeState = drawStrobe_FrontRight;
-        previousFrontRightStrobePreset = strobepreset_frontright;
-        previousBackStrobeState = drawStrobe_Back;
-        previousBackStrobePreset = strobepreset_back;
-      }
-      strobepreset_frontleft = 100;
-      strobepreset_frontright = 100;
-      strobepreset_back = 100;
-      startStrobe(strobepreset_frontleft);
-      startStrobe_Back(strobepreset_back);
-    }
-    setStrobeManualMode64th = true;
+    //TBIL - needs to be redone with the new DMX functions
+//    if (authorizePanelStrobe == true) {
+//      registeredTempo = frameRate;
+//    }
+//    if (authorizeDMXStrobe == true) {
+//      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true) == false) {
+//        previousFrontLeftStrobeState = drawStrobe_FrontLeft;
+//        previousFrontLeftStrobePreset = strobepreset_frontleft;
+//        previousFrontRightStrobeState = drawStrobe_FrontRight;
+//        previousFrontRightStrobePreset = strobepreset_frontright;
+//        previousBackStrobeState = drawStrobe_Back;
+//        previousBackStrobePreset = strobepreset_back;
+//      }
+//      strobepreset_frontleft = 100;
+//      strobepreset_frontright = 100;
+//      strobepreset_back = 100;
+//      startStrobe(strobepreset_frontleft);
+//      startStrobe_Back(strobepreset_back);
+//    }
+//    setStrobeManualMode64th = true;
   }
 }
 
-void changeStrobe(int velocity) {
-  //CHANGE_STROBE - change both front stroboscopes
-  strobepreset_frontleft = velocity;
-  strobepreset_frontright = velocity;
-  //Kept for debug, not necessary in the release version
-  //outputLog.println("Note On received: (Channel, Pitch, Velocity = (" + channel + ", " + pitch + ", " + velocity + ")    -> Corresponding message : Change both front stroboscope speed/brightness to preset " + strobepreset_frontleft);
-  
-  // if the velocity is out of the table's bounds, prevent a crash
-  if (velocity >= strobelist.length)
-  {
-    strobepreset_frontleft = 1;
-    strobepreset_frontright = 1;
-    outputLog.println("DMX changeStrobe function input error : Input MIDI velocity is out of bounds, setting default speed preset"); 
-  }
 
-  // if the stroboscope is already active, update the preset
-  if (drawStrobe_FrontLeft == 1 || drawStrobe_FrontRight == 1) {
-    drawStrobe_FrontLeft  = 1;
-    drawStrobe_FrontRight = 1;
-    myDMX.setStrobePreset_FrontLeft(strobepreset_frontleft);
-    myDMX.setStrobePreset_FrontRight(strobepreset_frontright);
-  }
-  
-}
-
-//Old method to call the front stroboscope, still works, but the more up-to-date startStrobe_FrontRight/Left should be used
-void startStrobe(int velocity) {
-  //START_STROBE
-  drawStrobe_FrontLeft = 1;
-  drawStrobe_FrontRight = 1;
-  //Kept for debug, not necessary in the release version
-  //outputLog.println("Note On received: Start front stroboscope with speed/brightness preset " + strobepreset_frontleft);
-}
-
-//Old method to call the front stroboscope, still works, but the more up-to-date stopStrobe_Front should be used
-void stopStrobe() {
-  //STOP_STROBE
-  drawStrobe_FrontLeft = 0;
-  drawStrobe_FrontRight = 0;
-  //Kept for debug, not necessary in the release version
-  //outputLog.println("Note On received: Corresponding message : Stop front stroboscope");
-
-}
-
-
-
-void setAutomaticModeOff() {     
+void setAutomaticModeOff() {
   //outputLog.println("Action received: Set Automatic Mode OFF");
   AUTOMATIC_MODE = false;
   // Update the GUI's Auto Mode toggle
@@ -817,28 +764,6 @@ void resetLEDPanelMapping() {
 }
 
 
-
-void startStrobe_FrontLeft(int velocity) {
-  strobepreset_frontleft = velocity;
-  drawStrobe_FrontLeft = 1;
-  myDMX.setStrobePreset_FrontLeft(velocity); 
-}
-
-void startStrobe_FrontRight(int velocity) {
-  strobepreset_frontright = velocity;
-  drawStrobe_FrontRight = 1;
-  myDMX.setStrobePreset_FrontRight(velocity);
- 
-}
-
-void startStrobe_Back(int velocity) {
-  strobepreset_back = velocity;
-  drawStrobe_Back = 1;
-  myDMX.setStrobePreset_Back(velocity);
- 
-}
-
-
 //////////////////////////////////////////////////
 //////////////       NOTE OFF       //////////////
 //////////////////////////////////////////////////
@@ -866,10 +791,6 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
       //Do not release automatic mode : only Note On events have this right
       //AUTOMATIC_MODE = false;
       switch (pitch) {
-        case PITCH_GENERAL_STROBO_FRONT_LEFT:  stopStrobe_FrontLeft();break;                               //G7    - New way to use the stroboscope : noteOff releases the strobe
-        case PITCH_GENERAL_STROBO_FRONT_RIGHT: stopStrobe_FrontRight();break;                              //G#7   - New way to use the stroboscope : noteOff releases the strobe
-        case PITCH_GENERAL_STROBO_BACK:        stopStrobe_Back();break;                                    //A7    - New way to use the stroboscope : noteOff releases the strobe
-
         case PITCH_DMX_ANIMATION_BANK1:        unloadDMXAnimation(); break;                                //A#7   - Unload an animation using DMX devices : noteOff releases DMX
         case PITCH_DMX_ANIMATION_BANK2:        unloadDMXAnimation(); break;                                //B7
         case PITCH_DMX_ANIMATION_BANK3:        unloadDMXAnimation(); break;                                //C8
@@ -905,35 +826,20 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
           }
         }        
       }
-      //The command is an order for DMX devices
-      else {
-        if (pitch == noteOffToResetDMX) {
-          strobepreset_frontleft = 0;
-          myDMX.stopStrobe_FrontLeft();
-          strobepreset_frontright = 0;
-          myDMX.stopStrobe_FrontRight();
-          strobepreset_back = 0;
-          myDMX.stopStrobe_Back();
-        }
-      }
+      //TBIL - needs to be redone once the new DMX implementation is complete
+//      //The command is an order for DMX devices
+//      else {
+//        if (pitch == noteOffToResetDMX) {
+//          strobepreset_frontleft = 0;
+//          myDMX.stopStrobe_FrontLeft();
+//          strobepreset_frontright = 0;
+//          myDMX.stopStrobe_FrontRight();
+//          strobepreset_back = 0;
+//          myDMX.stopStrobe_Back();
+//        }
+//      }
     }
   }
-}
-
-void stopStrobe_FrontLeft() {
-  drawStrobe_FrontLeft = 0;
-  myDMX.stopStrobe_FrontLeft();
-}
-
-void stopStrobe_FrontRight() {
-  drawStrobe_FrontRight = 0;
-  myDMX.stopStrobe_FrontRight();
-}
-
-void stopStrobe_Back() {
-  drawStrobe_Back = 0;
-  myDMX.stopStrobe_Back();
- 
 }
 
 void unloadDMXAnimation() {
@@ -994,23 +900,24 @@ void deactivatePadStrobe4th(int channel, int pitch, int velocity) {
       frameRate(registeredTempo);
     }
     if (authorizeDMXStrobe == true) {
-      if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
-        strobepreset_frontleft = previousFrontLeftStrobePreset;
-        drawStrobe_FrontRight = previousFrontRightStrobeState;
-        strobepreset_frontright = previousFrontRightStrobePreset;
-        
-        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
-          drawStrobe_FrontLeft  = 0;
-          drawStrobe_FrontRight = 0;
-          stopStrobe_FrontLeft();
-          stopStrobe_FrontRight();
-        }
-        else {
-          startStrobe_FrontRight(strobepreset_frontright);
-          startStrobe_FrontLeft(strobepreset_frontleft);
-        }
-      }
+      //TBIL - needs to be redone once the new DMX implementation is complete
+//      if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+//        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
+//        strobepreset_frontleft = previousFrontLeftStrobePreset;
+//        drawStrobe_FrontRight = previousFrontRightStrobeState;
+//        strobepreset_frontright = previousFrontRightStrobePreset;
+//        
+//        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
+//          drawStrobe_FrontLeft  = 0;
+//          drawStrobe_FrontRight = 0;
+//          stopStrobe_FrontLeft();
+//          stopStrobe_FrontRight();
+//        }
+//        else {
+//          startStrobe_FrontRight(strobepreset_frontright);
+//          startStrobe_FrontLeft(strobepreset_frontleft);
+//        }
+//      }
     }
     setStrobeManualMode4th = false;
   }
@@ -1030,23 +937,24 @@ void deactivatePadStrobe8th(int channel, int pitch, int velocity) {
       frameRate(registeredTempo);
     }
     if (authorizeDMXStrobe == true) {
-      if ((setStrobeManualMode4th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        drawStrobe_FrontRight = previousFrontRightStrobeState;
-        strobepreset_frontright = previousFrontRightStrobePreset;
-        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
-        strobepreset_frontleft = previousFrontLeftStrobePreset;
-        
-        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
-          drawStrobe_FrontLeft  = 0;
-          drawStrobe_FrontRight = 0;
-          stopStrobe_FrontLeft();
-          stopStrobe_FrontRight();
-        }
-        else {
-          startStrobe_FrontRight(strobepreset_frontright);
-          startStrobe_FrontLeft(strobepreset_frontleft);
-        }
-      }
+      //TBIL - needs to be redone once the new DMX implementation is complete
+//      if ((setStrobeManualMode4th == true || setStrobeManualMode16th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+//        drawStrobe_FrontRight = previousFrontRightStrobeState;
+//        strobepreset_frontright = previousFrontRightStrobePreset;
+//        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
+//        strobepreset_frontleft = previousFrontLeftStrobePreset;
+//        
+//        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
+//          drawStrobe_FrontLeft  = 0;
+//          drawStrobe_FrontRight = 0;
+//          stopStrobe_FrontLeft();
+//          stopStrobe_FrontRight();
+//        }
+//        else {
+//          startStrobe_FrontRight(strobepreset_frontright);
+//          startStrobe_FrontLeft(strobepreset_frontleft);
+//        }
+//      }
     }
     setStrobeManualMode8th = false;
   }
@@ -1066,23 +974,24 @@ void deactivatePadStrobe16th(int channel, int pitch, int velocity) {
       frameRate(registeredTempo);
     }
     if (authorizeDMXStrobe == true) {
-      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
-        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
-        strobepreset_frontleft = previousFrontLeftStrobePreset;
-        drawStrobe_FrontRight = previousFrontRightStrobeState;
-        strobepreset_frontright = previousFrontRightStrobePreset;
-        
-        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
-          drawStrobe_FrontLeft  = 0;
-          drawStrobe_FrontRight = 0;
-          stopStrobe_FrontLeft();
-          stopStrobe_FrontRight();
-        }
-        else {
-          startStrobe_FrontRight(strobepreset_frontright);
-          startStrobe_FrontLeft(strobepreset_frontleft);
-        }
-      }
+      //TBIL - needs to be redone once the new DMX implementation is complete
+//      if ((setStrobeManualMode4th == true || setStrobeManualMode8th == true || setStrobeManualMode32nd == true || setStrobeManualMode64th == true) == false) {
+//        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
+//        strobepreset_frontleft = previousFrontLeftStrobePreset;
+//        drawStrobe_FrontRight = previousFrontRightStrobeState;
+//        strobepreset_frontright = previousFrontRightStrobePreset;
+//        
+//        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
+//          drawStrobe_FrontLeft  = 0;
+//          drawStrobe_FrontRight = 0;
+//          stopStrobe_FrontLeft();
+//          stopStrobe_FrontRight();
+//        }
+//        else {
+//          startStrobe_FrontRight(strobepreset_frontright);
+//          startStrobe_FrontLeft(strobepreset_frontleft);
+//        }
+//      }
     }
     setStrobeManualMode16th = false;
   }
@@ -1102,23 +1011,24 @@ void deactivatePadStrobe32nd(int channel, int pitch, int velocity) {
       frameRate(registeredTempo);
     }
     if (authorizeDMXStrobe == true) {
-      if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode4th == true || setStrobeManualMode64th == true) == false) {
-        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
-        strobepreset_frontleft = previousFrontLeftStrobePreset;
-        drawStrobe_FrontRight = previousFrontRightStrobeState;
-        strobepreset_frontright = previousFrontRightStrobePreset;
-        
-        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
-          drawStrobe_FrontLeft  = 0;
-          drawStrobe_FrontRight = 0;
-          stopStrobe_FrontLeft();
-          stopStrobe_FrontRight();
-        }
-        else {
-          startStrobe_FrontRight(strobepreset_frontright);
-          startStrobe_FrontLeft(strobepreset_frontleft);
-        }
-      }
+      //TBIL - needs to be redone once the new DMX implementation is complete
+//      if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode4th == true || setStrobeManualMode64th == true) == false) {
+//        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
+//        strobepreset_frontleft = previousFrontLeftStrobePreset;
+//        drawStrobe_FrontRight = previousFrontRightStrobeState;
+//        strobepreset_frontright = previousFrontRightStrobePreset;
+//        
+//        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
+//          drawStrobe_FrontLeft  = 0;
+//          drawStrobe_FrontRight = 0;
+//          stopStrobe_FrontLeft();
+//          stopStrobe_FrontRight();
+//        }
+//        else {
+//          startStrobe_FrontRight(strobepreset_frontright);
+//          startStrobe_FrontLeft(strobepreset_frontleft);
+//        }
+//      }
     }
     setStrobeManualMode32nd = false;
   }
@@ -1138,32 +1048,33 @@ void deactivatePadStrobe64th(int channel, int pitch, int velocity) {
       frameRate(registeredTempo);
     }
     if (authorizeDMXStrobe == true) {
-      if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode4th == true || setStrobeManualMode32nd == true) == false) {
-        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
-        strobepreset_frontleft = previousFrontLeftStrobePreset;
-        drawStrobe_FrontRight = previousFrontRightStrobeState;
-        strobepreset_frontright = previousFrontRightStrobePreset;
-        drawStrobe_Back = previousBackStrobeState;
-        strobepreset_back = previousBackStrobePreset;
-        
-        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
-          drawStrobe_FrontLeft  = 0;
-          drawStrobe_FrontRight = 0;
-          stopStrobe_FrontLeft();
-          stopStrobe_FrontRight();
-        }
-        else {
-          startStrobe_FrontRight(strobepreset_frontright);
-          startStrobe_FrontLeft(strobepreset_frontleft);
-        }
-        
-        if (drawStrobe_Back == 0) {
-          stopStrobe_Back();
-        }
-        else {
-          startStrobe_Back(strobepreset_back);
-        }
-      }
+      //TBIL - needs to be redone once the new DMX implementation is complete
+//      if ((setStrobeManualMode8th == true || setStrobeManualMode16th == true || setStrobeManualMode4th == true || setStrobeManualMode32nd == true) == false) {
+//        drawStrobe_FrontLeft = previousFrontLeftStrobeState;
+//        strobepreset_frontleft = previousFrontLeftStrobePreset;
+//        drawStrobe_FrontRight = previousFrontRightStrobeState;
+//        strobepreset_frontright = previousFrontRightStrobePreset;
+//        drawStrobe_Back = previousBackStrobeState;
+//        strobepreset_back = previousBackStrobePreset;
+//        
+//        if (drawStrobe_FrontLeft == 0 || drawStrobe_FrontRight == 0) {
+//          drawStrobe_FrontLeft  = 0;
+//          drawStrobe_FrontRight = 0;
+//          stopStrobe_FrontLeft();
+//          stopStrobe_FrontRight();
+//        }
+//        else {
+//          startStrobe_FrontRight(strobepreset_frontright);
+//          startStrobe_FrontLeft(strobepreset_frontleft);
+//        }
+//        
+//        if (drawStrobe_Back == 0) {
+//          stopStrobe_Back();
+//        }
+//        else {
+//          startStrobe_Back(strobepreset_back);
+//        }
+//      }
     }
     setStrobeManualMode64th = false;
   }
