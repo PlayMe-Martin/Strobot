@@ -586,24 +586,3 @@ void specific_draw() {
   //This is not such a good idea, as on slower machines, the draw thread may be interrupted - and as such, some impulses may be lost
   //impulseMessageProcessed = true;
 }
-
-void specific_draw_dmx() {
-  if (drawStrobe_FrontLeft == 0) {                            //Stop the front stroboscopes
-    myDMX.stopStrobe_FrontLeft();
-  }
-  if (drawStrobe_FrontRight == 0) {                           //Stop the front stroboscopes
-    myDMX.stopStrobe_FrontRight();
-  }
-  if (drawStrobe_FrontLeft == 1) {                            //Start the front stroboscopes
-    myDMX.setStrobePreset_FrontLeft(strobepreset_frontleft);
-  }
-  if (drawStrobe_FrontRight == 1) {                           //Start the front stroboscopes
-    myDMX.setStrobePreset_FrontRight(strobepreset_frontright);
-  }
-  if (drawStrobe_Back == 0) {                                 //Stop the back stroboscopes
-    myDMX.stopStrobe_Back();
-  }
-  if (drawStrobe_Back == 1) {                                 //Start the back stroboscopes
-    myDMX.setStrobePreset_Back(strobepreset_back);
-  }
-}

@@ -69,41 +69,41 @@ public class DMX{
     }
   } 
   
-  void setStrobePreset_FrontLeft(int preset) {
-    for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-      stroboscope.startDMX(preset);
-    }
-  }
-  
-  void stopStrobe_FrontLeft()  {
-    for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-      stroboscope.stopDMX();
-    }
-  }
-  
-  void setStrobePreset_FrontRight(int preset) {
-    for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-      stroboscope.startDMX(preset);
-    }
-  }
-  
-  void stopStrobe_FrontRight()  {
-    for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-      stroboscope.stopDMX();
-    }
-  }
-  
-  void setStrobePreset_Back(int preset) {
-    for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-      stroboscope.startDMX(preset);
-    }
-  }
-  
-  void stopStrobe_Back()  {
-    for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-      stroboscope.stopDMX();
-    }
-  }
+//  void setStrobePreset_FrontLeft(int preset) {
+//    for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
+//      stroboscope.startDMX(preset);
+//    }
+//  }
+//  
+//  void stopStrobe_FrontLeft()  {
+//    for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
+//      stroboscope.stopDMX();
+//    }
+//  }
+//  
+//  void setStrobePreset_FrontRight(int preset) {
+//    for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
+//      stroboscope.startDMX(preset);
+//    }
+//  }
+//  
+//  void stopStrobe_FrontRight()  {
+//    for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
+//      stroboscope.stopDMX();
+//    }
+//  }
+//  
+//  void setStrobePreset_Back(int preset) {
+//    for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
+//      stroboscope.startDMX(preset);
+//    }
+//  }
+//  
+//  void stopStrobe_Back()  {
+//    for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
+//      stroboscope.stopDMX();
+//    }
+//  }
 }
 
 //Specific object for stroboscopes
@@ -149,47 +149,12 @@ class DMX_Stroboscope {
     }
   }
   
-  // Set the device to a predefined value, according to a preset list
-  void startDMX(int preset) {
-    //Consider that the strobe is active
-    this.isActive = true;
-    if (preset < strobelist.length) {
-      this.currentSpeed = strobelist[preset][0];
-      this.currentBrightness = strobelist[preset][1];
-    }
-    else {
-      this.currentSpeed = 0;
-      this.currentBrightness = 0; 
-    }
-    
-    if (this.exceptionRaisedDMX == false) {
-      try {
-        if (this.numberOfChannels == 2) { 
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
-        }
-        else if (this.numberOfChannels == 4) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,int(this.currentSpeed*ATOMICSTROBE_SPEEDFACTOR));
-          if (this.DMXAddress_stroboscopeSpecialFX != -1) {
-            myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,this.currentSpeed);
-          }
-        }
-      }
-      catch (Exception e) {
-        outputLog.println("DMX exception : " + e);
-        this.exceptionRaisedDMX = true;
-      }
-    }
-  }
-  
   // Set all the device's channels to 0
   void stopDMX() {
     //Consider that the strobe is not active anymore
     this.isActive = false;
-    this.currentSpeed = strobelist[0][0];
-    this.currentBrightness = strobelist[0][1];
+    this.currentSpeed = 10;      //the default speed is a bit particular : setting it to a non-null value allows to easily make single flashes using the Atomic 3000 strobes
+    this.currentBrightness = 0;
         
     if (this.exceptionRaisedDMX == false) {
       try {

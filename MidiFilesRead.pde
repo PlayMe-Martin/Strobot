@@ -16,8 +16,7 @@ final int NOTE_ON = 0x90;
 final int NOTE_OFF = 0x80;
 final float ONE_BAR_LENGTH = 384.0;      //Length of 1 bar, in MIDI ticks - in float, as this is often used as a division denominator
 //For the following note off events, an action is allowed
-final int[] AVAILABLE_NOTE_OFF = {PITCH_GENERAL_STROBO_FRONT_LEFT, PITCH_GENERAL_STROBO_FRONT_RIGHT, PITCH_GENERAL_STROBO_BACK, 
-                                  PITCH_DMX_ANIMATION_BANK1, PITCH_DMX_ANIMATION_BANK2, PITCH_DMX_ANIMATION_BANK3, 
+final int[] AVAILABLE_NOTE_OFF = {PITCH_DMX_ANIMATION_BANK1, PITCH_DMX_ANIMATION_BANK2, PITCH_DMX_ANIMATION_BANK3, 
                                   PITCH_DISPLAY_EFFECT};
   
 ArrayList<MidiSequence> MidiSequences_White_DefaultIntensity;

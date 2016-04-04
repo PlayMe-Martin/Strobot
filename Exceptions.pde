@@ -21,3 +21,12 @@ public class NoSerialPortFoundException extends Exception {
     super(s);
   }
 }
+
+public class FixtureDescriptionParseException extends Exception {
+
+  private static final long serialVersionUID = 1432363154395209342L;
+  
+  public FixtureDescriptionParseException(String s) {
+    super(s);
+  }
+}

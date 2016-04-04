@@ -252,10 +252,6 @@ class PlayMeSequencer {
     
     if (eventType == NOTE_ON) {
       switch (actionNumber) {
-        case PITCH_GENERAL_STROBO_FRONT_LEFT:  startStrobe_FrontLeft(actionValue);break;
-        case PITCH_GENERAL_STROBO_FRONT_RIGHT: startStrobe_FrontRight(actionValue);break;
-        case PITCH_GENERAL_STROBO_BACK:        startStrobe_Back(actionValue);break;
-
         case PITCH_DMX_ANIMATION_BANK1:        loadDMXAnimation1(actionValue); break;
         case PITCH_DMX_ANIMATION_BANK2:        loadDMXAnimation2(actionValue); break;
         case PITCH_DMX_ANIMATION_BANK3:        loadDMXAnimation3(actionValue); break;
@@ -273,11 +269,7 @@ class PlayMeSequencer {
       }
     }
     else if (eventType == NOTE_OFF) {
-      switch (actionNumber) {
-        case PITCH_GENERAL_STROBO_FRONT_LEFT:  stopStrobe_FrontLeft();println("stopStrobe_FrontLeft() coming from the auto engine"); break;
-        case PITCH_GENERAL_STROBO_FRONT_RIGHT: stopStrobe_FrontRight();break;
-        case PITCH_GENERAL_STROBO_BACK:        stopStrobe_Back();break;
-        
+      switch (actionNumber) {        
         case PITCH_DMX_ANIMATION_BANK1:        unloadDMXAnimation(); break;
         case PITCH_DMX_ANIMATION_BANK2:        unloadDMXAnimation(); break;
         case PITCH_DMX_ANIMATION_BANK3:        unloadDMXAnimation(); break;
@@ -396,9 +388,6 @@ class PlayMeSequencer {
     // The same goes for the DMX animations for that matter, so kill any DMX device
     deactivateAdditionalEffect(0);
     unloadDMXAnimation();
-    stopStrobe_FrontLeft();
-    stopStrobe_FrontRight();
-    stopStrobe_Back();
     
     // If a special scenario had been detected previously, now's the time to reset the flag
     // When the special rule is active, the following sequence change is defined not by the audio's intensity, but by the algorithm

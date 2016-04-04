@@ -1,0 +1,1861 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>files</key>
+	<dict>
+		<key>Resources/en.lproj/Localizable.strings</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			1x7GcvnGdR/b251TU0nrD14zM/c=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>Resources/sketch.icns</key>
+		<data>
+		V0eScs9jH/kx46PDDKFKW0jiUlA=
+		</data>
+	</dict>
+	<key>files2</key>
+	<dict>
+		<key>Java/Strobot.jar</key>
+		<data>
+		9Rhx/Uof3yD2sFddXC1wwBORNVQ=
+		</data>
+		<key>Java/controlP5.jar</key>
+		<data>
+		m2uR13DHCRqVMh8kKf2yf8W/jdo=
+		</data>
+		<key>Java/core.jar</key>
+		<data>
+		9yAhryCrC0UVAs0jLxdifhNloyE=
+		</data>
+		<key>Java/data/3_panels/DTL/01.01. No.png</key>
+		<data>
+		UGSTHzorA/o003KT7yx2RwPOi8M=
+		</data>
+		<key>Java/data/3_panels/DTL/01.02. Way.png</key>
+		<data>
+		5VNZrq6CxhxCfK1TrGMCchdom9I=
+		</data>
+		<key>Java/data/3_panels/DTL/01.03. To.png</key>
+		<data>
+		Lu5veLjZuf/hGm0UsBESyRUIpak=
+		</data>
+		<key>Java/data/3_panels/DTL/01.04. Break.png</key>
+		<data>
+		ehMntjzuwCk0HAHo44NoAOXQ6uE=
+		</data>
+		<key>Java/data/3_panels/DTL/01.05. Through.png</key>
+		<data>
+		xgh1ogoNLLkdcuRciqoW9XTKgkc=
+		</data>
+		<key>Java/data/3_panels/DTL/02.01. When.png</key>
+		<data>
+		qRANSfY0NJB/oCQXpBeopTiO4u8=
+		</data>
+		<key>Java/data/3_panels/DTL/02.02. The.png</key>
+		<data>
+		zbGgjyt+8gUx3o+JEh0YFIGjUyU=
+		</data>
+		<key>Java/data/3_panels/DTL/03.01. Un.png</key>
+		<data>
+		TCXXseikonFpvYXAkixHEqebbXo=
+		</data>
+		<key>Java/data/3_panels/DTL/03.02. A.png</key>
+		<data>
+		iKUHConzBTtoY2vpyWEINSGLb54=
+		</data>
+		<key>Java/data/3_panels/DTL/03.03. Able.png</key>
+		<data>
+		OePpA+ENQ0ANTSPt9xQsGUjSzN4=
+		</data>
+		<key>Java/data/3_panels/DTL/03.04. To.png</key>
+		<data>
+		Lu5veLjZuf/hGm0UsBESyRUIpak=
+		</data>
+		<key>Java/data/3_panels/DTL/03.05. Chase.png</key>
+		<data>
+		MQiEniV6T4HzIPbV54sSp2LF8iw=
+		</data>
+		<key>Java/data/3_panels/DTL/04.01. When.png</key>
+		<data>
+		qRANSfY0NJB/oCQXpBeopTiO4u8=
+		</data>
+		<key>Java/data/3_panels/DTL/04.02. You.png</key>
+		<data>
+		YC1FLMdAGPyS/3D7svMMw78Juw0=
+		</data>
+		<key>Java/data/3_panels/DTL/04.03. Want.png</key>
+		<data>
+		oQ4w7Le9t1rE1gouiLd37hPAsg0=
+		</data>
+		<key>Java/data/3_panels/DTL/04.04. Me.png</key>
+		<data>
+		iyYJlkGAu6QFX6xCC1PwBXmnlvQ=
+		</data>
+		<key>Java/data/3_panels/DTL/04.05. To.png</key>
+		<data>
+		Lu5veLjZuf/hGm0UsBESyRUIpak=
+		</data>
+		<key>Java/data/3_panels/DTL/05.01. An.png</key>
+		<data>
+		SIQU3NIyVSf+YTPRTyP0r1Gwmn0=
+		</data>
+		<key>Java/data/3_panels/DTL/05.02. O.png</key>
+		<data>
+		mPrUyx+pE5cBT5xsQpNWqBarCo4=
+		</data>
+		<key>Java/data/3_panels/DTL/05.03. Ther.png</key>
+		<data>
+		yjEW36bJ1ICRi/kJGavzK9ybEoA=
+		</data>
+		<key>Java/data/3_panels/DTL/05.04. De.png</key>
+		<data>
+		nPPxyjUMPvE95lUq+PwRRYPEv/k=
+		</data>
+		<key>Java/data/3_panels/DTL/05.05. Feat.png</key>
+		<data>
+		uisNaYHMroU4VR/IIGJ+ujq2W70=
+		</data>
+		<key>Java/data/3_panels/DTL/06.01. Just.png</key>
+		<data>
+		f5lXPFAjELShewNxs7o1r3u/BP0=
+		</data>
+		<key>Java/data/3_panels/DTL/06.02. To.png</key>
+		<data>
+		O8HgCAO60xJRQYNsZbHmL0/nQ1U=
+		</data>
+		<key>Java/data/3_panels/DTL/06.03. Clear.png</key>
+		<data>
+		pQbBxmysTKVDKsDBkZIbV0TgXHo=
+		</data>
+		<key>Java/data/3_panels/DTL/06.04. This.png</key>
+		<data>
+		96PFCIdKjMW4UnDS74FKZf5lNF4=
+		</data>
+		<key>Java/data/3_panels/DTL/06.05. Up.png</key>
+		<data>
+		NO1wZCTYmOGUd0ZXgh5Ug5kWZyk=
+		</data>
+		<key>Java/data/3_panels/DTL/07.01. Don't.png</key>
+		<data>
+		ZwO73mF1jGkL50ucHcjKHgT6hDQ=
+		</data>
+		<key>Java/data/3_panels/DTL/07.02. Want.png</key>
+		<data>
+		/RtVmDah+yPkVFj+Mm/MXqp6H70=
+		</data>
+		<key>Java/data/3_panels/DTL/07.03. To.png</key>
+		<data>
+		U9B/CiYEyO3JkTIcc8E7cF9zhsk=
+		</data>
+		<key>Java/data/3_panels/DTL/07.04. Please.png</key>
+		<data>
+		mQj4DFSZjc4LmKxYBAd8gYYgWaE=
+		</data>
+		<key>Java/data/3_panels/DTL/07.05. You.png</key>
+		<data>
+		jtS77JQ/n1Bz4ZvqUnFgiCQpBNw=
+		</data>
+		<key>Java/data/3_panels/DTL/08.01. Not.png</key>
+		<data>
+		8Nmf5IrkQ3mzTtjNNjhNWovYbqg=
+		</data>
+		<key>Java/data/3_panels/DTL/08.02. That.png</key>
+		<data>
+		oXiDk4tJfovlVOJp8aCSLcTLhKo=
+		</data>
+		<key>Java/data/3_panels/DTL/08.03. It.png</key>
+		<data>
+		qFaNGpSFbkSrZf9WKyKTmG/j1WI=
+		</data>
+		<key>Java/data/3_panels/DTL/08.04. Matt.png</key>
+		<data>
+		r3BQ9HxAvzl5IUvk5nNaA3fUlHs=
+		</data>
+		<key>Java/data/3_panels/DTL/08.05. Ers.png</key>
+		<data>
+		+109+hkwfaYCScCPnTRtRj9Nsco=
+		</data>
+		<key>Java/data/3_panels/DTL/09.01. Might.png</key>
+		<data>
+		5oBN8uYucgFYOez7k0oJrec0/C8=
+		</data>
+		<key>Java/data/3_panels/DTL/09.02. As.png</key>
+		<data>
+		mtVoPjjN+TNPFIm3i33TigXxgWY=
+		</data>
+		<key>Java/data/3_panels/DTL/09.03. Well.png</key>
+		<data>
+		x0wexn4KTLB7lIT1XWYIOLGmj7w=
+		</data>
+		<key>Java/data/3_panels/DTL/09.04. Draw.png</key>
+		<data>
+		04vGIQUXCQDrpGgZiznJttxXzvM=
+		</data>
+		<key>Java/data/3_panels/DTL/09.05. The.png</key>
+		<data>
+		zbGgjyt+8gUx3o+JEh0YFIGjUyU=
+		</data>
+		<key>Java/data/3_panels/DTL/09.06. Line.png</key>
+		<data>
+		kS8zdONmn/EvW7+dHQDQMsUQRzI=
+		</data>
+		<key>Java/data/3_panels/DTL/10.01. Be.png</key>
+		<data>
+		XCqutakNzA4VfZd7ukkGWqPOYFs=
+		</data>
+		<key>Java/data/3_panels/DTL/10.02. Fore.png</key>
+		<data>
+		nP5+fwxj6+mmJ4qUdJUnkWGi+fo=
+		</data>
+		<key>Java/data/3_panels/DTL/10.03. We.png</key>
+		<data>
+		U+Ncpsyb6P1SEiZPiT4VyRSBNY0=
+		</data>
+		<key>Java/data/3_panels/DTL/10.04. Lose.png</key>
+		<data>
+		ihGp7IsDcRPdWdFtJftPieEKXEc=
+		</data>
+		<key>Java/data/3_panels/DTL/10.05. Our.png</key>
+		<data>
+		CeRfBMz7VGesRebXb5um/IG4lkY=
+		</data>
+		<key>Java/data/3_panels/DTL/10.06. Minds.png</key>
+		<data>
+		9AfeyKE0o8Jqrq4jVJZfqjXvnuw=
+		</data>
+		<key>Java/data/3_panels/Degeneration/01.png</key>
+		<data>
+		5VNZrq6CxhxCfK1TrGMCchdom9I=
+		</data>
+		<key>Java/data/3_panels/Generic/01. Custom.jpg</key>
+		<data>
+		CM7xMnWFdZD58/LtVOFlnObNKCg=
+		</data>
+		<key>Java/data/3_panels/Generic/01. Red.jpg</key>
+		<data>
+		IX7wxgJj3IM3V12z4mujYCy241g=
+		</data>
+		<key>Java/data/3_panels/Generic/02. Custom.jpg</key>
+		<data>
+		hpl3ofZUIgCUVLKbF/I1rkDcGSs=
+		</data>
+		<key>Java/data/3_panels/Generic/02. Red.jpg</key>
+		<data>
+		shOWwy8zm7InlW0BDPXSjih64bY=
+		</data>
+		<key>Java/data/3_panels/Generic/03. Custom.jpg</key>
+		<data>
+		KVHUQW/4pSReWhWgCZ5iQo7vpzE=
+		</data>
+		<key>Java/data/3_panels/Generic/03. Red.jpg</key>
+		<data>
+		GxthyeNkfDUHuUiOGaFDoInyuik=
+		</data>
+		<key>Java/data/3_panels/Generic/04. Custom.jpg</key>
+		<data>
+		QI6Fzcc/NqNR8pQAi1SV6uYOh3k=
+		</data>
+		<key>Java/data/3_panels/Generic/04. Red.jpg</key>
+		<data>
+		5bccea7pn095QG8axPW1srzyTbk=
+		</data>
+		<key>Java/data/3_panels/Generic/05. Custom.jpg</key>
+		<data>
+		RiCkHxL0NsLbbj+xQ7tAGfJUjDM=
+		</data>
+		<key>Java/data/3_panels/Generic/05. Red.jpg</key>
+		<data>
+		YajJwF7wUvr6dIE7hebVMAsuL7Y=
+		</data>
+		<key>Java/data/3_panels/Generic/06. Red.jpg</key>
+		<data>
+		dElKQc+t8AXseEBGfcDGy7aE9Qw=
+		</data>
+		<key>Java/data/3_panels/Generic/07. Red.jpg</key>
+		<data>
+		p+z61FnxPCc6nZO0/KnUHBnquiI=
+		</data>
+		<key>Java/data/3_panels/Generic/08. Red.jpg</key>
+		<data>
+		Y0GfKT4Fa9AZdpqT1fqD9dO9BAE=
+		</data>
+		<key>Java/data/3_panels/Generic/09. Red.jpg</key>
+		<data>
+		rvn1tf7PX4z3jzOaORa13mMPSVA=
+		</data>
+		<key>Java/data/3_panels/Generic/10. Red.jpg</key>
+		<data>
+		sq4F2w0zxXuSXyrpfWHGay8oEuo=
+		</data>
+		<key>Java/data/3_panels/Generic/11. Red.jpg</key>
+		<data>
+		y8maWnfbvQJ8CJcv98bk7As8EQo=
+		</data>
+		<key>Java/data/3_panels/Generic/12. Red.jpg</key>
+		<data>
+		mq1ELiSnGz6bL6/z2lf/ArWjO7Q=
+		</data>
+		<key>Java/data/3_panels/Generic/13. Red.jpg</key>
+		<data>
+		FeqyXjxt+lRqe28pLlFF61nFL9E=
+		</data>
+		<key>Java/data/3_panels/Generic/14. Red.jpg</key>
+		<data>
+		UcAo2btn6IuDAzqEXS2VmZk0SA0=
+		</data>
+		<key>Java/data/3_panels/Generic/15. Red.jpg</key>
+		<data>
+		k8jLbYufFtXO/NTHaArJwtkB80A=
+		</data>
+		<key>Java/data/3_panels/Generic/16. Red.jpg</key>
+		<data>
+		S+84QUt1ZlmGwM8dK6LcjYZst5o=
+		</data>
+		<key>Java/data/3_panels/Generic/17. Red.jpg</key>
+		<data>
+		DSY762rgJeeU1SigKC6aWF+u64Y=
+		</data>
+		<key>Java/data/3_panels/Generic/18. Red.jpg</key>
+		<data>
+		PBXf36ZnPUwS28hlMzBYvlPQLpE=
+		</data>
+		<key>Java/data/3_panels/Generic/19. Red.jpg</key>
+		<data>
+		HpRLEqb9E8URZaI7enk1nfhgBGg=
+		</data>
+		<key>Java/data/3_panels/Generic/20. Red.jpg</key>
+		<data>
+		MfSQldvIPLSbhii0NDT/Kkgf/5g=
+		</data>
+		<key>Java/data/3_panels/Generic/21. Red.jpg</key>
+		<data>
+		RN9FpGTa53jAU0PVitSAleqGSWI=
+		</data>
+		<key>Java/data/3_panels/Generic/22. Red.jpg</key>
+		<data>
+		nbNBGZxQ09NMuw6rExaWWKfhgzo=
+		</data>
+		<key>Java/data/3_panels/Generic/23. Red.jpg</key>
+		<data>
+		MZVtjduXYz/MfH5DRE0sPlIqrQE=
+		</data>
+		<key>Java/data/3_panels/PlayMe/01.P-white-black.jpg</key>
+		<data>
+		ixBLz55h/2OvRkPGtNXH834oNjk=
+		</data>
+		<key>Java/data/3_panels/PlayMe/02.L-white-black.jpg</key>
+		<data>
+		L0bc8LNvvGhdKOEjLeaD2vMaB2g=
+		</data>
+		<key>Java/data/3_panels/PlayMe/03.A-white-black.jpg</key>
+		<data>
+		3I1HknVW3+qWusWazjqxjrhR6k4=
+		</data>
+		<key>Java/data/3_panels/PlayMe/04.Y-white-black.jpg</key>
+		<data>
+		vjENZEgaTlEpAA2mU1JJLzbBdOc=
+		</data>
+		<key>Java/data/3_panels/PlayMe/05.M-white-black.jpg</key>
+		<data>
+		SSBQRh/a4tAsq7GrJ8IP+RpwwVQ=
+		</data>
+		<key>Java/data/3_panels/PlayMe/06.E-white-black.jpg</key>
+		<data>
+		Nnd6euuD2Ceh28Xj2Auy8/NBnys=
+		</data>
+		<key>Java/data/3_panels/PlayMe/07.P-black-white.jpg</key>
+		<data>
+		C24OaUFP1MWNZy+iV56/2iZh6ag=
+		</data>
+		<key>Java/data/3_panels/PlayMe/08.L-black-white.jpg</key>
+		<data>
+		FzQ01QVA6C8bnkvNGd8O6dsN6fs=
+		</data>
+		<key>Java/data/3_panels/PlayMe/09.A-black-white.jpg</key>
+		<data>
+		UKUzQNGQhxVJBiL/ULlDkZf9rQI=
+		</data>
+		<key>Java/data/3_panels/PlayMe/10.Y-black-white.jpg</key>
+		<data>
+		iTOWKrQOlWpf75xa45H9EYXhquQ=
+		</data>
+		<key>Java/data/3_panels/PlayMe/11.M-black-white.jpg</key>
+		<data>
+		4Nh4N+VXAxGVq2OyehSw8dcHX3A=
+		</data>
+		<key>Java/data/3_panels/PlayMe/12.E-black-white.jpg</key>
+		<data>
+		Rkk+qf1RRcjDPf+XPKbIeUCuzNg=
+		</data>
+		<key>Java/data/3_panels/PlayMe/13.P-red-black.jpg</key>
+		<data>
+		+yQGpOgHc7qWxyuQzWJqbNHxd9k=
+		</data>
+		<key>Java/data/3_panels/PlayMe/14.L-red-black.jpg</key>
+		<data>
+		Zt7B2+KDCtVeSyd5T/oszYgpcZc=
+		</data>
+		<key>Java/data/3_panels/PlayMe/15.A-red-black.jpg</key>
+		<data>
+		Hug8h9sVDr+FcuX7ttn6htCnxgg=
+		</data>
+		<key>Java/data/3_panels/PlayMe/16.Y-red-black.jpg</key>
+		<data>
+		7Lue8jSW+lyycsAXHGroIyfOpGI=
+		</data>
+		<key>Java/data/3_panels/PlayMe/17.M-red-black.jpg</key>
+		<data>
+		Lge2KEOZ2Rb0/4z2YRb+SrUF3rE=
+		</data>
+		<key>Java/data/3_panels/PlayMe/18.E-red-black.jpg</key>
+		<data>
+		QBHKWNE5UOFSYQ8zQwf0Yelc0Cw=
+		</data>
+		<key>Java/data/3_panels/Rotozoom/rotozoom1.jpg</key>
+		<data>
+		SUe6gYQ0gYy+8QD03NQvIjpFMHE=
+		</data>
+		<key>Java/data/3_panels/Rotozoom/rotozoom2.jpg</key>
+		<data>
+		vJ9DKU1Y26Scy0R4RSO1mhpeltg=
+		</data>
+		<key>Java/data/3_panels/Rotozoom/rotozoom3.jpg</key>
+		<data>
+		Xtk2cEwq9embiet70NctKXOG05o=
+		</data>
+		<key>Java/data/3_panels/Rotozoom/rotozoom3.psd</key>
+		<data>
+		3LPI+0t/R5nWBcrimdcJOH4IN38=
+		</data>
+		<key>Java/data/3_panels/Rotozoom/rotozoom3_old.jpg</key>
+		<data>
+		9i7aY1e1RqnPOmaPFNSqtrpc6Yg=
+		</data>
+		<key>Java/data/3_panels/Rotozoom/rotozoom3_old2.jpg</key>
+		<data>
+		ltE0wbXC4Mj/mWuj2xcAF4csxAY=
+		</data>
+		<key>Java/data/3_panels/Startup.jpg</key>
+		<data>
+		Q125dboPxLWS8GC6con8+kYcm2Q=
+		</data>
+		<key>Java/data/3_panels/Startup_1.jpg</key>
+		<data>
+		kEfaEv3nP5Puvbgkcpn9Z2Mucqw=
+		</data>
+		<key>Java/data/3_panels/Startup_2.jpg</key>
+		<data>
+		b0da35fE+BZPp4OV5O/w06V29dM=
+		</data>
+		<key>Java/data/3_panels/Startup_3.jpg</key>
+		<data>
+		tZPrML5fIkmMdZNieClJsGOWJDQ=
+		</data>
+		<key>Java/data/3_panels/voidImage.jpg</key>
+		<data>
+		m2cwlaCdJgPnvjYHkPeotrDGB/w=
+		</data>
+		<key>Java/data/5_panels/DTL/01.01. No.png</key>
+		<data>
+		grHx/W1V0+HTvj9ZgEgWEmR2eZU=
+		</data>
+		<key>Java/data/5_panels/DTL/01.02. Way.png</key>
+		<data>
+		GHTNE7QJF35qEwSL/rpuFbAW61Q=
+		</data>
+		<key>Java/data/5_panels/DTL/01.03. To.png</key>
+		<data>
+		N703LMrWg5/9OBnddjDlHrU6Y0U=
+		</data>
+		<key>Java/data/5_panels/DTL/01.04. Break.png</key>
+		<data>
+		+sPChV6I/WPqgrvtndToK+/qPoc=
+		</data>
+		<key>Java/data/5_panels/DTL/01.05. Through.png</key>
+		<data>
+		M/uUpE5kGyEISV+zZmJCPCeiuZ4=
+		</data>
+		<key>Java/data/5_panels/DTL/02.01. When.png</key>
+		<data>
+		J8AmqnxO+7JoF3R5N/LCneJDeF8=
+		</data>
+		<key>Java/data/5_panels/DTL/02.02. The.png</key>
+		<data>
+		rDReXKwTNQm8Wd5cohY8oeGB6NM=
+		</data>
+		<key>Java/data/5_panels/DTL/03.01. Un.png</key>
+		<data>
+		MCjnFPkJzRS+KQf54CnQEwTZp48=
+		</data>
+		<key>Java/data/5_panels/DTL/03.02. A.png</key>
+		<data>
+		uVLdTLiYEP8bkmrj8Q6TUD+fbX4=
+		</data>
+		<key>Java/data/5_panels/DTL/03.03. Able.png</key>
+		<data>
+		AjLbUPWK5tgtTRolaMNc/rU/laA=
+		</data>
+		<key>Java/data/5_panels/DTL/03.04. To.png</key>
+		<data>
+		N703LMrWg5/9OBnddjDlHrU6Y0U=
+		</data>
+		<key>Java/data/5_panels/DTL/03.05. Chase.png</key>
+		<data>
+		py99WcBvP5j/u+hkuElQisK1Ur0=
+		</data>
+		<key>Java/data/5_panels/DTL/04.01. When.png</key>
+		<data>
+		J8AmqnxO+7JoF3R5N/LCneJDeF8=
+		</data>
+		<key>Java/data/5_panels/DTL/04.02. You.png</key>
+		<data>
+		lbpMtWZ5Er9UeIvPcSw3XZ7PFbo=
+		</data>
+		<key>Java/data/5_panels/DTL/04.03. Want.png</key>
+		<data>
+		U/RiyPlS1r0rFx2/SnnrYAB5dK8=
+		</data>
+		<key>Java/data/5_panels/DTL/04.04. Me.png</key>
+		<data>
+		RGaLUMIhqoDktBA+f6KOcoBML48=
+		</data>
+		<key>Java/data/5_panels/DTL/04.05. To.png</key>
+		<data>
+		SDXosuRQr+EOBkej1TyZaw/mcgc=
+		</data>
+		<key>Java/data/5_panels/DTL/05.01. An.png</key>
+		<data>
+		TVg5vCLYntUULLe27Lpg8dp4x80=
+		</data>
+		<key>Java/data/5_panels/DTL/05.02. O.png</key>
+		<data>
+		zrfC1SK/KBGCAS2fl5vvtXIRCLc=
+		</data>
+		<key>Java/data/5_panels/DTL/05.03. Ther.png</key>
+		<data>
+		AD1aTqXmq9dcXFiBIURPk79OYGQ=
+		</data>
+		<key>Java/data/5_panels/DTL/05.04. De.png</key>
+		<data>
+		LVD2HKCK9MKSi7FNF8akN4DF0J0=
+		</data>
+		<key>Java/data/5_panels/DTL/05.05. Feat.png</key>
+		<data>
+		lcOY+5G6+rUJ3H7nX5ejscRK4ow=
+		</data>
+		<key>Java/data/5_panels/DTL/06.01. Just.png</key>
+		<data>
+		Of+Ywp/hu/1rdSEwc3YW6vDEboE=
+		</data>
+		<key>Java/data/5_panels/DTL/06.02. To.png</key>
+		<data>
+		FlcRpOzKMP5Z9c+38lAfYXQ9XUg=
+		</data>
+		<key>Java/data/5_panels/DTL/06.03. Clear.png</key>
+		<data>
+		UYn4Jaxt8R3DLycMVtuKI0WD5Ek=
+		</data>
+		<key>Java/data/5_panels/DTL/06.04. This.png</key>
+		<data>
+		MKTovhlfLAPO/s3nR1aZ53RLddQ=
+		</data>
+		<key>Java/data/5_panels/DTL/06.05. Up.png</key>
+		<data>
+		1NJovgUge5WrB41kFuDYkVHFISM=
+		</data>
+		<key>Java/data/5_panels/DTL/07.01. Don't.png</key>
+		<data>
+		BttTgcImyYzdkG8ecFV2rWaIT74=
+		</data>
+		<key>Java/data/5_panels/DTL/07.02. Want.png</key>
+		<data>
+		uWZbudZMzJx+qlTgWSS8pshhSd8=
+		</data>
+		<key>Java/data/5_panels/DTL/07.03. To.png</key>
+		<data>
+		T8qcpemdlfbhBOwTT+1fVb4m5zU=
+		</data>
+		<key>Java/data/5_panels/DTL/07.04. Please.png</key>
+		<data>
+		i76Ah3sj6ufmAyjx2w/ZcOYtAow=
+		</data>
+		<key>Java/data/5_panels/DTL/07.05. You.png</key>
+		<data>
+		TlOiwzBGlqU7HANOvfJNi8+ia1k=
+		</data>
+		<key>Java/data/5_panels/DTL/08.01. Not.png</key>
+		<data>
+		52seqyekNqmgT7c6U05N/3VXmKI=
+		</data>
+		<key>Java/data/5_panels/DTL/08.02. That.png</key>
+		<data>
+		+WcVmeRUBDDRImwtXVpnDoqzk18=
+		</data>
+		<key>Java/data/5_panels/DTL/08.03. It.png</key>
+		<data>
+		RVuxYs+iP0GaJBIJzDnn7PXnYHM=
+		</data>
+		<key>Java/data/5_panels/DTL/08.04. Matt.png</key>
+		<data>
+		JUDe0kcK+1/5Pmm6wRha7rDXoRc=
+		</data>
+		<key>Java/data/5_panels/DTL/08.05. Ers.png</key>
+		<data>
+		G32QIasv2RbM0kWs6V2r/YcZ3ao=
+		</data>
+		<key>Java/data/5_panels/DTL/09.01. Might.png</key>
+		<data>
+		jdONZsHsO8BpGiI/pVJLtJn5wFI=
+		</data>
+		<key>Java/data/5_panels/DTL/09.02. As.png</key>
+		<data>
+		i7DQsss4um2V7aGTv+cpOoXcTlg=
+		</data>
+		<key>Java/data/5_panels/DTL/09.03. Well.png</key>
+		<data>
+		4ELzZkQeNpDyk9Y7Om1jhbgoXMg=
+		</data>
+		<key>Java/data/5_panels/DTL/09.04. Draw.png</key>
+		<data>
+		RNNzEZr/fal/YJnbEhIilkyROv8=
+		</data>
+		<key>Java/data/5_panels/DTL/09.05. The.png</key>
+		<data>
+		Nbb2M+W9JDY2nW1QsAipnXnkabo=
+		</data>
+		<key>Java/data/5_panels/DTL/09.06. Line.png</key>
+		<data>
+		+58F0VVU2OthFyJVkfv2ggo8zJw=
+		</data>
+		<key>Java/data/5_panels/DTL/10.01. Be.png</key>
+		<data>
+		xA5UvgpdWzOBJsDdK37VSjqvyIU=
+		</data>
+		<key>Java/data/5_panels/DTL/10.02. Fore.png</key>
+		<data>
+		4rvlMn6XilYcaQG4jmFcJGwjZ0M=
+		</data>
+		<key>Java/data/5_panels/DTL/10.03. We.png</key>
+		<data>
+		QILasOCFpUF4Vm02Y1EnqnyiHzo=
+		</data>
+		<key>Java/data/5_panels/DTL/10.04. Lose.png</key>
+		<data>
+		UmcAnl/V6t9Pq3czWqw0r+Ya4+A=
+		</data>
+		<key>Java/data/5_panels/DTL/10.05. Our.png</key>
+		<data>
+		DRD+lD49mB0248bvpSrWTKXz+LE=
+		</data>
+		<key>Java/data/5_panels/DTL/10.06. Minds.png</key>
+		<data>
+		ATcoFzyxZw7UFdEBdMDS3rKJdlQ=
+		</data>
+		<key>Java/data/5_panels/Degeneration/01.01. No.png</key>
+		<data>
+		grHx/W1V0+HTvj9ZgEgWEmR2eZU=
+		</data>
+		<key>Java/data/5_panels/Degeneration/01.png</key>
+		<data>
+		8GMwKTs6ytmNWt/iR9g2iJ9c1F0=
+		</data>
+		<key>Java/data/5_panels/Degeneration/02.png</key>
+		<data>
+		t88jSi48AcucXOh3hgla+BvnmZw=
+		</data>
+		<key>Java/data/5_panels/Degeneration/03.png</key>
+		<data>
+		loHLIgWb5lX4fTPOvIthq7EYknk=
+		</data>
+		<key>Java/data/5_panels/Degeneration/04.png</key>
+		<data>
+		x8yRZaf7k3ZKlZ7erm4tWx8UoIc=
+		</data>
+		<key>Java/data/5_panels/Degeneration/05.png</key>
+		<data>
+		DekfPhdMtQQLe9cqwyTIzKMCJ44=
+		</data>
+		<key>Java/data/5_panels/Degeneration/06.png</key>
+		<data>
+		Bf95dP5zk9S71SmcLReJ2lLaEL4=
+		</data>
+		<key>Java/data/5_panels/Degeneration/07.png</key>
+		<data>
+		O7gxD5D6gtmocwR/v6mjlbqo938=
+		</data>
+		<key>Java/data/5_panels/Degeneration/08.png</key>
+		<data>
+		5SwqMZeJFiQe9j/5gSsafGZMx6A=
+		</data>
+		<key>Java/data/5_panels/Degeneration/You Dance Like Shit.psd</key>
+		<data>
+		jhTvenHkWc0B1XgKfNkhNXGAV0Y=
+		</data>
+		<key>Java/data/5_panels/Degeneration/You.png</key>
+		<data>
+		OJSW2sTKAconbL62nIREdXCyylE=
+		</data>
+		<key>Java/data/5_panels/Generic/01. Custom.jpg</key>
+		<data>
+		Wj7hdM1LaMN1o6GNax30y3L5Vgw=
+		</data>
+		<key>Java/data/5_panels/Generic/01. Red.jpg</key>
+		<data>
+		ye+5lgkI1L5sED48XhMpK+g2k4g=
+		</data>
+		<key>Java/data/5_panels/Generic/02. Custom.jpg</key>
+		<data>
+		kF3XbAvHcPkrm30sl1LDoTTiI5I=
+		</data>
+		<key>Java/data/5_panels/Generic/02. Red.jpg</key>
+		<data>
+		vXxqovREXlohEzuVf9p4oZor50k=
+		</data>
+		<key>Java/data/5_panels/Generic/03. Custom.jpg</key>
+		<data>
+		UgphRKcOGD0W19ygP1ZtIUCvAvk=
+		</data>
+		<key>Java/data/5_panels/Generic/03. Red.jpg</key>
+		<data>
+		qfsuHj8iey8MHZUNRWrkcSu6HfU=
+		</data>
+		<key>Java/data/5_panels/Generic/04. Custom.jpg</key>
+		<data>
+		T8eOnI4Jdx+gZ/4PY4pxSbRUSPc=
+		</data>
+		<key>Java/data/5_panels/Generic/04. Red.jpg</key>
+		<data>
+		S2pML7f1e9eJyFfCxiO/0NG4Kxs=
+		</data>
+		<key>Java/data/5_panels/Generic/05. Custom.jpg</key>
+		<data>
+		50zMrqEmZ54ChpK1eMN7DUj+N0w=
+		</data>
+		<key>Java/data/5_panels/Generic/05. Red.jpg</key>
+		<data>
+		6xgLBySon7CnQ5glk6rGTdsLirE=
+		</data>
+		<key>Java/data/5_panels/Generic/06. Red.jpg</key>
+		<data>
+		TkqyDlZpJO95Mqk9qUeQmmOSmXo=
+		</data>
+		<key>Java/data/5_panels/Generic/07. Red.jpg</key>
+		<data>
+		JhzL+VHIl9P2pSEwAXdUp23GMHQ=
+		</data>
+		<key>Java/data/5_panels/Generic/08. Red.jpg</key>
+		<data>
+		mqbN1oFK0HhXk0yHQtDiJMakofw=
+		</data>
+		<key>Java/data/5_panels/Generic/09. Red.jpg</key>
+		<data>
+		MTf76y71Xl9+EFrLtzC0CSc8PZw=
+		</data>
+		<key>Java/data/5_panels/Generic/10. Red.jpg</key>
+		<data>
+		+pxqpfsxOBs1hoYCL8yyX7j3Bc0=
+		</data>
+		<key>Java/data/5_panels/Generic/11. Red.jpg</key>
+		<data>
+		id1Ox2LmE/J/0sfT1NHPbOx7yDE=
+		</data>
+		<key>Java/data/5_panels/Generic/12. Red.jpg</key>
+		<data>
+		RO+fG6RuCsQeKNIDka2QtrQLG24=
+		</data>
+		<key>Java/data/5_panels/Generic/13. Red.jpg</key>
+		<data>
+		Ij6VLwgKJRq8MMw4IJFxy4ygThA=
+		</data>
+		<key>Java/data/5_panels/Generic/14. Red.jpg</key>
+		<data>
+		kGfM6gmpG2zhnyi4hhr9BwqGrt8=
+		</data>
+		<key>Java/data/5_panels/Generic/15. Red.jpg</key>
+		<data>
+		TxlmQXTMdR6maLP4ReK3U3uR8O8=
+		</data>
+		<key>Java/data/5_panels/Generic/16. Red.jpg</key>
+		<data>
+		opGT45CxFnDYPXU6OlKNPH7nLZI=
+		</data>
+		<key>Java/data/5_panels/Generic/17. Red.jpg</key>
+		<data>
+		zb4pZetNXiQAsoA3VSsg3jG9gU4=
+		</data>
+		<key>Java/data/5_panels/Generic/18. Red.jpg</key>
+		<data>
+		AfLBeKONhJvLPYUXDwe53KniRpU=
+		</data>
+		<key>Java/data/5_panels/Generic/19. Red.jpg</key>
+		<data>
+		LMDt9VZlOQGT8+bjtQ1TLANCKQM=
+		</data>
+		<key>Java/data/5_panels/Generic/20. Red.jpg</key>
+		<data>
+		Oe1MzeIsUwnJx65iDkLiiBao5SE=
+		</data>
+		<key>Java/data/5_panels/Generic/21. Red.jpg</key>
+		<data>
+		aXlnjsvY8jBDOz2nkeOoQiEn2wA=
+		</data>
+		<key>Java/data/5_panels/Generic/22. Red.jpg</key>
+		<data>
+		3Bzr3mnvp/7clGzmHyyAC3bi6ck=
+		</data>
+		<key>Java/data/5_panels/Generic/23. Red.jpg</key>
+		<data>
+		ZpX1LLUFQi+Eh8QQQp6C+AxZg2Q=
+		</data>
+		<key>Java/data/5_panels/PlayMe/01.P-white-black.jpg</key>
+		<data>
+		U7oBIO+riyJ+WM71DbyocQo6N60=
+		</data>
+		<key>Java/data/5_panels/PlayMe/02.L-white-black.jpg</key>
+		<data>
+		2vaNDnl6JlusnXfpycELUaJlAKo=
+		</data>
+		<key>Java/data/5_panels/PlayMe/03.A-white-black.jpg</key>
+		<data>
+		whY/+KQw2bqDAxEM0ZLklqd0zjg=
+		</data>
+		<key>Java/data/5_panels/PlayMe/04.Y-white-black.jpg</key>
+		<data>
+		LkowSim68qb7raBaQigRvban+KI=
+		</data>
+		<key>Java/data/5_panels/PlayMe/05.M-white-black.jpg</key>
+		<data>
+		3BYgC+m1+aDpUdTGQudZon0PHwg=
+		</data>
+		<key>Java/data/5_panels/PlayMe/06.E-white-black.jpg</key>
+		<data>
+		RbYjqJjVjWZDArVO2BcRUZlqBDw=
+		</data>
+		<key>Java/data/5_panels/PlayMe/07.P-black-white.jpg</key>
+		<data>
+		Gkfx5oXvUF8PCxQvIBClPRuHGWw=
+		</data>
+		<key>Java/data/5_panels/PlayMe/08.L-black-white.jpg</key>
+		<data>
+		PSxKotzAyfwnNN6SMuNFhwrYOy4=
+		</data>
+		<key>Java/data/5_panels/PlayMe/09.A-black-white.jpg</key>
+		<data>
+		rWMmlvnD1QX6erb+Qp4av0prdxY=
+		</data>
+		<key>Java/data/5_panels/PlayMe/10.Y-black-white.jpg</key>
+		<data>
+		9VOfpPjNKX1NPdBn8LHtjDfenyU=
+		</data>
+		<key>Java/data/5_panels/PlayMe/11.M-black-white.jpg</key>
+		<data>
+		7UZc37yZ87Pm3yCwwAS4cvCaU9Y=
+		</data>
+		<key>Java/data/5_panels/PlayMe/12.E-black-white.jpg</key>
+		<data>
+		ILMnqOg88X71pBodiC94QD7vuk4=
+		</data>
+		<key>Java/data/5_panels/PlayMe/13.P-red-black.jpg</key>
+		<data>
+		ei0Nl4wfeTWD5Ft8JQym0t/N6tI=
+		</data>
+		<key>Java/data/5_panels/PlayMe/14.L-red-black.jpg</key>
+		<data>
+		seppdPuWR/Xl/r/JQuWY6FzN4nI=
+		</data>
+		<key>Java/data/5_panels/PlayMe/15.A-red-black.jpg</key>
+		<data>
+		bdfJ7R6i5wUHiouDXgQSnb8FwmY=
+		</data>
+		<key>Java/data/5_panels/PlayMe/16.Y-red-black.jpg</key>
+		<data>
+		dzLooahjDqteCrHB3aj77MhTl0M=
+		</data>
+		<key>Java/data/5_panels/PlayMe/17.M-red-black.jpg</key>
+		<data>
+		5y7TCtkCPPEQnUx+KOHobZf4gyE=
+		</data>
+		<key>Java/data/5_panels/PlayMe/18.E-red-black.jpg</key>
+		<data>
+		FqVOzx4+/M6053Pe8iQrlF/1iJs=
+		</data>
+		<key>Java/data/5_panels/Rotozoom/rotozoom1.jpg</key>
+		<data>
+		SUe6gYQ0gYy+8QD03NQvIjpFMHE=
+		</data>
+		<key>Java/data/5_panels/Rotozoom/rotozoom2.jpg</key>
+		<data>
+		vJ9DKU1Y26Scy0R4RSO1mhpeltg=
+		</data>
+		<key>Java/data/5_panels/Rotozoom/rotozoom3.jpg</key>
+		<data>
+		Xtk2cEwq9embiet70NctKXOG05o=
+		</data>
+		<key>Java/data/5_panels/Rotozoom/rotozoom3_old.jpg</key>
+		<data>
+		9i7aY1e1RqnPOmaPFNSqtrpc6Yg=
+		</data>
+		<key>Java/data/5_panels/Rotozoom/rotozoom3_old2.jpg</key>
+		<data>
+		ltE0wbXC4Mj/mWuj2xcAF4csxAY=
+		</data>
+		<key>Java/data/5_panels/Startup.jpg</key>
+		<data>
+		xIOmMO1zK9s4ZBo6drheN5nVQpc=
+		</data>
+		<key>Java/data/5_panels/Startup_1.jpg</key>
+		<data>
+		ASyDjDdRU4HSfQCFqlfnCPLP8xo=
+		</data>
+		<key>Java/data/5_panels/Startup_2.jpg</key>
+		<data>
+		70S2LA+Zp7P4kT4esf6ZgEcmrUo=
+		</data>
+		<key>Java/data/5_panels/Startup_3.jpg</key>
+		<data>
+		PfcmcQn2zoUPxvNeX83wGI7QDtk=
+		</data>
+		<key>Java/data/5_panels/Startup_4.jpg</key>
+		<data>
+		jHeVxVmvpO8rXJ+k0wKERt8BVek=
+		</data>
+		<key>Java/data/5_panels/Startup_5.jpg</key>
+		<data>
+		FSGj3Pn2eMH9aBE17tBBsEPXhjM=
+		</data>
+		<key>Java/data/5_panels/voidImage.jpg</key>
+		<data>
+		OevSrr0isAmi+SPOOfrQKAD0UMs=
+		</data>
+		<key>Java/data/AldotheApache-48.vlw</key>
+		<data>
+		G2g1qwlNi5PPuXZrI7+6jp5YsIU=
+		</data>
+		<key>Java/data/GUI/Xi Bold Transparent.png</key>
+		<data>
+		x/wa3VuY1ANujvQdbh53rDu9wfA=
+		</data>
+		<key>Java/data/GUI/Xi Light Transparent.png</key>
+		<data>
+		ndmM56FQO5iIMJh7hXJF11d2f1o=
+		</data>
+		<key>Java/data/GUI/logo_black.png</key>
+		<data>
+		t8zfoqCsPx+e/BIo7WpscXUV/2k=
+		</data>
+		<key>Java/data/GUI/logo_glitchblack.png</key>
+		<data>
+		g3oFlQCpvl4NVP2Fc4VCs/UyhDA=
+		</data>
+		<key>Java/data/GUI/logo_glitchwhite.png</key>
+		<data>
+		8/F0aRUaoy3SU921Fnoe/zeqzYE=
+		</data>
+		<key>Java/data/GUI/logo_white.png</key>
+		<data>
+		+gnY5TDZNpDwZRbgAQpHzUOhdNI=
+		</data>
+		<key>Java/data/Gobold-28.vlw</key>
+		<data>
+		roxC4d0OrklrXlpZvTrPSYtyMfE=
+		</data>
+		<key>Java/data/Icons/Strobot-icon-gray.png</key>
+		<data>
+		Kv7xEtF8YhEVKqqCCLydqwqFGCQ=
+		</data>
+		<key>Java/data/Icons/Strobot-icon-red.png</key>
+		<data>
+		mzTbFlLiXHiAGTKZ8ZYtBSl3g2w=
+		</data>
+		<key>Java/data/Icons/Strobot-icon.psd</key>
+		<data>
+		BoUsB6a+MmpXDnylk81BK9jtPQs=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Default Intensity/Full Stop.mid</key>
+		<data>
+		E35l3LZMSh6XdJ6Tn2cGqkG/UjM=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/1st Beat Strobe 2.mid</key>
+		<data>
+		rIJaSYWOXVG2aKsKGu+tMhrgYnU=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/1st Beat Strobe.mid</key>
+		<data>
+		HZWw0DXlN56HOMchALNrOV49kqM=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/Alternate Strobe 2.mid</key>
+		<data>
+		hPCL6zzZkcIHLLjQ94NgjU76PtM=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/Alternate Strobe 4.mid</key>
+		<data>
+		+4VQ60+NVsDBhUV7K3tT8KQbNZA=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/Alternate Strobe 8.mid</key>
+		<data>
+		kE0mO1fSvhNjSsc8irolMLW1a2k=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/Full Stop.mid</key>
+		<data>
+		E35l3LZMSh6XdJ6Tn2cGqkG/UjM=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/Growing Strobe.mid</key>
+		<data>
+		5LUszGlngprhcEDQ3cy3W/RMgJE=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/Random Flash.mid</key>
+		<data>
+		aN83RrrJHeNKgw+No4Vhycse+Os=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/Single Flash.mid</key>
+		<data>
+		YnhENFIsJVJk81E8fqnSyVPEpUU=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/Slow Strobe.mid</key>
+		<data>
+		8h/NNcgVdJqb9lwZpM2GRa+qpks=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/Very Slow Strobe.mid</key>
+		<data>
+		c+ozfPrJbb4xCPEwYjhTfwIks6Y=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/White And Red Static 2.mid</key>
+		<data>
+		1a3h4cDFiks7hKHMaxBkhVrjKdY=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/White And Red Static.mid</key>
+		<data>
+		iyTgG6nHVxL+HyghP2ZllAQ124Y=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/White And Red Strobe 2.mid</key>
+		<data>
+		5OFkcpl9JXkeGPMBbJLjb4Z+LFs=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/White And Red Strobe 3.mid</key>
+		<data>
+		bY4W43IfHPRPhYvlAqCce0pEwmU=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/High Intensity/White And Red Strobe.mid</key>
+		<data>
+		yTGDatosJdpYKHIGmnSBea1ij3M=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Low Intensity/Full Stop.mid</key>
+		<data>
+		E35l3LZMSh6XdJ6Tn2cGqkG/UjM=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Low Intensity/Growing Custom Devices.mid</key>
+		<data>
+		9IhrKu1886Sav4Uz97jcWklsoyc=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Low Intensity/Slow Sine.mid</key>
+		<data>
+		S4AYA5Yi101Je451DtZo+iBH79A=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Alternate Strobe 2.mid</key>
+		<data>
+		UtmP0fYq0g7ViRNCSW4utwqhAq4=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Beat Strobe 2.mid</key>
+		<data>
+		XU8O0svRkKu6GoWtmpxGPomLzFA=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Beat Strobe.mid</key>
+		<data>
+		D9DumRRboQLxzjneWNJ+8kbpwMs=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Full Strobe Fast.mid</key>
+		<data>
+		U1jPMBnX0K2D1l9YfyFlmXY1jiM=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Full Strobe MedFast.mid</key>
+		<data>
+		GnH7WAm47gN40U3RUVPnc1GsO0Q=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Growing Strobe 2.mid</key>
+		<data>
+		eEExi7eUgcnpR2+7IhdTeK0vLPk=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Growing Strobe 3.mid</key>
+		<data>
+		xyx1A02kdz6ExGQDl8yg6aYOYUw=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Growing Strobe Alternate 2.mid</key>
+		<data>
+		CJvsabbQ7efQBUXSpuVXexO1tRw=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Growing Strobe Alternate 4.mid</key>
+		<data>
+		50QKxgX81T4fAwZxSIKbGeQfbQ4=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Growing Strobe Alternate 8.mid</key>
+		<data>
+		cmON37lKuyuqmbEm3GtwEEeN+KQ=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/Growing Strobe.mid</key>
+		<data>
+		nY2KN0XQnO5kM1hYUj64dRMAoUk=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/White And Red Static 2.mid</key>
+		<data>
+		1a3h4cDFiks7hKHMaxBkhVrjKdY=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/White And Red Strobe 2.mid</key>
+		<data>
+		o47cmdprz6bjmhINd1/d9s796CY=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Max Intensity/White And Red Strobe.mid</key>
+		<data>
+		39NWnwFMW44rxRwgMng7JVShtR4=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Medium Intensity/1st Beat Flash.mid</key>
+		<data>
+		4jwVfBWlGaMTKr7oVNTjavkR5iM=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Medium Intensity/Full Stop.mid</key>
+		<data>
+		E35l3LZMSh6XdJ6Tn2cGqkG/UjM=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Medium Intensity/Random Flash.mid</key>
+		<data>
+		C0XotHTu+0+DQomAoMpcWqBndPA=
+		</data>
+		<key>Java/data/MIDI/DMX &amp; Custom Devices/Medium Intensity/Smooth Noise.mid</key>
+		<data>
+		I3CBOfRmayzhCGzOevCly5GJesI=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Default Intensity/MultiCrecy Light.mid</key>
+		<data>
+		Qt721oLhWCxi+PdfcYxGGy4N3IU=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Default Intensity/Particle Explode.mid</key>
+		<data>
+		qrQE9Oi0cB+rabh14uGcQCbsL1A=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Default Intensity/Simple Flash.mid</key>
+		<data>
+		5v63FJHX6rSPykFLEQJTYdRMMW8=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/High Intensity/Color Matrix.mid</key>
+		<data>
+		wFhR1Gf/M/VVfz0Qj3yPXoEqqCM=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/High Intensity/ColorBeat.mid</key>
+		<data>
+		pm7Yvj2aTbgGWRv7TxfOPanGjqM=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/High Intensity/Exploding Particles.mid</key>
+		<data>
+		7RSGFDG6pAP97sVaPxankihKttQ=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/High Intensity/MultiCrecy High.mid</key>
+		<data>
+		CgOqWNuZYs8bOd3PqNFmCuM86V8=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/High Intensity/Patchwork.mid</key>
+		<data>
+		2+AnVJuYi7JDE2f0VV5it++wWeo=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/High Intensity/Rotating Cut.mid</key>
+		<data>
+		HSe560yptLAPdc5tZ/xmqjxqbWU=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/High Intensity/Rotozoom 2.mid</key>
+		<data>
+		mgz+Vw6itSkPoD10IVEGrdOxi1I=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/High Intensity/Spots And Lines.mid</key>
+		<data>
+		otl6LH6zGn6SkYtv8+GSgc7leKc=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Low Intensity/DiagonalColor.mid</key>
+		<data>
+		BjBRBfJwjvqDTikmEzHRws2JDLo=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Low Intensity/Falling Circles.mid</key>
+		<data>
+		oIh7pBI6cSIsPV21vYLcbX4fAvg=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Low Intensity/Kaleido Triangle.mid</key>
+		<data>
+		99Tn4Oi/zFT8OM40BhoCnv78KRU=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Low Intensity/Manual Blue Circle.mid</key>
+		<data>
+		cWvcRV/+wj/bitQ/Vy2Sp29ZHcE=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Low Intensity/MultiCrecy Light.mid</key>
+		<data>
+		Qt721oLhWCxi+PdfcYxGGy4N3IU=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Low Intensity/ParticleFlow.mid</key>
+		<data>
+		JQlHz6NFJs51ClncfMPy9iYefVg=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Low Intensity/Slow Circle.mid</key>
+		<data>
+		DjAGw/76WdRP14qoJzb4AwbNCzc=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Low Intensity/Worms.mid</key>
+		<data>
+		WS3hyJG5eOH42Aunj8j2Ud91Avw=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Max Intensity/Classic Strobe 2.mid</key>
+		<data>
+		5zDDyXn6GY1SR/qs4SeEsvTcwPc=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Max Intensity/Classic Strobe.mid</key>
+		<data>
+		/IoPR7RxolFx1HzPFfbSieA491k=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Max Intensity/ColorBeatStrobe 2.mid</key>
+		<data>
+		Tz3Ipdpt3N7Rm466YAA3IF8E6s0=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Max Intensity/ColorBeatStrobe.mid</key>
+		<data>
+		JHI2p8oJG/LzFu7u11i4WwDaQsU=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Max Intensity/Exploding Particles Strobe.mid</key>
+		<data>
+		lY56Ldw+B5VKxADoWhsD80zDjl0=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Max Intensity/MultiCrecy Max.mid</key>
+		<data>
+		taf87S1xtqimyxhVrbUCOeQAVLM=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Max Intensity/Rotating Cut Strobe.mid</key>
+		<data>
+		5V8N1PP/EzFLaG3hvnJ2InRySAM=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Medium Intensity/Bezier Flowers.mid</key>
+		<data>
+		F3a53AIqZeWnaPx7se+/DEMPEOk=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Medium Intensity/Color Matrix.mid</key>
+		<data>
+		wFhR1Gf/M/VVfz0Qj3yPXoEqqCM=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Medium Intensity/DiagonalColor.mid</key>
+		<data>
+		BjBRBfJwjvqDTikmEzHRws2JDLo=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Medium Intensity/Manual Blue Circle.mid</key>
+		<data>
+		uA/za1rcknArDBB1L7iWxZg+Cuw=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Medium Intensity/MultiCrecy Medium.mid</key>
+		<data>
+		ZQPOAN4HTAOM5xvcdVTB40p5ido=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Medium Intensity/Nightroad.mid</key>
+		<data>
+		shcF+VUPAgsL4EdqLF4y2tXYMBg=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Medium Intensity/ParticleTriangle.mid</key>
+		<data>
+		xwqQ1ttr/7a5IyDI8slkfNXJp3g=
+		</data>
+		<key>Java/data/MIDI/Panels/Colorful/Medium Intensity/Rotozoom.mid</key>
+		<data>
+		yc457VuIQVnMBkeMzyoIPaGjvcs=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Default Intensity/Continuous Single Panel Flash.mid</key>
+		<data>
+		5AwH9DI9t5Ypp9nvcSBXg/reSqo=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Default Intensity/Single Panel Random Flash.mid</key>
+		<data>
+		Q95vZXE5Rt6dw2TtUd1cGhtqnfQ=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Default Intensity/Wide Red Flash.mid</key>
+		<data>
+		gNwb08E4FtdDIThRLh/C6f6LUYk=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/BeatCircle.mid</key>
+		<data>
+		235nYPxihtJdyZL3uEdmP4HGBJY=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/Dual Triangles.mid</key>
+		<data>
+		vhaGr7WtpmX1WaXJcqJhP381rzc=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/Energy Grid.mid</key>
+		<data>
+		EXAN5MEHadE1Uz85gVrnV/wCeNo=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/Fusee 2.mid</key>
+		<data>
+		ESqHnVtvuqtaOv8f1naTkYEVZOU=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/Fusee 3.mid</key>
+		<data>
+		GftQQvE1nquY46twdLtGQdgazgs=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/Fusee Separation.mid</key>
+		<data>
+		dH1nPbfF8Hgmthewzf0RMY8tAvI=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/Lots of Single Flashes.mid</key>
+		<data>
+		8xMoglWQo+PNPszaWGWX9GX/oxY=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/Red Noise X.mid</key>
+		<data>
+		jQzM8LV6OUVJrTqKtS9/20curMQ=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/Red Turning Crescents.mid</key>
+		<data>
+		JUlk8K1xC4Dwuee2IaxZ8dfab7g=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/Red White Tunnel.mid</key>
+		<data>
+		HYCvBc4JQn3dIJBcTKhxp0tLclQ=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/High Intensity/RedNoise Circle.mid</key>
+		<data>
+		q8xehJAC8ByzMmGmNy6CHPQRGDM=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/BloodSki.mid</key>
+		<data>
+		LsT32gUwiTC6Kuec8DREK36bkSk=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Clock.mid</key>
+		<data>
+		2hC0u1awb4djLs8qGJjZSrnYQjA=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Columns.mid</key>
+		<data>
+		U3hfal7rdF9bCwvPBU0L4U6/mPs=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Complex Red Spiral.mid</key>
+		<data>
+		ikF8u06NGQgQH+vWfgsQSZbUOpU=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Compressed Lines.mid</key>
+		<data>
+		buhRq8XCy6uaKx+Q/yCj+Ispe6A=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Fire Noise.mid</key>
+		<data>
+		irngJ4FENNr9vsCDck5tl+mYmc4=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/ParticleFlow.mid</key>
+		<data>
+		NXnmnAAvXbO6I/YMgBO3qMfbaAU=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Random Paint.mid</key>
+		<data>
+		hSZLu594mpHUlV5/ZS+I5oHOQmQ=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Red Half Crescent.mid</key>
+		<data>
+		MJ0vhbnJGEltA2Mf3tHIgbbhMIg=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Red Spiral.mid</key>
+		<data>
+		3Byt2fc/l2QAxM8sBw0dMe6cRqQ=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Red Tunnel.mid</key>
+		<data>
+		Dtkhe3QriWdxd+n+z7kl3FdvqKE=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Red noise.mid</key>
+		<data>
+		GzLrSBBhFkH75Rqfm2HX1ANPph4=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Snakes.mid</key>
+		<data>
+		XuS+iL0HsqNvvmRjA2TDGr2K90M=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Spiraluality.mid</key>
+		<data>
+		oRywgaqsj4F6F5ggwjqD94ecuxM=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Low Intensity/Wind Particles.mid</key>
+		<data>
+		6fWwb02aiIsXC1wxb4LGm3UccY4=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Max Intensity/Fucked Up Still Lines.mid</key>
+		<data>
+		kA4XxC2kCxlv+lsZx5ifPJq4mK0=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Max Intensity/Fucked Up Turning Lines.mid</key>
+		<data>
+		5ZPMByEWEWcRAkao3nzbQoGXZ1k=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Max Intensity/Interrupted Red Strobe.mid</key>
+		<data>
+		aw7RhEk0UeiJCjNV/xXN71dVcTY=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Max Intensity/Red Noise Shape.mid</key>
+		<data>
+		uDau74dArAmEXK6vdzhvMORpqrQ=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Max Intensity/RedNoise Cross Strobe.mid</key>
+		<data>
+		haJsQfrlQltrCG86JDWUe52bLZg=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Max Intensity/Strobe and Single Flash.mid</key>
+		<data>
+		H+IN21N+PCHd6PlDt4Epd0hyAw0=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Max Intensity/Strobo Red Triangles.mid</key>
+		<data>
+		f5PbuDIGCc01qF+et0Omp7W1eB4=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Big Ass Cube.mid</key>
+		<data>
+		OOcBo1CPSi5jFsHie59VYXclVdM=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/BloodSki.mid</key>
+		<data>
+		LsT32gUwiTC6Kuec8DREK36bkSk=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Columns.mid</key>
+		<data>
+		3SxIdHq0ohuCDtuuNmJmo7H8yp0=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Dual Square Spiral.mid</key>
+		<data>
+		XQOSHb8FVC17AcDAMVE5x97zUGY=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Fusee 1.mid</key>
+		<data>
+		KzqV1//xLqTXOeVSw/tmweFs9VE=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Light Blobs.mid</key>
+		<data>
+		4Rr9xpK4Dl31Q336YBwtpFMfirI=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Lots of Arrows.mid</key>
+		<data>
+		48ZxypRAwG2u3NLdkehcoG22NuA=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/PanelFillLine.mid</key>
+		<data>
+		7hVzwSAWaaxv6ZV6fMGbrK3DtZo=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Red Meta Balls.mid</key>
+		<data>
+		+TtIpU/xWWOrXth4AtWLUje3Ev8=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Red Spiral.mid</key>
+		<data>
+		3Byt2fc/l2QAxM8sBw0dMe6cRqQ=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Red Turning Crescents.mid</key>
+		<data>
+		arKYiuSJihAVVHAsDXgbeIgQfw8=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Rotozoom.mid</key>
+		<data>
+		UOvYYmWATrGAxSuyov13yp3PERA=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Single Square Spiral.mid</key>
+		<data>
+		hG5224PG7x2HmW8VK1rZCTkwfAA=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Spiraluality.mid</key>
+		<data>
+		oRywgaqsj4F6F5ggwjqD94ecuxM=
+		</data>
+		<key>Java/data/MIDI/Panels/Red/Medium Intensity/Three Arm Spiral.mid</key>
+		<data>
+		YYMm3T/Fp2ZpfFUYKv8r1oI2QgI=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Default Intensity/Continuous Single Panel Flash.mid</key>
+		<data>
+		ZvzIsiAS99J87D3VFviPalBp1ak=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Default Intensity/Simple Flash.mid</key>
+		<data>
+		5v63FJHX6rSPykFLEQJTYdRMMW8=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Default Intensity/Single Panel Random Flash.mid</key>
+		<data>
+		g4QaEfKiDUmOCzXaTGz2uptwpLs=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Default Intensity/Va et vient 1.mid</key>
+		<data>
+		dLHIfJYWCCpAJdBC69tvmrTjI54=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Default Intensity/Va et vient 2.mid</key>
+		<data>
+		l82srQBBgZaaZyTVRWte7x+EQdU=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Exploding Circle.mid</key>
+		<data>
+		JNuLkfoacf5hHCMRuQlkdnWD3Ok=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Flash And Strobe.mid</key>
+		<data>
+		SgrDFLfAOlXxGD6YLVriZBxcoHs=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Fusee Separation.mid</key>
+		<data>
+		1O62orKlHKvrdQWj1zEi3jPk/t8=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Hypnoaudio.mid</key>
+		<data>
+		JF7YdhDgtnvnMBWYtwo979AFB0g=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Mixed Lines.mid</key>
+		<data>
+		enXnw98ngdG6qZr9AKEuufEmgAo=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Nonotak 2.mid</key>
+		<data>
+		yz4bsen8Fr/GXw2mq7Id9Tig7RE=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Nonotak 3.mid</key>
+		<data>
+		k4jyTZX87mch/aq0Z1piU18Itog=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/ParticleTriangle.mid</key>
+		<data>
+		XM+6jlVi/2nt7D/1f624JrYEMX4=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Random Arrows.mid</key>
+		<data>
+		jvCv79cv1UpRvBCMGBg9+IpL1pY=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Rotating Cut.mid</key>
+		<data>
+		Mc0weLyS86FsvLoBrvjoFEmNi8E=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Rotozoom.mid</key>
+		<data>
+		witzCnMVGAvUKWf0X+14c5X1s4k=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Sine.mid</key>
+		<data>
+		eUvQgrjuHY/wmaT/oB38RLL3GX0=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Single Turning Lines.mid</key>
+		<data>
+		481cXLd79DVKIkVmodZqwbZ5wHU=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Triangle Line Strobo.mid</key>
+		<data>
+		fvRFhxfQvOPIr48wwXQd9L00kcs=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/Tumbler.mid</key>
+		<data>
+		sR9+df40ab90a1ojhsTU3j5Fi0M=
+		</data>
+		<key>Java/data/MIDI/Panels/White/High Intensity/White Turning Crescents.mid</key>
+		<data>
+		eyr9nURJoh/8M02iWMP9oy+yBpM=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/BeatTriangles.mid</key>
+		<data>
+		UDTCH6Wxwa36J4PyKJj8z8YUTk8=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/Black Line.mid</key>
+		<data>
+		yZu1oZVUEu9jCntO24cwt6YVz8E=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/Columns.mid</key>
+		<data>
+		fT47EW3nyCPthuES7kIdb+n6rBQ=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/Compressed Lines.mid</key>
+		<data>
+		buhRq8XCy6uaKx+Q/yCj+Ispe6A=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/DoubleGradient.mid</key>
+		<data>
+		6c41C65ixQWyX/r/uljwNAg1AtA=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/Mixed Lines.mid</key>
+		<data>
+		i0VY8TdMkesQbb6POiEv/ZWJ4/E=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/Nonotak 1.mid</key>
+		<data>
+		zi/4fHuRIL9XGyiFYvphRBUGM2I=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/Opening Lines.mid</key>
+		<data>
+		u/296ycmUOoArP08S69sWrr06UU=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/Slow Circle.mid</key>
+		<data>
+		X0vlHpAPGf8eO52hDi/Lny0VpGc=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/Stars.mid</key>
+		<data>
+		KE+4YJXaf8cJOfLZURB3EmfDLVI=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/Trigo Shapes.mid</key>
+		<data>
+		u9B7Rs6sQcCEgkp+Ee91ZmGlxW8=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Low Intensity/White Tunnel.mid</key>
+		<data>
+		uVdfpRCmpmjtlmVRvKzPvGaPv2I=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Max Intensity/Classic Strobe.mid</key>
+		<data>
+		5XWRL4L+LvbiyErJAUGxJMNd9Lg=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Max Intensity/Fucked Up Turning Lines.mid</key>
+		<data>
+		tEI7r1IaYWIWirVgIoQW9EdtqDo=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Max Intensity/Interrupted Strobe.mid</key>
+		<data>
+		jogOKyBIa5Y4yjR8gQvVrBKIAdg=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Max Intensity/Line Strobe Mix.mid</key>
+		<data>
+		acLbwhp05rricWpDaetGo96rv5Y=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Max Intensity/Line Strobe.mid</key>
+		<data>
+		W3s3VB65rI5Efs3kFrS2iBQYKkA=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Max Intensity/Marshall Strobe.mid</key>
+		<data>
+		7rwSuq2+t/IeaUm8BlHu+RYiwlg=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Max Intensity/Rotating Cut Strobe.mid</key>
+		<data>
+		pJFIHxDmzIPy6+OqpDgqEBgaXes=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Max Intensity/Single Turning Lines.mid</key>
+		<data>
+		29r1dfy7zbCfvDz9a1S5XEiG7RU=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/B&amp;W ArcWave.mid</key>
+		<data>
+		oZH1WwTXYf5A6MuskETPQZRkRcI=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/B&amp;W Spirals.mid</key>
+		<data>
+		4i7cIS0khx8JI89fWRqG2NdoVRY=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/BeatCircle.mid</key>
+		<data>
+		129k2TUEcvwPcdYOG7lM+HjMZyk=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/BeatCircleLine.mid</key>
+		<data>
+		C26yoXuyPg2K8RE1RCkCm2OiD04=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/Glitchy Lines.mid</key>
+		<data>
+		Anhfyh6hM9bpkZ3hogJLMb4RE6I=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/PanelFill.mid</key>
+		<data>
+		a0oGIB3xiqkrhm98cscCGVH2hu0=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/ParticleTriangle.mid</key>
+		<data>
+		Crz3jyE2PkroEsCrXw4BCUTHZGI=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/Random Arrows.mid</key>
+		<data>
+		ej5/8qA7N0DWwFWzUIv+43I7FbI=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/Random Half Panels.mid</key>
+		<data>
+		4vUwoJ3Ip9gOZtLriEcA5P2pCGw=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/Rotozoom.mid</key>
+		<data>
+		witzCnMVGAvUKWf0X+14c5X1s4k=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/Single Turning Lines.mid</key>
+		<data>
+		Q5qQsX9ICWSuIYOBBpS6O69RXdk=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/Squares.mid</key>
+		<data>
+		7AUQ2d1Hxu3OikwWcfhFKAwHufw=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/Stars.mid</key>
+		<data>
+		fC8wqS4hPVo46etzOV+v79JTaFI=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/White Tunnel.mid</key>
+		<data>
+		KbtczaHa64G+70R7a22kp0ByVJo=
+		</data>
+		<key>Java/data/MIDI/Panels/White/Medium Intensity/White Turning Crescents.mid</key>
+		<data>
+		0MXHio10t+kDB1MWdwInCyhihIs=
+		</data>
+		<key>Java/data/MIDI/README.txt</key>
+		<data>
+		G24xRzTPUIIynmV0/rig43Hl5Hs=
+		</data>
+		<key>Java/data/Miniml-Standard0757-20.vlw</key>
+		<data>
+		DWyHk5NaQWCcrjbVCFh0gGZAZTU=
+		</data>
+		<key>Java/data/Miniml-Standard0757-48.vlw</key>
+		<data>
+		gg7VgIuLWs+OloFO+ejqqt+0iiY=
+		</data>
+		<key>Java/data/Miniml-Standard0757-8.vlw</key>
+		<data>
+		Wk8hLbfsyESDE6HqiATMB7AI7ms=
+		</data>
+		<key>Java/gluegen-rt-natives-macosx-universal.jar</key>
+		<data>
+		11uvp9PE8pshoC2Ui3fprr9Rlyk=
+		</data>
+		<key>Java/gluegen-rt.jar</key>
+		<data>
+		APjYBlK7KesrkBL7r+HBYLqAd1w=
+		</data>
+		<key>Java/jogl-all-natives-macosx-universal.jar</key>
+		<data>
+		vfFs1wrGn5GXlnQXxB6q14dTj7k=
+		</data>
+		<key>Java/jogl-all.jar</key>
+		<data>
+		+x0SaYucrNLvSRtPISbciy2yp4E=
+		</data>
+		<key>Java/jssc.jar</key>
+		<data>
+		+2l8Vvq2Gt4LSm5tKTdyWYaj+Q4=
+		</data>
+		<key>Java/jssc.txt</key>
+		<data>
+		oNMgccwbKmCFTlmq4LOmgufSvZk=
+		</data>
+		<key>Java/libjSSC-2.8.jnilib</key>
+		<data>
+		e62Pi7yGa2wCqoFf4HOBIsgRH40=
+		</data>
+		<key>Java/libprotobuf.jar</key>
+		<data>
+		oQcyx2v6zb1jOn6w95aLEFmmXfo=
+		</data>
+		<key>Java/serial.jar</key>
+		<data>
+		3+xMXyqSnh0pgELHQF2ripYQ4p8=
+		</data>
+		<key>Java/themidibus.jar</key>
+		<data>
+		4VBEiaMtBiZ5LBJ+TjuwlWwXkBk=
+		</data>
+		<key>Resources/en.lproj/Localizable.strings</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			1x7GcvnGdR/b251TU0nrD14zM/c=
+			</data>
+			<key>optional</key>
+			<true/>
+		</dict>
+		<key>Resources/sketch.icns</key>
+		<data>
+		V0eScs9jH/kx46PDDKFKW0jiUlA=
+		</data>
+	</dict>
+	<key>rules</key>
+	<dict>
+		<key>^Resources/</key>
+		<true/>
+		<key>^Resources/.*\.lproj/</key>
+		<dict>
+			<key>optional</key>
+			<true/>
+			<key>weight</key>
+			<real>1000</real>
+		</dict>
+		<key>^Resources/.*\.lproj/locversion.plist$</key>
+		<dict>
+			<key>omit</key>
+			<true/>
+			<key>weight</key>
+			<real>1100</real>
+		</dict>
+		<key>^version.plist$</key>
+		<true/>
+	</dict>
+	<key>rules2</key>
+	<dict>
+		<key>.*\.dSYM($|/)</key>
+		<dict>
+			<key>weight</key>
+			<real>11</real>
+		</dict>
+		<key>^(.*/)?\.DS_Store$</key>
+		<dict>
+			<key>omit</key>
+			<true/>
+			<key>weight</key>
+			<real>2000</real>
+		</dict>
+		<key>^(Frameworks|SharedFrameworks|PlugIns|Plug-ins|XPCServices|Helpers|MacOS|Library/(Automator|Spotlight|LoginItems))/</key>
+		<dict>
+			<key>nested</key>
+			<true/>
+			<key>weight</key>
+			<real>10</real>
+		</dict>
+		<key>^.*</key>
+		<true/>
+		<key>^Info\.plist$</key>
+		<dict>
+			<key>omit</key>
+			<true/>
+			<key>weight</key>
+			<real>20</real>
+		</dict>
+		<key>^PkgInfo$</key>
+		<dict>
+			<key>omit</key>
+			<true/>
+			<key>weight</key>
+			<real>20</real>
+		</dict>
+		<key>^Resources/</key>
+		<dict>
+			<key>weight</key>
+			<real>20</real>
+		</dict>
+		<key>^Resources/.*\.lproj/</key>
+		<dict>
+			<key>optional</key>
+			<true/>
+			<key>weight</key>
+			<real>1000</real>
+		</dict>
+		<key>^Resources/.*\.lproj/locversion.plist$</key>
+		<dict>
+			<key>omit</key>
+			<true/>
+			<key>weight</key>
+			<real>1100</real>
+		</dict>
+		<key>^[^/]+$</key>
+		<dict>
+			<key>nested</key>
+			<true/>
+			<key>weight</key>
+			<real>10</real>
+		</dict>
+		<key>^embedded\.provisionprofile$</key>
+		<dict>
+			<key>weight</key>
+			<real>20</real>
+		</dict>
+		<key>^version\.plist$</key>
+		<dict>
+			<key>weight</key>
+			<real>20</real>
+		</dict>
+	</dict>
+</dict>
+</plist>
