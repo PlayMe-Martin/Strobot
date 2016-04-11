@@ -8,26 +8,26 @@
 	<NbChannels>30</NbChannels>
 	
 	
-	<ChannelType index="0" attribute="PAN">
+	<ChannelType index="0" attribute="PAN" ch_link="1">
 		<ChannelSet name="PAN" from_dmx="0" to_dmx="255" range="540" proportional="increasing" />
 	</ChannelType>
 
 	<ChannelType index="1" attribute="PAN_FINE">
-		<ChannelSet name="PAN_FINE" from_dmx="0" to_dmx="255" ch_link="0" />
+		<ChannelSet name="PAN_FINE" from_dmx="0" to_dmx="255" />
 	</ChannelType>
 
-	<ChannelType index="2" attribute="TILT">
+	<ChannelType index="2" attribute="TILT" ch_link="3">
 		<ChannelSet name="TILT" from_dmx="0" to_dmx="255" range="270" proportional="increasing" />
 	</ChannelType>
 
 	<ChannelType index="3" attribute="TILT_FINE">
-		<ChannelSet name="TILT_FINE" from_dmx="0" to_dmx="255" ch_link="2" />
+		<ChannelSet name="TILT_FINE" from_dmx="0" to_dmx="255" />
 	</ChannelType>
 
 	<ChannelType index="4" attribute="SPEED">
-		<ChannelSet name="STANDARD" from_dmx="0" to_dmx="0" recommended="true"/>
-		<ChannelSet name="MAX_SPEED" from_dmx="0" to_dmx="0" />
-		<ChannelSet name="SPEED" from_dmx="1" to_dmx="255" proportional="decreasing" /> 		<!-- FAST -> SLOW, whether the fixture is in Speed or Time mode -->
+		<ChannelSet name="STANDARD" from_dmx="0" to_dmx="0" />
+		<ChannelSet name="MAX_SPEED" from_dmx="1" to_dmx="1" />
+		<ChannelSet name="SPEED" from_dmx="2" to_dmx="255" proportional="decreasing" /> 		<!-- FAST -> SLOW, whether the fixture is in Speed or Time mode -->
 	</ChannelType>
 	
 	<ChannelType index="5" attribute="SPECIAL_COMMANDS"> 			<!-- Not to be used by Strobot -->
@@ -40,8 +40,8 @@
 		<ChannelSet name="LAMP_OFF" from_dmx="230" to_dmx="239" />
 	</ChannelType>
 
-	<ChannelType index="6" attribute="COLOR">
-		<ChannelSet name="WHITE" from_dmx="128" to_dmx="129" recommended="true"/>
+	<ChannelType index="6" attribute="COLOR" option="WHEEL">
+		<ChannelSet name="WHITE" from_dmx="128" to_dmx="129" />
 		<ChannelSet name="DEEP_RED" from_dmx="130" to_dmx="134" />
 		<ChannelSet name="DEEP_BLUE" from_dmx="135" to_dmx="138" />
 		<ChannelSet name="YELLOW" from_dmx="139" to_dmx="143" />
@@ -75,8 +75,8 @@
 		<ChannelSet name="COLOR_TIME" from_dmx="0" to_dmx="255" proportional="decreasing" />
 	</ChannelType>
 
-	<ChannelType index="11" attribute="STATIC_GOGO_TIME">
-		<ChannelSet name="STATIC_GOGO_TIME" from_dmx="0" to_dmx="255" proportional="decreasing" />
+	<ChannelType index="11" attribute="STATIC_GOBO_TIME">
+		<ChannelSet name="STATIC_GOBO_TIME" from_dmx="0" to_dmx="255" proportional="decreasing" />
 	</ChannelType>
 
 	<ChannelType index="12" attribute="PRISM_TIME">
@@ -92,11 +92,11 @@
 	</ChannelType>
 
 	<ChannelType index="15" attribute="GOBO" bank="1">
-		<ChannelSet name="NONE" from_dmx="0" to_dmx="3" recommended="true"/>
-		<ChannelSet name="BEAM_REDUCER_1" from_dmx="64" to_dmx="69" />
-		<ChannelSet name="BEAM_REDUCER_2" from_dmx="70" to_dmx="75" />
-		<ChannelSet name="BEAM_REDUCER_3" from_dmx="76" to_dmx="81" />
-		<ChannelSet name="BEAM_REDUCER_4" from_dmx="82" to_dmx="87" />
+		<ChannelSet name="APERTURE_STEP_0" from_dmx="0" to_dmx="3" recommended="true"/> 	<!-- No gobo to reduce the aperture -->
+		<ChannelSet name="APERTURE_STEP_1" from_dmx="64" to_dmx="69" />  					<!-- Large aperture -->
+		<ChannelSet name="APERTURE_STEP_2" from_dmx="70" to_dmx="75" />
+		<ChannelSet name="APERTURE_STEP_3" from_dmx="76" to_dmx="81" />
+		<ChannelSet name="APERTURE_STEP_4" from_dmx="82" to_dmx="87" />  					<!-- Small aperture -->
 	</ChannelType>	
 	
 	<ChannelType index="16" attribute="GOBO" bank="2">
@@ -153,11 +153,11 @@
 
 	<ChannelType index="27" attribute="SHUTTER">
 		<ChannelSet name="CLOSED" from_dmx="0" to_dmx="31" />
-		<ChannelSet name="OPEN" from_dmx="64" to_dmx="63" />
+		<ChannelSet name="OPEN" from_dmx="32" to_dmx="63" />
 		<ChannelSet name="STROBE" from_dmx="64" to_dmx="95" /> 								<!-- SLOW -> FAST -->
 	</ChannelType>
 
-	<ChannelType index="28" attribute="DIMMER">
+	<ChannelType index="28" attribute="DIMMER" ch_link="29">
 		<ChannelSet name="DIMMER" from_dmx="0" to_dmx="255" proportional="increasing" />
 	</ChannelType>	
 
