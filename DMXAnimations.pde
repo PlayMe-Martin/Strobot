@@ -204,9 +204,8 @@ void dmxAnim_blackout() {
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
     stroboscope.stopDMX();
   }
-  for (DMX_PAR par: DMXList_PARs) {
-    par.stopDMX();
-  }
+
+  // TBIL - Add the other generic fixtures
 }
 
 void dmxAnim_backStrobe_stop() {

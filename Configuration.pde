@@ -153,9 +153,6 @@ void printDMXDeviceConfiguration() {
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
     configFile_write.println("BackStroboscope|" + stroboscope.printStatus());
   }
-  for (DMX_PAR projector: DMXList_PARs) {
-    configFile_write.println("Projector|" + projector.printStatus());
-  }
 }
 
 void printCustomDevicesConfiguration() {

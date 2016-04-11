@@ -252,6 +252,9 @@ void setup()
     println("Couldn't create logger file : " + e); 
   }
   
+  //Read all the available DMX fixture files
+  readFixtureFiles();
+
   setDefaultScreenOrderConfiguration();
   init_defaultDMXDevices();
   init_defaultCustomDevices();
@@ -276,8 +279,8 @@ void setup()
   DMXAttributes = new ArrayList<Attribute>();
   setDMXAnimationsAttributes();
   
-  //Read all the available DMX fixture files
-  readFixtureFiles();
+  
+
   
   if (output_PHP == true) {
     //Initialize and fill in the PHP file
