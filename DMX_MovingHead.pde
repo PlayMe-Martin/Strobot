@@ -20,25 +20,37 @@ final int    DMX_COLORMODE_RGB                    = 2;
 final String DMX_COLORMODE_RGB_TEXT               = "RGB";
 final int    DMX_COLORMODE_CMY                    = 3;
 final String DMX_COLORMODE_CMY_TEXT               = "CMY";
-final String DMX_COLORMODE_DEFAULT                = "WHEEL";   // If a color wheel is available, use it. Else, do with what's available
+final int    DMX_COLORMODE_RGBW                   = 4;
+final String DMX_COLORMODE_RGBW_TEXT              = "RGBW";
 
 final String DMX_COLORMODE_RGB_R                  = "R";
 final String DMX_COLORMODE_RGB_G                  = "G";
 final String DMX_COLORMODE_RGB_B                  = "B";
+final String DMX_COLORMODE_RGB_W                  = "W";
 final String DMX_COLORMODE_CMY_C                  = "C";
 final String DMX_COLORMODE_CMY_M                  = "M";
 final String DMX_COLORMODE_CMY_Y                  = "Y";
 
-final String DMX_COLORWHEEL_WHITE                 = "WHITE";
-final String DMX_COLORWHEEL_RED                   = "RED";
-final String DMX_COLORWHEEL_DEEP_RED              = "DEEP_RED";
-final String DMX_COLORWHEEL_BLUE                  = "BLUE";
-final String DMX_COLORWHEEL_DEEP_BLUE             = "DEEP_BLUE";
-final String DMX_COLORWHEEL_YELLOW                = "YELLOW";
-final String DMX_COLORWHEEL_GREEN                 = "GREEN";
-final String DMX_COLORWHEEL_ULTRAVIOLET           = "ULTRAVIOLET";
-final String DMX_COLORWHEEL_ORANGE                = "ORANGE";
-final String DMX_COLORWHEEL_CTO                   = "CTO";
+final String DMX_COLORWHEEL_WHITE_TEXT            = "WHITE";
+final String DMX_COLORWHEEL_RED_TEXT              = "RED";
+final String DMX_COLORWHEEL_DEEP_RED_TEXT         = "DEEP_RED";
+final String DMX_COLORWHEEL_BLUE_TEXT             = "BLUE";
+final String DMX_COLORWHEEL_DEEP_BLUE_TEXT        = "DEEP_BLUE";
+final String DMX_COLORWHEEL_YELLOW_TEXT           = "YELLOW";
+final String DMX_COLORWHEEL_GREEN_TEXT            = "GREEN";
+final String DMX_COLORWHEEL_ULTRAVIOLET_TEXT      = "ULTRAVIOLET";
+final String DMX_COLORWHEEL_ORANGE_TEXT           = "ORANGE";
+final String DMX_COLORWHEEL_CTO_TEXT              = "CTO";
+final int    DMX_COLORWHEEL_WHITE                 = 0;
+final int    DMX_COLORWHEEL_RED                   = 1;
+final int    DMX_COLORWHEEL_DEEP_RED              = 2;
+final int    DMX_COLORWHEEL_BLUE                  = 3;
+final int    DMX_COLORWHEEL_DEEP_BLUE             = 4;
+final int    DMX_COLORWHEEL_YELLOW                = 5;
+final int    DMX_COLORWHEEL_GREEN                 = 6;
+final int    DMX_COLORWHEEL_ULTRAVIOLET           = 7;
+final int    DMX_COLORWHEEL_ORANGE                = 8;
+final int    DMX_COLORWHEEL_CTO                   = 9;
 
 final int    DMX_SPEEDMODE_DEFAULT                = 0;
 final int    DMX_SPEEDMODE_MAX                    = 1;
@@ -51,6 +63,8 @@ final String DMX_SPEEDMODE_PROGRESSIVE_TEXT       = "SPEED";
 final String DMX_SHUTTER_OPEN                     = "OPEN";
 final String DMX_SHUTTER_CLOSED                   = "CLOSED";
 final String DMX_SHUTTER_STROBE                   = "STROBE";
+final int    DMX_SHUTTERMODE_DEFAULT              = 0;
+final int    DMX_SHUTTERMODE_STROBE               = 1;
 
 final int    DMX_APERTUREMODE_DEFAULT             = 0;          // Default Aperture control means no aperture control !
 final String DMX_APERTUREMODE_DEFAULT_TEXT        = "DEFAULT";
@@ -98,6 +112,7 @@ class DMX_MovingHead {
   int chIndex_color_RGB_R                  = -1;      // Shall be defined only if used
   int chIndex_color_RGB_G                  = -1;      // Shall be defined only if used
   int chIndex_color_RGB_B                  = -1;      // Shall be defined only if used
+  int chIndex_color_RGB_W                  = -1;      // Shall be defined only if used
   
 
   int speedMode                            = DMX_SPEEDMODE_DEFAULT;    
@@ -108,6 +123,7 @@ class DMX_MovingHead {
   int speedMode_fine_range_max             = -1;   // Set speedSet channel to a value between the max/min range to set a smooth speed
   int speedMode_fine_range_min             = -1;
 
+  int shutterMode                          = DMX_SHUTTERMODE_DEFAULT;
   int chIndex_shutter                      = -1;
   int shutter_open                         = -1;
   int shutter_closed                       = -1;
@@ -128,6 +144,7 @@ class DMX_MovingHead {
   int dmxVal_color_param1                  = 0;    // Only parameter used by the wheel mode
   int dmxVal_color_param2                  = 0;    // Used by the RGB and the CMY mode
   int dmxVal_color_param3                  = 0;    // Used by the RGB and the CMY mode
+  int dmxVal_color_param4                  = 0;    // Used by the RGBW mode
   int dmxVal_speed                         = 0;    // Used if the speed is fine-tuned (DMX_SPEED_MODE_PROGRESSIVE)
   int dmxVal_shutter                       = 0;
   int dmxVal_aperture                      = 0;
@@ -301,40 +318,54 @@ class DMX_MovingHead {
           chIndex_color_CMY_Y = channel.getIndex();
         }
       }
+      else if (channel.getOption().equals(DMX_COLORMODE_RGBW_TEXT)) {
+        if (channel.getOptionArgument().equals(DMX_COLORMODE_RGB_R)) {
+          chIndex_color_RGB_R = channel.getIndex();
+        }
+        else if (channel.getOptionArgument().equals(DMX_COLORMODE_RGB_G)) {
+          chIndex_color_RGB_G = channel.getIndex();
+        }
+        else if (channel.getOptionArgument().equals(DMX_COLORMODE_RGB_B)) {
+          chIndex_color_RGB_B = channel.getIndex();
+        }
+        else if (channel.getOptionArgument().equals(DMX_COLORMODE_RGB_W)) {
+          chIndex_color_RGB_W = channel.getIndex();
+        }
+      }
     }
   }
 
   void parseColorWheelChannel(ChannelDesc colorWheelCh) {
     ArrayList<ChannelSet> channelSets = colorWheelCh.getAllChannelSets();
     for (ChannelSet channelSet: channelSets) {
-      if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_WHITE)) {
+      if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_WHITE_TEXT)) {
         dmxVal_color_colorWheel_white = channelSet.getFrom_dmx();
       }
-      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_RED)) {
+      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_RED_TEXT)) {
         dmxVal_color_colorWheel_red = channelSet.getFrom_dmx();
       }
-      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_DEEP_RED)) {
+      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_DEEP_RED_TEXT)) {
         dmxVal_color_colorWheel_deepRed = channelSet.getFrom_dmx();
       }
-      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_BLUE)) {
+      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_BLUE_TEXT)) {
         dmxVal_color_colorWheel_blue = channelSet.getFrom_dmx();
       }
-      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_DEEP_BLUE)) {
+      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_DEEP_BLUE_TEXT)) {
         dmxVal_color_colorWheel_deepBlue = channelSet.getFrom_dmx();
       }
-      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_YELLOW)) {
+      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_YELLOW_TEXT)) {
         dmxVal_color_colorWheel_yellow = channelSet.getFrom_dmx();
       }
-      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_GREEN)) {
+      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_GREEN_TEXT)) {
         dmxVal_color_colorWheel_green = channelSet.getFrom_dmx();
       }
-      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_ULTRAVIOLET)) {
+      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_ULTRAVIOLET_TEXT)) {
         dmxVal_color_colorWheel_ultraviolet = channelSet.getFrom_dmx();
       }
-      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_ORANGE)) {
+      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_ORANGE_TEXT)) {
         dmxVal_color_colorWheel_orange = channelSet.getFrom_dmx();
       }
-      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_CTO)) {
+      else if (channelSet.getSubfunction().equals(DMX_COLORWHEEL_CTO_TEXT)) {
         dmxVal_color_colorWheel_cto = channelSet.getFrom_dmx();
       }
     }
@@ -343,6 +374,9 @@ class DMX_MovingHead {
   int defineColorMode() {
     if (chIndex_color_WHEEL != -1) {
       return DMX_COLORMODE_WHEEL;
+    }
+    else if (chIndex_color_RGB_R != -1 && chIndex_color_RGB_G != -1 && chIndex_color_RGB_B != -1 && chIndex_color_RGB_W != -1) {
+      return DMX_COLORMODE_RGBW;
     }
     else if (chIndex_color_RGB_R != -1 && chIndex_color_RGB_G != -1 && chIndex_color_RGB_B != -1) {
       return DMX_COLORMODE_RGB;
@@ -531,11 +565,6 @@ class DMX_MovingHead {
   }
 
 
-  ////////////////////////////////////////////////////////////////////////////////
-  // ANIMATION FUNCTIONS
-  //////////////////////
-
-
   //// BASIC LIB FUNCTIONS
   //////////////////////////////
 
@@ -578,22 +607,264 @@ class DMX_MovingHead {
   }
 
   void setSpeed(float val_percent) {
-    if (speedMode == DMX_SPEEDMODE_DEFAULT) {
-      // Fixed value
+    switch (speedMode) {
+      case DMX_SPEEDMODE_DEFAULT:       dmxVal[chIndex_speedSet] = speedMode_standardSpeed_val; break;  //Ignore the input argument: default speed mode
+      case DMX_SPEEDMODE_MAX:           dmxVal[chIndex_speedSet] = speedMode_maxSpeed_val; break;       //Ignore the input argument: max speed mode
+      case DMX_SPEEDMODE_PROGRESSIVE:   dmxVal[chIndex_speedSet] = int( map(val_percent, 0.0, 100.0, speedMode_fine_range_min, speedMode_fine_range_max) ); break;
+      case DMX_SPEEDMODE_FIXED:         break;  // Nothing to do, no channel reserved for pan/tilt movement speed
+      default: break;
     }
-    else if (speedMode == DMX_SPEEDMODE_MAX) {
-
-    }
-    else if (speedMode == DMX_SPEEDMODE_PROGRESSIVE) {
-      
-    }
-    else if (speedMode == DMX_SPEEDMODE_FIXED) {
-      // Nothing to do, no channel reserved for pan/tilt movement speed
-    }
-
-      
   }
 
+  void setSpeedMode(int requestedMode) {
+    if (requestedMode == DMX_SPEEDMODE_DEFAULT) {
+      if (chIndex_speedSet != -1 && speedMode_standardSpeed_val != -1) {
+        speedMode = DMX_SPEEDMODE_DEFAULT;
+      }
+      else {
+        speedMode = DMX_SPEEDMODE_FIXED;
+      }
+    }
+    else if (requestedMode == DMX_SPEEDMODE_MAX) {
+      if (chIndex_speedSet != -1 && speedMode_maxSpeed_val != -1) {
+        speedMode = DMX_SPEEDMODE_MAX;
+      }
+      else if (chIndex_speedSet != -1 && speedMode_standardSpeed_val != -1) {
+        speedMode = DMX_SPEEDMODE_DEFAULT;
+      }
+      else {
+        speedMode = DMX_SPEEDMODE_FIXED;
+      }
+    }
+    else if (requestedMode == DMX_SPEEDMODE_PROGRESSIVE) {
+      if (chIndex_speedSet != -1 && speedMode_fine_range_min != -1 && speedMode_fine_range_max != -1) {
+        speedMode = DMX_SPEEDMODE_MAX;
+      }
+      else if (chIndex_speedSet != -1 && speedMode_standardSpeed_val != -1) {
+        speedMode = DMX_SPEEDMODE_DEFAULT;
+      }
+      else {
+        speedMode = DMX_SPEEDMODE_FIXED;
+      }
+    }
+    else {
+      speedMode = DMX_SPEEDMODE_FIXED;
+    }
+  }
+
+  void setSpeed_defaultSpeed() {
+    setSpeedMode(DMX_SPEEDMODE_DEFAULT);
+    setSpeed(50.0);
+  }
+
+  void setSpeed_maxSpeed() {
+    setSpeedMode(DMX_SPEEDMODE_MAX);
+    setSpeed(100.0);
+  }
+
+  void setSpeed_progressiveSpeed(float val) {
+    setSpeedMode(DMX_SPEEDMODE_PROGRESSIVE);
+    setSpeed(val);
+  }
+
+
+  void setShutter(float val_percent) {
+    if (chIndex_shutter != -1 && shutter_open != -1 && shutter_closed != -1) {
+      if (shutterMode == DMX_SHUTTERMODE_DEFAULT) {
+        if (val_percent < 50.0) {
+          dmxVal[chIndex_shutter] = shutter_open;
+        }
+        else {
+          dmxVal[chIndex_shutter] = shutter_closed;
+        }
+      }
+      else if (shutterMode == DMX_SHUTTERMODE_STROBE) {
+        if (shutter_strobe_maxSpeed != -1 && shutter_strobe_minSpeed != -1) {
+          dmxVal[chIndex_shutter] = int( map(val_percent, 0.0, 100.0, shutter_strobe_minSpeed, shutter_strobe_maxSpeed) );
+        }
+        else {
+          dmxVal[chIndex_shutter] = shutter_open;   // This fuxture does not have a strobe control incorporated to its shutter channel
+        }
+      }
+    }
+    else {
+      // Do nothing - this fixture does not support shutter control
+    }
+  }
+
+  void setShutterMode(int requestedMode) {
+    if (requestedMode == DMX_SHUTTERMODE_DEFAULT) {
+      shutterMode = DMX_SHUTTERMODE_DEFAULT;
+    }
+    else if (requestedMode == DMX_SHUTTERMODE_STROBE) {
+      if (shutter_strobe_maxSpeed != -1 && shutter_strobe_minSpeed != -1) {
+        shutterMode = DMX_SHUTTERMODE_STROBE;
+      }
+      else {
+        shutterMode = DMX_SHUTTERMODE_DEFAULT;  // Unsupoorted strobe mode   
+      }
+    }
+  }
+
+  void setColor(int requestedColor) {
+    switch (requestedColor) {
+      case DMX_COLORWHEEL_WHITE      : setColor_white();break;
+      case DMX_COLORWHEEL_RED        : setColor_red();break;
+      // case DMX_COLORWHEEL_DEEP_RED   : setColor_deepRed();break;
+      // case DMX_COLORWHEEL_BLUE       : setColor_blue();break;
+      // case DMX_COLORWHEEL_DEEP_BLUE  : setColor_deepBlue();break;
+      // case DMX_COLORWHEEL_YELLOW     : setColor_yellow();break;
+      // case DMX_COLORWHEEL_GREEN      : setColor_green();break;
+      // case DMX_COLORWHEEL_ULTRAVIOLET: setColor_ultraviolet();break;
+      // case DMX_COLORWHEEL_ORANGE     : setColor_orange();break;
+      // case DMX_COLORWHEEL_CTO        : setColor_cto();break;
+      default: break;
+    }
+  }
+
+  void setColor_genericColor(int colorWheel_code, int[] colorRGB, int[] colorRGBW) {
+    int[] colorCMY   = {255 - colorRGB[0], 255 - colorRGB[1], 255 - colorRGB[2]};
+    switch (colorControlMode) {
+      case DMX_COLORMODE_WHEEL    : dmxVal[chIndex_color_WHEEL] = colorWheel_code; break; 
+      case DMX_COLORMODE_RGB      : dmxVal[chIndex_color_RGB_R] = colorRGB[0];       dmxVal[chIndex_color_RGB_G] = colorRGB[1];       dmxVal[chIndex_color_RGB_B] = colorRGB[2];       break; 
+      case DMX_COLORMODE_CMY      : dmxVal[chIndex_color_CMY_C] = 255 - colorRGB[0]; dmxVal[chIndex_color_CMY_M] = 255 - colorRGB[1]; dmxVal[chIndex_color_CMY_Y] = 255 - colorRGB[2]; break; 
+      case DMX_COLORMODE_RGBW     : dmxVal[chIndex_color_RGB_R] = colorRGB[0];       dmxVal[chIndex_color_RGB_G] = colorRGB[1];       dmxVal[chIndex_color_RGB_B] = colorRGB[2];       dmxVal[chIndex_color_RGB_W] = colorRGB[3]; break; 
+      case DMX_COLORMODE_UNDEFINED: break; 
+      default: break;
+    }
+  }
+
+  int getFallbackColorIfInvalidColorVal(int inputColor) {
+    if (inputColor == -1) {
+      if (dmxVal_color_colorWheel_white != -1) {
+        return dmxVal_color_colorWheel_white;
+      }
+      else {
+        return 0;
+      }
+    }
+    else {
+      return inputColor;
+    }
+  }
+
+  int getFallbackColorIfInvalidColorVal(int inputColor, int fallbackColor) {
+    if (inputColor == -1) {
+      if (fallbackColor != -1) {
+        return fallbackColor;
+      }
+      else if (dmxVal_color_colorWheel_white != -1) {
+        return dmxVal_color_colorWheel_white;
+      }
+      else {
+        return 0;
+      }
+    }
+    else {
+      return inputColor;
+    }
+  }
+
+  void setColor_white() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_white);
+    int[] colorRGB   = {255, 255, 255};
+    int[] colorRGBW  = {0,   0,   0, 255};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);
+  }
+
+  void setColor_red() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_red);
+    int[] colorRGB   = {255, 0,   0};
+    int[] colorRGBW  = {255, 0,   0,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
+  }
+
+  void setColor_deepRed() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_deepRed, dmxVal_color_colorWheel_red);
+    int[] colorRGB   = {139, 0,   0};
+    int[] colorRGBW  = {139, 0,   0,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
+  }
+
+  void setColor_blue() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_blue);
+    int[] colorRGB   = {0,   0, 255};
+    int[] colorRGBW  = {0,   0, 255,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
+  }
+
+  void setColor_deepBlue() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_deepBlue, dmxVal_color_colorWheel_blue);
+    int[] colorRGB   = {0,   0, 155};
+    int[] colorRGBW  = {0,   0, 155,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
+  }
+
+  void setColor_yellow() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_yellow);
+    int[] colorRGB   = {255, 240, 0};
+    int[] colorRGBW  = {255, 240, 0,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
+  }
+
+  void setColor_green() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_green);
+    int[] colorRGB   = {71, 182, 164};
+    int[] colorRGBW  = {71, 182, 164,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
+  }
+
+  void setColor_ultraviolet() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_ultraviolet, dmxVal_color_colorWheel_blue);
+    int[] colorRGB   = {62,  6, 148};
+    int[] colorRGBW  = {62,  6, 148,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
+  }
+
+  void setColor_orange() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_orange, dmxVal_color_colorWheel_red);
+    int[] colorRGB   = {253, 141, 28};
+    int[] colorRGBW  = {255,   0,  0, 160};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
+  }
+
+  void setColor_cto() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_cto);
+    int[] colorRGB   = {255, 241, 224};
+    int[] colorRGBW  = {200,   0,  0, 255};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
+  }
+
+
+
+  void setApertureReduction(float val_percent) {
+    // 100% -> closed aperture. 0% -> open aperture
+    // Different implementations available for the aperture:
+    // - Iris width (continuous control)
+    // - Beam reduction using gobos (step control)
+    if (apertureMode == DMX_APERTUREMODE_DEFAULT) {
+      // Do nothing: no aperture control for this device
+    }
+    else if (apertureMode == DMX_APERTUREMODE_PROGRESSIVE) {
+      if (chIndex_aperture != -1 && aperture_progressive_min != -1 && aperture_progressive_max != -1) {
+        dmxVal[chIndex_aperture] = int( map(val_percent, 0.0, 100.0, aperture_progressive_min, aperture_progressive_max) );
+      }
+    }
+    else if (apertureMode == DMX_APERTUREMODE_STEP) {
+      if (aperture_steps.size() > 0) {
+        int step =  int( map(val_percent,0,100.0, 0, aperture_steps.size()));
+        dmxVal[chIndex_aperture] = aperture_steps.get(min(step, aperture_steps.size()-1))[1];
+      }
+    }
+  }
+
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // ANIMATION FUNCTIONS
+  //////////////////////
+
 }
+
+
 
 
