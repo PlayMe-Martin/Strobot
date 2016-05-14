@@ -42,32 +42,36 @@ int   gui_distanceBetweenPanels;
 int strobe_sizeX = 60;
 int strobe_sizeY = 30;
 int strobe_borderSize = 4;
-int gui_frontStrobePositionY = 300;
+int gui_frontStrobePositionY = 260;
 
 int gui_ledTubePositionY = 30;
 int gui_rackLightPositionY = 160;
 int gui_rackLightSpacing = 5;
 
-//Define more positions than needed, when the time comes just fill in the new values
-int[] gui_rackLight1Position = {60,30,gui_simulatorPosX - 3*gui_rackLightSpacing,gui_rackLightPositionY};
-int[] gui_rackLight2Position = {60,50,gui_simulatorPosX - 3*gui_rackLightSpacing,gui_rackLightPositionY - gui_rackLightSpacing - 50};
-int[] gui_rackLight3Position = {60,30,gui_simulatorWidth - 55, gui_rackLightPositionY};
-int[] gui_rackLight4Position = {60,30,0,0};
-int[] gui_rackLight5Position = {60,30,0,0};
-int[] gui_rackLight6Position = {60,30,0,0};
-int[] gui_rackLight7Position = {60,30,0,0};
-int[] gui_rackLight8Position = {60,30,0,0};
-int[][] gui_rackLightsPosition = {gui_rackLight1Position, gui_rackLight2Position, gui_rackLight3Position, gui_rackLight4Position, gui_rackLight5Position, gui_rackLight6Position, gui_rackLight7Position, gui_rackLight8Position};
+int gui_movingHeadsPositionY = 310;
+
+// TO BE DELETED
+// //Define more positions than needed, when the time comes just fill in the new values
+// int[] gui_rackLight1Position = {60,30,gui_simulatorPosX - 3*gui_rackLightSpacing,gui_rackLightPositionY};
+// int[] gui_rackLight2Position = {60,50,gui_simulatorPosX - 3*gui_rackLightSpacing,gui_rackLightPositionY - gui_rackLightSpacing - 50};
+// int[] gui_rackLight3Position = {60,30,gui_simulatorWidth - 55, gui_rackLightPositionY};
+// int[] gui_rackLight4Position = {60,30,0,0};
+// int[] gui_rackLight5Position = {60,30,0,0};
+// int[] gui_rackLight6Position = {60,30,0,0};
+// int[] gui_rackLight7Position = {60,30,0,0};
+// int[] gui_rackLight8Position = {60,30,0,0};
+// int[][] gui_rackLightsPosition = {gui_rackLight1Position, gui_rackLight2Position, gui_rackLight3Position, gui_rackLight4Position, gui_rackLight5Position, gui_rackLight6Position, gui_rackLight7Position, gui_rackLight8Position};
 
 int[] gui_LEDTube1Position = {6,180,62,gui_ledTubePositionY};
 int[] gui_LEDTube2Position = {6,180,151,gui_ledTubePositionY+30};
 int[] gui_LEDTube3Position = {6,180,418,gui_ledTubePositionY+30};
 int[] gui_LEDTube4Position = {6,180,508,gui_ledTubePositionY};
-int[] gui_LEDTube5Position = {6,180,0,gui_ledTubePositionY};
-int[] gui_LEDTube6Position = {6,180,0,gui_ledTubePositionY};
-int[] gui_LEDTube7Position = {6,180,0,gui_ledTubePositionY};
-int[] gui_LEDTube8Position = {6,180,0,gui_ledTubePositionY};
-int[][] gui_LEDTubesPosition = {gui_LEDTube1Position, gui_LEDTube2Position, gui_LEDTube3Position, gui_LEDTube4Position, gui_LEDTube5Position, gui_LEDTube6Position, gui_LEDTube7Position, gui_LEDTube8Position};
+//int[] gui_LEDTube5Position = {6,180,0,gui_ledTubePositionY};
+//int[] gui_LEDTube6Position = {6,180,0,gui_ledTubePositionY};
+//int[] gui_LEDTube7Position = {6,180,0,gui_ledTubePositionY};
+//int[] gui_LEDTube8Position = {6,180,0,gui_ledTubePositionY};
+//int[][] gui_LEDTubesPosition = {gui_LEDTube1Position, gui_LEDTube2Position, gui_LEDTube3Position, gui_LEDTube4Position, gui_LEDTube5Position, gui_LEDTube6Position, gui_LEDTube7Position, gui_LEDTube8Position};
+int[][] gui_LEDTubesPosition = {gui_LEDTube1Position, gui_LEDTube2Position, gui_LEDTube3Position, gui_LEDTube4Position};
 
 
 //Variables used by the GUI to simulate special animated FX, which cannot be purely deduced using the DMX channels' value
@@ -92,9 +96,9 @@ void init_customDevicesSimulatorList() {
   gui_LEDTubeList = new ArrayList<LEDTube>();
   
   //RackLight constructor : ID, sizeX, sizeY, posX, posY
-  for (int i=0; i<CustomDeviceList_RackLights.size(); i++) {
-    gui_rackLightList.add(new RackLight(i, gui_rackLightsPosition[i][0], gui_rackLightsPosition[i][1],gui_rackLightsPosition[i][2], gui_rackLightsPosition[i][3]));
-  }
+  // for (int i=0; i<CustomDeviceList_RackLights.size(); i++) {
+  //   gui_rackLightList.add(new RackLight(i, gui_rackLightsPosition[i][0], gui_rackLightsPosition[i][1],gui_rackLightsPosition[i][2], gui_rackLightsPosition[i][3]));
+  // }
   
   //LEDTube constructor : ID, sizeX, sizeY, posX, posY
   for (int i=0; i<CustomDeviceList_LEDTubes.size(); i++) {
@@ -119,20 +123,25 @@ void draw_simulator(int x, int y) {
   }
   auxControlFrame.updatePixels();
   
-  //stroboscopes
-  drawSimuFrontLeftStroboscope(gui_simulatorWidth/5 + 7, gui_frontStrobePositionY);
-  drawSimuFrontRightStroboscope(4*gui_simulatorWidth/5 + 16, gui_frontStrobePositionY);
-  drawSimuBackStroboscope(gui_simulatorWidth/2 + 10, gui_frontStrobePositionY - 15);
   
-  //Rack lights
-  for (int i=0; i<gui_rackLightList.size(); i++) {
-    gui_rackLightList.get(i).drawFullRackLight(CustomDeviceList_RackLights.get(i).lastAnimationExecuted, x, y);
-  }
+  // //Rack lights
+  // for (int i=0; i<gui_rackLightList.size(); i++) {
+  //   gui_rackLightList.get(i).drawFullRackLight(CustomDeviceList_RackLights.get(i).lastAnimationExecuted, x, y);
+  // }
+
   
   //LED tubes
   for (int i=0; i<CustomDeviceList_LEDTubes.size(); i++) {
     gui_LEDTubeList.get(i).drawFullLEDTube(CustomDeviceList_LEDTubes.get(i).lastAnimationExecuted, x, y);
   }
+
+  //stroboscopes
+  drawSimuFrontLeftStroboscope(gui_simulatorWidth/5 + 5, gui_frontStrobePositionY);
+  drawSimuFrontRightStroboscope(4*gui_simulatorWidth/5 + 16, gui_frontStrobePositionY);
+  drawSimuBackStroboscope(gui_simulatorWidth/2 + 10, gui_frontStrobePositionY);
+
+  //Moving heads
+  drawMovingHeads(gui_simulatorWidth, gui_movingHeadsPositionY);
   
 }
 
@@ -358,16 +367,16 @@ void simu_drawAtomicStroboFX_rampDown() {
 }
 
 void simu_drawAtomicStroboFX_rampUpDown() {
-  if (dmxAnimationNumber >= 68 && dmxAnimationNumber <= 70) {
+  if (dmxAnimationNumber_strobe >= 68 && dmxAnimationNumber_strobe <= 70) {
     if (auxControlFrame.frameCount%4 == 0 || auxControlFrame.frameCount%4 == 1) {
-      auxControlFrame.fill(255*(sin(atomicStrobe_animCpt*(dmxAnimationNumber-67)) + 1) * 0.5);
+      auxControlFrame.fill(255*(sin(atomicStrobe_animCpt*(dmxAnimationNumber_strobe-67)) + 1) * 0.5);
     }
     else {
       auxControlFrame.fill(0);
     }
   }
   else {
-    auxControlFrame.fill(abs(255*((sin(atomicStrobe_animCpt*3*(dmxAnimationNumber-70)*TWO_PI/360)))));
+    auxControlFrame.fill(abs(255*((sin(atomicStrobe_animCpt*3*(dmxAnimationNumber_strobe-70)*TWO_PI/360)))));
   }
 }
 
@@ -402,6 +411,87 @@ void simu_drawAtomicStroboFX_spikes(int simuSpeed, int simuBrightness) {
   else {
     auxControlFrame.fill(0);
   }  
+}
+
+
+////////////////////////////////////////////////
+// Moving Heads
+
+void drawMovingHeads(int simulatorWidth, int positionY) {
+  
+  if (DMXList_MovingHeads.size() > 0) {
+    int nbMovingHeads = DMXList_MovingHeads.size();
+    int centerX = simulatorWidth/2;
+    int maxWidth = (80 - 6*nbMovingHeads) * nbMovingHeads;
+    //int spacing = maxWidth / nbMovingHeads;
+
+    for (int i = 0; i<nbMovingHeads; i++) {
+
+      //centerX - maxWidth/2 + i*maxWidth/(nbMovingHeads-2);
+
+
+      DMX_MovingHead movingHead = DMXList_MovingHeads.get(i);
+      auxControlFrame.pushMatrix();
+      int posX;
+      if (nbMovingHeads%2 == 0) {
+        posX = centerX-maxWidth/2+(i+1)*maxWidth/(nbMovingHeads+1);
+        posX = centerX -  int((5.0/3.0) * (maxWidth/2-(i+1)*maxWidth/(nbMovingHeads+1)));        
+      }
+      else {
+        posX = centerX - ((nbMovingHeads/2) - i)*maxWidth/nbMovingHeads;
+        
+      }
+      
+      auxControlFrame.translate(posX + 10,positionY);
+
+      //External circle
+      auxControlFrame.fill(0);
+      auxControlFrame.stroke(255);
+      auxControlFrame.ellipse(0, 0, 18, 18);
+      auxControlFrame.noStroke();
+
+      //Internal color light
+      if (movingHead.getSimulatorShutterMode() == DMX_SHUTTERMODE_STROBE) {
+        if (auxControlFrame.frameCount % int(map(movingHead.getSimulatorShutter(), 0, 255, 7, 2)) == 0) {
+          auxControlFrame.fill(movingHead.getSimulatorColor()[0], movingHead.getSimulatorColor()[1], movingHead.getSimulatorColor()[2], movingHead.getSimulatorDimmer());  
+        }
+        else {
+          auxControlFrame.fill(0);
+        }
+      }
+      else {
+        auxControlFrame.fill(movingHead.getSimulatorColor()[0], movingHead.getSimulatorColor()[1], movingHead.getSimulatorColor()[2], movingHead.getSimulatorDimmer());  
+      }
+      auxControlFrame.ellipse(0, 0, 10,10);
+
+      //Tilt meter
+      auxControlFrame.stroke(255);
+      auxControlFrame.fill(0);
+      auxControlFrame.rect(-26,-16,5,28);
+      auxControlFrame.fill(movingHead.getSimulatorColor()[0], movingHead.getSimulatorColor()[1], movingHead.getSimulatorColor()[2]);
+      auxControlFrame.rect(-26,16 - movingHead.getSimulatorTilt()*28/255.0, 5, movingHead.getSimulatorTilt()*28/255.0);
+      //Pan meter 
+      auxControlFrame.fill(0);
+      auxControlFrame.rect(-16,20,32,3);
+      auxControlFrame.fill(movingHead.getSimulatorColor()[0], movingHead.getSimulatorColor()[1], movingHead.getSimulatorColor()[2]);
+      auxControlFrame.rect(-16,20,movingHead.getSimulatorPan()*32/255.0,3);
+      
+      auxControlFrame.line(-26,1,-21,1);  //Center position for the tilt meter
+      auxControlFrame.line(0,20,0,23);  //Center position for the pan meter
+
+      //Pan arrow
+      //auxControlFrame.rotate(frameCount / 50.0);
+      auxControlFrame.rotate(PI/2 - int(map(movingHead.getSimulatorPan(),0,255,-3*PI/2,3*PI/2) * 1000)/1000.0);
+      auxControlFrame.translate(10,0);
+      auxControlFrame.stroke(255);
+      //auxControlFrame.fill(255,0,0);
+      auxControlFrame.triangle(0,4,0,-4,7,0);
+
+      auxControlFrame.popMatrix();
+    }
+    auxControlFrame.noStroke();
+  }
+
 }
 
 ////////////////////////////////////////////////

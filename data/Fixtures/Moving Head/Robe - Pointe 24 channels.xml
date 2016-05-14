@@ -131,7 +131,7 @@
 		<ChannelSet name="CLOSED" from_dmx="0" to_dmx="31" />
 		<ChannelSet name="OPEN" from_dmx="32" to_dmx="63" />
 		<ChannelSet name="STROBE" from_dmx="64" to_dmx="95" /> 								<!-- SLOW -> FAST -->
-	</ChannelType>
+	</ChannelType> 
 
 	<ChannelType index="22" attribute="DIMMER" ch_link="23" >
 		<ChannelSet name="DIMMER" from_dmx="0" to_dmx="255" proportional="increasing" />
