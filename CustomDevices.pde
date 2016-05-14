@@ -127,9 +127,9 @@ void init_defaultCustomDevices() {
   CustomDeviceList_LEDTubes.add(new CustomDevice_LEDTube(1));
   CustomDeviceList_LEDTubes.add(new CustomDevice_LEDTube(2));
   CustomDeviceList_LEDTubes.add(new CustomDevice_LEDTube(3));
-  CustomDeviceList_RackLights.add(new CustomDevice_RackLight(4));
-  CustomDeviceList_RackLights.add(new CustomDevice_RackLight(5));
-  CustomDeviceList_RackLights.add(new CustomDevice_RackLight(6));
+  //CustomDeviceList_RackLights.add(new CustomDevice_RackLight(4));
+  //CustomDeviceList_RackLights.add(new CustomDevice_RackLight(5));
+  //CustomDeviceList_RackLights.add(new CustomDevice_RackLight(6));
 }
 
 void empty_CustomDevices() {

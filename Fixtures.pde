@@ -29,6 +29,7 @@ final String XMLDESC_CHANNELSET_FROM_DMX        = "from_dmx";
 final String XMLDESC_CHANNELSET_TO_DMX          = "to_dmx";
 final String XMLDESC_CHANNELSET_TO_PROPORTIONAL = "proportional";
 final String XMLDESC_CHANNELSET_RECOMMENDED     = "recommended";
+final String XMLDESC_CHANNELSET_RANGE           = "range";
 
 
 ArrayList<Fixture> fixtureLibrary;
@@ -164,6 +165,10 @@ void parseFixtureXML(String path) {
                   }
                   if (checkIfAttrDefinedInElement(subElem, XMLDESC_CHANNELSET_RECOMMENDED)) {
                     newChannelSet.setRecommended(parseBooleanString(subElem.getAttribute(XMLDESC_CHANNELSET_RECOMMENDED)));
+                  }
+
+                  if (checkIfAttrDefinedInElement(subElem, XMLDESC_CHANNELSET_RANGE)) {
+                    newChannelSet.setChannelRange(int(subElem.getAttribute(XMLDESC_CHANNELSET_RANGE)));
                   }
 
                   newChannelDesc.addChannelSet(newChannelSet);
@@ -407,7 +412,7 @@ class Fixture {
 
 class ChannelDesc {
   
-  int index;    // Current channel's index -> chaddress = initial device's address + index
+  int index;                                  // Current channel's index -> chaddress = initial device's address + index
   String channelDescription;
   String option;
   String option_argument;
@@ -479,6 +484,7 @@ class ChannelDesc {
     return ch_link;
   }
 
+
   void setOption(String option) {
     this.option = option;
   }
@@ -490,7 +496,6 @@ class ChannelDesc {
   void setChannelLink(int index) {
     ch_link = index;
   }
-    
   
 }
 
@@ -501,7 +506,7 @@ class ChannelSet {
   boolean proportional = false;
   boolean proportional_increasing = false;    // Not used if proportional is not set to true
   boolean recommended = false;                // This particular channel set is recommended - the set's base value, from_dmx, shall therefore be used as default value for the channel
-  
+  int range = -1;                             // Physical range of the parameter - for example, in a moving head, pan=540°, or tilt=270°
   
   ChannelSet(int rangeMin, int rangeMax, String subfunction) {
     this.from_dmx = rangeMin;
@@ -534,6 +539,10 @@ class ChannelSet {
     }
   }
 
+  void setChannelRange(int range) {
+    this.range = range;
+  }
+
   String getSubfunction() {
     return subfunction;
   }
@@ -556,6 +565,10 @@ class ChannelSet {
 
   boolean isRecommended() {
     return recommended;
+  }
+
+  int getChannelRange() {
+    return range;
   }
 
 

@@ -53,7 +53,7 @@ void draw_stroboAutoPad(int colorset, float tempo, int noteSpeed) {
     else if (noteSpeed<=8) {
       
     }
-  }   
+  }
 }
 
 //Tempo in argument is supposed to be given in BPM
@@ -295,14 +295,14 @@ void draw_AutoModeDMXStrobe(int val, int modulation) {
   //Only use the modulation for this animation
   
   if (modulation > RMX_CC_VAL_THR_1) {
-    if (userInputAnim_activateAutoModeDMXStrobe == false || dmxAnimationNumber != 26) {
-      loadDMXAnimation(26);
+    if (userInputAnim_activateAutoModeDMXStrobe == false || dmxAnimationNumber_strobe != 26) {
+      loadDMXAnimation_strobe(26);
     }
     userInputAnim_activateAutoModeDMXStrobe = true;
   }
   else {
     if (userInputAnim_activateAutoModeDMXStrobe == true) {
-      loadDMXAnimation(0);
+      loadDMXAnimation_strobe(0);
       userInputAnim_activateAutoModeDMXStrobe = false;
     }
   }

@@ -783,16 +783,32 @@ String getStringFromCustomDeviceAnimationNumber(int animNbr) {
   return temp;
 }
 
-String getStringFromDMXAnimationNumber(int animNbr) {
+String getStringFromDMXAnimationNumber_strobe(int animNbr) {
   String temp = "Undefined";
   if (animNbr <= 127) {                                                                   
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK1) + "  |  " + str(animNbr);
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_STROBE) + "  |  " + str(animNbr);
+  }
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_par(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR) + "  |  " + str(animNbr);
+  }
+  
+  return temp;
+}
+String getStringFromDMXAnimationNumber_movingHead(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_1) + "  |  " + str(animNbr);
   }                                                                                              
   else if (animNbr <= 254) {
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK2) + "  |  " + str(animNbr - 127);
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_2) + "  |  " + str(animNbr - 127);
   }                                                                                              
   else if (animNbr <= 381) {
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK3) + "  |  " + str(animNbr - 254);    
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_3) + "  |  " + str(animNbr - 254);    
   }
   return temp;
 }

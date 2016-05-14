@@ -75,10 +75,32 @@ final String DMX_APERTUREMODE_STEP_TEXT           = "APERTURE_STEP";  // Channel
 
 final int    DMX_DEFAULT_FALLBACK_VAL             = 0;          // Default value used at initialisation, and in case of error
 
+final int    DMX_DEFAULT_PAN_TOTALRANGE           = 540;
+final int    DMX_DEFAULT_TILT_TOTALRANGE          = 540;
+
+// Constants used for the animations
+final int    DMXANIM_BLACKOUT                     = 0;
+final int    DMXANIM_CONTINUOUS_LIGHT             = 1;
+final int    DMXANIM_SINGLE_LONG_FLASH            = 2;
+final int    DMXANIM_SINGLE_SHORT_FLASH           = 3;
+final int    DMXANIM_SLOW_CRESCENDO               = 4;
+final int    DMXANIM_FAST_CRESCENDO               = 5;
+final int    DMXANIM_SLOW_STROBE                  = 6;
+final int    DMXANIM_MEDIUM_STROBE                = 7;
+final int    DMXANIM_FAST_STROBE                  = 8;
+final int    DMXANIM_SLOW_SINE_WAVE               = 9;
+final int    DMXANIM_FAST_SINE_WAVE               = 10;
+final int    DMXANIM_RANDOM_GLITCH                = 11;
+final int    DMXANIM_MIN_APERTURE_BEAM            = 12;
+
+
+int dmxAnim_movingHead_globalAnimCpt              = 0;          // Global counter used for the animations
 
 class DMX_MovingHead {
 
   Fixture movingHead;                                 // The fixture defining this object
+  int deviceID;                                       // Device ID: defined at device instanciation, 0 for the fixtures located on house left, n for the fixtures on house right
+  int dmxStartAddr;                                   // Address of the first channel
 
   int nbChannels                           = 0;
   int[] dmxVal;                                       // Array which shall contain all the instant DMX values for all of this fixture's channels
@@ -113,7 +135,7 @@ class DMX_MovingHead {
   int chIndex_color_RGB_G                  = -1;      // Shall be defined only if used
   int chIndex_color_RGB_B                  = -1;      // Shall be defined only if used
   int chIndex_color_RGB_W                  = -1;      // Shall be defined only if used
-  
+    
 
   int speedMode                            = DMX_SPEEDMODE_DEFAULT;    
   int chIndex_speedMode                    = -1;
@@ -137,17 +159,6 @@ class DMX_MovingHead {
   int aperture_progressive_min             = -1;   // Small aperture / narrow beam
   ArrayList<int[]> aperture_steps;                 // List of the different aperture settings. Arranged from large to narrow - last values correspond to a narrow beam 
   
-  // DMX values to be sent
-  int dmxVal_dimmer                        = 0;
-  int dmxVal_pan                           = 0;
-  int dmxVal_tilt                          = 0;
-  int dmxVal_color_param1                  = 0;    // Only parameter used by the wheel mode
-  int dmxVal_color_param2                  = 0;    // Used by the RGB and the CMY mode
-  int dmxVal_color_param3                  = 0;    // Used by the RGB and the CMY mode
-  int dmxVal_color_param4                  = 0;    // Used by the RGBW mode
-  int dmxVal_speed                         = 0;    // Used if the speed is fine-tuned (DMX_SPEED_MODE_PROGRESSIVE)
-  int dmxVal_shutter                       = 0;
-  int dmxVal_aperture                      = 0;
 
   // Constants corresponding to specific values
   int dmxVal_color_colorWheel_white        = -1;
@@ -161,12 +172,34 @@ class DMX_MovingHead {
   int dmxVal_color_colorWheel_orange       = -1;
   int dmxVal_color_colorWheel_cto          = -1;
 
-  
+  int dmxVal_pan_totalRange_degrees        = -1;   // Most moving heads have a 540° pan range - center val is half of this
+  float dmxVal_specificVal_pan_center_perCent;
+  float dmxVal_specificVal_pan_left_perCent;
+  float dmxVal_specificVal_pan_right_perCent;
+  int dmxVal_tilt_totalRange_degrees       = -1;   // Most moving heads have a 270° tilt range
+  float dmxVal_specificVal_tilt_low_perCent;
+  float dmxVal_specificVal_tilt_front_perCent;
+  float dmxVal_specificVal_tilt_high_perCent;
+  float dmxVal_specificVal_tilt_upright_perCent;
+  float dmxVal_specificVal_tilt_back_perCent;
 
+  //// - End of the physical moving head description - ////
+
+  int currentLightStyle                   = DMXANIM_BLACKOUT;                 // Used by the global animations
+  int animCpt1                            = 0;                                // Counters used for the global animations
+  int animCpt2                            = 0;
+  int animCpt3                            = 0;
+
+  
+  //Additional variables which might be used by other non-DMX related functions (most notably, the simulator)
+  int[] simulator_colorRGB;
 
 
   // Fixtures are instanciated using their name: the constructor will then look up in the fixture library if such a device exists, and throw an exception if not
-  DMX_MovingHead(String name) throws UndefinedFixtureException {
+  DMX_MovingHead(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
+
+    this.deviceID = deviceID;
+    this.dmxStartAddr = startAddr;
 
     // Init
     movingHead = getFixtureFromName(name);
@@ -178,6 +211,11 @@ class DMX_MovingHead {
     dmxVal           = new int[nbChannels];
     for (int i=0; i<nbChannels; i++) {
       dmxVal[i] = DMX_DEFAULT_FALLBACK_VAL;
+    }
+
+    boolean fixtureCanBeCreated = checkDmxAddressMapping(dmxStartAddr, nbChannels);
+    if (fixtureCanBeCreated == false) {
+      outputLog.println("Moving Head DMX instanciation failure - check the mapping for device ID " + this.deviceID + " (start address=" + startAddr + ", number of channels=" + nbChannels);
     }
 
     // Now parse individual functions
@@ -202,8 +240,33 @@ class DMX_MovingHead {
     // Check other functions this fixture may have - search for all channels with a recommended channel set - this will become the default value for these channels
     parseDefaultChannels();
 
+    setMainChannelsDefaultValues();
+    setMiscVariablesDefaultValues();
   }
 
+  int getDeviceID() {
+    return this.deviceID;
+  }
+
+  // Set the default values for the main channels
+  void setMainChannelsDefaultValues() {
+    dmxVal[chIndex_pan]  = 127;
+    dmxVal[chIndex_tilt] = 127;
+    if (chIndex_panFine != -1) {
+      dmxVal[chIndex_panFine]  = 127;
+    }
+    if (chIndex_tiltFine != -1) {
+      dmxVal[chIndex_tiltFine]  = 127;
+    }
+  }
+
+  // Set the default values for non-dmx related variables
+  void setMiscVariablesDefaultValues() {
+    simulator_colorRGB = new int[3];
+    simulator_colorRGB[0] = 255;   // White
+    simulator_colorRGB[1] = 255;   // White
+    simulator_colorRGB[2] = 255;   // White
+  }
 
   void parseFixtureDimmerControl() {
     chIndex_dimmer   = movingHead.getChannelIndexCorrespondingToFunction(DMX_MOVINGHEAD_DIMMER);
@@ -243,7 +306,7 @@ class DMX_MovingHead {
     ArrayList<ChannelSet> channelSets = channel.getAllChannelSets();
     for (ChannelSet channelSet: channelSets) {
       if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_PAN)) {
-        if (channelSet.isProportional_Increasing()) {  // The dimmer is always proportional - only need to check if it's increasing or decreasing
+        if (channelSet.isProportional_Increasing()) {  // The pan is always proportional - only need to check if it's increasing or decreasing
           pan_minVal = channelSet.getFrom_dmx();
           pan_maxVal = channelSet.getTo_dmx();
         }
@@ -255,8 +318,18 @@ class DMX_MovingHead {
           pan_minVal = channelSet.getFrom_dmx();
           pan_maxVal = channelSet.getTo_dmx();
         }
+
+        //Get the range of this moving head's pan: how many degrees for a 0-100% change
+        dmxVal_pan_totalRange_degrees = channelSet.getChannelRange();
       }
     }
+    
+    if (dmxVal_pan_totalRange_degrees == -1) {
+      dmxVal_pan_totalRange_degrees = DMX_DEFAULT_PAN_TOTALRANGE;   //Default value for the range - consider it to be equal to 540°
+    }
+    dmxVal_specificVal_pan_left_perCent   = 100 * (dmxVal_pan_totalRange_degrees/2.0 - 90) / dmxVal_pan_totalRange_degrees;
+    dmxVal_specificVal_pan_right_perCent  = 100 * (dmxVal_pan_totalRange_degrees/2.0 + 90) / dmxVal_pan_totalRange_degrees;
+    dmxVal_specificVal_pan_center_perCent = 100 * (dmxVal_pan_totalRange_degrees/2.0 + 0)  / dmxVal_pan_totalRange_degrees;
   }
 
   void parseFixtureTiltControl() {
@@ -270,7 +343,7 @@ class DMX_MovingHead {
     ArrayList<ChannelSet> channelSets = channel.getAllChannelSets();
     for (ChannelSet channelSet: channelSets) {
       if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_TILT)) {
-        if (channelSet.isProportional_Increasing()) {  // The dimmer is always proportional - only need to check if it's increasing or decreasing
+        if (channelSet.isProportional_Increasing()) {  // The tilt is always proportional - only need to check if it's increasing or decreasing
           pan_minVal = channelSet.getFrom_dmx();
           pan_maxVal = channelSet.getTo_dmx();
         }
@@ -283,7 +356,19 @@ class DMX_MovingHead {
           pan_maxVal = channelSet.getTo_dmx();
         }
       }
+
+      //Get the range of this moving head's tilt: how many degrees for a 0-100% change
+      dmxVal_tilt_totalRange_degrees = channelSet.getChannelRange();
     }
+    
+    if (dmxVal_tilt_totalRange_degrees == -1) {
+      dmxVal_tilt_totalRange_degrees = DMX_DEFAULT_PAN_TOTALRANGE;   //Default value for the range - consider it to be equal to 540°
+    }
+    dmxVal_specificVal_tilt_low_perCent     = 100 * (dmxVal_tilt_totalRange_degrees/2.0 - 135) / dmxVal_tilt_totalRange_degrees;
+    dmxVal_specificVal_tilt_front_perCent   = 100 * (dmxVal_tilt_totalRange_degrees/2.0 - 90)  / dmxVal_tilt_totalRange_degrees;
+    dmxVal_specificVal_tilt_high_perCent    = 100 * (dmxVal_tilt_totalRange_degrees/2.0 - 45)  / dmxVal_tilt_totalRange_degrees;
+    dmxVal_specificVal_tilt_upright_perCent = 100 * (dmxVal_tilt_totalRange_degrees/2.0 - 0)   / dmxVal_tilt_totalRange_degrees;
+    dmxVal_specificVal_tilt_back_perCent    = 100 * (dmxVal_tilt_totalRange_degrees/2.0 + 90)  / dmxVal_tilt_totalRange_degrees;
 
   }
 
@@ -710,14 +795,14 @@ class DMX_MovingHead {
     switch (requestedColor) {
       case DMX_COLORWHEEL_WHITE      : setColor_white();break;
       case DMX_COLORWHEEL_RED        : setColor_red();break;
-      // case DMX_COLORWHEEL_DEEP_RED   : setColor_deepRed();break;
-      // case DMX_COLORWHEEL_BLUE       : setColor_blue();break;
-      // case DMX_COLORWHEEL_DEEP_BLUE  : setColor_deepBlue();break;
-      // case DMX_COLORWHEEL_YELLOW     : setColor_yellow();break;
-      // case DMX_COLORWHEEL_GREEN      : setColor_green();break;
-      // case DMX_COLORWHEEL_ULTRAVIOLET: setColor_ultraviolet();break;
-      // case DMX_COLORWHEEL_ORANGE     : setColor_orange();break;
-      // case DMX_COLORWHEEL_CTO        : setColor_cto();break;
+      case DMX_COLORWHEEL_DEEP_RED   : setColor_deepRed();break;
+      case DMX_COLORWHEEL_BLUE       : setColor_blue();break;
+      case DMX_COLORWHEEL_DEEP_BLUE  : setColor_deepBlue();break;
+      case DMX_COLORWHEEL_YELLOW     : setColor_yellow();break;
+      case DMX_COLORWHEEL_GREEN      : setColor_green();break;
+      case DMX_COLORWHEEL_ULTRAVIOLET: setColor_ultraviolet();break;
+      case DMX_COLORWHEEL_ORANGE     : setColor_orange();break;
+      case DMX_COLORWHEEL_CTO        : setColor_cto();break;
       default: break;
     }
   }
@@ -732,6 +817,9 @@ class DMX_MovingHead {
       case DMX_COLORMODE_UNDEFINED: break; 
       default: break;
     }
+
+    // Save colorRGB in order to have the simulator know which color is currently active easily
+    simulator_colorRGB = colorRGB;
   }
 
   int getFallbackColorIfInvalidColorVal(int inputColor) {
@@ -858,13 +946,1537 @@ class DMX_MovingHead {
     }
   }
 
+  void setCurrentLightStyle(int style) {
+    currentLightStyle = style;
+  }
+
+  void reinitAnimVars() {
+    this.animCpt1 = 0;
+    this.animCpt2 = 0;
+    this.animCpt3 = 0;
+  }
+
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // MOVING HEAD VARIABLES ACCESSORS
+  //////////////////////
+
+
+  int[] getSimulatorColor() {
+    return simulator_colorRGB;
+  }
+
+  int getSimulatorDimmer() {
+    return int( map(dmxVal[chIndex_dimmer], dimmer_minVal, dimmer_maxVal, 0.0, 255.0) );
+  }
+
+  int getSimulatorTilt() {
+    return dmxVal[chIndex_tilt];
+  }
+
+  float getSimulatorPan() {
+    if (chIndex_panFine != -1) {
+      return (255.0*dmxVal[chIndex_pan] + dmxVal[chIndex_panFine]) / 255.0;
+    }
+    else {
+      return dmxVal[chIndex_pan];
+    }
+  }
+
+  int getSimulatorShutterMode() {
+    return shutterMode;
+  }
+
+  int getSimulatorShutter() {
+    return int( map(dmxVal[chIndex_shutter], shutter_strobe_minSpeed, shutter_strobe_maxSpeed, 0.0, 255.0) );
+  }
+
 
   ////////////////////////////////////////////////////////////////////////////////
   // ANIMATION FUNCTIONS
   //////////////////////
 
+  void performLight_blackout() {
+    this.setDimmer(0);
+  }
+
+  void performLight_continuousLight() {
+    this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
+    this.setDimmer(100);
+    this.setApertureReduction(0);
+  }
+
+  void performLight_singleLongFlash() {
+    this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
+    this.setDimmer(max(0,100-this.animCpt1));
+    this.setApertureReduction(0);
+    this.animCpt1 += 1;
+  }
+
+  void performLight_singleShortFlash() {
+    this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
+    this.setDimmer(max(0,100-4*this.animCpt1));
+    this.setApertureReduction(0);
+    this.animCpt1 += 1;
+  }
+
+  void performLight_slowCrescendo() {
+    this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
+    this.setDimmer(min(100,this.animCpt1));
+    this.setApertureReduction(0);
+    this.animCpt1 += 1;
+  }
+
+  void performLight_fastCrescendo() {
+    this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
+    this.setDimmer(min(100,4*this.animCpt1));
+    this.setApertureReduction(0);
+    this.animCpt1 += 1;
+  }
+
+  void performLight_strobe(float dimmer_perCent, float strobeSpeed_perCent) {
+    this.setShutter(strobeSpeed_perCent);
+    this.setShutterMode(DMX_SHUTTERMODE_STROBE);
+    this.setDimmer(dimmer_perCent);
+    this.setApertureReduction(0);
+  }
+
+  void performLight_slowStrobe() {
+    performLight_strobe(100, 20);
+  }
+
+  void performLight_mediumStrobe() {
+    performLight_strobe(100, 50);
+  }
+
+  void performLight_fastStrobe() {
+    performLight_strobe(100, 90);
+  }
+
+  void performLight_slowSineWave(float speed) {
+    //TBIL
+  }
+
+  void performLight_slowSineWave() {
+
+  }
+
+  void performLight_fastSineWave() {
+
+  }
+
+  void performLight_randomGlitch() {
+    // Use perlin noise + deviceID as random seed
+  }
+
+  void performLight_minimalApertureBeam() {
+    this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
+    this.setDimmer(100);
+    this.setApertureReduction(80);
+  }
+
+
+
+}
+
+void dmxAnim_movingHead_setupReinit_allDevices() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.reinitAnimVars();
+  }
 }
 
 
+/////////////////////////////////////////////////////////////////////////////////////
+// Each individual function is a single animation using the registered DMX devices
+
+// Note :
+// These animations can use every Moving Head device and call startDMX with the desired values
+// When implementing these animations, be careful to stay modular : everything needs to be scalable, and look good no matter the number of fixtures
+// Also, consider "left" to be House Left, and "right" to be House Right
+
+
+// Basic directions, with the dimmer off
+
+void dmxAnim_movingHead_prepareDirection_CenterPan_LowTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_LeftPan_LowTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_RightPan_LowTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_CenterPan_FrontTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_LeftPan_FrontTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_RightPan_FrontTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_CenterPan_HighTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_LeftPan_HighTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_RightPan_HighTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_CenterPan_UprightTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_LeftPan_UprightTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_RightPan_UprightTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_CenterPan_BackTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_LeftPan_BackTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_RightPan_BackTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
+  }
+}
+
+////////////////////////////////////////////////////////////
+
+// openingWidthAngle_perCent: % of the angle between "front" and "full sideways"
+// tiltValue_perCent: % of the angle between "max low" and "upright"
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(float openingWidthAngle_perCent, float tiltValue_perCent) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    float panHalfWidth = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
+    float pan_perCent  = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, panHalfWidth, 100 - panHalfWidth);
+    float tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_low_perCent, movingHead.dmxVal_specificVal_tilt_upright_perCent);
+    movingHead.setPan(pan_perCent);
+    movingHead.setTilt(tilt_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 0);
+}
+
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 100 - 100*90.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 100 - 100*90.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 100 - 100*90.0/135.0);
+}
+
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 100 - 100*45.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 100 - 100*45.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 100 - 100*45.0/135.0);
+}
+
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 100);
+}
+
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(float openingWidthAngle_perCent, float tiltValue_perCent) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    float panHalfWidth = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
+    float pan_perCent  = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, 100 - panHalfWidth, panHalfWidth);
+    float tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_low_perCent, movingHead.dmxVal_specificVal_tilt_upright_perCent);
+    movingHead.setPan(pan_perCent);
+    movingHead.setTilt(tilt_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 100 - 100*90.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 100 - 100*90.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 100 - 100*90.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 100 - 100*45.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 100 - 100*45.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 100 - 100*45.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 100);
+}
+
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(float openingTiltAngle_perCent) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+
+    float pan_perCent = movingHead.dmxVal_specificVal_pan_center_perCent;
+    if (DMXList_MovingHeads.size() % 2 == 0) {
+      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
+        pan_perCent = movingHead.dmxVal_specificVal_pan_left_perCent;
+      }
+      else {
+        pan_perCent = movingHead.dmxVal_specificVal_pan_right_perCent;
+      }
+    }
+    else {
+      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
+        pan_perCent = movingHead.dmxVal_specificVal_pan_left_perCent;
+      }
+      else if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
+        pan_perCent = movingHead.dmxVal_specificVal_pan_left_perCent;
+      }
+      else {
+        pan_perCent = movingHead.dmxVal_specificVal_pan_center_perCent;
+      }
+    }
+    float minTiltAngle = map(openingTiltAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_upright_perCent, movingHead.dmxVal_specificVal_tilt_front_perCent);
+    float tilt_perCent = movingHead.dmxVal_specificVal_tilt_upright_perCent - (movingHead.dmxVal_specificVal_tilt_upright_perCent - minTiltAngle) * abs( movingHead.getDeviceID()-0.5*(DMXList_MovingHeads.size()-1) ) / (0.5*(DMXList_MovingHeads.size()-1));
+
+    movingHead.setPan(pan_perCent);
+    movingHead.setTilt(tilt_perCent);
+  }
+}
+
+// openingTiltAngle_perCent corresponds to the angle between the front position (upright + 90°) and the upright position
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(float openingWidthAngle_perCent, float openingTiltAngle_perCent) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+    movingHead.setSpeed_maxSpeed();
+    float panHalfWidth   = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
+    float pan_perCent    = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, panHalfWidth, 100 - panHalfWidth);
+
+    float minTiltAngle = map(openingTiltAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_upright_perCent, movingHead.dmxVal_specificVal_tilt_front_perCent);
+    float tilt_perCent = movingHead.dmxVal_specificVal_tilt_upright_perCent - (movingHead.dmxVal_specificVal_tilt_upright_perCent - minTiltAngle) * abs( movingHead.getDeviceID()-0.5*(DMXList_MovingHeads.size()-1) ) / (0.5*(DMXList_MovingHeads.size()-1));
+
+    movingHead.setPan(pan_perCent);
+    movingHead.setTilt(tilt_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WideNegTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowNegTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(60);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WideNegTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0, 100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowNegTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0, 60);
+}
+
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WidePosTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(-100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(-60);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WidePosTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0, -100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowPosTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0, -60);
+}
+
+////////////////////////////////////////////////////////////
+// Standard lighting functions for all devices
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_continuousLight();
+  }
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_singleLongFlash();
+  }
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_singleShortFlash();
+  }
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_slowCrescendo();
+  }
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_fastCrescendo();
+  }
+}
+
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_slowStrobe();
+  }
+}
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_mediumStrobe();
+  }
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_fastStrobe();
+  }
+}
+
+////////////////////////////////////////////////////////////
+// Set the color to use in the more complex animations
+
+void dmxAnim_movingHead_setColor_allDev(int colorCode) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.setColor(colorCode);
+  }
+}
+
+void dmxAnim_movingHead_setColor_centerDev(int colorCode) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_center) {
+    movingHead.setColor(colorCode);
+  }  
+}
+
+void dmxAnim_movingHead_setColor_sideDev(int colorCode) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_side) {
+    movingHead.setColor(colorCode);
+  }  
+}
+
+void dmxAnim_movingHead_setColor_leftDev(int colorCode) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_left) {
+    movingHead.setColor(colorCode);
+  }  
+}
+
+void dmxAnim_movingHead_setColor_rightDev(int colorCode) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_right) {
+    movingHead.setColor(colorCode);
+  }  
+}
+
+void dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    switch (movingHead.currentLightStyle) {
+      case DMXANIM_BLACKOUT:              movingHead.performLight_blackout();             break;
+      case DMXANIM_CONTINUOUS_LIGHT:      movingHead.performLight_continuousLight();      break;
+      case DMXANIM_SINGLE_LONG_FLASH:     movingHead.performLight_singleLongFlash();      break;
+      case DMXANIM_SINGLE_SHORT_FLASH:    movingHead.performLight_singleShortFlash();     break;
+      case DMXANIM_SLOW_CRESCENDO:        movingHead.performLight_slowCrescendo();        break;
+      case DMXANIM_FAST_CRESCENDO:        movingHead.performLight_fastCrescendo();        break;
+      case DMXANIM_SLOW_STROBE:           movingHead.performLight_slowStrobe();           break;
+      case DMXANIM_MEDIUM_STROBE:         movingHead.performLight_mediumStrobe();         break;
+      case DMXANIM_FAST_STROBE:           movingHead.performLight_fastStrobe();           break;
+      case DMXANIM_SLOW_SINE_WAVE:        movingHead.performLight_slowSineWave();         break;
+      case DMXANIM_FAST_SINE_WAVE:        movingHead.performLight_fastSineWave();         break;
+      case DMXANIM_RANDOM_GLITCH:         movingHead.performLight_randomGlitch();         break;
+      case DMXANIM_MIN_APERTURE_BEAM:     movingHead.performLight_minimalApertureBeam();  break;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight_white() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_WHITE);
+  dmxAnim_movingHead_noMovement_allDev_continuousLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight_red() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_RED);
+  dmxAnim_movingHead_noMovement_allDev_continuousLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight_deepRed() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_RED);
+  dmxAnim_movingHead_noMovement_allDev_continuousLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight_blue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_continuousLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight_deepBlue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_continuousLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight_yellow() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_YELLOW);
+  dmxAnim_movingHead_noMovement_allDev_continuousLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight_green() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_GREEN);
+  dmxAnim_movingHead_noMovement_allDev_continuousLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight_ultraviolet() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ULTRAVIOLET);
+  dmxAnim_movingHead_noMovement_allDev_continuousLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight_orange() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ORANGE);
+  dmxAnim_movingHead_noMovement_allDev_continuousLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_continuousLight_CTO() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_CTO);
+  dmxAnim_movingHead_noMovement_allDev_continuousLight();
+}
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash_white() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_WHITE);
+  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash_red() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_RED);
+  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash_deepRed() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_RED);
+  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash_blue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash_deepBlue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash_yellow() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_YELLOW);
+  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash_green() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_GREEN);
+  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash_ultraviolet() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ULTRAVIOLET);
+  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash_orange() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ORANGE);
+  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleLongFlash_CTO() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_CTO);
+  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();
+}
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash_white() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_WHITE);
+  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash_red() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_RED);
+  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash_deepRed() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_RED);
+  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash_blue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash_deepBlue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash_yellow() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_YELLOW);
+  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash_green() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_GREEN);
+  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash_ultraviolet() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ULTRAVIOLET);
+  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash_orange() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ORANGE);
+  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_singleShortFlash_CTO() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_CTO);
+  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();
+}
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_white() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_WHITE);
+  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_red() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_RED);
+  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_deepRed() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_RED);
+  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_blue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_deepBlue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_yellow() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_YELLOW);
+  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_green() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_GREEN);
+  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_ultraviolet() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ULTRAVIOLET);
+  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_orange() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ORANGE);
+  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_CTO() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_CTO);
+  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();
+}
+
+////////////////////////////////////////////////////////////
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_white() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_WHITE);
+  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_red() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_RED);
+  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_deepRed() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_RED);
+  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_blue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_deepBlue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_yellow() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_YELLOW);
+  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_green() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_GREEN);
+  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_ultraviolet() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ULTRAVIOLET);
+  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_orange() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ORANGE);
+  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_CTO() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_CTO);
+  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();
+}
+
+////////////////////////////////////////////////////////////
+
+
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe_white() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_WHITE);
+  dmxAnim_movingHead_noMovement_allDev_slowStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe_red() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_RED);
+  dmxAnim_movingHead_noMovement_allDev_slowStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe_deepRed() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_RED);
+  dmxAnim_movingHead_noMovement_allDev_slowStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe_blue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_slowStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe_deepBlue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_slowStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe_yellow() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_YELLOW);
+  dmxAnim_movingHead_noMovement_allDev_slowStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe_green() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_GREEN);
+  dmxAnim_movingHead_noMovement_allDev_slowStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe_ultraviolet() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ULTRAVIOLET);
+  dmxAnim_movingHead_noMovement_allDev_slowStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe_orange() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ORANGE);
+  dmxAnim_movingHead_noMovement_allDev_slowStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_slowStrobe_CTO() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_CTO);
+  dmxAnim_movingHead_noMovement_allDev_slowStrobe();
+}
+
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe_white() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_WHITE);
+  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe_red() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_RED);
+  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe_deepRed() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_RED);
+  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe_blue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe_deepBlue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe_yellow() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_YELLOW);
+  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe_green() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_GREEN);
+  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe_ultraviolet() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ULTRAVIOLET);
+  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe_orange() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ORANGE);
+  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_mediumStrobe_CTO() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_CTO);
+  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();
+}
+
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe_white() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_WHITE);
+  dmxAnim_movingHead_noMovement_allDev_fastStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe_red() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_RED);
+  dmxAnim_movingHead_noMovement_allDev_fastStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe_deepRed() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_RED);
+  dmxAnim_movingHead_noMovement_allDev_fastStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe_blue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_fastStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe_deepBlue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_BLUE);
+  dmxAnim_movingHead_noMovement_allDev_fastStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe_yellow() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_YELLOW);
+  dmxAnim_movingHead_noMovement_allDev_fastStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe_green() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_GREEN);
+  dmxAnim_movingHead_noMovement_allDev_fastStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe_ultraviolet() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ULTRAVIOLET);
+  dmxAnim_movingHead_noMovement_allDev_fastStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe_orange() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ORANGE);
+  dmxAnim_movingHead_noMovement_allDev_fastStrobe();
+}
+
+void dmxAnim_movingHead_noMovement_allDev_fastStrobe_CTO() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_CTO);
+  dmxAnim_movingHead_noMovement_allDev_fastStrobe();
+}
+
+
+/////// Set the color for composite animations
+
+// -> All devices :    o o o o o
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_allDev_white() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_WHITE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_allDev_red() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_RED);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_allDev_deepRed() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_RED);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_allDev_blue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_BLUE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_allDev_deepBlue() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_DEEP_BLUE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_allDev_yellow() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_YELLOW);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_allDev_green() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_GREEN);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_allDev_ultraviolet() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ULTRAVIOLET);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_allDev_orange() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_ORANGE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_allDev_CTO() {
+  dmxAnim_movingHead_setColor_allDev(DMX_COLORWHEEL_CTO);
+}
+
+// -> Center devices :   x o o o x
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_white() {
+  dmxAnim_movingHead_setColor_centerDev(DMX_COLORWHEEL_WHITE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_red() {
+  dmxAnim_movingHead_setColor_centerDev(DMX_COLORWHEEL_RED);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepRed() {
+  dmxAnim_movingHead_setColor_centerDev(DMX_COLORWHEEL_DEEP_RED);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_blue() {
+  dmxAnim_movingHead_setColor_centerDev(DMX_COLORWHEEL_BLUE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepBlue() {
+  dmxAnim_movingHead_setColor_centerDev(DMX_COLORWHEEL_DEEP_BLUE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_yellow() {
+  dmxAnim_movingHead_setColor_centerDev(DMX_COLORWHEEL_YELLOW);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_green() {
+  dmxAnim_movingHead_setColor_centerDev(DMX_COLORWHEEL_GREEN);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_ultraviolet() {
+  dmxAnim_movingHead_setColor_centerDev(DMX_COLORWHEEL_ULTRAVIOLET);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_orange() {
+  dmxAnim_movingHead_setColor_centerDev(DMX_COLORWHEEL_ORANGE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_CTO() {
+  dmxAnim_movingHead_setColor_centerDev(DMX_COLORWHEEL_CTO);
+}
+
+// -> Side devices :     o x x x o
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_white() {
+  dmxAnim_movingHead_setColor_sideDev(DMX_COLORWHEEL_WHITE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_red() {
+  dmxAnim_movingHead_setColor_sideDev(DMX_COLORWHEEL_RED);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepRed() {
+  dmxAnim_movingHead_setColor_sideDev(DMX_COLORWHEEL_DEEP_RED);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_blue() {
+  dmxAnim_movingHead_setColor_sideDev(DMX_COLORWHEEL_BLUE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepBlue() {
+  dmxAnim_movingHead_setColor_sideDev(DMX_COLORWHEEL_DEEP_BLUE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_yellow() {
+  dmxAnim_movingHead_setColor_sideDev(DMX_COLORWHEEL_YELLOW);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_green() {
+  dmxAnim_movingHead_setColor_sideDev(DMX_COLORWHEEL_GREEN);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_ultraviolet() {
+  dmxAnim_movingHead_setColor_sideDev(DMX_COLORWHEEL_ULTRAVIOLET);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_orange() {
+  dmxAnim_movingHead_setColor_sideDev(DMX_COLORWHEEL_ORANGE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_CTO() {
+  dmxAnim_movingHead_setColor_sideDev(DMX_COLORWHEEL_CTO);
+}
+
+// -> Left devices :     o o x x x
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_white() {
+  dmxAnim_movingHead_setColor_leftDev(DMX_COLORWHEEL_WHITE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_red() {
+  dmxAnim_movingHead_setColor_leftDev(DMX_COLORWHEEL_RED);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepRed() {
+  dmxAnim_movingHead_setColor_leftDev(DMX_COLORWHEEL_DEEP_RED);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_blue() {
+  dmxAnim_movingHead_setColor_leftDev(DMX_COLORWHEEL_BLUE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepBlue() {
+  dmxAnim_movingHead_setColor_leftDev(DMX_COLORWHEEL_DEEP_BLUE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_yellow() {
+  dmxAnim_movingHead_setColor_leftDev(DMX_COLORWHEEL_YELLOW);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_green() {
+  dmxAnim_movingHead_setColor_leftDev(DMX_COLORWHEEL_GREEN);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_ultraviolet() {
+  dmxAnim_movingHead_setColor_leftDev(DMX_COLORWHEEL_ULTRAVIOLET);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_orange() {
+  dmxAnim_movingHead_setColor_leftDev(DMX_COLORWHEEL_ORANGE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_CTO() {
+  dmxAnim_movingHead_setColor_leftDev(DMX_COLORWHEEL_CTO);
+}
+
+// -> Right devices :    x x x o o
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_white() {
+  dmxAnim_movingHead_setColor_rightDev(DMX_COLORWHEEL_WHITE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_red() {
+  dmxAnim_movingHead_setColor_rightDev(DMX_COLORWHEEL_RED);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepRed() {
+  dmxAnim_movingHead_setColor_rightDev(DMX_COLORWHEEL_DEEP_RED);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_blue() {
+  dmxAnim_movingHead_setColor_rightDev(DMX_COLORWHEEL_BLUE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepBlue() {
+  dmxAnim_movingHead_setColor_rightDev(DMX_COLORWHEEL_DEEP_BLUE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_yellow() {
+  dmxAnim_movingHead_setColor_rightDev(DMX_COLORWHEEL_YELLOW);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_green() {
+  dmxAnim_movingHead_setColor_rightDev(DMX_COLORWHEEL_GREEN);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_ultraviolet() {
+  dmxAnim_movingHead_setColor_rightDev(DMX_COLORWHEEL_ULTRAVIOLET);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_orange() {
+  dmxAnim_movingHead_setColor_rightDev(DMX_COLORWHEEL_ORANGE);
+}
+
+void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_CTO() {
+  dmxAnim_movingHead_setColor_rightDev(DMX_COLORWHEEL_CTO);
+}
+
+
+
+// Set the light style for the animations
+
+void dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(int style) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.setCurrentLightStyle(style);
+  }
+}
+
+void dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(int style) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_center) {
+    movingHead.setCurrentLightStyle(style);
+  }
+}
+
+void dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(int style) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_side) {
+    movingHead.setCurrentLightStyle(style);
+  }
+}
+
+void dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(int style) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_left) {
+    movingHead.setCurrentLightStyle(style);
+  }
+}
+
+void dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(int style) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_right) {
+    movingHead.setCurrentLightStyle(style);
+  }
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_continuousLight() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_slowCrescendoLight() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_fastCrescendoLight() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_singleShortFlash() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_singleLongFlash() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_slowStrobe() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_SLOW_STROBE);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_mediumStrobe() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_fastStrobe() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_FAST_STROBE);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_slowSineWave() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_fastSineWave() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_randomGlitch() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
+}
+
+void dmxAnim_movingHead_setLightingStyle_allDev_minimalApertureBeam() {
+  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
+}
+////
+
+void dmxAnim_movingHead_setLightingStyle_centerDev_continuousLight() {
+  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
+}
+
+void dmxAnim_movingHead_setLightingStyle_centerDev_slowCrescendoLight() {
+  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
+}
+
+void dmxAnim_movingHead_setLightingStyle_centerDev_fastCrescendoLight() {
+  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
+}
+
+void dmxAnim_movingHead_setLightingStyle_centerDev_singleShortFlash() {
+  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
+}
+
+void dmxAnim_movingHead_setLightingStyle_centerDev_singleLongFlash() {
+  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
+}
+
+void dmxAnim_movingHead_setLightingStyle_centerDev_slowStrobe() {
+  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_SLOW_STROBE);
+}
+
+void dmxAnim_movingHead_setLightingStyle_centerDev_mediumStrobe() {
+  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
+}
+
+void dmxAnim_movingHead_setLightingStyle_centerDev_fastStrobe() {
+  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_FAST_STROBE);
+}
+
+////
+
+void dmxAnim_movingHead_setLightingStyle_sideDev_continuousLight() {
+  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
+}
+
+void dmxAnim_movingHead_setLightingStyle_sideDev_slowCrescendoLight() {
+  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
+}
+
+void dmxAnim_movingHead_setLightingStyle_sideDev_fastCrescendoLight() {
+  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
+}
+
+void dmxAnim_movingHead_setLightingStyle_sideDev_singleShortFlash() {
+  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
+}
+
+void dmxAnim_movingHead_setLightingStyle_sideDev_singleLongFlash() {
+  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
+}
+
+void dmxAnim_movingHead_setLightingStyle_sideDev_slowStrobe() {
+  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_SLOW_STROBE);
+}
+
+void dmxAnim_movingHead_setLightingStyle_sideDev_mediumStrobe() {
+  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
+}
+
+void dmxAnim_movingHead_setLightingStyle_sideDev_fastStrobe() {
+  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_FAST_STROBE);
+}
+
+
+
+
+
+
+
+
+
+
+// Reach a certain position with the dimmer on, as fast as the device can
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_CenterPan_LowTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_LeftPan_LowTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_RightPan_LowTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_CenterPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_LeftPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_RightPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_CenterPan_HighTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_LeftPan_HighTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_RightPan_HighTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_CenterPan_UprightTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_LeftPan_UprightTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_RightPan_UprightTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_BackTilt() {
+  dmxAnim_movingHead_prepareDirection_CenterPan_BackTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_BackTilt() {
+  dmxAnim_movingHead_prepareDirection_LeftPan_BackTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_BackTilt() {
+  dmxAnim_movingHead_prepareDirection_RightPan_BackTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WideNegTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WideNegTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowNegTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowNegTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WidePosTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WidePosTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+void dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt();
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
+
+
+////////////////////////////////////////////////////////////////////////
 
 
