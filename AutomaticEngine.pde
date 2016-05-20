@@ -252,32 +252,37 @@ class PlayMeSequencer {
     
     if (eventType == NOTE_ON) {
       switch (actionNumber) {
-        case PITCH_DMX_ANIMATION_STROBE:        loadDMXAnimation_strobe(actionValue); break;
-        case PITCH_DMX_ANIMATION_PAR:           loadDMXAnimation_par(actionValue); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_1: loadDMXAnimation_movingHead_1(actionValue); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_2: loadDMXAnimation_movingHead_2(actionValue); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_3: loadDMXAnimation_movingHead_3(actionValue); break;
+        case PITCH_DMX_ANIMATION_STROBE:                        loadDMXAnimation_strobe(actionValue); break;
+        case PITCH_DMX_ANIMATION_PAR:                           loadDMXAnimation_par(actionValue); break;
         
-        case PITCH_CUSTOM_DEVICE_BANK1:         loadCustomDeviceAnimation1(actionValue);break;
-        case PITCH_CUSTOM_DEVICE_BANK2:         loadCustomDeviceAnimation2(actionValue);break;
-        case PITCH_CUSTOM_DEVICE_BANK3:         loadCustomDeviceAnimation3(actionValue);break;
-        case PITCH_DISPLAY_EFFECT:              activateAdditionalEffect(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK1:        loadAnimation1(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK2:        loadAnimation2(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK3:        loadAnimation3(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK4:        loadAnimation4(actionValue);break;
-        case PITCH_LOAD_IMAGE_BANK1:            loadImage1(actionValue);break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(actionValue); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(actionValue);      break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(actionValue); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   loadDMXAnimation_movingHead_setAnimation1(actionValue); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   loadDMXAnimation_movingHead_setAnimation2(actionValue); break;
+
+        case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(actionValue);break;
+        case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(actionValue);break;
+        case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(actionValue);break;
+        case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK1:                        loadAnimation1(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK2:                        loadAnimation2(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK3:                        loadAnimation3(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK4:                        loadAnimation4(actionValue);break;
+        case PITCH_LOAD_IMAGE_BANK1:                            loadImage1(actionValue);break;
         default: break;
       }
     }
     else if (eventType == NOTE_OFF) {
       switch (actionNumber) {        
-        case PITCH_DMX_ANIMATION_STROBE:        unloadDMXAnimation_strobe(); break;
-        case PITCH_DMX_ANIMATION_PAR:           unloadDMXAnimation_par(); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_1: unloadDMXAnimation_movingHead(); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_2: unloadDMXAnimation_movingHead(); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_3: unloadDMXAnimation_movingHead(); break;
-        case PITCH_DISPLAY_EFFECT:              deactivateAdditionalEffect(actionValue);break;
+        case PITCH_DMX_ANIMATION_STROBE:                        unloadDMXAnimation_strobe(); break;
+        case PITCH_DMX_ANIMATION_PAR:                           unloadDMXAnimation_par(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DISPLAY_EFFECT:                              deactivateAdditionalEffect(actionValue);break;
         default: break;
       }
     }

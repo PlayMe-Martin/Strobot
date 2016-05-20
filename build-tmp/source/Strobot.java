@@ -271,16 +271,7 @@ boolean debug_without_panels = false;
 //If set to true, the devices are set on and off according to the DMX animations.
 //Otherwise, the DMX devices are controlled manually using each group's MIDI notes
 boolean dmxAutomaticControl        = false;
-int dmxAnimationNumber_strobe      = 0;
-int dmxAnimationNumber_movingHead  = 0;
-int dmxAnimationNumber_par         = 0;
-//Variables used to light up the stroboscopes (used in the manual DMX control)
-int drawStrobe_FrontLeft           = 0;
-int strobepreset_frontleft         = 0;
-int drawStrobe_FrontRight          = 0;
-int strobepreset_frontright        = 0;
-int drawStrobe_Back                = 0;
-int strobepreset_back              = 0;
+
 
 //Variables used to select between image and animation mode, and which image/animation to draw
 int drawImage = 0;
@@ -335,9 +326,12 @@ public void setup()
   setCustomDevicesActionsAttributes();
   
   //And do the same for the DMX animations
-  DMXStrobeAttributes = new ArrayList<Attribute>();
-  DMXMovingHeadAttributes = new ArrayList<Attribute>();
-  DMXOtherFixturesAttributes = new ArrayList<Attribute>();
+  DMXStrobeAttributes                    = new ArrayList<Attribute>();
+  DMXMovingHead_MovementAttributes       = new ArrayList<Attribute>();
+  DMXMovingHead_ColorAttributes          = new ArrayList<Attribute>();
+  DMXMovingHead_LightStyleAttributes     = new ArrayList<Attribute>();
+  DMXMovingHead_AnimationAttributes      = new ArrayList<Attribute>();
+  DMXOtherFixturesAttributes             = new ArrayList<Attribute>();
   setDMXAnimationsAttributes();
 
   
@@ -21101,7 +21095,10 @@ StringList registeredAttributes_customDevices;
 
 //And again for the DMX animations 
 ArrayList<Attribute> DMXStrobeAttributes;
-ArrayList<Attribute> DMXMovingHeadAttributes;
+ArrayList<Attribute> DMXMovingHead_MovementAttributes;
+ArrayList<Attribute> DMXMovingHead_ColorAttributes;
+ArrayList<Attribute> DMXMovingHead_LightStyleAttributes;
+ArrayList<Attribute> DMXMovingHead_AnimationAttributes;
 ArrayList<Attribute> DMXOtherFixturesAttributes;
 //StringList registeredAttributes_DMX;
 
@@ -22125,306 +22122,316 @@ public void setDMXAnimationsAttributes() {
 
   /////////////////////////////////////////////////////////////////////////
 
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 1,   "Prepare direction - Uniform - Center Pan / Low Tilt"                                 , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 2,   "Prepare direction - Uniform - Left Pan / Low Tilt"                                   , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 3,   "Prepare direction - Uniform - Right Pan / Low Tilt"                                  , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 4,   "Prepare direction - Uniform - Center Pan / Front Tilt"                               , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 5,   "Prepare direction - Uniform - Left Pan / Front Tilt"                                 , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 6,   "Prepare direction - Uniform - Right Pan / Front Tilt"                                , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 7,   "Prepare direction - Uniform - Center Pan / High Tilt"                                , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 8,   "Prepare direction - Uniform - Left Pan / High Tilt"                                  , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 9,   "Prepare direction - Uniform - Right Pan / High Tilt"                                 , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 10,  "Prepare direction - Uniform - Center Pan / Upright Tilt"                             , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 11,  "Prepare direction - Uniform - Left Pan / Upright Tilt"                               , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 12,  "Prepare direction - Uniform - Right Pan / Upright Tilt"                              , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 13,  "Prepare direction - Uniform - Center Pan / Back Tilt"                                , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 14,  "Prepare direction - Uniform - Left Pan / Back Tilt"                                  , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 15,  "Prepare direction - Uniform - Right Pan / Back Tilt"                                 , new String[] { "MovingHead", "Direction", "All"                         } );
+
+
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 1,   "Prepare direction - Uniform - Center Pan / Low Tilt"                                 , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 2,   "Prepare direction - Uniform - Left Pan / Low Tilt"                                   , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 3,   "Prepare direction - Uniform - Right Pan / Low Tilt"                                  , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 4,   "Prepare direction - Uniform - Center Pan / Front Tilt"                               , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 5,   "Prepare direction - Uniform - Left Pan / Front Tilt"                                 , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 6,   "Prepare direction - Uniform - Right Pan / Front Tilt"                                , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 7,   "Prepare direction - Uniform - Center Pan / High Tilt"                                , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 8,   "Prepare direction - Uniform - Left Pan / High Tilt"                                  , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 9,   "Prepare direction - Uniform - Right Pan / High Tilt"                                 , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 10,  "Prepare direction - Uniform - Center Pan / Upright Tilt"                             , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 11,  "Prepare direction - Uniform - Left Pan / Upright Tilt"                               , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 12,  "Prepare direction - Uniform - Right Pan / Upright Tilt"                              , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 13,  "Prepare direction - Uniform - Center Pan / Back Tilt"                                , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 14,  "Prepare direction - Uniform - Left Pan / Back Tilt"                                  , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 15,  "Prepare direction - Uniform - Right Pan / Back Tilt"                                 , new String[] { "MovingHead", "Direction", "All"                         } );
               
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 16,  "Prepare direction - Divergent Pan - Wide Pan / Low Tilt"                             , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 17,  "Prepare direction - Divergent Pan - Classic Pan / Low Tilt"                          , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 18,  "Prepare direction - Divergent Pan - Narrow Pan / Low Tilt"                           , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 19,  "Prepare direction - Divergent Pan - Wide Pan / Front Tilt"                           , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 20,  "Prepare direction - Divergent Pan - Classic Pan / Front Tilt"                        , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 21,  "Prepare direction - Divergent Pan - Narrow Pan / Front Tilt"                         , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 22,  "Prepare direction - Divergent Pan - Wide Pan / High Tilt"                            , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 23,  "Prepare direction - Divergent Pan - Classic Pan / High Tilt"                         , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 24,  "Prepare direction - Divergent Pan - Narrow Pan / High Tilt"                          , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 25,  "Prepare direction - Divergent Pan - Wide Pan / Upright Tilt"                         , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 26,  "Prepare direction - Divergent Pan - Classic Pan / Upright Tilt"                      , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 27,  "Prepare direction - Divergent Pan - Narrow Pan / Upright Tilt"                       , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 16,  "Prepare direction - Divergent Pan - Wide Pan / Low Tilt"                             , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 17,  "Prepare direction - Divergent Pan - Classic Pan / Low Tilt"                          , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 18,  "Prepare direction - Divergent Pan - Narrow Pan / Low Tilt"                           , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 19,  "Prepare direction - Divergent Pan - Wide Pan / Front Tilt"                           , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 20,  "Prepare direction - Divergent Pan - Classic Pan / Front Tilt"                        , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 21,  "Prepare direction - Divergent Pan - Narrow Pan / Front Tilt"                         , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 22,  "Prepare direction - Divergent Pan - Wide Pan / High Tilt"                            , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 23,  "Prepare direction - Divergent Pan - Classic Pan / High Tilt"                         , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 24,  "Prepare direction - Divergent Pan - Narrow Pan / High Tilt"                          , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 25,  "Prepare direction - Divergent Pan - Wide Pan / Upright Tilt"                         , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 26,  "Prepare direction - Divergent Pan - Classic Pan / Upright Tilt"                      , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 27,  "Prepare direction - Divergent Pan - Narrow Pan / Upright Tilt"                       , new String[] { "MovingHead", "Direction", "All"                         } );
                 
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 28,  "Prepare direction - Convergent Pan - Wide Pan / Low Tilt"                            , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 29,  "Prepare direction - Convergent Pan - Classic Pan / Low Tilt"                         , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 30,  "Prepare direction - Convergent Pan - Narrow Pan / Low Tilt"                          , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 31,  "Prepare direction - Convergent Pan - Wide Pan / Front Tilt"                          , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 32,  "Prepare direction - Convergent Pan - Classic Pan / Front Tilt"                       , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 33,  "Prepare direction - Convergent Pan - Narrow Pan / Front Tilt"                        , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 34,  "Prepare direction - Convergent Pan - Wide Pan / High Tilt"                           , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 35,  "Prepare direction - Convergent Pan - Classic Pan / High Tilt"                        , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 36,  "Prepare direction - Convergent Pan - Narrow Pan / High Tilt"                         , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 37,  "Prepare direction - Convergent Pan - Wide Pan / Upright Tilt"                        , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 38,  "Prepare direction - Convergent Pan - Classic Pan / Upright Tilt"                     , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 39,  "Prepare direction - Convergent Pan - Narrow Pan / Upright Tilt"                      , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 28,  "Prepare direction - Convergent Pan - Wide Pan / Low Tilt"                            , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 29,  "Prepare direction - Convergent Pan - Classic Pan / Low Tilt"                         , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 30,  "Prepare direction - Convergent Pan - Narrow Pan / Low Tilt"                          , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 31,  "Prepare direction - Convergent Pan - Wide Pan / Front Tilt"                          , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 32,  "Prepare direction - Convergent Pan - Classic Pan / Front Tilt"                       , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 33,  "Prepare direction - Convergent Pan - Narrow Pan / Front Tilt"                        , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 34,  "Prepare direction - Convergent Pan - Wide Pan / High Tilt"                           , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 35,  "Prepare direction - Convergent Pan - Classic Pan / High Tilt"                        , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 36,  "Prepare direction - Convergent Pan - Narrow Pan / High Tilt"                         , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 37,  "Prepare direction - Convergent Pan - Wide Pan / Upright Tilt"                        , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 38,  "Prepare direction - Convergent Pan - Classic Pan / Upright Tilt"                     , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 39,  "Prepare direction - Convergent Pan - Narrow Pan / Upright Tilt"                      , new String[] { "MovingHead", "Direction", "All"                         } );
   
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 40,  "Prepare direction - Symmetrical Tilt Pan - Extreme Tilt - Wide Outward Sun"          , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 41,  "Prepare direction - Symmetrical Tilt Pan - Extreme Tilt - Narrow Outward Sun"        , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 42,  "Prepare direction - Symmetrical Tilt Pan - Progressive Tilt - Wide Outward Sun"      , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 43,  "Prepare direction - Symmetrical Tilt Pan - Progressive Tilt - Narrow Outward Sun"    , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 44,  "Prepare direction - Symmetrical Tilt Pan - Extreme Tilt - Wide Inward Sun"           , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 45,  "Prepare direction - Symmetrical Tilt Pan - Extreme Tilt - Narrow Inward Sun"         , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 46,  "Prepare direction - Symmetrical Tilt Pan - Progressive Tilt - Wide Inward Sun"       , new String[] { "MovingHead", "Direction", "All"                         } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 47,  "Prepare direction - Symmetrical Tilt Pan - Progressive Tilt - Narrow Inward Sun"     , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 40,  "Prepare direction - Symmetrical Tilt Pan - Extreme Tilt - Wide Outward Sun"          , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 41,  "Prepare direction - Symmetrical Tilt Pan - Extreme Tilt - Narrow Outward Sun"        , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 42,  "Prepare direction - Symmetrical Tilt Pan - Progressive Tilt - Wide Outward Sun"      , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 43,  "Prepare direction - Symmetrical Tilt Pan - Progressive Tilt - Narrow Outward Sun"    , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 44,  "Prepare direction - Symmetrical Tilt Pan - Extreme Tilt - Wide Inward Sun"           , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 45,  "Prepare direction - Symmetrical Tilt Pan - Extreme Tilt - Narrow Inward Sun"         , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 46,  "Prepare direction - Symmetrical Tilt Pan - Progressive Tilt - Wide Inward Sun"       , new String[] { "MovingHead", "Direction", "All"                         } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 47,  "Prepare direction - Symmetrical Tilt Pan - Progressive Tilt - Narrow Inward Sun"     , new String[] { "MovingHead", "Direction", "All"                         } );
 
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 48,  "No Movement - All Fixtures - Static Light - White"                                   , new String[] { "MovingHead", "Simple", "All", "White"                   } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 49,  "No Movement - All Fixtures - Static Light - Red"                                     , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 50,  "No Movement - All Fixtures - Static Light - Deep Red"                                , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 51,  "No Movement - All Fixtures - Static Light - Blue"                                    , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 52,  "No Movement - All Fixtures - Static Light - Deep Blue"                               , new String[] { "MovingHead", "Simple", "All", "Blue"                    } ); 
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 53,  "No Movement - All Fixtures - Static Light - Yellow"                                  , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 54,  "No Movement - All Fixtures - Static Light - Green"                                   , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 55,  "No Movement - All Fixtures - Static Light - Ultraviolet"                             , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 56,  "No Movement - All Fixtures - Static Light - Orange"                                  , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 57,  "No Movement - All Fixtures - Static Light - CTO"                                     , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
 
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 58,  "No Movement - All Fixtures - Single Long Flash - White"                              , new String[] { "MovingHead", "Simple", "All", "White"                   } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 59,  "No Movement - All Fixtures - Single Long Flash - Red"                                , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 60,  "No Movement - All Fixtures - Single Long Flash - Deep Red"                           , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 61,  "No Movement - All Fixtures - Single Long Flash - Blue"                               , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 62,  "No Movement - All Fixtures - Single Long Flash - Deep Blue"                          , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 63,  "No Movement - All Fixtures - Single Long Flash - Yellow"                             , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 64,  "No Movement - All Fixtures - Single Long Flash - Green"                              , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 65,  "No Movement - All Fixtures - Single Long Flash - Ultraviolet"                        , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 66,  "No Movement - All Fixtures - Single Long Flash - Orange"                             , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 67,  "No Movement - All Fixtures - Single Long Flash - CTO"                                , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 48,  "No Movement - All Fixtures - Static Light - White"                                   , new String[] { "MovingHead", "Simple", "All", "White"                   } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 49,  "No Movement - All Fixtures - Static Light - Red"                                     , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 50,  "No Movement - All Fixtures - Static Light - Deep Red"                                , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 51,  "No Movement - All Fixtures - Static Light - Blue"                                    , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 52,  "No Movement - All Fixtures - Static Light - Deep Blue"                               , new String[] { "MovingHead", "Simple", "All", "Blue"                    } ); 
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 53,  "No Movement - All Fixtures - Static Light - Yellow"                                  , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 54,  "No Movement - All Fixtures - Static Light - Green"                                   , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 55,  "No Movement - All Fixtures - Static Light - Ultraviolet"                             , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 56,  "No Movement - All Fixtures - Static Light - Orange"                                  , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 57,  "No Movement - All Fixtures - Static Light - CTO"                                     , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 58,  "No Movement - All Fixtures - Single Long Flash - White"                              , new String[] { "MovingHead", "Simple", "All", "White"                   } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 59,  "No Movement - All Fixtures - Single Long Flash - Red"                                , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 60,  "No Movement - All Fixtures - Single Long Flash - Deep Red"                           , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 61,  "No Movement - All Fixtures - Single Long Flash - Blue"                               , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 62,  "No Movement - All Fixtures - Single Long Flash - Deep Blue"                          , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 63,  "No Movement - All Fixtures - Single Long Flash - Yellow"                             , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 64,  "No Movement - All Fixtures - Single Long Flash - Green"                              , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 65,  "No Movement - All Fixtures - Single Long Flash - Ultraviolet"                        , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 66,  "No Movement - All Fixtures - Single Long Flash - Orange"                             , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 67,  "No Movement - All Fixtures - Single Long Flash - CTO"                                , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
   
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 68,  "No Movement - All Fixtures - Single Short Flash - White"                             , new String[] { "MovingHead", "Simple", "All", "White"                   } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 69,  "No Movement - All Fixtures - Single Short Flash - Red"                               , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 70,  "No Movement - All Fixtures - Single Short Flash - Deep Red"                          , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 71,  "No Movement - All Fixtures - Single Short Flash - Blue"                              , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 72,  "No Movement - All Fixtures - Single Short Flash - Deep Blue"                         , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 73,  "No Movement - All Fixtures - Single Short Flash - Yellow"                            , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 74,  "No Movement - All Fixtures - Single Short Flash - Green"                             , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 75,  "No Movement - All Fixtures - Single Short Flash - Ultraviolet"                       , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 76,  "No Movement - All Fixtures - Single Short Flash - Orange"                            , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 77,  "No Movement - All Fixtures - Single Short Flash - CTO"                               , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 68,  "No Movement - All Fixtures - Single Short Flash - White"                             , new String[] { "MovingHead", "Simple", "All", "White"                   } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 69,  "No Movement - All Fixtures - Single Short Flash - Red"                               , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 70,  "No Movement - All Fixtures - Single Short Flash - Deep Red"                          , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 71,  "No Movement - All Fixtures - Single Short Flash - Blue"                              , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 72,  "No Movement - All Fixtures - Single Short Flash - Deep Blue"                         , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 73,  "No Movement - All Fixtures - Single Short Flash - Yellow"                            , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 74,  "No Movement - All Fixtures - Single Short Flash - Green"                             , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 75,  "No Movement - All Fixtures - Single Short Flash - Ultraviolet"                       , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 76,  "No Movement - All Fixtures - Single Short Flash - Orange"                            , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 77,  "No Movement - All Fixtures - Single Short Flash - CTO"                               , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
   
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 78,  "No Movement - All Fixtures - Slow Crescendo - White"                                 , new String[] { "MovingHead", "Simple", "All", "White"                   } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 79,  "No Movement - All Fixtures - Slow Crescendo - Red"                                   , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 80,  "No Movement - All Fixtures - Slow Crescendo - Deep Red"                              , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 81,  "No Movement - All Fixtures - Slow Crescendo - Blue"                                  , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 82,  "No Movement - All Fixtures - Slow Crescendo - Deep Blue"                             , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 83,  "No Movement - All Fixtures - Slow Crescendo - Yellow"                                , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 84,  "No Movement - All Fixtures - Slow Crescendo - Green"                                 , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 85,  "No Movement - All Fixtures - Slow Crescendo - Ultraviolet"                           , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 86,  "No Movement - All Fixtures - Slow Crescendo - Orange"                                , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 87,  "No Movement - All Fixtures - Slow Crescendo - CTO"                                   , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 78,  "No Movement - All Fixtures - Slow Crescendo - White"                                 , new String[] { "MovingHead", "Simple", "All", "White"                   } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 79,  "No Movement - All Fixtures - Slow Crescendo - Red"                                   , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 80,  "No Movement - All Fixtures - Slow Crescendo - Deep Red"                              , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 81,  "No Movement - All Fixtures - Slow Crescendo - Blue"                                  , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 82,  "No Movement - All Fixtures - Slow Crescendo - Deep Blue"                             , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 83,  "No Movement - All Fixtures - Slow Crescendo - Yellow"                                , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 84,  "No Movement - All Fixtures - Slow Crescendo - Green"                                 , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 85,  "No Movement - All Fixtures - Slow Crescendo - Ultraviolet"                           , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 86,  "No Movement - All Fixtures - Slow Crescendo - Orange"                                , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 87,  "No Movement - All Fixtures - Slow Crescendo - CTO"                                   , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
   
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 88,  "No Movement - All Fixtures - Fast Crescendo - White"                                 , new String[] { "MovingHead", "Simple", "All", "White"                   } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 89,  "No Movement - All Fixtures - Fast Crescendo - Red"                                   , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 90,  "No Movement - All Fixtures - Fast Crescendo - Deep Red"                              , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 91,  "No Movement - All Fixtures - Fast Crescendo - Blue"                                  , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 92,  "No Movement - All Fixtures - Fast Crescendo - Deep Blue"                             , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 93,  "No Movement - All Fixtures - Fast Crescendo - Yellow"                                , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 94,  "No Movement - All Fixtures - Fast Crescendo - Green"                                 , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 95,  "No Movement - All Fixtures - Fast Crescendo - Ultraviolet"                           , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 96,  "No Movement - All Fixtures - Fast Crescendo - Orange"                                , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 97,  "No Movement - All Fixtures - Fast Crescendo - CTO"                                   , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 88,  "No Movement - All Fixtures - Fast Crescendo - White"                                 , new String[] { "MovingHead", "Simple", "All", "White"                   } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 89,  "No Movement - All Fixtures - Fast Crescendo - Red"                                   , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 90,  "No Movement - All Fixtures - Fast Crescendo - Deep Red"                              , new String[] { "MovingHead", "Simple", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 91,  "No Movement - All Fixtures - Fast Crescendo - Blue"                                  , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 92,  "No Movement - All Fixtures - Fast Crescendo - Deep Blue"                             , new String[] { "MovingHead", "Simple", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 93,  "No Movement - All Fixtures - Fast Crescendo - Yellow"                                , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 94,  "No Movement - All Fixtures - Fast Crescendo - Green"                                 , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 95,  "No Movement - All Fixtures - Fast Crescendo - Ultraviolet"                           , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 96,  "No Movement - All Fixtures - Fast Crescendo - Orange"                                , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 97,  "No Movement - All Fixtures - Fast Crescendo - CTO"                                   , new String[] { "MovingHead", "Simple", "All", "OtherColor"              } );
   
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 98,  "No Movement - All Fixtures - Slow Strobe - White"                                    , new String[] { "MovingHead", "Strobe", "All", "White"                   } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 99,  "No Movement - All Fixtures - Slow Strobe - Red"                                      , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 100, "No Movement - All Fixtures - Slow Strobe - Deep Red"                                 , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 101, "No Movement - All Fixtures - Slow Strobe - Blue"                                     , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 102, "No Movement - All Fixtures - Slow Strobe - Deep Blue"                                , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 103, "No Movement - All Fixtures - Slow Strobe - Yellow"                                   , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 104, "No Movement - All Fixtures - Slow Strobe - Green"                                    , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 105, "No Movement - All Fixtures - Slow Strobe - Ultraviolet"                              , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 106, "No Movement - All Fixtures - Slow Strobe - Orange"                                   , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 107, "No Movement - All Fixtures - Slow Strobe - CTO"                                      , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 108, "No Movement - All Fixtures - Medium Strobe - White"                                  , new String[] { "MovingHead", "Strobe", "All", "White"                   } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 109, "No Movement - All Fixtures - Medium Strobe - Red"                                    , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 110, "No Movement - All Fixtures - Medium Strobe - Deep Red"                               , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 111, "No Movement - All Fixtures - Medium Strobe - Blue"                                   , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 112, "No Movement - All Fixtures - Medium Strobe - Deep Blue"                              , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 113, "No Movement - All Fixtures - Medium Strobe - Yellow"                                 , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 114, "No Movement - All Fixtures - Medium Strobe - Green"                                  , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 115, "No Movement - All Fixtures - Medium Strobe - Ultraviolet"                            , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 116, "No Movement - All Fixtures - Medium Strobe - Orange"                                 , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 117, "No Movement - All Fixtures - Medium Strobe - CTO"                                    , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 118, "No Movement - All Fixtures - Fast Strobe - White"                                    , new String[] { "MovingHead", "Strobe", "All", "White"                   } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 119, "No Movement - All Fixtures - Fast Strobe - Red"                                      , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 120, "No Movement - All Fixtures - Fast Strobe - Deep Red"                                 , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 121, "No Movement - All Fixtures - Fast Strobe - Blue"                                     , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 122, "No Movement - All Fixtures - Fast Strobe - Deep Blue"                                , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 123, "No Movement - All Fixtures - Fast Strobe - Yellow"                                   , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 124, "No Movement - All Fixtures - Fast Strobe - Green"                                    , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 125, "No Movement - All Fixtures - Fast Strobe - Ultraviolet"                              , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 126, "No Movement - All Fixtures - Fast Strobe - Orange"                                   , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 127, "No Movement - All Fixtures - Fast Strobe - CTO"                                      , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 98,  "No Movement - All Fixtures - Slow Strobe - White"                                    , new String[] { "MovingHead", "Strobe", "All", "White"                   } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 99,  "No Movement - All Fixtures - Slow Strobe - Red"                                      , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 100, "No Movement - All Fixtures - Slow Strobe - Deep Red"                                 , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 101, "No Movement - All Fixtures - Slow Strobe - Blue"                                     , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 102, "No Movement - All Fixtures - Slow Strobe - Deep Blue"                                , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 103, "No Movement - All Fixtures - Slow Strobe - Yellow"                                   , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 104, "No Movement - All Fixtures - Slow Strobe - Green"                                    , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 105, "No Movement - All Fixtures - Slow Strobe - Ultraviolet"                              , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 106, "No Movement - All Fixtures - Slow Strobe - Orange"                                   , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 107, "No Movement - All Fixtures - Slow Strobe - CTO"                                      , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 108, "No Movement - All Fixtures - Medium Strobe - White"                                  , new String[] { "MovingHead", "Strobe", "All", "White"                   } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 109, "No Movement - All Fixtures - Medium Strobe - Red"                                    , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 110, "No Movement - All Fixtures - Medium Strobe - Deep Red"                               , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 111, "No Movement - All Fixtures - Medium Strobe - Blue"                                   , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 112, "No Movement - All Fixtures - Medium Strobe - Deep Blue"                              , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 113, "No Movement - All Fixtures - Medium Strobe - Yellow"                                 , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 114, "No Movement - All Fixtures - Medium Strobe - Green"                                  , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 115, "No Movement - All Fixtures - Medium Strobe - Ultraviolet"                            , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 116, "No Movement - All Fixtures - Medium Strobe - Orange"                                 , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 117, "No Movement - All Fixtures - Medium Strobe - CTO"                                    , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 118, "No Movement - All Fixtures - Fast Strobe - White"                                    , new String[] { "MovingHead", "Strobe", "All", "White"                   } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 119, "No Movement - All Fixtures - Fast Strobe - Red"                                      , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 120, "No Movement - All Fixtures - Fast Strobe - Deep Red"                                 , new String[] { "MovingHead", "Strobe", "All", "Red"                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 121, "No Movement - All Fixtures - Fast Strobe - Blue"                                     , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 122, "No Movement - All Fixtures - Fast Strobe - Deep Blue"                                , new String[] { "MovingHead", "Strobe", "All", "Blue"                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 123, "No Movement - All Fixtures - Fast Strobe - Yellow"                                   , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 124, "No Movement - All Fixtures - Fast Strobe - Green"                                    , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 125, "No Movement - All Fixtures - Fast Strobe - Ultraviolet"                              , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 126, "No Movement - All Fixtures - Fast Strobe - Orange"                                   , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 127, "No Movement - All Fixtures - Fast Strobe - CTO"                                      , new String[] { "MovingHead", "Strobe", "All", "OtherColor"              } );
 
 
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 128, "Set Color - All Fixtures - White"                                                    , new String[] { "MovingHead", "All", "SetColor"                          } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 129, "Set Color - All Fixtures - Red"                                                      , new String[] { "MovingHead", "All", "SetColor"                          } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 130, "Set Color - All Fixtures - Deep Red"                                                 , new String[] { "MovingHead", "All", "SetColor"                          } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 131, "Set Color - All Fixtures - Blue"                                                     , new String[] { "MovingHead", "All", "SetColor"                          } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 132, "Set Color - All Fixtures - Deep Blue"                                                , new String[] { "MovingHead", "All", "SetColor"                          } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 133, "Set Color - All Fixtures - Yellow"                                                   , new String[] { "MovingHead", "All", "SetColor"                          } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 134, "Set Color - All Fixtures - Green"                                                    , new String[] { "MovingHead", "All", "SetColor"                          } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 135, "Set Color - All Fixtures - Ultraviolet"                                              , new String[] { "MovingHead", "All", "SetColor"                          } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 136, "Set Color - All Fixtures - Orange"                                                   , new String[] { "MovingHead", "All", "SetColor"                          } );
-  DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 137, "Set Color - All Fixtures - CTO"                                                      , new String[] { "MovingHead", "All", "SetColor"                          } );
+
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 1,  "Set Color - All Fixtures - White"                                                    , new String[] { "MovingHead", "All", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 2,  "Set Color - All Fixtures - Red"                                                      , new String[] { "MovingHead", "All", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 3,  "Set Color - All Fixtures - Deep Red"                                                 , new String[] { "MovingHead", "All", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 4,  "Set Color - All Fixtures - Blue"                                                     , new String[] { "MovingHead", "All", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 5,  "Set Color - All Fixtures - Deep Blue"                                                , new String[] { "MovingHead", "All", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 6,  "Set Color - All Fixtures - Yellow"                                                   , new String[] { "MovingHead", "All", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 7,  "Set Color - All Fixtures - Green"                                                    , new String[] { "MovingHead", "All", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 8,  "Set Color - All Fixtures - Ultraviolet"                                              , new String[] { "MovingHead", "All", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 9,  "Set Color - All Fixtures - Orange"                                                   , new String[] { "MovingHead", "All", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 10, "Set Color - All Fixtures - CTO"                                                      , new String[] { "MovingHead", "All", "SetColor"                          } );
+
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 11, "Set Color - Center Fixtures - White"                                                    , new String[] { "MovingHead", "Center", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 12, "Set Color - Center Fixtures - Red"                                                      , new String[] { "MovingHead", "Center", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 13, "Set Color - Center Fixtures - Deep Red"                                                 , new String[] { "MovingHead", "Center", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 14, "Set Color - Center Fixtures - Blue"                                                     , new String[] { "MovingHead", "Center", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 15, "Set Color - Center Fixtures - Deep Blue"                                                , new String[] { "MovingHead", "Center", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 16, "Set Color - Center Fixtures - Yellow"                                                   , new String[] { "MovingHead", "Center", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 17, "Set Color - Center Fixtures - Green"                                                    , new String[] { "MovingHead", "Center", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 18, "Set Color - Center Fixtures - Ultraviolet"                                              , new String[] { "MovingHead", "Center", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 19, "Set Color - Center Fixtures - Orange"                                                   , new String[] { "MovingHead", "Center", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 20, "Set Color - Center Fixtures - CTO"                                                      , new String[] { "MovingHead", "Center", "SetColor"                          } );
+
+
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 21, "Set Color - Side Fixtures - White"                                                    , new String[] { "MovingHead", "Side", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 22, "Set Color - Side Fixtures - Red"                                                      , new String[] { "MovingHead", "Side", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 23, "Set Color - Side Fixtures - Deep Red"                                                 , new String[] { "MovingHead", "Side", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 24, "Set Color - Side Fixtures - Blue"                                                     , new String[] { "MovingHead", "Side", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 25, "Set Color - Side Fixtures - Deep Blue"                                                , new String[] { "MovingHead", "Side", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 26, "Set Color - Side Fixtures - Yellow"                                                   , new String[] { "MovingHead", "Side", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 27, "Set Color - Side Fixtures - Green"                                                    , new String[] { "MovingHead", "Side", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 28, "Set Color - Side Fixtures - Ultraviolet"                                              , new String[] { "MovingHead", "Side", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 29, "Set Color - Side Fixtures - Orange"                                                   , new String[] { "MovingHead", "Side", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 30, "Set Color - Side Fixtures - CTO"                                                      , new String[] { "MovingHead", "Side", "SetColor"                          } );
   
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 31, "Set Color - Left Fixtures - White"                                                    , new String[] { "MovingHead", "Left", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 32, "Set Color - Left Fixtures - Red"                                                      , new String[] { "MovingHead", "Left", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 33, "Set Color - Left Fixtures - Deep Red"                                                 , new String[] { "MovingHead", "Left", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 34, "Set Color - Left Fixtures - Blue"                                                     , new String[] { "MovingHead", "Left", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 35, "Set Color - Left Fixtures - Deep Blue"                                                , new String[] { "MovingHead", "Left", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 36, "Set Color - Left Fixtures - Yellow"                                                   , new String[] { "MovingHead", "Left", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 37, "Set Color - Left Fixtures - Green"                                                    , new String[] { "MovingHead", "Left", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 38, "Set Color - Left Fixtures - Ultraviolet"                                              , new String[] { "MovingHead", "Left", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 39, "Set Color - Left Fixtures - Orange"                                                   , new String[] { "MovingHead", "Left", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 40, "Set Color - Left Fixtures - CTO"                                                      , new String[] { "MovingHead", "Left", "SetColor"                          } );
+  
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 41, "Set Color - Right Fixtures - White"                                                    , new String[] { "MovingHead", "Right", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 42, "Set Color - Right Fixtures - Red"                                                      , new String[] { "MovingHead", "Right", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 43, "Set Color - Right Fixtures - Deep Red"                                                 , new String[] { "MovingHead", "Right", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 44, "Set Color - Right Fixtures - Blue"                                                     , new String[] { "MovingHead", "Right", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 45, "Set Color - Right Fixtures - Deep Blue"                                                , new String[] { "MovingHead", "Right", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 46, "Set Color - Right Fixtures - Yellow"                                                   , new String[] { "MovingHead", "Right", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 47, "Set Color - Right Fixtures - Green"                                                    , new String[] { "MovingHead", "Right", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 48, "Set Color - Right Fixtures - Ultraviolet"                                              , new String[] { "MovingHead", "Right", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 49, "Set Color - Right Fixtures - Orange"                                                   , new String[] { "MovingHead", "Right", "SetColor"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 50, "Set Color - Right Fixtures - CTO"                                                      , new String[] { "MovingHead", "Right", "SetColor"                          } );
+    
 
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 138, "dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_white"                     , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 139, "dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_red"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 140, "dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepRed"                   , new String[] {"MovingHead", "Temp"                                      } );          
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 141, "dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_blue"                      , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 142, "dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepBlue"                  , new String[] {"MovingHead", "Temp"                                      } );            
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 143, "dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_yellow"                    , new String[] {"MovingHead", "Temp"                                      } );          
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 144, "dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_green"                     , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 145, "dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_ultraviolet"               , new String[] {"MovingHead", "Temp"                                      } );              
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 146, "dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_orange"                    , new String[] {"MovingHead", "Temp"                                      } );          
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 147, "dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_CTO"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 148, "dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_white"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 149, "dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_red"                         , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 150, "dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepRed"                     , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 151, "dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_blue"                        , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 152, "dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepBlue"                    , new String[] {"MovingHead", "Temp"                                      } );          
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 153, "dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_yellow"                      , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 154, "dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_green"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 155, "dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_ultraviolet"                 , new String[] {"MovingHead", "Temp"                                      } );            
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 156, "dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_orange"                      , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 157, "dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_CTO"                         , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 158, "dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_white"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 159, "dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_red"                         , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 160, "dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepRed"                     , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 161, "dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_blue"                        , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 162, "dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepBlue"                    , new String[] {"MovingHead", "Temp"                                      } );          
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 163, "dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_yellow"                      , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 164, "dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_green"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 165, "dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_ultraviolet"                 , new String[] {"MovingHead", "Temp"                                      } );            
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 166, "dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_orange"                      , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 167, "dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_CTO"                         , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 168, "dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_white"                      , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 169, "dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_red"                        , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 170, "dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepRed"                    , new String[] {"MovingHead", "Temp"                                      } );          
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 171, "dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_blue"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 172, "dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepBlue"                   , new String[] {"MovingHead", "Temp"                                      } );          
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 173, "dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_yellow"                     , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 174, "dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_green"                      , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 175, "dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_ultraviolet"                , new String[] {"MovingHead", "Temp"                                      } );              
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 176, "dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_orange"                     , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 177, "dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_CTO"                        , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 178, "dmxAnim_movingHead_setLightingStyle_allDev_continuousLight"                            , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 179, "dmxAnim_movingHead_setLightingStyle_allDev_slowCrescendoLight"                         , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 180, "dmxAnim_movingHead_setLightingStyle_allDev_fastCrescendoLight"                         , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 181, "dmxAnim_movingHead_setLightingStyle_allDev_singleShortFlash"                           , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 182, "dmxAnim_movingHead_setLightingStyle_allDev_singleLongFlash"                            , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 183, "dmxAnim_movingHead_setLightingStyle_allDev_slowStrobe"                                 , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 184, "dmxAnim_movingHead_setLightingStyle_allDev_mediumStrobe"                               , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 185, "dmxAnim_movingHead_setLightingStyle_allDev_fastStrobe"                                 , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 186, "dmxAnim_movingHead_setLightingStyle_allDev_slowSineWave"                               , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 187, "dmxAnim_movingHead_setLightingStyle_allDev_fastSineWave"                               , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 188, "dmxAnim_movingHead_setLightingStyle_allDev_randomGlitch"                               , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 189, "dmxAnim_movingHead_setLightingStyle_allDev_minimalApertureBeam"                        , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 190, "dmxAnim_movingHead_setLightingStyle_centerDev_continuousLight"                         , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 191, "dmxAnim_movingHead_setLightingStyle_centerDev_slowCrescendoLight"                      , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 192, "dmxAnim_movingHead_setLightingStyle_centerDev_fastCrescendoLight"                      , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 193, "dmxAnim_movingHead_setLightingStyle_centerDev_singleShortFlash"                        , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 194, "dmxAnim_movingHead_setLightingStyle_centerDev_singleLongFlash"                         , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 195, "dmxAnim_movingHead_setLightingStyle_centerDev_slowStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 196, "dmxAnim_movingHead_setLightingStyle_centerDev_mediumStrobe"                            , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 197, "dmxAnim_movingHead_setLightingStyle_centerDev_fastStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 198, "dmxAnim_movingHead_setLightingStyle_centerDev_slowSineWave"                            , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 199, "dmxAnim_movingHead_setLightingStyle_centerDev_fastSineWave"                            , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 200, "dmxAnim_movingHead_setLightingStyle_centerDev_randomGlitch"                            , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 201, "dmxAnim_movingHead_setLightingStyle_centerDev_minimalApertureBeam"                     , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 202, "dmxAnim_movingHead_setLightingStyle_sideDev_continuousLight"                           , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 203, "dmxAnim_movingHead_setLightingStyle_sideDev_slowCrescendoLight"                        , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 204, "dmxAnim_movingHead_setLightingStyle_sideDev_fastCrescendoLight"                        , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 205, "dmxAnim_movingHead_setLightingStyle_sideDev_singleShortFlash"                          , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 206, "dmxAnim_movingHead_setLightingStyle_sideDev_singleLongFlash"                           , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 207, "dmxAnim_movingHead_setLightingStyle_sideDev_slowStrobe"                                , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 208, "dmxAnim_movingHead_setLightingStyle_sideDev_mediumStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 209, "dmxAnim_movingHead_setLightingStyle_sideDev_fastStrobe"                                , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 210, "dmxAnim_movingHead_setLightingStyle_sideDev_slowSineWave"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 211, "dmxAnim_movingHead_setLightingStyle_sideDev_fastSineWave"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 212, "dmxAnim_movingHead_setLightingStyle_sideDev_randomGlitch"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 213, "dmxAnim_movingHead_setLightingStyle_sideDev_minimalApertureBeam"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 214, "dmxAnim_movingHead_setLightingStyle_leftDev_continuousLight"                           , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 215, "dmxAnim_movingHead_setLightingStyle_leftDev_slowCrescendoLight"                        , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 216, "dmxAnim_movingHead_setLightingStyle_leftDev_fastCrescendoLight"                        , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 217, "dmxAnim_movingHead_setLightingStyle_leftDev_singleShortFlash"                          , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 218, "dmxAnim_movingHead_setLightingStyle_leftDev_singleLongFlash"                           , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 219, "dmxAnim_movingHead_setLightingStyle_leftDev_slowStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 220, "dmxAnim_movingHead_setLightingStyle_leftDev_mediumStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 221, "dmxAnim_movingHead_setLightingStyle_leftDev_fastStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 222, "dmxAnim_movingHead_setLightingStyle_leftDev_slowSineWave"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 223, "dmxAnim_movingHead_setLightingStyle_leftDev_fastSineWave"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 224, "dmxAnim_movingHead_setLightingStyle_leftDev_randomGlitch"                              , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 225, "dmxAnim_movingHead_setLightingStyle_leftDev_minimalApertureBeam"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 226, "dmxAnim_movingHead_setLightingStyle_rightDev_continuousLight"                          , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 227, "dmxAnim_movingHead_setLightingStyle_rightDev_slowCrescendoLight"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 228, "dmxAnim_movingHead_setLightingStyle_rightDev_fastCrescendoLight"                       , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 229, "dmxAnim_movingHead_setLightingStyle_rightDev_singleShortFlash"                         , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 230, "dmxAnim_movingHead_setLightingStyle_rightDev_singleLongFlash"                          , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 231, "dmxAnim_movingHead_setLightingStyle_rightDev_slowStrobe"                             , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 232, "dmxAnim_movingHead_setLightingStyle_rightDev_mediumStrobe"                             , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 233, "dmxAnim_movingHead_setLightingStyle_rightDev_fastStrobe"                             , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 234, "dmxAnim_movingHead_setLightingStyle_rightDev_slowSineWave"                             , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 235, "dmxAnim_movingHead_setLightingStyle_rightDev_fastSineWave"                             , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 236, "dmxAnim_movingHead_setLightingStyle_rightDev_randomGlitch"                             , new String[] {"MovingHead", "Temp"                                      } );
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 237, "dmxAnim_movingHead_setLightingStyle_rightDev_minimalApertureBeam"                      , new String[] {"MovingHead", "Temp"                                      } );        
 
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 238, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 239, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 240, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 241, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 242, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 243, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 244, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 245, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 246, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 247, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 248, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 249, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 250, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 251, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 252, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 253, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 254, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 255, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 256, "Nothing"                      , new String[] {"Nothing", "Nothing"                                      } );        
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 1,  "dmxAnim_movingHead_setLightingStyle_allDev_continuousLight"                            , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 2,  "dmxAnim_movingHead_setLightingStyle_allDev_slowCrescendoLight"                         , new String[] {"MovingHead", "Temp"                                      } );    
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 3,  "dmxAnim_movingHead_setLightingStyle_allDev_fastCrescendoLight"                         , new String[] {"MovingHead", "Temp"                                      } );    
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 4,  "dmxAnim_movingHead_setLightingStyle_allDev_singleShortFlash"                           , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 5,  "dmxAnim_movingHead_setLightingStyle_allDev_singleLongFlash"                            , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 6,  "dmxAnim_movingHead_setLightingStyle_allDev_slowStrobe"                                 , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 7,  "dmxAnim_movingHead_setLightingStyle_allDev_mediumStrobe"                               , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 8,  "dmxAnim_movingHead_setLightingStyle_allDev_fastStrobe"                                 , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 9,  "dmxAnim_movingHead_setLightingStyle_allDev_slowSineWave"                               , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 10, "dmxAnim_movingHead_setLightingStyle_allDev_fastSineWave"                               , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 11, "dmxAnim_movingHead_setLightingStyle_allDev_randomGlitch"                               , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 12, "dmxAnim_movingHead_setLightingStyle_allDev_minimalApertureBeam"                        , new String[] {"MovingHead", "Temp"                                      } );      
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 13, "dmxAnim_movingHead_setLightingStyle_centerDev_continuousLight"                         , new String[] {"MovingHead", "Temp"                                      } );    
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 14, "dmxAnim_movingHead_setLightingStyle_centerDev_slowCrescendoLight"                      , new String[] {"MovingHead", "Temp"                                      } );        
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 15, "dmxAnim_movingHead_setLightingStyle_centerDev_fastCrescendoLight"                      , new String[] {"MovingHead", "Temp"                                      } );        
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 16, "dmxAnim_movingHead_setLightingStyle_centerDev_singleShortFlash"                        , new String[] {"MovingHead", "Temp"                                      } );      
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 17, "dmxAnim_movingHead_setLightingStyle_centerDev_singleLongFlash"                         , new String[] {"MovingHead", "Temp"                                      } );    
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 18, "dmxAnim_movingHead_setLightingStyle_centerDev_slowStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 19, "dmxAnim_movingHead_setLightingStyle_centerDev_mediumStrobe"                            , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 20, "dmxAnim_movingHead_setLightingStyle_centerDev_fastStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 21, "dmxAnim_movingHead_setLightingStyle_centerDev_slowSineWave"                            , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 22, "dmxAnim_movingHead_setLightingStyle_centerDev_fastSineWave"                            , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 23, "dmxAnim_movingHead_setLightingStyle_centerDev_randomGlitch"                            , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 24, "dmxAnim_movingHead_setLightingStyle_centerDev_minimalApertureBeam"                     , new String[] {"MovingHead", "Temp"                                      } );        
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 25, "dmxAnim_movingHead_setLightingStyle_sideDev_continuousLight"                           , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 26, "dmxAnim_movingHead_setLightingStyle_sideDev_slowCrescendoLight"                        , new String[] {"MovingHead", "Temp"                                      } );      
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 27, "dmxAnim_movingHead_setLightingStyle_sideDev_fastCrescendoLight"                        , new String[] {"MovingHead", "Temp"                                      } );      
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 28, "dmxAnim_movingHead_setLightingStyle_sideDev_singleShortFlash"                          , new String[] {"MovingHead", "Temp"                                      } );    
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 29, "dmxAnim_movingHead_setLightingStyle_sideDev_singleLongFlash"                           , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 30, "dmxAnim_movingHead_setLightingStyle_sideDev_slowStrobe"                                , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 31, "dmxAnim_movingHead_setLightingStyle_sideDev_mediumStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 32, "dmxAnim_movingHead_setLightingStyle_sideDev_fastStrobe"                                , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 33, "dmxAnim_movingHead_setLightingStyle_sideDev_slowSineWave"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 34, "dmxAnim_movingHead_setLightingStyle_sideDev_fastSineWave"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 35, "dmxAnim_movingHead_setLightingStyle_sideDev_randomGlitch"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 36, "dmxAnim_movingHead_setLightingStyle_sideDev_minimalApertureBeam"                       , new String[] {"MovingHead", "Temp"                                      } );      
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 37, "dmxAnim_movingHead_setLightingStyle_leftDev_continuousLight"                           , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 38, "dmxAnim_movingHead_setLightingStyle_leftDev_slowCrescendoLight"                        , new String[] {"MovingHead", "Temp"                                      } );      
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 39, "dmxAnim_movingHead_setLightingStyle_leftDev_fastCrescendoLight"                        , new String[] {"MovingHead", "Temp"                                      } );      
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 40, "dmxAnim_movingHead_setLightingStyle_leftDev_singleShortFlash"                          , new String[] {"MovingHead", "Temp"                                      } );    
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 41, "dmxAnim_movingHead_setLightingStyle_leftDev_singleLongFlash"                           , new String[] {"MovingHead", "Temp"                                      } );  
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 42, "dmxAnim_movingHead_setLightingStyle_leftDev_slowStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 43, "dmxAnim_movingHead_setLightingStyle_leftDev_mediumStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 44, "dmxAnim_movingHead_setLightingStyle_leftDev_fastStrobe"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 45, "dmxAnim_movingHead_setLightingStyle_leftDev_slowSineWave"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 46, "dmxAnim_movingHead_setLightingStyle_leftDev_fastSineWave"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 47, "dmxAnim_movingHead_setLightingStyle_leftDev_randomGlitch"                              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 48, "dmxAnim_movingHead_setLightingStyle_leftDev_minimalApertureBeam"                       , new String[] {"MovingHead", "Temp"                                      } );      
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 49, "dmxAnim_movingHead_setLightingStyle_rightDev_continuousLight"                          , new String[] {"MovingHead", "Temp"                                      } );    
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 50, "dmxAnim_movingHead_setLightingStyle_rightDev_slowCrescendoLight"                       , new String[] {"MovingHead", "Temp"                                      } );      
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 51, "dmxAnim_movingHead_setLightingStyle_rightDev_fastCrescendoLight"                       , new String[] {"MovingHead", "Temp"                                      } );      
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 52, "dmxAnim_movingHead_setLightingStyle_rightDev_singleShortFlash"                         , new String[] {"MovingHead", "Temp"                                      } );    
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 53, "dmxAnim_movingHead_setLightingStyle_rightDev_singleLongFlash"                          , new String[] {"MovingHead", "Temp"                                      } );    
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 54, "dmxAnim_movingHead_setLightingStyle_rightDev_slowStrobe"                             , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 55, "dmxAnim_movingHead_setLightingStyle_rightDev_mediumStrobe"                             , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 56, "dmxAnim_movingHead_setLightingStyle_rightDev_fastStrobe"                             , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 57, "dmxAnim_movingHead_setLightingStyle_rightDev_slowSineWave"                             , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 58, "dmxAnim_movingHead_setLightingStyle_rightDev_fastSineWave"                             , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 59, "dmxAnim_movingHead_setLightingStyle_rightDev_randomGlitch"                             , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 60, "dmxAnim_movingHead_setLightingStyle_rightDev_minimalApertureBeam"                      , new String[] {"MovingHead", "Temp"                                      } );        
 
 
 
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 257, "dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_LowTilt"                          , new String[] {"MovingHead", "Temp"                                      } );                  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 258, "dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_LowTilt"                            , new String[] {"MovingHead", "Temp"                                      } );                    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 259, "dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_LowTilt"                           , new String[] {"MovingHead", "Temp"                                      } );                   
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 260, "dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_FrontTilt"                        , new String[] {"MovingHead", "Temp"                                      } );                
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 261, "dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_FrontTilt"                          , new String[] {"MovingHead", "Temp"                                      } );                  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 262, "dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_FrontTilt"                         , new String[] {"MovingHead", "Temp"                                      } );                 
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 263, "dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_HighTilt"                         , new String[] {"MovingHead", "Temp"                                      } );                 
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 264, "dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_HighTilt"                           , new String[] {"MovingHead", "Temp"                                      } );                   
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 265, "dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_HighTilt"                          , new String[] {"MovingHead", "Temp"                                      } );                  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 266, "dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_UprightTilt"                      , new String[] {"MovingHead", "Temp"                                      } );              
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 267, "dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_UprightTilt"                        , new String[] {"MovingHead", "Temp"                                      } );                
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 268, "dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_UprightTilt"                       , new String[] {"MovingHead", "Temp"                                      } );               
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 269, "dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_BackTilt"                         , new String[] {"MovingHead", "Temp"                                      } );                 
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 270, "dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_BackTilt"                           , new String[] {"MovingHead", "Temp"                                      } );                   
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 271, "dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_BackTilt"                          , new String[] {"MovingHead", "Temp"                                      } );                  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 272, "dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_FrontTilt"                 , new String[] {"MovingHead", "Temp"                                      } );         
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 273, "dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_FrontTilt"              , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 274, "dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_HighTilt"                  , new String[] {"MovingHead", "Temp"                                      } );          
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 275, "dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_HighTilt"               , new String[] {"MovingHead", "Temp"                                      } );       
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 276, "dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_FrontTilt"                , new String[] {"MovingHead", "Temp"                                      } );        
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 277, "dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConergentPan_FrontTilt"              , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 278, "dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_HighTilt"                 , new String[] {"MovingHead", "Temp"                                      } );         
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 279, "dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_HighTilt"              , new String[] {"MovingHead", "Temp"                                      } );      
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 280, "dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WideNegTilt"            , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 281, "dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowNegTilt"          , new String[] {"MovingHead", "Temp"                                      } );  
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 282, "dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WidePosTilt"            , new String[] {"MovingHead", "Temp"                                      } );    
-DMXMovingHeadAttributes = registerAttribute(DMXMovingHeadAttributes, 283, "dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTilt"          , new String[] {"MovingHead", "Temp"                                      } );  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 257, "dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_LowTilt"                          , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 258, "dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_LowTilt"                            , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 259, "dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_LowTilt"                           , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 260, "dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_FrontTilt"                        , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 261, "dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_FrontTilt"                          , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 262, "dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_FrontTilt"                         , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 263, "dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_HighTilt"                         , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 264, "dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_HighTilt"                           , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 265, "dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_HighTilt"                          , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 266, "dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_UprightTilt"                      , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 267, "dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_UprightTilt"                        , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 268, "dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_UprightTilt"                       , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 269, "dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_BackTilt"                         , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 270, "dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_BackTilt"                           , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 271, "dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_BackTilt"                          , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 272, "dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_FrontTilt"                 , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 273, "dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_FrontTilt"              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 274, "dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_HighTilt"                  , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 275, "dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_HighTilt"               , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 276, "dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_FrontTilt"                , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 277, "dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConergentPan_FrontTilt"              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 278, "dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_HighTilt"                 , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 279, "dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_HighTilt"              , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 280, "dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WideNegTilt"            , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 281, "dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowNegTilt"          , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 282, "dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WidePosTilt"            , new String[] {"MovingHead", "Temp"                                      } );
+DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 283, "dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTilt"          , new String[] {"MovingHead", "Temp"                                      } );
 
 
   /*
@@ -23350,32 +23357,37 @@ class PlayMeSequencer {
     
     if (eventType == NOTE_ON) {
       switch (actionNumber) {
-        case PITCH_DMX_ANIMATION_STROBE:        loadDMXAnimation_strobe(actionValue); break;
-        case PITCH_DMX_ANIMATION_PAR:           loadDMXAnimation_par(actionValue); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_1: loadDMXAnimation_movingHead_1(actionValue); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_2: loadDMXAnimation_movingHead_2(actionValue); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_3: loadDMXAnimation_movingHead_3(actionValue); break;
+        case PITCH_DMX_ANIMATION_STROBE:                        loadDMXAnimation_strobe(actionValue); break;
+        case PITCH_DMX_ANIMATION_PAR:                           loadDMXAnimation_par(actionValue); break;
         
-        case PITCH_CUSTOM_DEVICE_BANK1:         loadCustomDeviceAnimation1(actionValue);break;
-        case PITCH_CUSTOM_DEVICE_BANK2:         loadCustomDeviceAnimation2(actionValue);break;
-        case PITCH_CUSTOM_DEVICE_BANK3:         loadCustomDeviceAnimation3(actionValue);break;
-        case PITCH_DISPLAY_EFFECT:              activateAdditionalEffect(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK1:        loadAnimation1(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK2:        loadAnimation2(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK3:        loadAnimation3(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK4:        loadAnimation4(actionValue);break;
-        case PITCH_LOAD_IMAGE_BANK1:            loadImage1(actionValue);break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(actionValue); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(actionValue);      break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(actionValue); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   loadDMXAnimation_movingHead_setAnimation1(actionValue); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   loadDMXAnimation_movingHead_setAnimation2(actionValue); break;
+
+        case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(actionValue);break;
+        case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(actionValue);break;
+        case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(actionValue);break;
+        case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK1:                        loadAnimation1(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK2:                        loadAnimation2(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK3:                        loadAnimation3(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK4:                        loadAnimation4(actionValue);break;
+        case PITCH_LOAD_IMAGE_BANK1:                            loadImage1(actionValue);break;
         default: break;
       }
     }
     else if (eventType == NOTE_OFF) {
       switch (actionNumber) {        
-        case PITCH_DMX_ANIMATION_STROBE:        unloadDMXAnimation_strobe(); break;
-        case PITCH_DMX_ANIMATION_PAR:           unloadDMXAnimation_par(); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_1: unloadDMXAnimation_movingHead(); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_2: unloadDMXAnimation_movingHead(); break;
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_3: unloadDMXAnimation_movingHead(); break;
-        case PITCH_DISPLAY_EFFECT:              deactivateAdditionalEffect(actionValue);break;
+        case PITCH_DMX_ANIMATION_STROBE:                        unloadDMXAnimation_strobe(); break;
+        case PITCH_DMX_ANIMATION_PAR:                           unloadDMXAnimation_par(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DISPLAY_EFFECT:                              deactivateAdditionalEffect(actionValue);break;
         default: break;
       }
     }
@@ -24583,19 +24595,44 @@ public String getStringFromDMXAnimationNumber_par(int animNbr) {
   
   return temp;
 }
-public String getStringFromDMXAnimationNumber_movingHead(int animNbr) {
+
+public String getStringFromDMXAnimationNumber_movingHead_Movement(int animNbr) {
   String temp = "Undefined";
   if (animNbr <= 127) {                                                                   
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_1) + "  |  " + str(animNbr);
-  }                                                                                              
-  else if (animNbr <= 254) {
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_2) + "  |  " + str(animNbr - 127);
-  }                                                                                              
-  else if (animNbr <= 381) {
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_3) + "  |  " + str(animNbr - 254);    
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION) + "  |  " + str(animNbr);
   }
   return temp;
 }
+
+public String getStringFromDMXAnimationNumber_movingHead_Color(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR) + "  |  " + str(animNbr);
+  }
+  return temp;
+}
+
+public String getStringFromDMXAnimationNumber_movingHead_LightStyle(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE) + "  |  " + str(animNbr);
+  }
+  return temp;
+}
+
+public String getStringFromDMXAnimationNumber_movingHead_Animation(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1) + "  |  " + str(animNbr);
+  }                                                                                              
+  else if (animNbr <= 254) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2) + "  |  " + str(animNbr - 127);
+  }                                                                                              
+
+  return temp;
+}
+
+
 
 public int convertStringToInt(String text) {
   //Allow to parse either regular ints (ie MIDI notes "0", "1"...), or real notes (ie "C3", "A#-1"...) 
@@ -28671,6 +28708,15 @@ final int SINGLEFLASH_INITVAL = 6;
 final float SIDESTROBE_MAX_SPEED = 0.8f;    //Max speed ratio for the side strobes (1 -> full speed => 255 DMX speed)
 final float BACKSTROBE_MAX_SPEED = 0.8f;
 
+int dmxAnimationNumber_strobe                       = 0;
+int dmxAnimationNumber_movingHead_initDirection     = 0;
+int dmxAnimationNumber_movingHead_setColor          = 0;
+int dmxAnimationNumber_movingHead_setLightStyle     = 0;
+int dmxAnimationNumber_movingHead_setAnimation      = 0;
+int dmxAnimationNumber_par                          = 0;
+
+int dmxAnim_movingHead_globalAnimCpt                = 0;          // Global counter used for the animations
+
 public void playDMXAnimation() {
   playDMXAnimation_strobe();
   playDMXAnimation_movingHead();
@@ -28847,10 +28893,8 @@ public void setupDMXAnimation_strobe() {
   } 
 }
 
-
-public void playDMXAnimation_movingHead() {
-  switch(dmxAnimationNumber_movingHead) {
-
+public void setupDMXAnimation_movingHead_initDirection() {
+  switch(dmxAnimationNumber_movingHead_initDirection) {
     // Prepare direction : set all moving heads facing towards a specific direction in order to anticipate the subsequent animation
     case 1:   dmxAnim_movingHead_prepareDirection_CenterPan_LowTilt();                                                  break;
     case 2:   dmxAnim_movingHead_prepareDirection_LeftPan_LowTilt();                                                    break;
@@ -28902,298 +28946,250 @@ public void playDMXAnimation_movingHead() {
     case 45:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt();     break;
     case 46:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WidePosTilt();          break;
     case 47:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowPosTilt();        break;
+    default: break;
+  }
+}
 
+public void setupDMXAnimation_movingHead_setColor() {
+  switch(dmxAnimationNumber_movingHead_setColor) {
+    // For the more complex animations: set the color for the different devices (all/center/side/left/right)
+
+    case 1:   dmxAnim_movingHead_setColorForCompositeAnimations_allDev_white();                                         break;
+    case 2:   dmxAnim_movingHead_setColorForCompositeAnimations_allDev_red();                                           break;
+    case 3:   dmxAnim_movingHead_setColorForCompositeAnimations_allDev_deepRed();                                       break;
+    case 4:   dmxAnim_movingHead_setColorForCompositeAnimations_allDev_blue();                                          break;
+    case 5:   dmxAnim_movingHead_setColorForCompositeAnimations_allDev_deepBlue();                                      break;
+    case 6:   dmxAnim_movingHead_setColorForCompositeAnimations_allDev_yellow();                                        break;
+    case 7:   dmxAnim_movingHead_setColorForCompositeAnimations_allDev_green();                                         break;
+    case 8:   dmxAnim_movingHead_setColorForCompositeAnimations_allDev_ultraviolet();                                   break;
+    case 9:   dmxAnim_movingHead_setColorForCompositeAnimations_allDev_orange();                                        break;
+    case 10:  dmxAnim_movingHead_setColorForCompositeAnimations_allDev_CTO();                                           break;
+
+    case 11:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_white();                                      break;
+    case 12:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_red();                                        break;
+    case 13:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepRed();                                    break;
+    case 14:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_blue();                                       break;
+    case 15:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepBlue();                                   break;
+    case 16:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_yellow();                                     break;
+    case 17:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_green();                                      break;
+    case 18:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_ultraviolet();                                break;
+    case 19:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_orange();                                     break;
+    case 20:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_CTO();                                        break;
+
+    case 21:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_white();                                        break;
+    case 22:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_red();                                          break;
+    case 23:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepRed();                                      break;
+    case 24:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_blue();                                         break;
+    case 25:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepBlue();                                     break;
+    case 26:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_yellow();                                       break;
+    case 27:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_green();                                        break;
+    case 28:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_ultraviolet();                                  break;
+    case 29:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_orange();                                       break;
+    case 30:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_CTO();                                          break;
+
+    case 31:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_white();                                        break;
+    case 32:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_red();                                          break;
+    case 33:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepRed();                                      break;
+    case 34:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_blue();                                         break;
+    case 35:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepBlue();                                     break;
+    case 36:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_yellow();                                       break;
+    case 37:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_green();                                        break;
+    case 38:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_ultraviolet();                                  break;
+    case 39:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_orange();                                       break;
+    case 40:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_CTO();                                          break;
+
+    case 41:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_white();                                       break;
+    case 42:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_red();                                         break;
+    case 43:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepRed();                                     break;
+    case 44:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_blue();                                        break;
+    case 45:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepBlue();                                    break;
+    case 46:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_yellow();                                      break;
+    case 47:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_green();                                       break;
+    case 48:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_ultraviolet();                                 break;
+    case 49:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_orange();                                      break;
+    case 50:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_CTO();                                         break;
+    default: break;
+  }
+}
+
+public void setupDMXAnimation_movingHead_setLightStyle() {
+  switch(dmxAnimationNumber_movingHead_setLightStyle) {
+    case 1:  dmxAnim_movingHead_setLightStyle_allDev_continuousLight();                                                break;
+    case 2:  dmxAnim_movingHead_setLightStyle_allDev_slowCrescendoLight();                                             break;
+    case 3:  dmxAnim_movingHead_setLightStyle_allDev_fastCrescendoLight();                                             break;
+    case 4:  dmxAnim_movingHead_setLightStyle_allDev_singleShortFlash();                                               break;
+    case 5:  dmxAnim_movingHead_setLightStyle_allDev_singleLongFlash();                                                break;
+    case 6:  dmxAnim_movingHead_setLightStyle_allDev_slowStrobe();                                                     break;
+    case 7:  dmxAnim_movingHead_setLightStyle_allDev_mediumStrobe();                                                   break;
+    case 8:  dmxAnim_movingHead_setLightStyle_allDev_fastStrobe();                                                     break;
+    case 9:  dmxAnim_movingHead_setLightStyle_allDev_slowSineWave();                                                   break;
+    case 10: dmxAnim_movingHead_setLightStyle_allDev_fastSineWave();                                                   break;
+    case 11: dmxAnim_movingHead_setLightStyle_allDev_randomGlitch();                                                   break;
+    case 12: dmxAnim_movingHead_setLightStyle_allDev_minimalApertureBeam();                                            break;
+
+    case 13: dmxAnim_movingHead_setLightStyle_centerDev_continuousLight();                                             break;
+    case 14: dmxAnim_movingHead_setLightStyle_centerDev_slowCrescendoLight();                                          break;
+    case 15: dmxAnim_movingHead_setLightStyle_centerDev_fastCrescendoLight();                                          break;
+    case 16: dmxAnim_movingHead_setLightStyle_centerDev_singleShortFlash();                                            break;
+    case 17: dmxAnim_movingHead_setLightStyle_centerDev_singleLongFlash();                                             break;
+    case 18: dmxAnim_movingHead_setLightStyle_centerDev_slowStrobe();                                                  break;
+    case 19: dmxAnim_movingHead_setLightStyle_centerDev_mediumStrobe();                                                break;
+    case 20: dmxAnim_movingHead_setLightStyle_centerDev_fastStrobe();                                                  break;
+    case 21: dmxAnim_movingHead_setLightStyle_centerDev_slowSineWave();                                                break;
+    case 22: dmxAnim_movingHead_setLightStyle_centerDev_fastSineWave();                                                break;
+    case 23: dmxAnim_movingHead_setLightStyle_centerDev_randomGlitch();                                                break;
+    case 24: dmxAnim_movingHead_setLightStyle_centerDev_minimalApertureBeam();                                         break;
+
+    case 25: dmxAnim_movingHead_setLightStyle_sideDev_continuousLight();                                               break;
+    case 26: dmxAnim_movingHead_setLightStyle_sideDev_slowCrescendoLight();                                            break;
+    case 27: dmxAnim_movingHead_setLightStyle_sideDev_fastCrescendoLight();                                            break;
+    case 28: dmxAnim_movingHead_setLightStyle_sideDev_singleShortFlash();                                              break;
+    case 29: dmxAnim_movingHead_setLightStyle_sideDev_singleLongFlash();                                               break;
+    case 30: dmxAnim_movingHead_setLightStyle_sideDev_slowStrobe();                                                    break;
+    case 31: dmxAnim_movingHead_setLightStyle_sideDev_mediumStrobe();                                                  break;
+    case 32: dmxAnim_movingHead_setLightStyle_sideDev_fastStrobe();                                                    break;
+    case 33: dmxAnim_movingHead_setLightStyle_sideDev_slowSineWave();                                                  break;
+    case 34: dmxAnim_movingHead_setLightStyle_sideDev_fastSineWave();                                                  break;
+    case 35: dmxAnim_movingHead_setLightStyle_sideDev_randomGlitch();                                                  break;
+    case 36: dmxAnim_movingHead_setLightStyle_sideDev_minimalApertureBeam();                                           break;
+    
+    case 37: dmxAnim_movingHead_setLightStyle_leftDev_continuousLight();                                               break;
+    case 38: dmxAnim_movingHead_setLightStyle_leftDev_slowCrescendoLight();                                            break;
+    case 39: dmxAnim_movingHead_setLightStyle_leftDev_fastCrescendoLight();                                            break;
+    case 40: dmxAnim_movingHead_setLightStyle_leftDev_singleShortFlash();                                              break;
+    case 41: dmxAnim_movingHead_setLightStyle_leftDev_singleLongFlash();                                               break;
+    case 42: dmxAnim_movingHead_setLightStyle_leftDev_slowStrobe();                                                    break;
+    case 43: dmxAnim_movingHead_setLightStyle_leftDev_mediumStrobe();                                                  break;
+    case 44: dmxAnim_movingHead_setLightStyle_leftDev_fastStrobe();                                                    break;
+    case 45: dmxAnim_movingHead_setLightStyle_leftDev_slowSineWave();                                                  break;
+    case 46: dmxAnim_movingHead_setLightStyle_leftDev_fastSineWave();                                                  break;
+    case 47: dmxAnim_movingHead_setLightStyle_leftDev_randomGlitch();                                                  break;
+    case 48: dmxAnim_movingHead_setLightStyle_leftDev_minimalApertureBeam();                                           break;
+    
+    case 49: dmxAnim_movingHead_setLightStyle_rightDev_continuousLight();                                              break;
+    case 50: dmxAnim_movingHead_setLightStyle_rightDev_slowCrescendoLight();                                           break;
+    case 51: dmxAnim_movingHead_setLightStyle_rightDev_fastCrescendoLight();                                           break;
+    case 52: dmxAnim_movingHead_setLightStyle_rightDev_singleShortFlash();                                             break;
+    case 53: dmxAnim_movingHead_setLightStyle_rightDev_singleLongFlash();                                              break;
+    case 54: dmxAnim_movingHead_setLightStyle_rightDev_slowStrobe();                                                   break;
+    case 55: dmxAnim_movingHead_setLightStyle_rightDev_mediumStrobe();                                                 break;
+    case 56: dmxAnim_movingHead_setLightStyle_rightDev_fastStrobe();                                                   break;
+    case 57: dmxAnim_movingHead_setLightStyle_rightDev_slowSineWave();                                                 break;
+    case 58: dmxAnim_movingHead_setLightStyle_rightDev_fastSineWave();                                                 break;
+    case 59: dmxAnim_movingHead_setLightStyle_rightDev_randomGlitch();                                                 break;
+    case 60: dmxAnim_movingHead_setLightStyle_rightDev_minimalApertureBeam();                                          break;
+
+
+//A rajouter: sineWave dans l'autre sens
+//A rajouter: beatFlashers - setLightStyle pour des anims qui soient sequencees sur le tempo
+    default: break;
+  }
+}
+
+public void playDMXAnimation_movingHead() {
+  switch(dmxAnimationNumber_movingHead_setAnimation) {
+
+    case 0:   dmxAnim_movingHead_blackout();                                                                            break;
 
     // Simple commands for the various possible lightings and colors, without changing the direction of the projector
 
-    case 48:  dmxAnim_movingHead_noMovement_allDev_continuousLight_white();                                             break;
-    case 49:  dmxAnim_movingHead_noMovement_allDev_continuousLight_red();                                               break;
-    case 50:  dmxAnim_movingHead_noMovement_allDev_continuousLight_deepRed();                                           break;
-    case 51:  dmxAnim_movingHead_noMovement_allDev_continuousLight_blue();                                              break;
-    case 52:  dmxAnim_movingHead_noMovement_allDev_continuousLight_deepBlue();                                          break;
-    case 53:  dmxAnim_movingHead_noMovement_allDev_continuousLight_yellow();                                            break;
-    case 54:  dmxAnim_movingHead_noMovement_allDev_continuousLight_green();                                             break;
-    case 55:  dmxAnim_movingHead_noMovement_allDev_continuousLight_ultraviolet();                                       break;
-    case 56:  dmxAnim_movingHead_noMovement_allDev_continuousLight_orange();                                            break;
-    case 57:  dmxAnim_movingHead_noMovement_allDev_continuousLight_CTO();                                               break;
+    case 1:   dmxAnim_movingHead_noMovement_allDev_continuousLight_white();                                             break;
+    case 2:   dmxAnim_movingHead_noMovement_allDev_continuousLight_red();                                               break;
+    case 3:   dmxAnim_movingHead_noMovement_allDev_continuousLight_deepRed();                                           break;
+    case 4:   dmxAnim_movingHead_noMovement_allDev_continuousLight_blue();                                              break;
+    case 5:   dmxAnim_movingHead_noMovement_allDev_continuousLight_deepBlue();                                          break;
+    case 6:   dmxAnim_movingHead_noMovement_allDev_continuousLight_yellow();                                            break;
+    case 7:   dmxAnim_movingHead_noMovement_allDev_continuousLight_green();                                             break;
+    case 8:   dmxAnim_movingHead_noMovement_allDev_continuousLight_ultraviolet();                                       break;
+    case 9:   dmxAnim_movingHead_noMovement_allDev_continuousLight_orange();                                            break;
+    case 10:  dmxAnim_movingHead_noMovement_allDev_continuousLight_CTO();                                               break;
 
     //////////////////////////////////////////////////////////// 
  
-    case 58:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_white();                                             break;
-    case 59:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_red();                                               break;
-    case 60:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_deepRed();                                           break;
-    case 61:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_blue();                                              break;
-    case 62:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_deepBlue();                                          break;
-    case 63:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_yellow();                                            break;
-    case 64:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_green();                                             break;
-    case 65:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_ultraviolet();                                       break;
-    case 66:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_orange();                                            break;
-    case 67:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_CTO();                                               break;
+    case 11:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_white();                                             break;
+    case 12:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_red();                                               break;
+    case 13:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_deepRed();                                           break;
+    case 14:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_blue();                                              break;
+    case 15:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_deepBlue();                                          break;
+    case 16:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_yellow();                                            break;
+    case 17:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_green();                                             break;
+    case 18:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_ultraviolet();                                       break;
+    case 19:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_orange();                                            break;
+    case 20:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_CTO();                                               break;
  
     //////////////////////////////////////////////////////////// 
  
-    case 68:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_white();                                            break;
-    case 69:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_red();                                              break;
-    case 70:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_deepRed();                                          break;
-    case 71:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_blue();                                             break;
-    case 72:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_deepBlue();                                         break;
-    case 73:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_yellow();                                           break;
-    case 74:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_green();                                            break;
-    case 75:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_ultraviolet();                                      break;
-    case 76:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_orange();                                           break;
-    case 77:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_CTO();                                              break;
+    case 21:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_white();                                            break;
+    case 22:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_red();                                              break;
+    case 23:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_deepRed();                                          break;
+    case 24:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_blue();                                             break;
+    case 25:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_deepBlue();                                         break;
+    case 26:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_yellow();                                           break;
+    case 27:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_green();                                            break;
+    case 28:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_ultraviolet();                                      break;
+    case 29:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_orange();                                           break;
+    case 30:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_CTO();                                              break;
  
     //////////////////////////////////////////////////////////// 
  
-    case 78:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_white();                                          break;
-    case 79:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_red();                                            break;
-    case 80:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_deepRed();                                        break;
-    case 81:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_blue();                                           break;
-    case 82:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_deepBlue();                                       break;
-    case 83:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_yellow();                                         break;
-    case 84:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_green();                                          break;
-    case 85:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_ultraviolet();                                    break;
-    case 86:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_orange();                                         break;
-    case 87:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_CTO();                                            break;
+    case 31:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_white();                                          break;
+    case 32:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_red();                                            break;
+    case 33:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_deepRed();                                        break;
+    case 34:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_blue();                                           break;
+    case 35:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_deepBlue();                                       break;
+    case 36:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_yellow();                                         break;
+    case 37:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_green();                                          break;
+    case 38:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_ultraviolet();                                    break;
+    case 39:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_orange();                                         break;
+    case 40:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_CTO();                                            break;
  
     ////////////////////////////////////////////////////////////  
  
-    case 88:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_white();                                          break;
-    case 89:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_red();                                            break;
-    case 90:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_deepRed();                                        break;
-    case 91:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_blue();                                           break;
-    case 92:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_deepBlue();                                       break;
-    case 93:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_yellow();                                         break;
-    case 94:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_green();                                          break;
-    case 95:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_ultraviolet();                                    break;
-    case 96:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_orange();                                         break;
-    case 97:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_CTO();                                            break;
+    case 41:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_white();                                          break;
+    case 42:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_red();                                            break;
+    case 43:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_deepRed();                                        break;
+    case 44:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_blue();                                           break;
+    case 45:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_deepBlue();                                       break;
+    case 46:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_yellow();                                         break;
+    case 47:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_green();                                          break;
+    case 48:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_ultraviolet();                                    break;
+    case 49:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_orange();                                         break;
+    case 50:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_CTO();                                            break;
  
     //////////////////////////////////////////////////////////// 
 
-    case 98:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_white();                                                  break;
-    case 99:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_red();                                                    break;
-    case 100: dmxAnim_movingHead_noMovement_allDev_slowStrobe_deepRed();                                                break;
-    case 101: dmxAnim_movingHead_noMovement_allDev_slowStrobe_blue();                                                   break;
-    case 102: dmxAnim_movingHead_noMovement_allDev_slowStrobe_deepBlue();                                               break;
-    case 103: dmxAnim_movingHead_noMovement_allDev_slowStrobe_yellow();                                                 break;
-    case 104: dmxAnim_movingHead_noMovement_allDev_slowStrobe_green();                                                  break;
-    case 105: dmxAnim_movingHead_noMovement_allDev_slowStrobe_ultraviolet();                                            break;
-    case 106: dmxAnim_movingHead_noMovement_allDev_slowStrobe_orange();                                                 break;
-    case 107: dmxAnim_movingHead_noMovement_allDev_slowStrobe_CTO();                                                    break;
-    case 108: dmxAnim_movingHead_noMovement_allDev_mediumStrobe_white();                                                break;
-    case 109: dmxAnim_movingHead_noMovement_allDev_mediumStrobe_red();                                                  break;
-    case 110: dmxAnim_movingHead_noMovement_allDev_mediumStrobe_deepRed();                                              break;
-    case 111: dmxAnim_movingHead_noMovement_allDev_mediumStrobe_blue();                                                 break;
-    case 112: dmxAnim_movingHead_noMovement_allDev_mediumStrobe_deepBlue();                                             break;
-    case 113: dmxAnim_movingHead_noMovement_allDev_mediumStrobe_yellow();                                               break;
-    case 114: dmxAnim_movingHead_noMovement_allDev_mediumStrobe_green();                                                break;
-    case 115: dmxAnim_movingHead_noMovement_allDev_mediumStrobe_ultraviolet();                                          break;
-    case 116: dmxAnim_movingHead_noMovement_allDev_mediumStrobe_orange();                                               break;
-    case 117: dmxAnim_movingHead_noMovement_allDev_mediumStrobe_CTO();                                                  break;
-    case 118: dmxAnim_movingHead_noMovement_allDev_fastStrobe_white();                                                  break;
-    case 119: dmxAnim_movingHead_noMovement_allDev_fastStrobe_red();                                                    break;
-    case 120: dmxAnim_movingHead_noMovement_allDev_fastStrobe_deepRed();                                                break;
-    case 121: dmxAnim_movingHead_noMovement_allDev_fastStrobe_blue();                                                   break;
-    case 122: dmxAnim_movingHead_noMovement_allDev_fastStrobe_deepBlue();                                               break;
-    case 123: dmxAnim_movingHead_noMovement_allDev_fastStrobe_yellow();                                                 break;
-    case 124: dmxAnim_movingHead_noMovement_allDev_fastStrobe_green();                                                  break;
-    case 125: dmxAnim_movingHead_noMovement_allDev_fastStrobe_ultraviolet();                                            break;
-    case 126: dmxAnim_movingHead_noMovement_allDev_fastStrobe_orange();                                                 break;
-    case 127: dmxAnim_movingHead_noMovement_allDev_fastStrobe_CTO();                                                    break;
+    case 61:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_white();                                                  break;
+    case 62:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_red();                                                    break;
+    case 63:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_deepRed();                                                break;
+    case 64:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_blue();                                                   break;
+    case 65:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_deepBlue();                                               break;
+    case 66:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_yellow();                                                 break;
+    case 67:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_green();                                                  break;
+    case 68:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_ultraviolet();                                            break;
+    case 69:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_orange();                                                 break;
+    case 70:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_CTO();                                                    break;
+    case 71:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_white();                                                break;
+    case 72:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_red();                                                  break;
+    case 73:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_deepRed();                                              break;
+    case 74:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_blue();                                                 break;
+    case 75:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_deepBlue();                                             break;
+    case 76:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_yellow();                                               break;
+    case 77:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_green();                                                break;
+    case 78:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_ultraviolet();                                          break;
+    case 79:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_orange();                                               break;
+    case 80:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_CTO();                                                  break;
+    case 81:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_white();                                                  break;
+    case 82:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_red();                                                    break;
+    case 83:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_deepRed();                                                break;
+    case 84:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_blue();                                                   break;
+    case 85:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_deepBlue();                                               break;
+    case 86:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_yellow();                                                 break;
+    case 87:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_green();                                                  break;
+    case 88:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_ultraviolet();                                            break;
+    case 89:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_orange();                                                 break;
+    case 90:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_CTO();                                                    break;
 
     //////////////////////////////////////////////////////////// 
-
-    // For the more complex animations: set the color for the different devices (all/center/side/left/right)
-
-    case 128: dmxAnim_movingHead_setColorForCompositeAnimations_allDev_white();                                         break;
-    case 129: dmxAnim_movingHead_setColorForCompositeAnimations_allDev_red();                                           break;
-    case 130: dmxAnim_movingHead_setColorForCompositeAnimations_allDev_deepRed();                                       break;
-    case 131: dmxAnim_movingHead_setColorForCompositeAnimations_allDev_blue();                                          break;
-    case 132: dmxAnim_movingHead_setColorForCompositeAnimations_allDev_deepBlue();                                      break;
-    case 133: dmxAnim_movingHead_setColorForCompositeAnimations_allDev_yellow();                                        break;
-    case 134: dmxAnim_movingHead_setColorForCompositeAnimations_allDev_green();                                         break;
-    case 135: dmxAnim_movingHead_setColorForCompositeAnimations_allDev_ultraviolet();                                   break;
-    case 136: dmxAnim_movingHead_setColorForCompositeAnimations_allDev_orange();                                        break;
-    case 137: dmxAnim_movingHead_setColorForCompositeAnimations_allDev_CTO();                                           break;
-
-    case 138: dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_white();                                      break;
-    case 139: dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_red();                                        break;
-    case 140: dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepRed();                                    break;
-    case 141: dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_blue();                                       break;
-    case 142: dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepBlue();                                   break;
-    case 143: dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_yellow();                                     break;
-    case 144: dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_green();                                      break;
-    case 145: dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_ultraviolet();                                break;
-    case 146: dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_orange();                                     break;
-    case 147: dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_CTO();                                        break;
-
-    case 148: dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_white();                                        break;
-    case 149: dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_red();                                          break;
-    case 150: dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepRed();                                      break;
-    case 151: dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_blue();                                         break;
-    case 152: dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepBlue();                                     break;
-    case 153: dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_yellow();                                       break;
-    case 154: dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_green();                                        break;
-    case 155: dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_ultraviolet();                                  break;
-    case 156: dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_orange();                                       break;
-    case 157: dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_CTO();                                          break;
-
-    case 158: dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_white();                                        break;
-    case 159: dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_red();                                          break;
-    case 160: dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepRed();                                      break;
-    case 161: dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_blue();                                         break;
-    case 162: dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepBlue();                                     break;
-    case 163: dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_yellow();                                       break;
-    case 164: dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_green();                                        break;
-    case 165: dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_ultraviolet();                                  break;
-    case 166: dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_orange();                                       break;
-    case 167: dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_CTO();                                          break;
-
-    case 168: dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_white();                                       break;
-    case 169: dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_red();                                         break;
-    case 170: dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepRed();                                     break;
-    case 171: dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_blue();                                        break;
-    case 172: dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepBlue();                                    break;
-    case 173: dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_yellow();                                      break;
-    case 174: dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_green();                                       break;
-    case 175: dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_ultraviolet();                                 break;
-    case 176: dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_orange();                                      break;
-    case 177: dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_CTO();                                         break;
-
-
-    case 178: dmxAnim_movingHead_setLightingStyle_allDev_continuousLight();                                             break;
-    case 179: dmxAnim_movingHead_setLightingStyle_allDev_slowCrescendoLight();                                          break;
-    case 180: dmxAnim_movingHead_setLightingStyle_allDev_fastCrescendoLight();                                          break;
-    case 181: dmxAnim_movingHead_setLightingStyle_allDev_singleShortFlash();                                            break;
-    case 182: dmxAnim_movingHead_setLightingStyle_allDev_singleLongFlash();                                             break;
-    case 183: dmxAnim_movingHead_setLightingStyle_allDev_slowStrobe();                                                  break;
-    case 184: dmxAnim_movingHead_setLightingStyle_allDev_mediumStrobe();                                                break;
-    case 185: dmxAnim_movingHead_setLightingStyle_allDev_fastStrobe();                                                  break;
-    case 186: dmxAnim_movingHead_setLightingStyle_allDev_slowSineWave();                                                break;
-    case 187: dmxAnim_movingHead_setLightingStyle_allDev_fastSineWave();                                                break;
-    case 188: dmxAnim_movingHead_setLightingStyle_allDev_randomGlitch();                                                break;
-    case 189: dmxAnim_movingHead_setLightingStyle_allDev_minimalApertureBeam();                                         break;
-
-    case 190: dmxAnim_movingHead_setLightingStyle_centerDev_continuousLight();                                          break;
-    case 191: dmxAnim_movingHead_setLightingStyle_centerDev_slowCrescendoLight();                                       break;
-    case 192: dmxAnim_movingHead_setLightingStyle_centerDev_fastCrescendoLight();                                       break;
-    case 193: dmxAnim_movingHead_setLightingStyle_centerDev_singleShortFlash();                                         break;
-    case 194: dmxAnim_movingHead_setLightingStyle_centerDev_singleLongFlash();                                          break;
-    case 195: dmxAnim_movingHead_setLightingStyle_centerDev_slowStrobe();                                               break;
-    case 196: dmxAnim_movingHead_setLightingStyle_centerDev_mediumStrobe();                                             break;
-    case 197: dmxAnim_movingHead_setLightingStyle_centerDev_fastStrobe();                                               break;
-    case 198: dmxAnim_movingHead_setLightingStyle_centerDev_slowSineWave();                                             break;
-    case 199: dmxAnim_movingHead_setLightingStyle_centerDev_fastSineWave();                                             break;
-    case 200: dmxAnim_movingHead_setLightingStyle_centerDev_randomGlitch();                                             break;
-    case 201: dmxAnim_movingHead_setLightingStyle_centerDev_minimalApertureBeam();                                      break;
-
-    case 202: dmxAnim_movingHead_setLightingStyle_sideDev_continuousLight();                                            break;
-    case 203: dmxAnim_movingHead_setLightingStyle_sideDev_slowCrescendoLight();                                         break;
-    case 204: dmxAnim_movingHead_setLightingStyle_sideDev_fastCrescendoLight();                                         break;
-    case 205: dmxAnim_movingHead_setLightingStyle_sideDev_singleShortFlash();                                           break;
-    case 206: dmxAnim_movingHead_setLightingStyle_sideDev_singleLongFlash();                                            break;
-    case 207: dmxAnim_movingHead_setLightingStyle_sideDev_slowStrobe();                                                 break;
-    case 208: dmxAnim_movingHead_setLightingStyle_sideDev_mediumStrobe();                                               break;
-    case 209: dmxAnim_movingHead_setLightingStyle_sideDev_fastStrobe();                                                 break;
-    case 210: dmxAnim_movingHead_setLightingStyle_sideDev_slowSineWave();                                               break;
-    case 211: dmxAnim_movingHead_setLightingStyle_sideDev_fastSineWave();                                               break;
-    case 212: dmxAnim_movingHead_setLightingStyle_sideDev_randomGlitch();                                               break;
-    case 213: dmxAnim_movingHead_setLightingStyle_sideDev_minimalApertureBeam();                                        break;
-    
-    case 214: dmxAnim_movingHead_setLightingStyle_leftDev_continuousLight();                                            break;
-    case 215: dmxAnim_movingHead_setLightingStyle_leftDev_slowCrescendoLight();                                         break;
-    case 216: dmxAnim_movingHead_setLightingStyle_leftDev_fastCrescendoLight();                                         break;
-    case 217: dmxAnim_movingHead_setLightingStyle_leftDev_singleShortFlash();                                           break;
-    case 218: dmxAnim_movingHead_setLightingStyle_leftDev_singleLongFlash();                                            break;
-    case 219: dmxAnim_movingHead_setLightingStyle_leftDev_slowStrobe();                                                 break;
-    case 220: dmxAnim_movingHead_setLightingStyle_leftDev_mediumStrobe();                                               break;
-    case 221: dmxAnim_movingHead_setLightingStyle_leftDev_fastStrobe();                                                 break;
-    case 222: dmxAnim_movingHead_setLightingStyle_leftDev_slowSineWave();                                               break;
-    case 223: dmxAnim_movingHead_setLightingStyle_leftDev_fastSineWave();                                               break;
-    case 224: dmxAnim_movingHead_setLightingStyle_leftDev_randomGlitch();                                               break;
-    case 225: dmxAnim_movingHead_setLightingStyle_leftDev_minimalApertureBeam();                                        break;
-    
-    case 226: dmxAnim_movingHead_setLightingStyle_rightDev_continuousLight();                                           break;
-    case 227: dmxAnim_movingHead_setLightingStyle_rightDev_slowCrescendoLight();                                        break;
-    case 228: dmxAnim_movingHead_setLightingStyle_rightDev_fastCrescendoLight();                                        break;
-    case 229: dmxAnim_movingHead_setLightingStyle_rightDev_singleShortFlash();                                          break;
-    case 230: dmxAnim_movingHead_setLightingStyle_rightDev_singleLongFlash();                                           break;
-    case 231: dmxAnim_movingHead_setLightingStyle_rightDev_slowStrobe();                                                break;
-    case 232: dmxAnim_movingHead_setLightingStyle_rightDev_mediumStrobe();                                              break;
-    case 233: dmxAnim_movingHead_setLightingStyle_rightDev_fastStrobe();                                                break;
-    case 234: dmxAnim_movingHead_setLightingStyle_rightDev_slowSineWave();                                              break;
-    case 235: dmxAnim_movingHead_setLightingStyle_rightDev_fastSineWave();                                              break;
-    case 236: dmxAnim_movingHead_setLightingStyle_rightDev_randomGlitch();                                              break;
-    case 237: dmxAnim_movingHead_setLightingStyle_rightDev_minimalApertureBeam();                                       break;
-
-
-
-//A rajouter: beatFlashers - setLightingStyle pour des anims qui soient sequencees sur le tempo
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -29285,10 +29281,9 @@ public void playDMXAnimation_movingHead() {
   }
 }
 
-public void setupDMXAnimation_movingHead() {
-  switch(dmxAnimationNumber_movingHead) {
+public void setupDMXAnimation_movingHeadAnimation() {
+  switch(dmxAnimationNumber_movingHead_setAnimation) {
 
-    
     case 58:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
     case 59:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
     case 60:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
@@ -29479,9 +29474,6 @@ final int    DMXANIM_SLOW_SINE_WAVE               = 9;
 final int    DMXANIM_FAST_SINE_WAVE               = 10;
 final int    DMXANIM_RANDOM_GLITCH                = 11;
 final int    DMXANIM_MIN_APERTURE_BEAM            = 12;
-
-
-int dmxAnim_movingHead_globalAnimCpt              = 0;          // Global counter used for the animations
 
 class DMX_MovingHead {
 
@@ -31576,283 +31568,283 @@ public void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_CTO() {
 
 // Set the light style for the animations
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(int style) {
+public void dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(int style) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
     movingHead.setCurrentLightStyle(style);
   }
 }
 
-public void dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(int style) {
+public void dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(int style) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads_center) {
     movingHead.setCurrentLightStyle(style);
   }
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(int style) {
+public void dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(int style) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads_side) {
     movingHead.setCurrentLightStyle(style);
   }
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(int style) {
+public void dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(int style) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads_left) {
     movingHead.setCurrentLightStyle(style);
   }
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(int style) {
+public void dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(int style) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads_right) {
     movingHead.setCurrentLightStyle(style);
   }
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_continuousLight() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
+public void dmxAnim_movingHead_setLightStyle_allDev_continuousLight() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_slowCrescendoLight() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
+public void dmxAnim_movingHead_setLightStyle_allDev_slowCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_fastCrescendoLight() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
+public void dmxAnim_movingHead_setLightStyle_allDev_fastCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_singleShortFlash() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
+public void dmxAnim_movingHead_setLightStyle_allDev_singleShortFlash() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_singleLongFlash() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
+public void dmxAnim_movingHead_setLightStyle_allDev_singleLongFlash() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_slowStrobe() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_SLOW_STROBE);
+public void dmxAnim_movingHead_setLightStyle_allDev_slowStrobe() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_SLOW_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_mediumStrobe() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
+public void dmxAnim_movingHead_setLightStyle_allDev_mediumStrobe() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_fastStrobe() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_FAST_STROBE);
+public void dmxAnim_movingHead_setLightStyle_allDev_fastStrobe() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_FAST_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_slowSineWave() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
+public void dmxAnim_movingHead_setLightStyle_allDev_slowSineWave() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_fastSineWave() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
+public void dmxAnim_movingHead_setLightStyle_allDev_fastSineWave() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_randomGlitch() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
+public void dmxAnim_movingHead_setLightStyle_allDev_randomGlitch() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_allDev_minimalApertureBeam() {
-  dmxAnim_movingHead_setLightingStyle_allDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
-}
-
-////
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_continuousLight() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_slowCrescendoLight() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_fastCrescendoLight() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_singleShortFlash() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_singleLongFlash() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_slowStrobe() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_SLOW_STROBE);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_mediumStrobe() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_fastStrobe() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_FAST_STROBE);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_slowSineWave() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_fastSineWave() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_randomGlitch() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
-}
-
-public void dmxAnim_movingHead_setLightingStyle_centerDev_minimalApertureBeam() {
-  dmxAnim_movingHead_setLightingStyle_centerDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
+public void dmxAnim_movingHead_setLightStyle_allDev_minimalApertureBeam() {
+  dmxAnim_movingHead_setLightStyle_allDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
 }
 
 ////
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_continuousLight() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
+public void dmxAnim_movingHead_setLightStyle_centerDev_continuousLight() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_slowCrescendoLight() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
+public void dmxAnim_movingHead_setLightStyle_centerDev_slowCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_fastCrescendoLight() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
+public void dmxAnim_movingHead_setLightStyle_centerDev_fastCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_singleShortFlash() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
+public void dmxAnim_movingHead_setLightStyle_centerDev_singleShortFlash() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_singleLongFlash() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
+public void dmxAnim_movingHead_setLightStyle_centerDev_singleLongFlash() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_slowStrobe() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_SLOW_STROBE);
+public void dmxAnim_movingHead_setLightStyle_centerDev_slowStrobe() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_SLOW_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_mediumStrobe() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
+public void dmxAnim_movingHead_setLightStyle_centerDev_mediumStrobe() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_fastStrobe() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_FAST_STROBE);
+public void dmxAnim_movingHead_setLightStyle_centerDev_fastStrobe() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_FAST_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_slowSineWave() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
+public void dmxAnim_movingHead_setLightStyle_centerDev_slowSineWave() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_fastSineWave() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
+public void dmxAnim_movingHead_setLightStyle_centerDev_fastSineWave() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_randomGlitch() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
+public void dmxAnim_movingHead_setLightStyle_centerDev_randomGlitch() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_sideDev_minimalApertureBeam() {
-  dmxAnim_movingHead_setLightingStyle_sideDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
+public void dmxAnim_movingHead_setLightStyle_centerDev_minimalApertureBeam() {
+  dmxAnim_movingHead_setLightStyle_centerDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
+}
+
+////
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_continuousLight() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_slowCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_fastCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_singleShortFlash() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_singleLongFlash() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_slowStrobe() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_SLOW_STROBE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_mediumStrobe() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_fastStrobe() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_FAST_STROBE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_slowSineWave() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_fastSineWave() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_randomGlitch() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
+}
+
+public void dmxAnim_movingHead_setLightStyle_sideDev_minimalApertureBeam() {
+  dmxAnim_movingHead_setLightStyle_sideDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
 }
 
 
 //////
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_continuousLight() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
+public void dmxAnim_movingHead_setLightStyle_leftDev_continuousLight() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_slowCrescendoLight() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
+public void dmxAnim_movingHead_setLightStyle_leftDev_slowCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_fastCrescendoLight() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
+public void dmxAnim_movingHead_setLightStyle_leftDev_fastCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_singleShortFlash() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
+public void dmxAnim_movingHead_setLightStyle_leftDev_singleShortFlash() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_singleLongFlash() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
+public void dmxAnim_movingHead_setLightStyle_leftDev_singleLongFlash() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_slowStrobe() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_SLOW_STROBE);
+public void dmxAnim_movingHead_setLightStyle_leftDev_slowStrobe() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_SLOW_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_mediumStrobe() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
+public void dmxAnim_movingHead_setLightStyle_leftDev_mediumStrobe() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_fastStrobe() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_FAST_STROBE);
+public void dmxAnim_movingHead_setLightStyle_leftDev_fastStrobe() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_FAST_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_slowSineWave() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
+public void dmxAnim_movingHead_setLightStyle_leftDev_slowSineWave() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_fastSineWave() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
+public void dmxAnim_movingHead_setLightStyle_leftDev_fastSineWave() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_randomGlitch() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
+public void dmxAnim_movingHead_setLightStyle_leftDev_randomGlitch() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_leftDev_minimalApertureBeam() {
-  dmxAnim_movingHead_setLightingStyle_leftDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
+public void dmxAnim_movingHead_setLightStyle_leftDev_minimalApertureBeam() {
+  dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
 }
 
 //////
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_continuousLight() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
+public void dmxAnim_movingHead_setLightStyle_rightDev_continuousLight() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_CONTINUOUS_LIGHT);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_slowCrescendoLight() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
+public void dmxAnim_movingHead_setLightStyle_rightDev_slowCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_SLOW_CRESCENDO);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_fastCrescendoLight() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
+public void dmxAnim_movingHead_setLightStyle_rightDev_fastCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_FAST_CRESCENDO);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_singleShortFlash() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
+public void dmxAnim_movingHead_setLightStyle_rightDev_singleShortFlash() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_SINGLE_SHORT_FLASH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_singleLongFlash() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
+public void dmxAnim_movingHead_setLightStyle_rightDev_singleLongFlash() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_SINGLE_LONG_FLASH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_slowStrobe() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_SLOW_STROBE);
+public void dmxAnim_movingHead_setLightStyle_rightDev_slowStrobe() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_SLOW_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_mediumStrobe() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
+public void dmxAnim_movingHead_setLightStyle_rightDev_mediumStrobe() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_MEDIUM_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_fastStrobe() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_FAST_STROBE);
+public void dmxAnim_movingHead_setLightStyle_rightDev_fastStrobe() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_FAST_STROBE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_slowSineWave() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
+public void dmxAnim_movingHead_setLightStyle_rightDev_slowSineWave() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_SLOW_SINE_WAVE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_fastSineWave() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
+public void dmxAnim_movingHead_setLightStyle_rightDev_fastSineWave() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_FAST_SINE_WAVE);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_randomGlitch() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
+public void dmxAnim_movingHead_setLightStyle_rightDev_randomGlitch() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_RANDOM_GLITCH);
 }
 
-public void dmxAnim_movingHead_setLightingStyle_rightDev_minimalApertureBeam() {
-  dmxAnim_movingHead_setLightingStyle_rightDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
+public void dmxAnim_movingHead_setLightStyle_rightDev_minimalApertureBeam() {
+  dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_MIN_APERTURE_BEAM); 
 }
 
 
@@ -34240,8 +34232,8 @@ final int GUI_ATTR_DMX_AUDIO     = 12;
 final int GUI_ATTR_DMX_ATOMIC    = 13;
 
 
-final int audioMonitoring_barWidth         = 90;
-final int audioMonitoring_barHeight        = 10;
+final int audioMonitoring_barWidth                 = 90;
+final int audioMonitoring_barHeight                = 10;
 final float audioMonitoring_maxSignalLevel_Kick    = 1.0f;
 final float audioMonitoring_maxSignalLevel_Snare   = 0.3f;
 final float audioMonitoring_maxSignalLevel_Cymbals = 0.3f;
@@ -34323,19 +34315,31 @@ public class ControlFrame extends PApplet {
   controlP5.CheckBox LEDPanelAnimations_animationListCheckBox;
   controlP5.CheckBox CustomDeviceAnimations_animationListCheckBox;
   controlP5.CheckBox DMXStrobeAnimations_animationListCheckBox;
-  controlP5.CheckBox DMXMovingHeadAnimations_animationListCheckBox;
+  controlP5.CheckBox DMXMovingHeadAnimations_Movement_animationListCheckBox;
+  controlP5.CheckBox DMXMovingHeadAnimations_Color_animationListCheckBox;
+  controlP5.CheckBox DMXMovingHeadAnimations_LightStyle_animationListCheckBox;
+  controlP5.CheckBox DMXMovingHeadAnimations_Animations_animationListCheckBox;
   controlP5.Button LEDPanelAnimations_reinitButton;
   controlP5.Button CustomDeviceAnimations_reinitButton;
   controlP5.Button DMXStrobeAnimations_reinitButton;
-  controlP5.Button DMXMovingHeadAnimations_reinitButton;
+  controlP5.Button DMXMovingHeadAnimations_Movement_reinitButton;
+  controlP5.Button DMXMovingHeadAnimations_Color_reinitButton;
+  controlP5.Button DMXMovingHeadAnimations_LightStyle_reinitButton;
+  controlP5.Button DMXMovingHeadAnimations_Animations_reinitButton;
   controlP5.ListBox LEDPanelAnimations_animationListBox;
   controlP5.ListBox CustomDeviceAnimations_animationListBox;
   controlP5.ListBox DMXStrobeAnimations_animationListBox;
-  controlP5.ListBox DMXMovingHeadAnimations_animationListBox;
+  controlP5.ListBox DMXMovingHeadAnimations_Movement_animationListBox;
+  controlP5.ListBox DMXMovingHeadAnimations_Color_animationListBox;
+  controlP5.ListBox DMXMovingHeadAnimations_LightStyle_animationListBox;
+  controlP5.ListBox DMXMovingHeadAnimations_Animations_animationListBox;
   controlP5.Textarea LEDPanelAnimations_currentAnimationDescription;
   controlP5.Textarea CustomDeviceAnimations_currentAnimationDescription;
   controlP5.Textarea DMXStrobeAnimations_currentAnimationDescription;
-  controlP5.Textarea DMXMovingHeadAnimations_currentAnimationDescription;
+  controlP5.Textarea DMXMovingHeadAnimations_Movement_currentAnimationDescription;
+  controlP5.Textarea DMXMovingHeadAnimations_Color_currentAnimationDescription;
+  controlP5.Textarea DMXMovingHeadAnimations_LightStyle_currentAnimationDescription;
+  controlP5.Textarea DMXMovingHeadAnimations_Animations_currentAnimationDescription;
   
   Group effectsInfo;
   
@@ -34947,9 +34951,13 @@ public class ControlFrame extends PApplet {
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DISPLAY_EFFECT              + " | " + getStringFromNoteInt(PITCH_DISPLAY_EFFECT             ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_STROBE        + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_STROBE       ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_PAR           + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR          ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_1 + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_1) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_2 + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_2) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_3 + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_3) + "\n" +
+
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION  + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR       + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR      ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1 + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2 + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2) + "\n" +
+
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK1         + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK1        ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK2         + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK2        ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK3         + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK3        ) + "\n" +
@@ -35173,8 +35181,8 @@ public class ControlFrame extends PApplet {
     int spacingColumn = 60;
     int leftOffset    = 6;
     
-    int groupWidth = 576;
-    
+    int groupWidth    = 576;
+    int groupHeight   = 40;
     
     Group LEDPanelAnimations_animListGroup = cp5.addGroup("Animation list - LED panels")
                                                 .setPosition(gui_spacing,5*height/10 - 15)
@@ -35182,7 +35190,7 @@ public class ControlFrame extends PApplet {
                                                 .activateEvent(true)
                                                 .disableCollapse() 
                                                 .setBackgroundColor(color(255,80))
-                                                .setBackgroundHeight(height/4-20)
+                                                .setBackgroundHeight(height/4-35)
                                                 .setLabel("Animation list - LED panels")
                                                 ;
 
@@ -35259,7 +35267,7 @@ public class ControlFrame extends PApplet {
     
     LEDPanelAnimations_currentAnimationDescription = cp5.addTextarea("Current Animation Description - LED Panels")
                                                         .setPosition(3*LEDPanelAnimations_animListGroup.getWidth()/5, 6*toggleHeight + 6*spacingRow)
-                                                        .setSize(LEDPanelAnimations_animListGroup.getWidth() - LEDPanelAnimations_animationListBox.getWidth() - 3*leftOffset, LEDPanelAnimations_animListGroup.getBackgroundHeight() - (7*toggleHeight + 6*spacingRow) + 2)
+                                                        .setSize(LEDPanelAnimations_animListGroup.getWidth() - LEDPanelAnimations_animationListBox.getWidth() - 3*leftOffset, LEDPanelAnimations_animListGroup.getBackgroundHeight() - (7*toggleHeight + 6*spacingRow))
                                                         .setColor(color(255))
                                                         //.setFont(createFont("",8,true))
                                                         .setFont(minimlFont)
@@ -35283,21 +35291,22 @@ public class ControlFrame extends PApplet {
   public void createCustomDeviceAndDMXAccordion(){
 
     int accordionPosX  = gui_spacing;
-    int accordionPosY  = 22*height/30 - 10;
+    int accordionPosY  = 21*height/30 - 8;
     int accordionWidth = 576;
     
     Group CustomDevices = createCustomDeviceAnimationListGroup();
     Group DMXStrobe = createDMXStrobeAnimationListGroup();
-    Group DMXMovingHead = createDMXMovingHeadAnimationListGroup();
+    ArrayList<Group> DMXMovingHead = createDMXMovingHeadAnimationListGroup();
     
-    // Create an accordion containing two elements : the DMX and the Custom Device animation lists
     customDevicesDMXAnimationListsAccordion = cp5.addAccordion("Animation Lists")
                                                  .setPosition(accordionPosX, accordionPosY)
                                                  .setWidth(accordionWidth)
                                                  .addItem(CustomDevices)
                                                  .addItem(DMXStrobe)
-                                                 .addItem(DMXMovingHead)
                                                  ;
+    for (Group movingHeadGroup: DMXMovingHead) {
+      customDevicesDMXAnimationListsAccordion.addItem(movingHeadGroup);
+    }
                    
         
     // when in SINGLE mode, only 1 accordion  
@@ -35317,7 +35326,8 @@ public class ControlFrame extends PApplet {
     int spacingColumn = 75;
     int leftOffset    = 6;
     
-    int groupWidth = 576;
+    int groupWidth    = 576;
+    int groupHeight   = height/6 + 15;
     
     Group CustomDeviceAnimations_animListGroup = cp5.addGroup("Animation list - Custom Devices")
 //                                                    .setPosition(gui_spacing,22*height/30 )
@@ -35325,7 +35335,7 @@ public class ControlFrame extends PApplet {
                                                     .activateEvent(true)
 //                                                    .disableCollapse() 
                                                     .setBackgroundColor(color(255,80))
-                                                    .setBackgroundHeight(height/4-30)
+                                                    .setBackgroundHeight(groupHeight)
                                                     .setLabel("Animation list - Custom devices")
                                                     ;
 
@@ -35429,14 +35439,15 @@ public class ControlFrame extends PApplet {
     int spacingColumn = 75;
     int leftOffset    = 6;
     
-    int groupWidth = 576;
+    int groupWidth    = 576;
+    int groupHeight   = height/6 + 15;
     
     Group DMXAnimations_animListGroup = cp5.addGroup("Animation list - DMX Strobe Devices")
                                                     .setWidth(groupWidth)
                                                     .activateEvent(true) 
                                                     .setBackgroundColor(color(255,80))
-                                                    .setBackgroundHeight(height/4-30)
-                                                    .setLabel("Animation list - DMX devices")
+                                                    .setBackgroundHeight(groupHeight)
+                                                    .setLabel("Animation list - DMX Strobe devices")
                                                     ;
 
     DMXStrobeAnimations_reinitButton = cp5.addButton("Reinit DMX Strobe list")
@@ -35486,7 +35497,7 @@ public class ControlFrame extends PApplet {
     //Initialize the filtered animation list with all the available animations
     DMXStrobeAnimations_animationListBox = cp5.addListBox("Filtered DMX Strobe Animation List")
                                                  .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
-                                                 .setSize(3*DMXAnimations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
+                                                 .setSize(3*DMXAnimations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_animListGroup.getBackgroundHeight() - (3*toggleHeight + 2*spacingRow) + 1)
                                                  .addItems(filteredAnimationsStringList)
                                                  .hideBar() 
                                                  .disableCollapse()
@@ -35514,24 +35525,46 @@ public class ControlFrame extends PApplet {
     return DMXAnimations_animListGroup;
   }
 
-  public Group createDMXMovingHeadAnimationListGroup() {
+  public ArrayList<Group> createDMXMovingHeadAnimationListGroup() {
     int toggleWidth   = 12;
     int toggleHeight  = 9;
     int spacingRow    = 3;
     int spacingColumn = 75;
     int leftOffset    = 6;
     
-    int groupWidth = 576;
+    int groupWidth    = 576;
+    int groupHeight   = height/6 + 15;
     
-    Group DMXAnimations_animListGroup = cp5.addGroup("Animation list - DMX Moving Head Devices")
+    Group DMXAnimations_Movement_animListGroup = cp5.addGroup("Animation list - DMX Moving Head Devices - Set Init Direction")
                                                     .setWidth(groupWidth)
                                                     .activateEvent(true) 
                                                     .setBackgroundColor(color(255,80))
-                                                    .setBackgroundHeight(height/4-30)
-                                                    .setLabel("Animation list - DMX Moving Head devices")
+                                                    .setBackgroundHeight(groupHeight)
+                                                    .setLabel("Animation list - DMX Moving Head devices - Set Init Direction")
+                                                    ;
+    Group DMXAnimations_Color_animListGroup = cp5.addGroup("Animation list - DMX Moving Head Devices - Set Color")
+                                                    .setWidth(groupWidth)
+                                                    .activateEvent(true) 
+                                                    .setBackgroundColor(color(255,80))
+                                                    .setBackgroundHeight(groupHeight)
+                                                    .setLabel("Animation list - DMX Moving Head devices - Set Color")
+                                                    ;
+    Group DMXAnimations_LightStyle_animListGroup = cp5.addGroup("Animation list - DMX Moving Head Devices - Set Light Style")
+                                                    .setWidth(groupWidth)
+                                                    .activateEvent(true) 
+                                                    .setBackgroundColor(color(255,80))
+                                                    .setBackgroundHeight(groupHeight)
+                                                    .setLabel("Animation list - DMX Moving Head devices - Set Light Style")
+                                                    ;
+    Group DMXAnimations_Animations_animListGroup = cp5.addGroup("Animation list - DMX Moving Head Devices - Perform Animations")
+                                                    .setWidth(groupWidth)
+                                                    .activateEvent(true) 
+                                                    .setBackgroundColor(color(255,80))
+                                                    .setBackgroundHeight(groupHeight)
+                                                    .setLabel("Animation list - DMX Moving Head devices - Perform Animations")
                                                     ;
 
-    DMXMovingHeadAnimations_reinitButton = cp5.addButton("Reinit DMX Moving Head list")
+    DMXMovingHeadAnimations_Movement_reinitButton = cp5.addButton("Reinit DMX Moving Head list - Set Init Direction")
                                              .setValue(0)
                                              .setCaptionLabel("Reinit")
                                              .setPosition(leftOffset + 6*spacingColumn + 6*toggleWidth, 4*toggleHeight + 3*spacingRow)
@@ -35539,71 +35572,217 @@ public class ControlFrame extends PApplet {
                                              .setColorBackground(color(110,0,0))
                                              .setColorForeground(color(160,0,0))
                                              .setColorActive(color(255,0,0))
-                                             .setGroup(DMXAnimations_animListGroup)
+                                             .setGroup(DMXAnimations_Movement_animListGroup)
                                              ;
-    // Center the label
-    DMXMovingHeadAnimations_reinitButton.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
-    
-    DMXMovingHeadAnimations_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations")
-                                                  .setPosition(leftOffset,toggleHeight)
-                                                  .setSize(toggleWidth,toggleHeight)
-                                                  .setItemsPerRow(7)
-                                                  .setSpacingColumn(spacingColumn)
-                                                  .setSpacingRow(spacingRow)
-                                                  .setColorForeground(color(120,0,0))
-                                                  .setColorActive(color(160,0,0))
-                                                  .setColorLabel(color(255))
-                                                  .addItem("All ",        0)  //Small trick, controlP5 does not allow two elements with the same name
-                                                  .addItem("Right ",      1)
-                                                  .addItem("Left ",       2)
-                                                  /*.addItem("Center",      3)
-                                                  .addItem("rhythmic",    4)
-                                                  .addItem("Strobe",      5)
-                                                  .addItem("Par",         6)
-                                                  .addItem("very slow ",  7)    
-                                                  .addItem("slow ",       8)
-                                                  .addItem("medium ",     9)
-                                                  .addItem("fast ",       10)
-                                                  .addItem("very fast ",  11)
-                                                  .addItem("audio",       12)
-                                                  .addItem("Atomic",      13)*/
-                                                  .setGroup(DMXAnimations_animListGroup)
-                                                  ;
+    DMXMovingHeadAnimations_Color_reinitButton = cp5.addButton("Reinit DMX Moving Head list - Set Color")
+                                             .setValue(0)
+                                             .setCaptionLabel("Reinit")
+                                             .setPosition(leftOffset + 6*spacingColumn + 6*toggleWidth, 4*toggleHeight + 3*spacingRow)
+                                             .setSize(40, toggleHeight)
+                                             .setColorBackground(color(110,0,0))
+                                             .setColorForeground(color(160,0,0))
+                                             .setColorActive(color(255,0,0))
+                                             .setGroup(DMXAnimations_Color_animListGroup)
+                                             ;
+    DMXMovingHeadAnimations_LightStyle_reinitButton = cp5.addButton("Reinit DMX Moving Head list - Set Light Style")
+                                             .setValue(0)
+                                             .setCaptionLabel("Reinit")
+                                             .setPosition(leftOffset + 6*spacingColumn + 6*toggleWidth, 4*toggleHeight + 3*spacingRow)
+                                             .setSize(40, toggleHeight)
+                                             .setColorBackground(color(110,0,0))
+                                             .setColorForeground(color(160,0,0))
+                                             .setColorActive(color(255,0,0))
+                                             .setGroup(DMXAnimations_LightStyle_animListGroup)
+                                             ;
+    DMXMovingHeadAnimations_Animations_reinitButton = cp5.addButton("Reinit DMX Moving Head list - Perform Animations")
+                                             .setValue(0)
+                                             .setCaptionLabel("Reinit")
+                                             .setPosition(leftOffset + 6*spacingColumn + 6*toggleWidth, 4*toggleHeight + 3*spacingRow)
+                                             .setSize(40, toggleHeight)
+                                             .setColorBackground(color(110,0,0))
+                                             .setColorForeground(color(160,0,0))
+                                             .setColorActive(color(255,0,0))
+                                             .setGroup(DMXAnimations_Animations_animListGroup)
+                                             ;
 
+    // Center the label
+    DMXMovingHeadAnimations_Movement_reinitButton.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    DMXMovingHeadAnimations_Color_reinitButton.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    DMXMovingHeadAnimations_LightStyle_reinitButton.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    DMXMovingHeadAnimations_Animations_reinitButton.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
     
-    List<String> filteredAnimationsStringList = new ArrayList<String>();
-    for (Attribute attr: DMXMovingHeadAttributes) {
-      filteredAnimationsStringList.add(attr.animationNbr + ": " + attr.name);
+    DMXMovingHeadAnimations_Movement_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Init Direction")
+                                                                .setPosition(leftOffset,toggleHeight)
+                                                                .setSize(toggleWidth,toggleHeight)
+                                                                .setItemsPerRow(7)
+                                                                .setSpacingColumn(spacingColumn)
+                                                                .setSpacingRow(spacingRow)
+                                                                .setColorForeground(color(120,0,0))
+                                                                .setColorActive(color(160,0,0))
+                                                                .setColorLabel(color(255))
+                                                                .addItem("All ",        0)  //Small trick, controlP5 does not allow two elements with the same name
+                                                                .addItem("Right ",      1)
+                                                                .addItem("Left ",       2)
+                                                                .setGroup(DMXAnimations_Movement_animListGroup)
+                                                                ;
+
+    DMXMovingHeadAnimations_Color_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Color")
+                                                                .setPosition(leftOffset,toggleHeight)
+                                                                .setSize(toggleWidth,toggleHeight)
+                                                                .setItemsPerRow(7)
+                                                                .setSpacingColumn(spacingColumn)
+                                                                .setSpacingRow(spacingRow)
+                                                                .setColorForeground(color(120,0,0))
+                                                                .setColorActive(color(160,0,0))
+                                                                .setColorLabel(color(255))
+                                                                .addItem("Attr1",        0)  //Small trick, controlP5 does not allow two elements with the same name
+                                                                .addItem("Attr2",        1)
+                                                                .addItem("Attr3",        2)
+                                                                .setGroup(DMXAnimations_Color_animListGroup)
+                                                                ;
+    
+    DMXMovingHeadAnimations_LightStyle_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Light Style")
+                                                                .setPosition(leftOffset,toggleHeight)
+                                                                .setSize(toggleWidth,toggleHeight)
+                                                                .setItemsPerRow(7)
+                                                                .setSpacingColumn(spacingColumn)
+                                                                .setSpacingRow(spacingRow)
+                                                                .setColorForeground(color(120,0,0))
+                                                                .setColorActive(color(160,0,0))
+                                                                .setColorLabel(color(255))
+                                                                .addItem("Attr4",        0)  //Small trick, controlP5 does not allow two elements with the same name
+                                                                .addItem("Attr5",        1)
+                                                                .addItem("Attr6",        2)
+                                                                .setGroup(DMXAnimations_LightStyle_animListGroup)
+                                                                ;
+
+    DMXMovingHeadAnimations_Animations_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Perform Animations")
+                                                                .setPosition(leftOffset,toggleHeight)
+                                                                .setSize(toggleWidth,toggleHeight)
+                                                                .setItemsPerRow(7)
+                                                                .setSpacingColumn(spacingColumn)
+                                                                .setSpacingRow(spacingRow)
+                                                                .setColorForeground(color(120,0,0))
+                                                                .setColorActive(color(160,0,0))
+                                                                .setColorLabel(color(255))
+                                                                .addItem("Attr7",        0)  //Small trick, controlP5 does not allow two elements with the same name
+                                                                .addItem("Attr8",        1)
+                                                                .addItem("Attr9",        2)
+                                                                .setGroup(DMXAnimations_Animations_animListGroup)
+                                                                ;
+
+
+    List<String> filteredAnimationsStringList_Movement   = new ArrayList<String>();
+    List<String> filteredAnimationsStringList_Color      = new ArrayList<String>();
+    List<String> filteredAnimationsStringList_LightStyle = new ArrayList<String>();
+    List<String> filteredAnimationsStringList_Animations = new ArrayList<String>();
+
+    for (Attribute attr: DMXMovingHead_MovementAttributes) {
+      filteredAnimationsStringList_Movement.add(attr.animationNbr + ": " + attr.name);
     }
+    for (Attribute attr: DMXMovingHead_ColorAttributes) {
+      filteredAnimationsStringList_Color.add(attr.animationNbr + ": " + attr.name);
+    }
+    for (Attribute attr: DMXMovingHead_LightStyleAttributes) {
+      filteredAnimationsStringList_LightStyle.add(attr.animationNbr + ": " + attr.name);
+    }
+    for (Attribute attr: DMXMovingHead_AnimationAttributes) {
+      filteredAnimationsStringList_Animations.add(attr.animationNbr + ": " + attr.name);
+    }
+
     //Initialize the filtered animation list with all the available animations
-    DMXMovingHeadAnimations_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List")
-                                                 .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
-                                                 .setSize(3*DMXAnimations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
-                                                 .addItems(filteredAnimationsStringList)
-                                                 .hideBar() 
-                                                 .disableCollapse()
-                                                 .moveTo(DMXAnimations_animListGroup)
-                                                 ;
+    DMXMovingHeadAnimations_Movement_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Set Init Direction")
+                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
+                                                           .setSize(3*DMXAnimations_Movement_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Movement_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
+                                                           .addItems(filteredAnimationsStringList_Movement)
+                                                           .hideBar() 
+                                                           .disableCollapse()
+                                                           .moveTo(DMXAnimations_Movement_animListGroup)
+                                                           ;
+    DMXMovingHeadAnimations_Color_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Set Color")
+                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
+                                                           .setSize(3*DMXAnimations_Color_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Color_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
+                                                           .addItems(filteredAnimationsStringList_Color)
+                                                           .hideBar() 
+                                                           .disableCollapse()
+                                                           .moveTo(DMXAnimations_Color_animListGroup)
+                                                           ;
+    DMXMovingHeadAnimations_LightStyle_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Set Light Style")
+                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
+                                                           .setSize(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_LightStyle_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
+                                                           .addItems(filteredAnimationsStringList_LightStyle)
+                                                           .hideBar() 
+                                                           .disableCollapse()
+                                                           .moveTo(DMXAnimations_LightStyle_animListGroup)
+                                                           ;
+    DMXMovingHeadAnimations_Animations_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Perform Animations")
+                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
+                                                           .setSize(3*DMXAnimations_Animations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Animations_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
+                                                           .addItems(filteredAnimationsStringList_Animations)
+                                                           .hideBar() 
+                                                           .disableCollapse()
+                                                           .moveTo(DMXAnimations_Animations_animListGroup)
+                                                           ;
     
-    DMXMovingHeadAnimations_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description")
-                                                            .setPosition(3*DMXAnimations_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_animListGroup.getWidth() - DMXMovingHeadAnimations_animationListCheckBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_animationListCheckBox.getBackgroundHeight() - toggleHeight - spacingRow)
+    DMXMovingHeadAnimations_Movement_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Set Init Direction")
+                                                            .setPosition(3*DMXAnimations_Movement_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
+                                                            .setSize(DMXAnimations_Movement_animListGroup.getWidth() - DMXMovingHeadAnimations_Movement_animationListCheckBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Movement_animationListCheckBox.getBackgroundHeight() - toggleHeight - spacingRow)
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
                                                             .setColorBackground(color(255,90))
                                                             .setColorForeground(color(255,90))
-                                                            .moveTo(DMXAnimations_animListGroup)
+                                                            .moveTo(DMXAnimations_Movement_animListGroup)
                                                             ;
+    DMXMovingHeadAnimations_Color_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Set Color")
+                                                            .setPosition(3*DMXAnimations_Color_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
+                                                            .setSize(DMXAnimations_Color_animListGroup.getWidth() - DMXMovingHeadAnimations_Color_animationListCheckBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Color_animationListCheckBox.getBackgroundHeight() - toggleHeight - spacingRow)
+                                                            .setColor(color(255))
+                                                            .setFont(minimlFont)
+                                                            .hideScrollbar()
+                                                            .setColorBackground(color(255,90))
+                                                            .setColorForeground(color(255,90))
+                                                            .moveTo(DMXAnimations_Color_animListGroup)
+                                                            ;
+    DMXMovingHeadAnimations_LightStyle_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Set Light Style")
+                                                            .setPosition(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
+                                                            .setSize(DMXAnimations_LightStyle_animListGroup.getWidth() - DMXMovingHeadAnimations_LightStyle_animationListCheckBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_LightStyle_animationListCheckBox.getBackgroundHeight() - toggleHeight - spacingRow)
+                                                            .setColor(color(255))
+                                                            .setFont(minimlFont)
+                                                            .hideScrollbar()
+                                                            .setColorBackground(color(255,90))
+                                                            .setColorForeground(color(255,90))
+                                                            .moveTo(DMXAnimations_LightStyle_animListGroup)
+                                                            ;
+    DMXMovingHeadAnimations_Animations_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Perform Animations")
+                                                            .setPosition(3*DMXAnimations_Animations_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
+                                                            .setSize(DMXAnimations_Animations_animListGroup.getWidth() - DMXMovingHeadAnimations_Animations_animationListCheckBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Animations_animationListCheckBox.getBackgroundHeight() - toggleHeight - spacingRow)
+                                                            .setColor(color(255))
+                                                            .setFont(minimlFont)
+                                                            .hideScrollbar()
+                                                            .setColorBackground(color(255,90))
+                                                            .setColorForeground(color(255,90))
+                                                            .moveTo(DMXAnimations_Animations_animListGroup)
+                                                            ;
+
+
     String textDescription = "Current DMX Moving Head animation description \n"
                                       + "Select an animation in the list\n"
                                       + "\n"
                                       + "Animation number : \n"
                                       + "Corresponding note/velocity : \n"
                                       + "Attributes: \n";
-    DMXMovingHeadAnimations_currentAnimationDescription.setText(textDescription.toUpperCase());    
-        
-    return DMXAnimations_animListGroup;
+    DMXMovingHeadAnimations_Movement_currentAnimationDescription.setText(textDescription.toUpperCase());
+    DMXMovingHeadAnimations_Color_currentAnimationDescription.setText(textDescription.toUpperCase());
+    DMXMovingHeadAnimations_LightStyle_currentAnimationDescription.setText(textDescription.toUpperCase());
+    DMXMovingHeadAnimations_Animations_currentAnimationDescription.setText(textDescription.toUpperCase());
+    
+    ArrayList<Group> groups = new ArrayList<Group>();
+    groups.add(DMXAnimations_Movement_animListGroup);
+    groups.add(DMXAnimations_Color_animListGroup);
+    groups.add(DMXAnimations_LightStyle_animListGroup);
+    groups.add(DMXAnimations_Animations_animListGroup);
+    return groups;
   }
   
   public void rebuildFilteredLEDPanelAnimationList(float[] checkBoxArrayValue) {
@@ -35673,14 +35852,44 @@ public class ControlFrame extends PApplet {
     DMXStrobeAnimations_animationListBox.addItems(filteredAnimationsStringList);
   }
 
-  public void rebuildFilteredDMXMovingHeadAnimationList(float[] checkBoxArrayValue) {
+  public void rebuildFilteredDMXMovingHead_Movement_AnimationList(float[] checkBoxArrayValue) {
 
-    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXMovingHeadAttributes);
+    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXMovingHead_MovementAttributes);
 
-    for (String item[]: DMXMovingHeadAnimations_animationListBox.getListBoxItems()) {
-      DMXMovingHeadAnimations_animationListBox.removeItem(item[0]);
+    for (String item[]: DMXMovingHeadAnimations_Movement_animationListBox.getListBoxItems()) {
+      DMXMovingHeadAnimations_Movement_animationListBox.removeItem(item[0]);
     }
-    DMXMovingHeadAnimations_animationListBox.addItems(filteredAnimationsStringList);
+    DMXMovingHeadAnimations_Movement_animationListBox.addItems(filteredAnimationsStringList);
+  }
+
+  public void rebuildFilteredDMXMovingHead_Color_AnimationList(float[] checkBoxArrayValue) {
+
+    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXMovingHead_ColorAttributes);
+
+    for (String item[]: DMXMovingHeadAnimations_Color_animationListBox.getListBoxItems()) {
+      DMXMovingHeadAnimations_Color_animationListBox.removeItem(item[0]);
+    }
+    DMXMovingHeadAnimations_Color_animationListBox.addItems(filteredAnimationsStringList);
+  }
+
+  public void rebuildFilteredDMXMovingHead_LightStyle_AnimationList(float[] checkBoxArrayValue) {
+
+    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXMovingHead_LightStyleAttributes);
+
+    for (String item[]: DMXMovingHeadAnimations_LightStyle_animationListBox.getListBoxItems()) {
+      DMXMovingHeadAnimations_LightStyle_animationListBox.removeItem(item[0]);
+    }
+    DMXMovingHeadAnimations_LightStyle_animationListBox.addItems(filteredAnimationsStringList);
+  }
+
+  public void rebuildFilteredDMXMovingHead_Animations_AnimationList(float[] checkBoxArrayValue) {
+
+    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXMovingHead_AnimationAttributes);
+
+    for (String item[]: DMXMovingHeadAnimations_Animations_animationListBox.getListBoxItems()) {
+      DMXMovingHeadAnimations_Animations_animationListBox.removeItem(item[0]);
+    }
+    DMXMovingHeadAnimations_Animations_animationListBox.addItems(filteredAnimationsStringList);
   }
 
   public List<String> getFilteredAnimationsStringList(float[] checkBoxArrayValue, ArrayList<Attribute> attrList) {
@@ -35723,10 +35932,28 @@ public class ControlFrame extends PApplet {
     setupDMXAnimation_strobe();
   }
 
+  public void gui_loadDMXAnimation_movingHead_Movement(int animNbr) {
+    dmxAutomaticControl = true;
+    dmxAnimationNumber_movingHead_initDirection = animNbr;
+    setupDMXAnimation_movingHead_initDirection();
+  }
+
+  public void gui_loadDMXAnimation_movingHead_Color(int animNbr) {
+    dmxAutomaticControl = true;
+    dmxAnimationNumber_movingHead_setColor = animNbr;
+    setupDMXAnimation_movingHead_setColor();
+  }
+
+  public void gui_loadDMXAnimation_movingHead_LightStyle(int animNbr) {
+    dmxAutomaticControl = true;
+    dmxAnimationNumber_movingHead_setColor = animNbr;
+    setupDMXAnimation_movingHead_setColor();
+  }
+
   public void gui_loadDMXAnimation_movingHead(int animNbr) {
     dmxAutomaticControl = true;
-    dmxAnimationNumber_movingHead = animNbr;
-    setupDMXAnimation_movingHead();
+    dmxAnimationNumber_movingHead_setAnimation = animNbr;
+    setupDMXAnimation_movingHeadAnimation();
   }
   
   ////////////////////////////////////////////////////////
@@ -36547,8 +36774,17 @@ public class ControlFrame extends PApplet {
       else if (theEvent.getName() == "Attributes - DMX Strobe animations") {
         rebuildFilteredDMXStrobeAnimationList(DMXStrobeAnimations_animationListCheckBox.getArrayValue());        
       }
-      else if (theEvent.getName() == "Attributes - DMX Moving Head animations") {
-        rebuildFilteredDMXMovingHeadAnimationList(DMXMovingHeadAnimations_animationListCheckBox.getArrayValue());        
+      else if (theEvent.getName() == "Attributes - DMX Moving Head animations - Set Init Direction") {
+        rebuildFilteredDMXMovingHead_Movement_AnimationList(DMXMovingHeadAnimations_Movement_animationListCheckBox.getArrayValue());        
+      }
+      else if (theEvent.getName() == "Attributes - DMX Moving Head animations - Set Color") {
+        rebuildFilteredDMXMovingHead_Color_AnimationList(DMXMovingHeadAnimations_Color_animationListCheckBox.getArrayValue());        
+      }
+      else if (theEvent.getName() == "Attributes - DMX Moving Head animations - Set Light Style") {
+        rebuildFilteredDMXMovingHead_LightStyle_AnimationList(DMXMovingHeadAnimations_LightStyle_animationListCheckBox.getArrayValue());        
+      }
+      else if (theEvent.getName() == "Attributes - DMX Moving Head animations - Perform Animations") {
+        rebuildFilteredDMXMovingHead_Animations_AnimationList(DMXMovingHeadAnimations_Animations_animationListCheckBox.getArrayValue());        
       }
       //With listBoxes, it is necessary to also check if theEvent.isGroup()
       else if (theEvent.getName() == "Filtered LED Panel Animation List" && theEvent.isGroup()) {
@@ -36614,22 +36850,85 @@ public class ControlFrame extends PApplet {
         gui_loadDMXAnimation_strobe(animNbr);
 
       }
-      else if (theEvent.getName() == "Filtered DMX Moving Head Animation List") {
-        int selectedVal = PApplet.parseInt(DMXMovingHeadAnimations_animationListBox.getValue());
-        String selectedItem =  DMXMovingHeadAnimations_animationListBox.getListBoxItems()[selectedVal][0];
+      else if (theEvent.getName() == "Filtered DMX Moving Head Animation List - Set Init Direction") {
+        int selectedVal = PApplet.parseInt(DMXMovingHeadAnimations_Movement_animationListBox.getValue());
+        String selectedItem =  DMXMovingHeadAnimations_Movement_animationListBox.getListBoxItems()[selectedVal][0];
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
 
         //Update the description
         //Note : get animNbr - 1, because unlike for the LED Panel animations, there is no 0
         String textDescription = "Current moving head animation description \n"
-                                      + DMXMovingHeadAttributes.get(animNbr - 1).name + "\n"
+                                      + DMXMovingHead_MovementAttributes.get(animNbr - 1).name + "\n"
                                       + "\n"
-                                      + "Animation number : " + DMXMovingHeadAttributes.get(animNbr - 1).animationNbr + "\n"
-                                      + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_movingHead(DMXMovingHeadAttributes.get(animNbr - 1).animationNbr) + "\n"
+                                      + "Animation number : " + DMXMovingHead_MovementAttributes.get(animNbr - 1).animationNbr + "\n"
+                                      + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_movingHead_Movement(DMXMovingHead_MovementAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
-                                      + DMXMovingHeadAttributes.get(animNbr - 1).attributes;
-        DMXMovingHeadAnimations_currentAnimationDescription.setText(textDescription);
+                                      + DMXMovingHead_MovementAttributes.get(animNbr - 1).attributes;
+        DMXMovingHeadAnimations_Movement_currentAnimationDescription.setText(textDescription);
+        
+        //Load the animation
+        gui_loadDMXAnimation_movingHead_Movement(animNbr);
+
+      }
+      else if (theEvent.getName() == "Filtered DMX Moving Head Animation List - Set Color") {
+        int selectedVal = PApplet.parseInt(DMXMovingHeadAnimations_Color_animationListBox.getValue());
+        String selectedItem =  DMXMovingHeadAnimations_Color_animationListBox.getListBoxItems()[selectedVal][0];
+        String[] selectedItemSplit = split(selectedItem, ":");
+        int animNbr = Integer.parseInt(selectedItemSplit[0]);
+
+        //Update the description
+        //Note : get animNbr - 1, because unlike for the LED Panel animations, there is no 0
+        String textDescription = "Current moving head animation description \n"
+                                      + DMXMovingHead_ColorAttributes.get(animNbr - 1).name + "\n"
+                                      + "\n"
+                                      + "Animation number : " + DMXMovingHead_ColorAttributes.get(animNbr - 1).animationNbr + "\n"
+                                      + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_movingHead_Color(DMXMovingHead_ColorAttributes.get(animNbr - 1).animationNbr) + "\n"
+                                      + "Attributes:\n"
+                                      + DMXMovingHead_ColorAttributes.get(animNbr - 1).attributes;
+        DMXMovingHeadAnimations_Color_currentAnimationDescription.setText(textDescription);
+        
+        //Load the animation
+        gui_loadDMXAnimation_movingHead_Color(animNbr);
+
+      }
+      else if (theEvent.getName() == "Filtered DMX Moving Head Animation List - Set Light Style") {
+        int selectedVal = PApplet.parseInt(DMXMovingHeadAnimations_LightStyle_animationListBox.getValue());
+        String selectedItem =  DMXMovingHeadAnimations_LightStyle_animationListBox.getListBoxItems()[selectedVal][0];
+        String[] selectedItemSplit = split(selectedItem, ":");
+        int animNbr = Integer.parseInt(selectedItemSplit[0]);
+
+        //Update the description
+        //Note : get animNbr - 1, because unlike for the LED Panel animations, there is no 0
+        String textDescription = "Current moving head animation description \n"
+                                      + DMXMovingHead_LightStyleAttributes.get(animNbr - 1).name + "\n"
+                                      + "\n"
+                                      + "Animation number : " + DMXMovingHead_LightStyleAttributes.get(animNbr - 1).animationNbr + "\n"
+                                      + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_movingHead_LightStyle(DMXMovingHead_LightStyleAttributes.get(animNbr - 1).animationNbr) + "\n"
+                                      + "Attributes:\n"
+                                      + DMXMovingHead_LightStyleAttributes.get(animNbr - 1).attributes;
+        DMXMovingHeadAnimations_LightStyle_currentAnimationDescription.setText(textDescription);
+        
+        //Load the animation
+        gui_loadDMXAnimation_movingHead_LightStyle(animNbr);
+
+      }
+      else if (theEvent.getName() == "Filtered DMX Moving Head Animation List - Perform Animations") {
+        int selectedVal = PApplet.parseInt(DMXMovingHeadAnimations_Movement_animationListBox.getValue());
+        String selectedItem =  DMXMovingHeadAnimations_Movement_animationListBox.getListBoxItems()[selectedVal][0];
+        String[] selectedItemSplit = split(selectedItem, ":");
+        int animNbr = Integer.parseInt(selectedItemSplit[0]);
+
+        //Update the description
+        //Note : get animNbr - 1, because unlike for the LED Panel animations, there is no 0
+        String textDescription = "Current moving head animation description \n"
+                                      + DMXMovingHead_AnimationAttributes.get(animNbr - 1).name + "\n"
+                                      + "\n"
+                                      + "Animation number : " + DMXMovingHead_AnimationAttributes.get(animNbr - 1).animationNbr + "\n"
+                                      + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_movingHead_Animation(DMXMovingHead_AnimationAttributes.get(animNbr - 1).animationNbr) + "\n"
+                                      + "Attributes:\n"
+                                      + DMXMovingHead_AnimationAttributes.get(animNbr - 1).attributes;
+        DMXMovingHeadAnimations_Animations_currentAnimationDescription.setText(textDescription);
         
         //Load the animation
         gui_loadDMXAnimation_movingHead(animNbr);
@@ -37759,17 +38058,21 @@ int PITCH_KNOB_WHITENOISE      = 7;
 
 
 //Pitches for messages coming from the DAW - Manual mode
-final int PITCH_SET_AUTOMODE_OFF            = 90;
-final int PITCH_SET_AUTOMODE_ON             = 91;
+final int PITCH_SET_AUTOMODE_OFF                          = 90;
+final int PITCH_SET_AUTOMODE_ON                           = 91;
 
-final int PITCH_LOAD_ANIMATION_BANK1_TEMP   = 96;
-final int PITCH_LOAD_ANIMATION_BANK2_TEMP   = 97;
-final int PITCH_LOAD_ANIMATION_BANK3_TEMP   = 98;
-final int PITCH_LOAD_ANIMATION_BANK4_TEMP   = 99;
+final int PITCH_LOAD_ANIMATION_BANK1_TEMP                 = 96;
+final int PITCH_LOAD_ANIMATION_BANK2_TEMP                 = 97;
+final int PITCH_LOAD_ANIMATION_BANK3_TEMP                 = 98;
+final int PITCH_LOAD_ANIMATION_BANK4_TEMP                 = 99;
 
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_1 = 103;    //DMX bank used for the moving head effects
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_2 = 104;    //DMX bank used for the moving head effects
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_3 = 105;    //DMX bank used for the moving head effects
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION  = 101;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR       = 102;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE = 103;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1 = 104;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2 = 105;
+
+
 final int PITCH_DMX_ANIMATION_STROBE        = 106;    //DMX bank used for the strobes
 final int PITCH_DMX_ANIMATION_PAR           = 107;    //DMX bank used for the PAR effects
 
@@ -37918,34 +38221,31 @@ public void noteOn(int channel, int pitch, int velocity, long timestamp, String 
 public void processMidiInfo_semiAutoMode(int pitch, int velocity) {
   switch (pitch) {
     //Standard mode, MIDI incoming from Ableton
-    case PITCH_SET_AUTOMODE_OFF:            setAutomaticModeOff();break;                                             //F#5   - Disable the automatic mode
-    case PITCH_SET_AUTOMODE_ON:             setAutomaticModeOn();break;                                              //G5    - Enable the automatic mode
-    
-    case PITCH_DMX_ANIMATION_STROBE:        loadDMXAnimation_strobe(velocity); break;                                //A#7   - Load an animation using DMX devices - Strobe bank
-    case PITCH_DMX_ANIMATION_PAR:           loadDMXAnimation_par(velocity); break;                                   //B7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_1: loadDMXAnimation_movingHead_1(velocity); break;                          //G7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_2: loadDMXAnimation_movingHead_2(velocity); break;                          //G#7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_3: loadDMXAnimation_movingHead_3(velocity); break;                          //A7
-     
-    case PITCH_ENABLE_MAN_INPUT:            enableManualInput();break;                                               //D8
-    case PITCH_DISABLE_MAN_INPUT:           disableManualInput();break;                                              //D#8
-     
-    case PITCH_CUSTOM_DEVICE_BANK1:         loadCustomDeviceAnimation1(velocity);break;                              //A#8   - Load an animation for the custom devices
-    case PITCH_CUSTOM_DEVICE_BANK2:         loadCustomDeviceAnimation2(velocity);break;                              //B8
-    case PITCH_CUSTOM_DEVICE_BANK3:         loadCustomDeviceAnimation3(velocity);break;                              //C9
-    case PITCH_DISPLAY_EFFECT:              activateAdditionalEffect(velocity);break;                                //C#9
-     
-    case PITCH_LOAD_ANIMATION_BANK1_TEMP:   loadTempAnimation1(velocity);break;                                      //C7    - Load a temporary animation using the LED panels
-    case PITCH_LOAD_ANIMATION_BANK2_TEMP:   loadTempAnimation2(velocity);break;                                      //C#7
-    case PITCH_LOAD_ANIMATION_BANK3_TEMP:   loadTempAnimation3(velocity);break;                                      //D7
-    case PITCH_LOAD_ANIMATION_BANK4_TEMP:   loadTempAnimation4(velocity);break;                                      //D#7
-     
-    case PITCH_LOAD_ANIMATION_BANK1:        loadAnimation1(velocity);break;                                          //D#9   - Load an animation using the LED panels
-    case PITCH_LOAD_ANIMATION_BANK2:        loadAnimation2(velocity);break;                                          //E9
-    case PITCH_LOAD_ANIMATION_BANK3:        loadAnimation3(velocity);break;                                          //F9
-    case PITCH_LOAD_ANIMATION_BANK4:        loadAnimation4(velocity);break;                                          //D9
-    case PITCH_LOAD_IMAGE_BANK1:            loadImage1(velocity);break;                                              //F#9
-    case PITCH_CHANGE_OUTPUTMAPPING:        activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
+    case PITCH_SET_AUTOMODE_OFF:                            setAutomaticModeOff();break;                                             //F#5   - Disable the automatic mode
+    case PITCH_SET_AUTOMODE_ON:                             setAutomaticModeOn();break;                                              //G5    - Enable the automatic mode
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(velocity); break;              //F7
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(velocity); break;                   //F#7
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(velocity); break;              //G7
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   loadDMXAnimation_movingHead_setAnimation1(velocity); break;              //G#7
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   loadDMXAnimation_movingHead_setAnimation2(velocity); break;              //A7
+    case PITCH_DMX_ANIMATION_STROBE:                        loadDMXAnimation_strobe(velocity); break;                                //A#7   - Load an animation using DMX devices - Strobe bank
+    case PITCH_DMX_ANIMATION_PAR:                           loadDMXAnimation_par(velocity); break;                                   //B7
+    case PITCH_ENABLE_MAN_INPUT:                            enableManualInput();break;                                               //D8
+    case PITCH_DISABLE_MAN_INPUT:                           disableManualInput();break;                                              //D#8
+    case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(velocity);break;                              //A#8   - Load an animation for the custom devices
+    case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(velocity);break;                              //B8
+    case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(velocity);break;                              //C9
+    case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(velocity);break;                                //C#9
+    case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   loadTempAnimation1(velocity);break;                                      //C7    - Load a temporary animation using the LED panels
+    case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   loadTempAnimation2(velocity);break;                                      //C#7
+    case PITCH_LOAD_ANIMATION_BANK3_TEMP:                   loadTempAnimation3(velocity);break;                                      //D7
+    case PITCH_LOAD_ANIMATION_BANK4_TEMP:                   loadTempAnimation4(velocity);break;                                      //D#7
+    case PITCH_LOAD_ANIMATION_BANK1:                        loadAnimation1(velocity);break;                                          //D#9   - Load an animation using the LED panels
+    case PITCH_LOAD_ANIMATION_BANK2:                        loadAnimation2(velocity);break;                                          //E9
+    case PITCH_LOAD_ANIMATION_BANK3:                        loadAnimation3(velocity);break;                                          //F9
+    case PITCH_LOAD_ANIMATION_BANK4:                        loadAnimation4(velocity);break;                                          //D9
+    case PITCH_LOAD_IMAGE_BANK1:                            loadImage1(velocity);break;                                              //F#9
+    case PITCH_CHANGE_OUTPUTMAPPING:                        activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
     default: break;
   }
 }
@@ -38295,23 +38595,33 @@ public void deactivateAdditionalEffect(int velocity) {
   effectToBeDrawn = false;
 }
 
-public void loadDMXAnimation_movingHead_1(int velocity) {
-  loadDMXAnimation_movingHead(velocity);
+
+public void loadDMXAnimation_movingHead_initDirection(int velocity) {
+  dmxAnimationNumber_movingHead_initDirection = velocity;
 }
 
-public void loadDMXAnimation_movingHead_2(int velocity) {
-  loadDMXAnimation_movingHead(velocity + 127);
+public void loadDMXAnimation_movingHead_setColor(int velocity) {
+  dmxAnimationNumber_movingHead_setColor = velocity;
 }
 
-public void loadDMXAnimation_movingHead_3(int velocity) {
-  loadDMXAnimation_movingHead(velocity + 254);
+public void loadDMXAnimation_movingHead_setLightStyle(int velocity) {
+  dmxAnimationNumber_movingHead_setLightStyle = velocity;
 }
 
-public void loadDMXAnimation_movingHead(int dmxAnimNumber) {
+public void loadDMXAnimation_movingHead_setAnimation1(int velocity) {
+  loadDMXAnimation_movingHead_setAnimation(velocity);
+}
+
+public void loadDMXAnimation_movingHead_setAnimation2(int velocity) {
+  loadDMXAnimation_movingHead_setAnimation(velocity + 127);
+}
+
+
+public void loadDMXAnimation_movingHead_setAnimation(int dmxAnimNumber) {
   //When such a command is received, and while the note continues, the DMX control is up to Strobot
   dmxAutomaticControl = true;
-  dmxAnimationNumber_movingHead = dmxAnimNumber;
-  setupDMXAnimation_movingHead();
+  dmxAnimationNumber_movingHead_setAnimation = dmxAnimNumber;
+  setupDMXAnimation_movingHeadAnimation();
 }
 
 public void loadDMXAnimation_strobe(int dmxAnimNumber) {
@@ -38531,18 +38841,22 @@ public void noteOff(int channel, int pitch, int velocity, long timestamp, String
       //Do not release automatic mode : only Note On events have this right
       //AUTOMATIC_MODE = false;
       switch (pitch) {
-        case PITCH_DMX_ANIMATION_STROBE:        unloadDMXAnimation_strobe(); break;                         //A#7   - Unload an animation using DMX devices : noteOff releases DMX
-        case PITCH_DMX_ANIMATION_PAR:           unloadDMXAnimation_par(); break;                            //B7
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_1: unloadDMXAnimation_movingHead(); break;                     //G7
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_2: unloadDMXAnimation_movingHead(); break;                     //G#7
-        case PITCH_DMX_ANIMATION_MOVING_HEAD_3: unloadDMXAnimation_movingHead(); break;                     //A7
+        case PITCH_DMX_ANIMATION_STROBE:                        unloadDMXAnimation_strobe(); break;                         //A#7   - Unload an animation using DMX devices : noteOff releases DMX
+        case PITCH_DMX_ANIMATION_PAR:                           unloadDMXAnimation_par(); break;                            //B7
 
-        case PITCH_LOAD_ANIMATION_BANK1_TEMP:   unloadAnimation();break;                                    //C7    - Unload a temporary animation using the LED panels
-        case PITCH_LOAD_ANIMATION_BANK2_TEMP:   unloadAnimation();break;                                    //C#7
-        case PITCH_LOAD_ANIMATION_BANK3_TEMP:   unloadAnimation();break;                                    //D7
-        case PITCH_LOAD_ANIMATION_BANK4_TEMP:   unloadAnimation();break;                                    //D#7
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
+
+
+        case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   unloadAnimation();break;                                    //C7    - Unload a temporary animation using the LED panels
+        case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   unloadAnimation();break;                                    //C#7
+        case PITCH_LOAD_ANIMATION_BANK3_TEMP:                   unloadAnimation();break;                                    //D7
+        case PITCH_LOAD_ANIMATION_BANK4_TEMP:                   unloadAnimation();break;                                    //D#7
         
-        case PITCH_DISPLAY_EFFECT:              deactivateAdditionalEffect(velocity);break;                 //C9    - Reset the effect
+        case PITCH_DISPLAY_EFFECT:                              deactivateAdditionalEffect(velocity);break;                 //C9    - Reset the effect
         default: break;
       }
     }
@@ -38601,7 +38915,7 @@ public void unloadDMXAnimation_par() {
 public void unloadDMXAnimation_movingHead() {
   //Note off for the DMX animation, kill the DMX animation by switching everything back to a blackout
   dmxAutomaticControl = false;
-  //dmxAnimationNumber_movingHead = 1;    // Do not reset the animation number, instead set the dimmer to 0
+  dmxAnimationNumber_movingHead_setAnimation = 0;
   dmxAnim_movingHead_blackout();
 }
 
@@ -39122,9 +39436,11 @@ final int NOTE_OFF = 0x80;
 final float ONE_BAR_LENGTH = 384.0f;      //Length of 1 bar, in MIDI ticks - in float, as this is often used as a division denominator
 //For the following note off events, an action is allowed
 final int[] AVAILABLE_NOTE_OFF = {PITCH_DMX_ANIMATION_STROBE, PITCH_DMX_ANIMATION_PAR, 
-                                  PITCH_DMX_ANIMATION_MOVING_HEAD_1, PITCH_DMX_ANIMATION_MOVING_HEAD_1, PITCH_DMX_ANIMATION_MOVING_HEAD_3, 
+                                  PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION, PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR, PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE, 
+                                  PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1, PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2,
                                   PITCH_DISPLAY_EFFECT};
-  
+
+
 ArrayList<MidiSequence> MidiSequences_White_DefaultIntensity;
 ArrayList<MidiSequence> MidiSequences_White_LowIntensity;
 ArrayList<MidiSequence> MidiSequences_White_MediumIntensity;

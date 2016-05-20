@@ -214,16 +214,7 @@ boolean debug_without_panels = false;
 //If set to true, the devices are set on and off according to the DMX animations.
 //Otherwise, the DMX devices are controlled manually using each group's MIDI notes
 boolean dmxAutomaticControl        = false;
-int dmxAnimationNumber_strobe      = 0;
-int dmxAnimationNumber_movingHead  = 0;
-int dmxAnimationNumber_par         = 0;
-//Variables used to light up the stroboscopes (used in the manual DMX control)
-int drawStrobe_FrontLeft           = 0;
-int strobepreset_frontleft         = 0;
-int drawStrobe_FrontRight          = 0;
-int strobepreset_frontright        = 0;
-int drawStrobe_Back                = 0;
-int strobepreset_back              = 0;
+
 
 //Variables used to select between image and animation mode, and which image/animation to draw
 int drawImage = 0;
@@ -278,9 +269,12 @@ void setup()
   setCustomDevicesActionsAttributes();
   
   //And do the same for the DMX animations
-  DMXStrobeAttributes = new ArrayList<Attribute>();
-  DMXMovingHeadAttributes = new ArrayList<Attribute>();
-  DMXOtherFixturesAttributes = new ArrayList<Attribute>();
+  DMXStrobeAttributes                    = new ArrayList<Attribute>();
+  DMXMovingHead_MovementAttributes       = new ArrayList<Attribute>();
+  DMXMovingHead_ColorAttributes          = new ArrayList<Attribute>();
+  DMXMovingHead_LightStyleAttributes     = new ArrayList<Attribute>();
+  DMXMovingHead_AnimationAttributes      = new ArrayList<Attribute>();
+  DMXOtherFixturesAttributes             = new ArrayList<Attribute>();
   setDMXAnimationsAttributes();
 
   
