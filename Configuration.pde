@@ -799,19 +799,44 @@ String getStringFromDMXAnimationNumber_par(int animNbr) {
   
   return temp;
 }
-String getStringFromDMXAnimationNumber_movingHead(int animNbr) {
+
+String getStringFromDMXAnimationNumber_movingHead_Movement(int animNbr) {
   String temp = "Undefined";
   if (animNbr <= 127) {                                                                   
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_1) + "  |  " + str(animNbr);
-  }                                                                                              
-  else if (animNbr <= 254) {
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_2) + "  |  " + str(animNbr - 127);
-  }                                                                                              
-  else if (animNbr <= 381) {
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_3) + "  |  " + str(animNbr - 254);    
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION) + "  |  " + str(animNbr);
   }
   return temp;
 }
+
+String getStringFromDMXAnimationNumber_movingHead_Color(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR) + "  |  " + str(animNbr);
+  }
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_movingHead_LightStyle(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE) + "  |  " + str(animNbr);
+  }
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_movingHead_Animation(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1) + "  |  " + str(animNbr);
+  }                                                                                              
+  else if (animNbr <= 254) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2) + "  |  " + str(animNbr - 127);
+  }                                                                                              
+
+  return temp;
+}
+
+
 
 int convertStringToInt(String text) {
   //Allow to parse either regular ints (ie MIDI notes "0", "1"...), or real notes (ie "C3", "A#-1"...) 
