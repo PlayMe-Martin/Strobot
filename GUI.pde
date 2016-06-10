@@ -1411,6 +1411,7 @@ public class ControlFrame extends PApplet {
                                                             .setColorForeground(color(255,90))
                                                             .moveTo(DMXAnimations_animListGroup)
                                                             ;
+
     String textDescription = "Current DMX Strobe animation description \n"
                                       + "Select an animation in the list\n"
                                       + "\n"
@@ -1623,7 +1624,7 @@ public class ControlFrame extends PApplet {
     
     DMXMovingHeadAnimations_Movement_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Set Init Direction")
                                                             .setPosition(3*DMXAnimations_Movement_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_Movement_animListGroup.getWidth() - DMXMovingHeadAnimations_Movement_animationListCheckBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Movement_animationListCheckBox.getBackgroundHeight() - toggleHeight - spacingRow)
+                                                            .setSize(DMXAnimations_Movement_animListGroup.getWidth() - DMXMovingHeadAnimations_Movement_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Movement_animationListBox.getBackgroundHeight() - toggleHeight - spacingRow)
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -1633,7 +1634,7 @@ public class ControlFrame extends PApplet {
                                                             ;
     DMXMovingHeadAnimations_Color_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Set Color")
                                                             .setPosition(3*DMXAnimations_Color_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_Color_animListGroup.getWidth() - DMXMovingHeadAnimations_Color_animationListCheckBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Color_animationListCheckBox.getBackgroundHeight() - toggleHeight - spacingRow)
+                                                            .setSize(DMXAnimations_Color_animListGroup.getWidth() - DMXMovingHeadAnimations_Color_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Color_animationListBox.getBackgroundHeight() - toggleHeight - spacingRow)
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -1643,7 +1644,7 @@ public class ControlFrame extends PApplet {
                                                             ;
     DMXMovingHeadAnimations_LightStyle_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Set Light Style")
                                                             .setPosition(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_LightStyle_animListGroup.getWidth() - DMXMovingHeadAnimations_LightStyle_animationListCheckBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_LightStyle_animationListCheckBox.getBackgroundHeight() - toggleHeight - spacingRow)
+                                                            .setSize(DMXAnimations_LightStyle_animListGroup.getWidth() - DMXMovingHeadAnimations_LightStyle_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_LightStyle_animationListBox.getBackgroundHeight() - toggleHeight - spacingRow)
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -1653,7 +1654,7 @@ public class ControlFrame extends PApplet {
                                                             ;
     DMXMovingHeadAnimations_Animations_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Perform Animations")
                                                             .setPosition(3*DMXAnimations_Animations_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_Animations_animListGroup.getWidth() - DMXMovingHeadAnimations_Animations_animationListCheckBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Animations_animationListCheckBox.getBackgroundHeight() - toggleHeight - spacingRow)
+                                                            .setSize(DMXAnimations_Animations_animListGroup.getWidth() - DMXMovingHeadAnimations_Animations_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Animations_animationListBox.getBackgroundHeight() - toggleHeight - spacingRow)
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -1661,7 +1662,6 @@ public class ControlFrame extends PApplet {
                                                             .setColorForeground(color(255,90))
                                                             .moveTo(DMXAnimations_Animations_animListGroup)
                                                             ;
-
 
     String textDescription = "Current DMX Moving Head animation description \n"
                                       + "Select an animation in the list\n"
@@ -2762,6 +2762,7 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_movingHead_Movement(DMXMovingHead_MovementAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + DMXMovingHead_MovementAttributes.get(animNbr - 1).attributes;
+
         DMXMovingHeadAnimations_Movement_currentAnimationDescription.setText(textDescription);
         
         //Load the animation

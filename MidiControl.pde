@@ -578,14 +578,17 @@ void deactivateAdditionalEffect(int velocity) {
 
 void loadDMXAnimation_movingHead_initDirection(int velocity) {
   dmxAnimationNumber_movingHead_initDirection = velocity;
+  setupDMXAnimation_movingHead_initDirection();
 }
 
 void loadDMXAnimation_movingHead_setColor(int velocity) {
   dmxAnimationNumber_movingHead_setColor = velocity;
+  setupDMXAnimation_movingHead_setColor();
 }
 
 void loadDMXAnimation_movingHead_setLightStyle(int velocity) {
   dmxAnimationNumber_movingHead_setLightStyle = velocity;
+  setupDMXAnimation_movingHead_setLightStyle();
 }
 
 void loadDMXAnimation_movingHead_setAnimation1(int velocity) {

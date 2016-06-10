@@ -17,6 +17,9 @@ int dmxAnimationNumber_movingHead_setAnimation      = 0;
 int dmxAnimationNumber_par                          = 0;
 
 int dmxAnim_movingHead_globalAnimCpt                = 0;          // Global counter used for the animations
+int dmxAnim_movingHead_nbRhythmSyncedDev            = 0;
+int dmxAnim_movingHead_currentSelectionIdx          = 0;
+IntList dmxAnim_syncedMovingHeads;                                // IntList containing the deviceIDs of the concerned fixtures
 
 void playDMXAnimation() {
   playDMXAnimation_strobe();
@@ -309,186 +312,220 @@ void setupDMXAnimation_movingHead_setColor() {
     case 48:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_ultraviolet();                                 break;
     case 49:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_orange();                                      break;
     case 50:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_CTO();                                         break;
+
+    case 51:  dmxAnim_movingHead_setLightRhythm_allDev_noSync();                                                        break;      // 51 - Reset the rhythm of all devices
+    case 52:  dmxAnim_movingHead_setLightRhythm_centerDev_noSync();                                                     break;
+    case 53:  dmxAnim_movingHead_setLightRhythm_sideDev_noSync();                                                       break;
+    case 54:  dmxAnim_movingHead_setLightRhythm_leftDev_noSync();                                                       break;
+    case 55:  dmxAnim_movingHead_setLightRhythm_rightDev_noSync();                                                      break;
+
+    case 56:  dmxAnim_movingHead_setLightRhythm_allDev_together_32ndSync();                                             break;
+    case 57:  dmxAnim_movingHead_setLightRhythm_allDev_together_16thSync();                                             break;
+    case 58:  dmxAnim_movingHead_setLightRhythm_allDev_together_8thSync();                                              break;
+    case 59:  dmxAnim_movingHead_setLightRhythm_allDev_together_4thSync();                                              break;
+    case 60:  dmxAnim_movingHead_setLightRhythm_allDev_together_2ndSync();                                              break;
+    case 61:  dmxAnim_movingHead_setLightRhythm_allDev_together_barSync();                                              break;
+
+    case 62:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_32ndSync();                                            break;
+    case 63:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_16thSync();                                            break;
+    case 64:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_8thSync();                                             break;
+    case 65:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_4thSync();                                             break;
+    case 66:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_2ndSync();                                             break;
+    case 67:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_barSync();                                             break;
+
+    case 68:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_32ndSync();                                        break;
+    case 69:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_16thSync();                                        break;
+    case 70:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_8thSync();                                         break;
+    case 71:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_4thSync();                                         break;
+    case 72:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_2ndSync();                                         break;
+    case 73:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_barSync();                                         break;
+
+    case 74:  dmxAnim_movingHead_setLightRhythm_allDev_random_32ndSync();                                               break;
+    case 75:  dmxAnim_movingHead_setLightRhythm_allDev_random_16thSync();                                               break;
+    case 76:  dmxAnim_movingHead_setLightRhythm_allDev_random_8thSync();                                                break;
+    case 77:  dmxAnim_movingHead_setLightRhythm_allDev_random_4thSync();                                                break;
+    case 78:  dmxAnim_movingHead_setLightRhythm_allDev_random_2ndSync();                                                break;
+    case 79:  dmxAnim_movingHead_setLightRhythm_allDev_random_barSync();                                                break;
+    
+    case 80:  dmxAnim_movingHead_setLightRhythm_centerDev_together_32ndSync();                                          break;
+    case 81:  dmxAnim_movingHead_setLightRhythm_centerDev_together_16thSync();                                          break;
+    case 82:  dmxAnim_movingHead_setLightRhythm_centerDev_together_8thSync();                                           break;
+    case 83:  dmxAnim_movingHead_setLightRhythm_centerDev_together_4thSync();                                           break;
+    case 84:  dmxAnim_movingHead_setLightRhythm_centerDev_together_2ndSync();                                           break;
+    case 85:  dmxAnim_movingHead_setLightRhythm_centerDev_together_barSync();                                           break;
+
+    case 86:  dmxAnim_movingHead_setLightRhythm_centerDev_random_32ndSync();                                            break;
+    case 87:  dmxAnim_movingHead_setLightRhythm_centerDev_random_16thSync();                                            break;
+    case 88:  dmxAnim_movingHead_setLightRhythm_centerDev_random_8thSync();                                             break;
+    case 89:  dmxAnim_movingHead_setLightRhythm_centerDev_random_4thSync();                                             break;
+    case 90:  dmxAnim_movingHead_setLightRhythm_centerDev_random_2ndSync();                                             break;
+    case 91:  dmxAnim_movingHead_setLightRhythm_centerDev_random_barSync();                                             break;
+
+    case 92:  dmxAnim_movingHead_setLightRhythm_sideDev_together_32ndSync();                                            break;
+    case 93:  dmxAnim_movingHead_setLightRhythm_sideDev_together_16thSync();                                            break;
+    case 94:  dmxAnim_movingHead_setLightRhythm_sideDev_together_8thSync();                                             break;
+    case 95:  dmxAnim_movingHead_setLightRhythm_sideDev_together_4thSync();                                             break;
+    case 96:  dmxAnim_movingHead_setLightRhythm_sideDev_together_2ndSync();                                             break;
+    case 97:  dmxAnim_movingHead_setLightRhythm_sideDev_together_barSync();                                             break;
+
+    case 98:  dmxAnim_movingHead_setLightRhythm_sideDev_random_32ndSync();                                              break;
+    case 99:  dmxAnim_movingHead_setLightRhythm_sideDev_random_16thSync();                                              break;
+    case 100: dmxAnim_movingHead_setLightRhythm_sideDev_random_8thSync();                                               break;
+    case 101: dmxAnim_movingHead_setLightRhythm_sideDev_random_4thSync();                                               break;
+    case 102: dmxAnim_movingHead_setLightRhythm_sideDev_random_2ndSync();                                               break;
+    case 103: dmxAnim_movingHead_setLightRhythm_sideDev_random_barSync();                                               break;
+
+    case 104: dmxAnim_movingHead_setLightRhythm_leftDev_together_32ndSync();                                            break;
+    case 105: dmxAnim_movingHead_setLightRhythm_leftDev_together_16thSync();                                            break;
+    case 106: dmxAnim_movingHead_setLightRhythm_leftDev_together_8thSync();                                             break;
+    case 107: dmxAnim_movingHead_setLightRhythm_leftDev_together_4thSync();                                             break;
+    case 108: dmxAnim_movingHead_setLightRhythm_leftDev_together_2ndSync();                                             break;
+    case 109: dmxAnim_movingHead_setLightRhythm_leftDev_together_barSync();                                             break;    
+ 
+    case 110: dmxAnim_movingHead_setLightRhythm_leftDev_random_32ndSync();                                              break;
+    case 111: dmxAnim_movingHead_setLightRhythm_leftDev_random_16thSync();                                              break;
+    case 112: dmxAnim_movingHead_setLightRhythm_leftDev_random_8thSync();                                               break;
+    case 113: dmxAnim_movingHead_setLightRhythm_leftDev_random_4thSync();                                               break;
+    case 114: dmxAnim_movingHead_setLightRhythm_leftDev_random_2ndSync();                                               break;
+    case 115: dmxAnim_movingHead_setLightRhythm_leftDev_random_barSync();                                               break;
+
+    case 116: dmxAnim_movingHead_setLightRhythm_rightDev_together_32ndSync();                                           break;
+    case 117: dmxAnim_movingHead_setLightRhythm_rightDev_together_16thSync();                                           break;
+    case 118: dmxAnim_movingHead_setLightRhythm_rightDev_together_8thSync();                                            break;
+    case 119: dmxAnim_movingHead_setLightRhythm_rightDev_together_4thSync();                                            break;
+    case 120: dmxAnim_movingHead_setLightRhythm_rightDev_together_2ndSync();                                            break;
+    case 121: dmxAnim_movingHead_setLightRhythm_rightDev_together_barSync();                                            break;
+
+    case 122: dmxAnim_movingHead_setLightRhythm_rightDev_random_32ndSync();                                             break;
+    case 123: dmxAnim_movingHead_setLightRhythm_rightDev_random_16thSync();                                             break;
+    case 124: dmxAnim_movingHead_setLightRhythm_rightDev_random_8thSync();                                              break;
+    case 125: dmxAnim_movingHead_setLightRhythm_rightDev_random_4thSync();                                              break;
+    case 126: dmxAnim_movingHead_setLightRhythm_rightDev_random_2ndSync();                                              break;
+    case 127: dmxAnim_movingHead_setLightRhythm_rightDev_random_barSync();                                              break;
+
     default: break;
   }
 }
 
 void setupDMXAnimation_movingHead_setLightStyle() {
   switch(dmxAnimationNumber_movingHead_setLightStyle) {
-    case 1:  dmxAnim_movingHead_setLightStyle_allDev_continuousLight();                                                break;
-    case 2:  dmxAnim_movingHead_setLightStyle_allDev_slowCrescendoLight();                                             break;
-    case 3:  dmxAnim_movingHead_setLightStyle_allDev_fastCrescendoLight();                                             break;
-    case 4:  dmxAnim_movingHead_setLightStyle_allDev_singleShortFlash();                                               break;
-    case 5:  dmxAnim_movingHead_setLightStyle_allDev_singleLongFlash();                                                break;
-    case 6:  dmxAnim_movingHead_setLightStyle_allDev_slowStrobe();                                                     break;
-    case 7:  dmxAnim_movingHead_setLightStyle_allDev_mediumStrobe();                                                   break;
-    case 8:  dmxAnim_movingHead_setLightStyle_allDev_fastStrobe();                                                     break;
-    case 9:  dmxAnim_movingHead_setLightStyle_allDev_slowSineWave();                                                   break;
-    case 10: dmxAnim_movingHead_setLightStyle_allDev_fastSineWave();                                                   break;
-    case 11: dmxAnim_movingHead_setLightStyle_allDev_randomGlitch();                                                   break;
-    case 12: dmxAnim_movingHead_setLightStyle_allDev_minimalApertureBeam();                                            break;
+    case 1:  dmxAnim_movingHead_setLightStyle_allDev_continuousLight();                                                 break;
+    case 2:  dmxAnim_movingHead_setLightStyle_allDev_slowCrescendoLight();                                              break;
+    case 3:  dmxAnim_movingHead_setLightStyle_allDev_fastCrescendoLight();                                              break;
+    case 4:  dmxAnim_movingHead_setLightStyle_allDev_singleShortFlash();                                                break;
+    case 5:  dmxAnim_movingHead_setLightStyle_allDev_singleLongFlash();                                                 break;
+    case 6:  dmxAnim_movingHead_setLightStyle_allDev_slowStrobe();                                                      break;
+    case 7:  dmxAnim_movingHead_setLightStyle_allDev_mediumStrobe();                                                    break;
+    case 8:  dmxAnim_movingHead_setLightStyle_allDev_fastStrobe();                                                      break;
+    case 9:  dmxAnim_movingHead_setLightStyle_allDev_slowClockwiseSineWave();                                           break;
+    case 10: dmxAnim_movingHead_setLightStyle_allDev_fastClockwiseSineWave();                                           break;
+    case 11: dmxAnim_movingHead_setLightStyle_allDev_slowAntiClockwiseSineWave();                                       break;
+    case 12: dmxAnim_movingHead_setLightStyle_allDev_fastAntiClockwiseSineWave();                                       break;
+    case 13: dmxAnim_movingHead_setLightStyle_allDev_randomGlitch();                                                    break;
+    case 14: dmxAnim_movingHead_setLightStyle_allDev_minimalApertureBeam();                                             break;
 
-    case 13: dmxAnim_movingHead_setLightStyle_centerDev_continuousLight();                                             break;
-    case 14: dmxAnim_movingHead_setLightStyle_centerDev_slowCrescendoLight();                                          break;
-    case 15: dmxAnim_movingHead_setLightStyle_centerDev_fastCrescendoLight();                                          break;
-    case 16: dmxAnim_movingHead_setLightStyle_centerDev_singleShortFlash();                                            break;
-    case 17: dmxAnim_movingHead_setLightStyle_centerDev_singleLongFlash();                                             break;
-    case 18: dmxAnim_movingHead_setLightStyle_centerDev_slowStrobe();                                                  break;
-    case 19: dmxAnim_movingHead_setLightStyle_centerDev_mediumStrobe();                                                break;
-    case 20: dmxAnim_movingHead_setLightStyle_centerDev_fastStrobe();                                                  break;
-    case 21: dmxAnim_movingHead_setLightStyle_centerDev_slowSineWave();                                                break;
-    case 22: dmxAnim_movingHead_setLightStyle_centerDev_fastSineWave();                                                break;
-    case 23: dmxAnim_movingHead_setLightStyle_centerDev_randomGlitch();                                                break;
-    case 24: dmxAnim_movingHead_setLightStyle_centerDev_minimalApertureBeam();                                         break;
+    case 15: dmxAnim_movingHead_setLightStyle_centerDev_continuousLight();                                              break;
+    case 16: dmxAnim_movingHead_setLightStyle_centerDev_slowCrescendoLight();                                           break;
+    case 17: dmxAnim_movingHead_setLightStyle_centerDev_fastCrescendoLight();                                           break;
+    case 18: dmxAnim_movingHead_setLightStyle_centerDev_singleShortFlash();                                             break;
+    case 19: dmxAnim_movingHead_setLightStyle_centerDev_singleLongFlash();                                              break;
+    case 20: dmxAnim_movingHead_setLightStyle_centerDev_slowStrobe();                                                   break;
+    case 21: dmxAnim_movingHead_setLightStyle_centerDev_mediumStrobe();                                                 break;
+    case 22: dmxAnim_movingHead_setLightStyle_centerDev_fastStrobe();                                                   break;
+    case 23: dmxAnim_movingHead_setLightStyle_centerDev_slowClockwiseSineWave();                                        break;
+    case 24: dmxAnim_movingHead_setLightStyle_centerDev_fastClockwiseSineWave();                                        break;
+    case 25: dmxAnim_movingHead_setLightStyle_centerDev_slowAntiClockwiseSineWave();                                    break;
+    case 26: dmxAnim_movingHead_setLightStyle_centerDev_fastAntiClockwiseSineWave();                                    break;
+    case 27: dmxAnim_movingHead_setLightStyle_centerDev_randomGlitch();                                                 break;
+    case 28: dmxAnim_movingHead_setLightStyle_centerDev_minimalApertureBeam();                                          break;
 
-    case 25: dmxAnim_movingHead_setLightStyle_sideDev_continuousLight();                                               break;
-    case 26: dmxAnim_movingHead_setLightStyle_sideDev_slowCrescendoLight();                                            break;
-    case 27: dmxAnim_movingHead_setLightStyle_sideDev_fastCrescendoLight();                                            break;
-    case 28: dmxAnim_movingHead_setLightStyle_sideDev_singleShortFlash();                                              break;
-    case 29: dmxAnim_movingHead_setLightStyle_sideDev_singleLongFlash();                                               break;
-    case 30: dmxAnim_movingHead_setLightStyle_sideDev_slowStrobe();                                                    break;
-    case 31: dmxAnim_movingHead_setLightStyle_sideDev_mediumStrobe();                                                  break;
-    case 32: dmxAnim_movingHead_setLightStyle_sideDev_fastStrobe();                                                    break;
-    case 33: dmxAnim_movingHead_setLightStyle_sideDev_slowSineWave();                                                  break;
-    case 34: dmxAnim_movingHead_setLightStyle_sideDev_fastSineWave();                                                  break;
-    case 35: dmxAnim_movingHead_setLightStyle_sideDev_randomGlitch();                                                  break;
-    case 36: dmxAnim_movingHead_setLightStyle_sideDev_minimalApertureBeam();                                           break;
+    case 29: dmxAnim_movingHead_setLightStyle_sideDev_continuousLight();                                                break;
+    case 30: dmxAnim_movingHead_setLightStyle_sideDev_slowCrescendoLight();                                             break;
+    case 31: dmxAnim_movingHead_setLightStyle_sideDev_fastCrescendoLight();                                             break;
+    case 32: dmxAnim_movingHead_setLightStyle_sideDev_singleShortFlash();                                               break;
+    case 33: dmxAnim_movingHead_setLightStyle_sideDev_singleLongFlash();                                                break;
+    case 34: dmxAnim_movingHead_setLightStyle_sideDev_slowStrobe();                                                     break;
+    case 35: dmxAnim_movingHead_setLightStyle_sideDev_mediumStrobe();                                                   break;
+    case 36: dmxAnim_movingHead_setLightStyle_sideDev_fastStrobe();                                                     break;
+    case 37: dmxAnim_movingHead_setLightStyle_sideDev_slowClockwiseSineWave();                                          break;
+    case 38: dmxAnim_movingHead_setLightStyle_sideDev_fastClockwiseSineWave();                                          break;
+    case 39: dmxAnim_movingHead_setLightStyle_sideDev_slowAntiClockwiseSineWave();                                      break;
+    case 40: dmxAnim_movingHead_setLightStyle_sideDev_fastAntiClockwiseSineWave();                                      break;
+    case 41: dmxAnim_movingHead_setLightStyle_sideDev_randomGlitch();                                                   break;
+    case 42: dmxAnim_movingHead_setLightStyle_sideDev_minimalApertureBeam();                                            break;
     
-    case 37: dmxAnim_movingHead_setLightStyle_leftDev_continuousLight();                                               break;
-    case 38: dmxAnim_movingHead_setLightStyle_leftDev_slowCrescendoLight();                                            break;
-    case 39: dmxAnim_movingHead_setLightStyle_leftDev_fastCrescendoLight();                                            break;
-    case 40: dmxAnim_movingHead_setLightStyle_leftDev_singleShortFlash();                                              break;
-    case 41: dmxAnim_movingHead_setLightStyle_leftDev_singleLongFlash();                                               break;
-    case 42: dmxAnim_movingHead_setLightStyle_leftDev_slowStrobe();                                                    break;
-    case 43: dmxAnim_movingHead_setLightStyle_leftDev_mediumStrobe();                                                  break;
-    case 44: dmxAnim_movingHead_setLightStyle_leftDev_fastStrobe();                                                    break;
-    case 45: dmxAnim_movingHead_setLightStyle_leftDev_slowSineWave();                                                  break;
-    case 46: dmxAnim_movingHead_setLightStyle_leftDev_fastSineWave();                                                  break;
-    case 47: dmxAnim_movingHead_setLightStyle_leftDev_randomGlitch();                                                  break;
-    case 48: dmxAnim_movingHead_setLightStyle_leftDev_minimalApertureBeam();                                           break;
+    case 43: dmxAnim_movingHead_setLightStyle_leftDev_continuousLight();                                                break;
+    case 44: dmxAnim_movingHead_setLightStyle_leftDev_slowCrescendoLight();                                             break;
+    case 45: dmxAnim_movingHead_setLightStyle_leftDev_fastCrescendoLight();                                             break;
+    case 46: dmxAnim_movingHead_setLightStyle_leftDev_singleShortFlash();                                               break;
+    case 47: dmxAnim_movingHead_setLightStyle_leftDev_singleLongFlash();                                                break;
+    case 48: dmxAnim_movingHead_setLightStyle_leftDev_slowStrobe();                                                     break;
+    case 49: dmxAnim_movingHead_setLightStyle_leftDev_mediumStrobe();                                                   break;
+    case 50: dmxAnim_movingHead_setLightStyle_leftDev_fastStrobe();                                                     break;
+    case 51: dmxAnim_movingHead_setLightStyle_leftDev_slowClockwiseSineWave();                                          break;
+    case 52: dmxAnim_movingHead_setLightStyle_leftDev_fastClockwiseSineWave();                                          break;
+    case 53: dmxAnim_movingHead_setLightStyle_leftDev_slowAntiClockwiseSineWave();                                      break;
+    case 54: dmxAnim_movingHead_setLightStyle_leftDev_fastAntiClockwiseSineWave();                                      break;
+    case 55: dmxAnim_movingHead_setLightStyle_leftDev_randomGlitch();                                                   break;
+    case 56: dmxAnim_movingHead_setLightStyle_leftDev_minimalApertureBeam();                                            break;
     
-    case 49: dmxAnim_movingHead_setLightStyle_rightDev_continuousLight();                                              break;
-    case 50: dmxAnim_movingHead_setLightStyle_rightDev_slowCrescendoLight();                                           break;
-    case 51: dmxAnim_movingHead_setLightStyle_rightDev_fastCrescendoLight();                                           break;
-    case 52: dmxAnim_movingHead_setLightStyle_rightDev_singleShortFlash();                                             break;
-    case 53: dmxAnim_movingHead_setLightStyle_rightDev_singleLongFlash();                                              break;
-    case 54: dmxAnim_movingHead_setLightStyle_rightDev_slowStrobe();                                                   break;
-    case 55: dmxAnim_movingHead_setLightStyle_rightDev_mediumStrobe();                                                 break;
-    case 56: dmxAnim_movingHead_setLightStyle_rightDev_fastStrobe();                                                   break;
-    case 57: dmxAnim_movingHead_setLightStyle_rightDev_slowSineWave();                                                 break;
-    case 58: dmxAnim_movingHead_setLightStyle_rightDev_fastSineWave();                                                 break;
-    case 59: dmxAnim_movingHead_setLightStyle_rightDev_randomGlitch();                                                 break;
-    case 60: dmxAnim_movingHead_setLightStyle_rightDev_minimalApertureBeam();                                          break;
+    case 57: dmxAnim_movingHead_setLightStyle_rightDev_continuousLight();                                               break;
+    case 58: dmxAnim_movingHead_setLightStyle_rightDev_slowCrescendoLight();                                            break;
+    case 59: dmxAnim_movingHead_setLightStyle_rightDev_fastCrescendoLight();                                            break;
+    case 60: dmxAnim_movingHead_setLightStyle_rightDev_singleShortFlash();                                              break;
+    case 61: dmxAnim_movingHead_setLightStyle_rightDev_singleLongFlash();                                               break;
+    case 62: dmxAnim_movingHead_setLightStyle_rightDev_slowStrobe();                                                    break;
+    case 63: dmxAnim_movingHead_setLightStyle_rightDev_mediumStrobe();                                                  break;
+    case 64: dmxAnim_movingHead_setLightStyle_rightDev_fastStrobe();                                                    break;
+    case 65: dmxAnim_movingHead_setLightStyle_rightDev_slowClockwiseSineWave();                                         break;
+    case 66: dmxAnim_movingHead_setLightStyle_rightDev_fastClockwiseSineWave();                                         break;
+    case 67: dmxAnim_movingHead_setLightStyle_rightDev_slowAntiClockwiseSineWave();                                     break;
+    case 68: dmxAnim_movingHead_setLightStyle_rightDev_fastAntiClockwiseSineWave();                                     break;
+    case 69: dmxAnim_movingHead_setLightStyle_rightDev_randomGlitch();                                                  break;
+    case 70: dmxAnim_movingHead_setLightStyle_rightDev_minimalApertureBeam();                                           break;
 
-
-//A rajouter: sineWave dans l'autre sens
-//A rajouter: beatFlashers - setLightStyle pour des anims qui soient sequencees sur le tempo
     default: break;
   }
 }
 
 void playDMXAnimation_movingHead() {
+
   switch(dmxAnimationNumber_movingHead_setAnimation) {
 
     case 0:   dmxAnim_movingHead_blackout();                                                                            break;
 
     // Simple commands for the various possible lightings and colors, without changing the direction of the projector
 
-    case 1:   dmxAnim_movingHead_noMovement_allDev_continuousLight_white();                                             break;
-    case 2:   dmxAnim_movingHead_noMovement_allDev_continuousLight_red();                                               break;
-    case 3:   dmxAnim_movingHead_noMovement_allDev_continuousLight_deepRed();                                           break;
-    case 4:   dmxAnim_movingHead_noMovement_allDev_continuousLight_blue();                                              break;
-    case 5:   dmxAnim_movingHead_noMovement_allDev_continuousLight_deepBlue();                                          break;
-    case 6:   dmxAnim_movingHead_noMovement_allDev_continuousLight_yellow();                                            break;
-    case 7:   dmxAnim_movingHead_noMovement_allDev_continuousLight_green();                                             break;
-    case 8:   dmxAnim_movingHead_noMovement_allDev_continuousLight_ultraviolet();                                       break;
-    case 9:   dmxAnim_movingHead_noMovement_allDev_continuousLight_orange();                                            break;
-    case 10:  dmxAnim_movingHead_noMovement_allDev_continuousLight_CTO();                                               break;
+    case 1:   dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();                                          break;
+    case 2:   dmxAnim_movingHead_noMovement_centerDev_performCurrentLightStyle();                                          break;
+    case 3:   dmxAnim_movingHead_noMovement_sideDev_performCurrentLightStyle();                                          break;
+    case 4:   dmxAnim_movingHead_noMovement_leftDev_performCurrentLightStyle();                                          break;
+    case 5:   dmxAnim_movingHead_noMovement_rightDev_performCurrentLightStyle();                                          break;
+
+    case 6:   dmxAnim_movingHead_noMovement_allDev_continuousLight();                                             break;
 
     //////////////////////////////////////////////////////////// 
  
-    case 11:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_white();                                             break;
-    case 12:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_red();                                               break;
-    case 13:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_deepRed();                                           break;
-    case 14:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_blue();                                              break;
-    case 15:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_deepBlue();                                          break;
-    case 16:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_yellow();                                            break;
-    case 17:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_green();                                             break;
-    case 18:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_ultraviolet();                                       break;
-    case 19:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_orange();                                            break;
-    case 20:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash_CTO();                                               break;
+    case 7:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();                                             break;
  
     //////////////////////////////////////////////////////////// 
  
-    case 21:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_white();                                            break;
-    case 22:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_red();                                              break;
-    case 23:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_deepRed();                                          break;
-    case 24:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_blue();                                             break;
-    case 25:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_deepBlue();                                         break;
-    case 26:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_yellow();                                           break;
-    case 27:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_green();                                            break;
-    case 28:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_ultraviolet();                                      break;
-    case 29:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_orange();                                           break;
-    case 30:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash_CTO();                                              break;
+    case 8:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();                                            break;
  
     //////////////////////////////////////////////////////////// 
  
-    case 31:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_white();                                          break;
-    case 32:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_red();                                            break;
-    case 33:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_deepRed();                                        break;
-    case 34:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_blue();                                           break;
-    case 35:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_deepBlue();                                       break;
-    case 36:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_yellow();                                         break;
-    case 37:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_green();                                          break;
-    case 38:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_ultraviolet();                                    break;
-    case 39:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_orange();                                         break;
-    case 40:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight_CTO();                                            break;
+    case 9:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();                                          break;
  
     ////////////////////////////////////////////////////////////  
  
-    case 41:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_white();                                          break;
-    case 42:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_red();                                            break;
-    case 43:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_deepRed();                                        break;
-    case 44:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_blue();                                           break;
-    case 45:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_deepBlue();                                       break;
-    case 46:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_yellow();                                         break;
-    case 47:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_green();                                          break;
-    case 48:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_ultraviolet();                                    break;
-    case 49:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_orange();                                         break;
-    case 50:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight_CTO();                                            break;
+    case 10:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();                                          break;
+
  
     //////////////////////////////////////////////////////////// 
 
-    case 61:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_white();                                                  break;
-    case 62:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_red();                                                    break;
-    case 63:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_deepRed();                                                break;
-    case 64:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_blue();                                                   break;
-    case 65:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_deepBlue();                                               break;
-    case 66:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_yellow();                                                 break;
-    case 67:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_green();                                                  break;
-    case 68:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_ultraviolet();                                            break;
-    case 69:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_orange();                                                 break;
-    case 70:  dmxAnim_movingHead_noMovement_allDev_slowStrobe_CTO();                                                    break;
-    case 71:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_white();                                                break;
-    case 72:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_red();                                                  break;
-    case 73:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_deepRed();                                              break;
-    case 74:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_blue();                                                 break;
-    case 75:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_deepBlue();                                             break;
-    case 76:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_yellow();                                               break;
-    case 77:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_green();                                                break;
-    case 78:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_ultraviolet();                                          break;
-    case 79:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_orange();                                               break;
-    case 80:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe_CTO();                                                  break;
-    case 81:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_white();                                                  break;
-    case 82:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_red();                                                    break;
-    case 83:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_deepRed();                                                break;
-    case 84:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_blue();                                                   break;
-    case 85:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_deepBlue();                                               break;
-    case 86:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_yellow();                                                 break;
-    case 87:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_green();                                                  break;
-    case 88:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_ultraviolet();                                            break;
-    case 89:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_orange();                                                 break;
-    case 90:  dmxAnim_movingHead_noMovement_allDev_fastStrobe_CTO();                                                    break;
+    case 61:  dmxAnim_movingHead_noMovement_allDev_slowStrobe();                                                  break;
+    case 71:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();                                                break;
+    case 81:  dmxAnim_movingHead_noMovement_allDev_fastStrobe();                                                  break;
 
     //////////////////////////////////////////////////////////// 
 

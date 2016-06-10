@@ -23,6 +23,7 @@ ArrayList<DMX_MovingHead>  DMXList_MovingHeads_side;
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads_center;
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads_right;
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads_left;
+IntList                    DMX_registeredDeviceID_MovingHeads;
 
 //If an exception is raised when trying to send a DMX command, raise the flag, and do not try anymore for this particular device
 boolean exceptionRaisedDMX = false;
@@ -116,8 +117,16 @@ void dmxInit_registerDefaultMovingHeads() {
     println("Undefined Fixture");
   }
 
+  // Execute all the subtasks needed to complete the DMX init
+  dmxInit_buildSubObjects();
+  
+}
+
+void dmxInit_buildSubObjects() {
   // Now build the center/side/right/left sublists
   dmx_buildFixtureSublists_movingHead();
+  // Check the registered deviceIDs
+  dmx_buildDeviceIDLists();
 }
 
 void dmx_buildFixtureSublists_movingHead() {
@@ -197,4 +206,12 @@ void dmx_buildFixtureSublists_movingHead() {
     println("DMXList_MovingHeads_left - " + movingHead.getDeviceID());
   }
 
+}
+
+void dmx_buildDeviceIDLists() {
+  DMX_registeredDeviceID_MovingHeads = new IntList();
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_side) {
+    DMX_registeredDeviceID_MovingHeads.append(movingHead.getDeviceID());
+  }
+  DMX_registeredDeviceID_MovingHeads.sort();
 }
