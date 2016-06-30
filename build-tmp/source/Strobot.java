@@ -22712,7 +22712,7 @@ final int signalInstantValMessageSize = 7;
 final int impulseMessageSize          = 2;
 final int fftMessageSize              = 67;
 final int THREAD_SLEEP_TIME           = 20;   //20 ms (for reference, 50 fps means a 20ms period)
-final int THREAD_SLEEP_TIME_MIDI_SVR  = 10;   //10 ms (for the MIDI and the TimeInfo servers, check if messages are available more often : this is important to have no latency between the music and the lights) 
+final int THREAD_SLEEP_TIME_MIDI_SVR  = 15;   //15 ms (for the MIDI and the TimeInfo servers, check if messages are available more often : this is important to have no latency between the music and the lights) . Note: TimeInfo messages are sent every 25ms
 
 //Audio buffer size, big enough to have one value for each LED pixel (= 4 pixels in Processing)
 //Important note : the number of panels is hard coded, so that even when using 3 panels, the buffer is the same
@@ -22920,7 +22920,6 @@ public void createTimeInfoServer() {
       try {
         TimeInfoServer.receive(incomingTimeInfo);
         processTimeInfoMessage(SignalMessages.TimeInfo.parseFrom(incomingTimeInfo.getData()));
-        println(frameCount + " //// " + frameRate);
       }
       catch (Exception e) {}
     }
@@ -29306,30 +29305,8 @@ public void playDMXAnimation_movingHead() {
     case 4:   dmxAnim_movingHead_noMovement_leftDev_performCurrentLightStyle();                                          break;
     case 5:   dmxAnim_movingHead_noMovement_rightDev_performCurrentLightStyle();                                          break;
 
-    case 6:   dmxAnim_movingHead_noMovement_allDev_continuousLight();                                             break;
 
-    //////////////////////////////////////////////////////////// 
- 
-    case 7:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();                                             break;
- 
-    //////////////////////////////////////////////////////////// 
- 
-    case 8:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();                                            break;
- 
-    //////////////////////////////////////////////////////////// 
- 
-    case 9:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();                                          break;
- 
-    ////////////////////////////////////////////////////////////  
- 
-    case 10:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();                                          break;
 
- 
-    //////////////////////////////////////////////////////////// 
-
-    case 61:  dmxAnim_movingHead_noMovement_allDev_slowStrobe();                                                  break;
-    case 71:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();                                                break;
-    case 81:  dmxAnim_movingHead_noMovement_allDev_fastStrobe();                                                  break;
 
     //////////////////////////////////////////////////////////// 
 
@@ -29342,33 +29319,33 @@ public void playDMXAnimation_movingHead() {
 
 
 
-    case 257: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_LowTilt();                                   break;
-    case 258: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_LowTilt();                                     break;
-    case 259: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_LowTilt();                                    break;
-    case 260: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_FrontTilt();                                 break;
-    case 261: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_FrontTilt();                                   break;
-    case 262: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_FrontTilt();                                  break;
-    case 263: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_HighTilt();                                  break;
-    case 264: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_HighTilt();                                    break;
-    case 265: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_HighTilt();                                   break;
-    case 266: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_UprightTilt();                               break;
-    case 267: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_UprightTilt();                                 break;
-    case 268: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_UprightTilt();                                break;
-    case 269: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_BackTilt();                                  break;
-    case 270: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_BackTilt();                                    break;
-    case 271: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_BackTilt();                                   break;
-    case 272: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_FrontTilt();                          break;
-    case 273: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_FrontTilt();                       break;
-    case 274: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_HighTilt();                           break;
-    case 275: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_HighTilt();                        break;
-    case 276: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_FrontTilt();                         break;
-    case 277: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConergentPan_FrontTilt();                       break;
-    case 278: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_HighTilt();                          break;
-    case 279: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_HighTilt();                       break;
-    case 280: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WideNegTilt();                     break;
-    case 281: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowNegTilt();                   break;
-    case 282: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WidePosTilt();                     break;
-    case 283: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTilt();                   break;
+    case 6:  dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_LowTilt();                                   break;
+    case 7:  dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_LowTilt();                                     break;
+    case 8:  dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_LowTilt();                                    break;
+    case 9:  dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_FrontTilt();                                 break;
+    case 10: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_FrontTilt();                                   break;
+    case 11: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_FrontTilt();                                  break;
+    case 12: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_HighTilt();                                  break;
+    case 13: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_HighTilt();                                    break;
+    case 14: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_HighTilt();                                   break;
+    case 15: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_UprightTilt();                               break;
+    case 16: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_UprightTilt();                                 break;
+    case 17: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_UprightTilt();                                break;
+    case 18: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_BackTilt();                                  break;
+    case 19: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_BackTilt();                                    break;
+    case 20: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_BackTilt();                                   break;
+    case 21: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_FrontTilt();                          break;
+    case 22: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_FrontTilt();                       break;
+    case 23: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_HighTilt();                           break;
+    case 24: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_HighTilt();                        break;
+    case 25: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_FrontTilt();                         break;
+    case 26: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConergentPan_FrontTilt();                       break;
+    case 27: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_HighTilt();                          break;
+    case 28: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_HighTilt();                       break;
+    case 29: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WideNegTilt();                     break;
+    case 30: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowNegTilt();                   break;
+    case 31: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WidePosTilt();                     break;
+    case 32: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTilt();                   break;
 
 
 
@@ -29656,6 +29633,7 @@ class DMX_MovingHead {
   Fixture movingHead;                                 // The fixture defining this object
   int deviceID;                                       // Device ID: defined at device instanciation, 0 for the fixtures located on house left, n for the fixtures on house right
   int dmxStartAddr;                                   // Address of the first channel
+  int syncIdx                              = 0;       // Among the BPM-synced fixtures, define the index
 
   int nbChannels                           = 0;
   int[] dmxVal;                                       // Array which shall contain all the instant DMX values for all of this fixture's channels
@@ -29802,6 +29780,10 @@ class DMX_MovingHead {
 
   public int getDeviceID() {
     return this.deviceID;
+  }
+
+  public void setSyncIdx(int idx) {
+    this.syncIdx = idx;
   }
 
   // Set the default values for the main channels
@@ -30542,22 +30524,24 @@ class DMX_MovingHead {
   }
 
   public boolean checkBPMSync_clockwiseRhythm(float factor) {
-    //automaticSequencer.currentPosition * 100 -> 3 decimal precision for the current position
-    // --> 100 = une mesure
-    // deviceID modulo dmxAnim_movingHead_nbRhythmSyncedDev
-    // --- non : deviceID ou numero du dev dans la liste ?
-
-    // for (int i = 0; i<dmxAnim_syncedMovingHeads.; )
-
-    // Number of "reference beats" (4th) for dmxAnim_movingHead_nbRhythmSyncedDev = dmxAnim_movingHead_nbRhythmSyncedDev
-
-    println("devId: " + this.getDeviceID() + " / " + dmxAnim_syncedMovingHeads.size() + " (" + factor + ") - " + automaticSequencer.currentPosition + " / " + (automaticSequencer.currentPosition*4*factor % dmxAnim_syncedMovingHeads.size())) ;
-
-    return false;
+    int seqRef = PApplet.parseInt((automaticSequencer.currentPosition*factor % dmxAnim_syncedMovingHeads.size()));
+    if (seqRef == this.syncIdx) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   public boolean checkBPMSync_antiClockwiseRhythm(float factor) {
-    return false;
+    int seqRef = PApplet.parseInt((automaticSequencer.currentPosition*factor % dmxAnim_syncedMovingHeads.size()));
+    seqRef = dmxAnim_syncedMovingHeads.size() - seqRef;
+    if (seqRef == this.syncIdx) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   public boolean checkBPMSync_randomRhythm(float factor) {
@@ -30585,12 +30569,22 @@ class DMX_MovingHead {
     // while (candidateIdx == dmxAnim_movingHead_currentSelectionIdx) {
     //   candidateIdx = int(random(min(dmxAnim_movingHead_nbRhythmSyncedDev,2)));   //At least 2, even when only one fixture is in the group
     // }
-    
-    return false;
+
+
+    // TBIL
+    // DOES NOT WORK YET
+    int seqRef = PApplet.parseInt((automaticSequencer.currentPosition*factor % dmxAnim_syncedMovingHeads.size()));
+    seqRef = dmxAnim_syncedMovingHeads.size() - seqRef;
+    if (seqRef == this.syncIdx) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   public boolean checkBPMSync_syncedRhythm(float factor) {
-    println(this.getDeviceID() + " - " + automaticSequencer.currentPosition + " -- " + ((int)(automaticSequencer.currentPosition * factor * 2.0f)) + " // " + ((int)(automaticSequencer.currentPosition * factor * 2.0f) % 2 == 0));
+    // println(this.getDeviceID() + " - " + automaticSequencer.currentPosition + " -- " + ((int)(automaticSequencer.currentPosition * factor * 2.0)) + " // " + ((int)(automaticSequencer.currentPosition * factor * 2.0) % 2 == 0));
     if ((int)(automaticSequencer.currentPosition * factor * 2.0f) % 2 == 0) {
       return true;
     }
@@ -30764,6 +30758,7 @@ public void dmxAnim_movingHead_computeNbSyncedFixtures() {
   dmxAnim_syncedMovingHeads = new IntList();
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
     if (movingHead.currentRhythmPattern != DMXANIM_LIGHTRHYTHM_NOSYNC) {
+      movingHead.setSyncIdx(dmxAnim_movingHead_nbRhythmSyncedDev);
       dmxAnim_syncedMovingHeads.append(movingHead.getDeviceID());
       dmxAnim_movingHead_nbRhythmSyncedDev += 1;
     }
@@ -31129,57 +31124,7 @@ public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_Divergen
   dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0f, -60);
 }
 
-////////////////////////////////////////////////////////////
-// Standard lighting functions for all devices
 
-public void dmxAnim_movingHead_noMovement_allDev_continuousLight() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_continuousLight();
-  }
-}
-
-public void dmxAnim_movingHead_noMovement_allDev_singleLongFlash() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_singleLongFlash();
-  }
-}
-
-public void dmxAnim_movingHead_noMovement_allDev_singleShortFlash() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_singleShortFlash();
-  }
-}
-
-public void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_slowCrescendo();
-  }
-}
-
-public void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_fastCrescendo();
-  }
-}
-
-
-public void dmxAnim_movingHead_noMovement_allDev_slowStrobe() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_slowStrobe();
-  }
-}
-
-public void dmxAnim_movingHead_noMovement_allDev_mediumStrobe() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_mediumStrobe();
-  }
-}
-
-public void dmxAnim_movingHead_noMovement_allDev_fastStrobe() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_fastStrobe();
-  }
-}
 
 ////////////////////////////////////////////////////////////
 // Set the color to use in the more complex animations
@@ -31221,6 +31166,7 @@ public void dmxAnim_movingHead_noMovement_performCurrentLightStyle(ArrayList<DMX
   for (DMX_MovingHead movingHead: movingHeadList) {
     boolean performEnabled = movingHead.checkBPMSync();
     if (performEnabled) {
+      println(movingHead.currentLightStyle);
       switch (movingHead.currentLightStyle) {
         case DMXANIM_BLACKOUT:                       movingHead.performLight_blackout();                  break;
         case DMXANIM_CONTINUOUS_LIGHT:               movingHead.performLight_continuousLight();           break;
