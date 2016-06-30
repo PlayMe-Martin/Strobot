@@ -502,76 +502,39 @@ void playDMXAnimation_movingHead() {
     case 4:   dmxAnim_movingHead_noMovement_leftDev_performCurrentLightStyle();                                          break;
     case 5:   dmxAnim_movingHead_noMovement_rightDev_performCurrentLightStyle();                                          break;
 
-    case 6:   dmxAnim_movingHead_noMovement_allDev_continuousLight();                                             break;
-
-    //////////////////////////////////////////////////////////// 
- 
-    case 7:  dmxAnim_movingHead_noMovement_allDev_singleLongFlash();                                             break;
- 
-    //////////////////////////////////////////////////////////// 
- 
-    case 8:  dmxAnim_movingHead_noMovement_allDev_singleShortFlash();                                            break;
- 
-    //////////////////////////////////////////////////////////// 
- 
-    case 9:  dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight();                                          break;
- 
-    ////////////////////////////////////////////////////////////  
- 
-    case 10:  dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight();                                          break;
-
- 
     //////////////////////////////////////////////////////////// 
 
-    case 61:  dmxAnim_movingHead_noMovement_allDev_slowStrobe();                                                  break;
-    case 71:  dmxAnim_movingHead_noMovement_allDev_mediumStrobe();                                                break;
-    case 81:  dmxAnim_movingHead_noMovement_allDev_fastStrobe();                                                  break;
+    case 6:  dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_LowTilt();                                   break;
+    case 7:  dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_LowTilt();                                     break;
+    case 8:  dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_LowTilt();                                    break;
+    case 9:  dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_FrontTilt();                                 break;
+    case 10: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_FrontTilt();                                   break;
+    case 11: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_FrontTilt();                                  break;
+    case 12: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_HighTilt();                                  break;
+    case 13: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_HighTilt();                                    break;
+    case 14: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_HighTilt();                                   break;
+    case 15: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_UprightTilt();                               break;
+    case 16: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_UprightTilt();                                 break;
+    case 17: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_UprightTilt();                                break;
+    case 18: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_BackTilt();                                  break;
+    case 19: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_BackTilt();                                    break;
+    case 20: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_BackTilt();                                   break;
+    case 21: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_FrontTilt();                          break;
+    case 22: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_FrontTilt();                       break;
+    case 23: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_HighTilt();                           break;
+    case 24: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_HighTilt();                        break;
+    case 25: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_FrontTilt();                         break;
+    case 26: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConergentPan_FrontTilt();                       break;
+    case 27: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_HighTilt();                          break;
+    case 28: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_HighTilt();                       break;
+    case 29: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WideNegTilt();                     break;
+    case 30: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowNegTilt();                   break;
+    case 31: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WidePosTilt();                     break;
+    case 32: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTilt();                   break;
 
-    //////////////////////////////////////////////////////////// 
+    ////////////////////////////////////
 
-
-
-
-
-
-
-
-
-
-    case 257: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_LowTilt();                                   break;
-    case 258: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_LowTilt();                                     break;
-    case 259: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_LowTilt();                                    break;
-    case 260: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_FrontTilt();                                 break;
-    case 261: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_FrontTilt();                                   break;
-    case 262: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_FrontTilt();                                  break;
-    case 263: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_HighTilt();                                  break;
-    case 264: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_HighTilt();                                    break;
-    case 265: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_HighTilt();                                   break;
-    case 266: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_UprightTilt();                               break;
-    case 267: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_UprightTilt();                                 break;
-    case 268: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_UprightTilt();                                break;
-    case 269: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_BackTilt();                                  break;
-    case 270: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_BackTilt();                                    break;
-    case 271: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_BackTilt();                                   break;
-    case 272: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_FrontTilt();                          break;
-    case 273: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_FrontTilt();                       break;
-    case 274: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_HighTilt();                           break;
-    case 275: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_HighTilt();                        break;
-    case 276: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_FrontTilt();                         break;
-    case 277: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConergentPan_FrontTilt();                       break;
-    case 278: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_HighTilt();                          break;
-    case 279: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_HighTilt();                       break;
-    case 280: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WideNegTilt();                     break;
-    case 281: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowNegTilt();                   break;
-    case 282: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WidePosTilt();                     break;
-    case 283: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTilt();                   break;
-
-
-
-
-////////////////////////////////////
-
-
+    case 33: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal();                                   break;
 
 
 

@@ -132,6 +132,7 @@ class DMX_MovingHead {
   Fixture movingHead;                                 // The fixture defining this object
   int deviceID;                                       // Device ID: defined at device instanciation, 0 for the fixtures located on house left, n for the fixtures on house right
   int dmxStartAddr;                                   // Address of the first channel
+  int syncIdx                              = 0;       // Among the BPM-synced fixtures, define the index
 
   int nbChannels                           = 0;
   int[] dmxVal;                                       // Array which shall contain all the instant DMX values for all of this fixture's channels
@@ -278,6 +279,10 @@ class DMX_MovingHead {
 
   int getDeviceID() {
     return this.deviceID;
+  }
+
+  void setSyncIdx(int idx) {
+    this.syncIdx = idx;
   }
 
   // Set the default values for the main channels
@@ -1018,22 +1023,24 @@ class DMX_MovingHead {
   }
 
   boolean checkBPMSync_clockwiseRhythm(float factor) {
-    //automaticSequencer.currentPosition * 100 -> 3 decimal precision for the current position
-    // --> 100 = une mesure
-    // deviceID modulo dmxAnim_movingHead_nbRhythmSyncedDev
-    // --- non : deviceID ou numero du dev dans la liste ?
-
-    // for (int i = 0; i<dmxAnim_syncedMovingHeads.; )
-
-    // Number of "reference beats" (4th) for dmxAnim_movingHead_nbRhythmSyncedDev = dmxAnim_movingHead_nbRhythmSyncedDev
-
-    println("devId: " + this.getDeviceID() + " / " + dmxAnim_syncedMovingHeads.size() + " (" + factor + ") - " + automaticSequencer.currentPosition + " / " + (automaticSequencer.currentPosition*4*factor % dmxAnim_syncedMovingHeads.size())) ;
-
-    return false;
+    int seqRef = int((automaticSequencer.currentPosition*factor % dmxAnim_syncedMovingHeads.size()));
+    if (seqRef == this.syncIdx) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   boolean checkBPMSync_antiClockwiseRhythm(float factor) {
-    return false;
+    int seqRef = int((automaticSequencer.currentPosition*factor % dmxAnim_syncedMovingHeads.size()));
+    seqRef = dmxAnim_syncedMovingHeads.size() - seqRef;
+    if (seqRef == this.syncIdx) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   boolean checkBPMSync_randomRhythm(float factor) {
@@ -1061,12 +1068,22 @@ class DMX_MovingHead {
     // while (candidateIdx == dmxAnim_movingHead_currentSelectionIdx) {
     //   candidateIdx = int(random(min(dmxAnim_movingHead_nbRhythmSyncedDev,2)));   //At least 2, even when only one fixture is in the group
     // }
-    
-    return false;
+
+
+    // TBIL
+    // DOES NOT WORK YET
+    int seqRef = int((automaticSequencer.currentPosition*factor % dmxAnim_syncedMovingHeads.size()));
+    seqRef = dmxAnim_syncedMovingHeads.size() - seqRef;
+    if (seqRef == this.syncIdx) {
+      return true;
+    }
+    else {
+      return false;
+    }
   }
 
   boolean checkBPMSync_syncedRhythm(float factor) {
-    println(this.getDeviceID() + " - " + automaticSequencer.currentPosition + " -- " + ((int)(automaticSequencer.currentPosition * factor * 2.0)) + " // " + ((int)(automaticSequencer.currentPosition * factor * 2.0) % 2 == 0));
+    // println(this.getDeviceID() + " - " + automaticSequencer.currentPosition + " -- " + ((int)(automaticSequencer.currentPosition * factor * 2.0)) + " // " + ((int)(automaticSequencer.currentPosition * factor * 2.0) % 2 == 0));
     if ((int)(automaticSequencer.currentPosition * factor * 2.0) % 2 == 0) {
       return true;
     }
@@ -1240,6 +1257,7 @@ void dmxAnim_movingHead_computeNbSyncedFixtures() {
   dmxAnim_syncedMovingHeads = new IntList();
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
     if (movingHead.currentRhythmPattern != DMXANIM_LIGHTRHYTHM_NOSYNC) {
+      movingHead.setSyncIdx(dmxAnim_movingHead_nbRhythmSyncedDev);
       dmxAnim_syncedMovingHeads.append(movingHead.getDeviceID());
       dmxAnim_movingHead_nbRhythmSyncedDev += 1;
     }
@@ -1605,57 +1623,7 @@ void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_W
   dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0, -60);
 }
 
-////////////////////////////////////////////////////////////
-// Standard lighting functions for all devices
 
-void dmxAnim_movingHead_noMovement_allDev_continuousLight() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_continuousLight();
-  }
-}
-
-void dmxAnim_movingHead_noMovement_allDev_singleLongFlash() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_singleLongFlash();
-  }
-}
-
-void dmxAnim_movingHead_noMovement_allDev_singleShortFlash() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_singleShortFlash();
-  }
-}
-
-void dmxAnim_movingHead_noMovement_allDev_slowCrescendoLight() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_slowCrescendo();
-  }
-}
-
-void dmxAnim_movingHead_noMovement_allDev_fastCrescendoLight() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_fastCrescendo();
-  }
-}
-
-
-void dmxAnim_movingHead_noMovement_allDev_slowStrobe() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_slowStrobe();
-  }
-}
-
-void dmxAnim_movingHead_noMovement_allDev_mediumStrobe() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_mediumStrobe();
-  }
-}
-
-void dmxAnim_movingHead_noMovement_allDev_fastStrobe() {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_fastStrobe();
-  }
-}
 
 ////////////////////////////////////////////////////////////
 // Set the color to use in the more complex animations
@@ -2750,4 +2718,11 @@ void dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTil
 
 ////////////////////////////////////////////////////////////////////////
 
-
+void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(max(0,0,100, movingHead.dmxVal_specificVal_pan_left_perCent, movingHead.dmxVal_specificVal_pan_right_perCent));
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+  }
+  dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+}
