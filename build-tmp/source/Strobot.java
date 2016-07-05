@@ -28819,7 +28819,7 @@ int dmxAnimationNumber_movingHead_setLightStyle     = 0;
 int dmxAnimationNumber_movingHead_setAnimation      = 0;
 int dmxAnimationNumber_par                          = 0;
 
-int dmxAnim_movingHead_globalAnimCpt                = 0;          // Global counter used for the animations
+float dmxAnim_movingHead_globalAnimCpt              = 0;          // Global counter used for the animations
 int dmxAnim_movingHead_nbRhythmSyncedDev            = 0;
 int dmxAnim_movingHead_currentSelectionIdx          = 0;
 IntList dmxAnim_syncedMovingHeads;                                // IntList containing the deviceIDs of the concerned fixtures
@@ -29295,29 +29295,17 @@ public void playDMXAnimation_movingHead() {
 
   switch(dmxAnimationNumber_movingHead_setAnimation) {
 
-    case 0:   dmxAnim_movingHead_blackout();                                                                            break;
+    case 0:   dmxAnim_movingHead_blackout();                                                                   break;
 
     // Simple commands for the various possible lightings and colors, without changing the direction of the projector
 
-    case 1:   dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();                                          break;
-    case 2:   dmxAnim_movingHead_noMovement_centerDev_performCurrentLightStyle();                                          break;
-    case 3:   dmxAnim_movingHead_noMovement_sideDev_performCurrentLightStyle();                                          break;
-    case 4:   dmxAnim_movingHead_noMovement_leftDev_performCurrentLightStyle();                                          break;
-    case 5:   dmxAnim_movingHead_noMovement_rightDev_performCurrentLightStyle();                                          break;
-
-
-
+    case 1:   dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();                                 break;
+    case 2:   dmxAnim_movingHead_noMovement_centerDev_performCurrentLightStyle();                              break;
+    case 3:   dmxAnim_movingHead_noMovement_sideDev_performCurrentLightStyle();                                break;
+    case 4:   dmxAnim_movingHead_noMovement_leftDev_performCurrentLightStyle();                                break;
+    case 5:   dmxAnim_movingHead_noMovement_rightDev_performCurrentLightStyle();                               break;
 
     //////////////////////////////////////////////////////////// 
-
-
-
-
-
-
-
-
-
 
     case 6:  dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_LowTilt();                                   break;
     case 7:  dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_LowTilt();                                     break;
@@ -29347,15 +29335,52 @@ public void playDMXAnimation_movingHead() {
     case 31: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WidePosTilt();                     break;
     case 32: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTilt();                   break;
 
+    ////////////////////////////////////
 
+    case 33: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_LeftToRight();                  break;
+    case 34: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_LeftToRight();               break;
+    case 35: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_LeftToRight();                  break;
+    case 36: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_RightToLeft();                  break;
+    case 37: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_RightToLeft();               break;
+    case 38: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_RightToLeft();                  break;
+    case 39: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_LeftToRight();                      break;
+    case 40: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_LeftToRight();                   break;
+    case 41: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_LeftToRight();                      break;
+    case 42: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_RightToLeft();                      break;
+    case 43: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_RightToLeft();                   break;
+    case 44: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_RightToLeft();                      break;
 
+    case 45: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_LeftToRight();                    break;
+    case 46: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_LeftToRight();                 break;
+    case 47: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_LeftToRight();                    break;
+    case 48: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_RightToLeft();                    break;
+    case 49: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_RightToLeft();                 break;
+    case 50: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_RightToLeft();                    break;
+    case 51: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_LeftToRight();                        break;
+    case 52: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_LeftToRight();                     break;
+    case 53: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_LeftToRight();                        break;
+    case 54: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_RightToLeft();                        break;
+    case 55: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_RightToLeft();                     break;
+    case 56: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_RightToLeft();                        break;
 
-////////////////////////////////////
+    case 57: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_LeftToRight();                    break;
+    case 58: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Regular_LeftToRight();                 break;
+    case 59: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Fast_LeftToRight();                    break;
+    case 60: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_RightToLeft();                    break;
+    case 61: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Regular_RightToLeft();                 break;
+    case 62: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Fast_RightToLeft();                    break;
+    case 63: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Slow_LeftToRight();                        break;
+    case 64: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Regular_LeftToRight();                     break;
+    case 65: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_LeftToRight();                        break;
+    case 66: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Slow_RightToLeft();                        break;
+    case 67: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Regular_RightToLeft();                     break;
+    case 68: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_RightToLeft();                        break;
 
+    case 69: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent();        break;
 
-
-
-
+    //Rajouter:
+    // perlin noise en l'air, avec tous les projos qui bougent ensemble ou sur un meme seed (d\u00e9cal\u00e9s ou non, pour symetrie)
+    // Le seed est defini par un random au setup, et change a chaque fois que l'anim est appelee
 
 
     // case xxx: dmxAnim_movingHead_lightOn_fastMove_centerDev_Symmetric_CenterPan_LowTilt();                      break;
@@ -29403,52 +29428,45 @@ public void playDMXAnimation_movingHead() {
 public void setupDMXAnimation_movingHeadAnimation() {
   switch(dmxAnimationNumber_movingHead_setAnimation) {
 
-    case 58:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 59:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 60:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 61:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 62:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 63:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 64:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 65:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 66:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 67:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    
-    case 68:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 69:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 70:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 71:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 72:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 73:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 74:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 75:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 76:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 77:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    
-    case 78:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 79:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 80:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 81:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 82:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 83:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 84:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 85:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 86:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 87:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
+    case 33: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 34: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 35: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 36: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 37: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 38: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 39: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 40: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 41: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 42: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 43: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 44: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 45: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 46: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 47: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 48: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 49: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 50: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 51: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 52: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 53: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 54: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 55: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 56: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 57: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 58: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 59: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 60: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 61: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 62: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 63: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 64: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 65: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 66: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 67: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 68: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
 
-    case 88:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 89:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 90:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 91:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 92:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 93:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 94:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 95:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 96:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
-    case 97:  dmxAnim_movingHead_setupReinit_allDevices();                                             break;
+    case 69: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
 
-
-    case 101: dmxAnim_movingHead_globalAnimCpt += 1;                                                   break;
     default: break;
   }
 }
@@ -30644,6 +30662,33 @@ class DMX_MovingHead {
     reinitAnimVars();
   }
 
+  public void performLight_currentStyle() {
+    boolean performEnabled = this.checkBPMSync();
+    if (performEnabled) {
+      switch (this.currentLightStyle) {
+        case DMXANIM_BLACKOUT:                       this.performLight_blackout();                  break;
+        case DMXANIM_CONTINUOUS_LIGHT:               this.performLight_continuousLight();           break;
+        case DMXANIM_SINGLE_LONG_FLASH:              this.performLight_singleLongFlash();           break;
+        case DMXANIM_SINGLE_SHORT_FLASH:             this.performLight_singleShortFlash();          break;
+        case DMXANIM_SLOW_CRESCENDO:                 this.performLight_slowCrescendo();             break;
+        case DMXANIM_FAST_CRESCENDO:                 this.performLight_fastCrescendo();             break;
+        case DMXANIM_SLOW_STROBE:                    this.performLight_slowStrobe();                break;
+        case DMXANIM_MEDIUM_STROBE:                  this.performLight_mediumStrobe();              break;
+        case DMXANIM_FAST_STROBE:                    this.performLight_fastStrobe();                break;
+        case DMXANIM_SLOW_SINE_WAVE_CLOCKWISE:       this.performLight_slowClockwiseSineWave();     break;
+        case DMXANIM_FAST_SINE_WAVE_CLOCKWISE:       this.performLight_fastClockwiseSineWave();     break;
+        case DMXANIM_SLOW_SINE_WAVE_ANTICLOCKWISE:   this.performLight_slowAntiClockwiseSineWave(); break;
+        case DMXANIM_FAST_SINE_WAVE_ANTICLOCKWISE:   this.performLight_fastAntiClockwiseSineWave(); break;
+        case DMXANIM_RANDOM_GLITCH:                  this.performLight_randomGlitch();              break;
+        case DMXANIM_MIN_APERTURE_BEAM:              this.performLight_minimalApertureBeam();       break;
+        default:                                     break;
+      }
+    }
+    else {
+      this.performLight_standbyBlackout();
+    }
+  }
+
   public void performLight_blackout() {
     this.setDimmer(0);
   }
@@ -30778,7 +30823,6 @@ public void dmxAnim_movingHead_computeNbSyncedFixtures() {
 
 public void dmxAnim_movingHead_prepareDirection_CenterPan_LowTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
@@ -30787,7 +30831,6 @@ public void dmxAnim_movingHead_prepareDirection_CenterPan_LowTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_LeftPan_LowTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
@@ -30796,7 +30839,6 @@ public void dmxAnim_movingHead_prepareDirection_LeftPan_LowTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_RightPan_LowTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
@@ -30805,7 +30847,6 @@ public void dmxAnim_movingHead_prepareDirection_RightPan_LowTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_CenterPan_FrontTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
@@ -30814,7 +30855,6 @@ public void dmxAnim_movingHead_prepareDirection_CenterPan_FrontTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_LeftPan_FrontTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
@@ -30823,7 +30863,6 @@ public void dmxAnim_movingHead_prepareDirection_LeftPan_FrontTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_RightPan_FrontTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
@@ -30832,7 +30871,6 @@ public void dmxAnim_movingHead_prepareDirection_RightPan_FrontTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_CenterPan_HighTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
@@ -30841,7 +30879,6 @@ public void dmxAnim_movingHead_prepareDirection_CenterPan_HighTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_LeftPan_HighTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
@@ -30850,7 +30887,6 @@ public void dmxAnim_movingHead_prepareDirection_LeftPan_HighTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_RightPan_HighTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
@@ -30859,7 +30895,6 @@ public void dmxAnim_movingHead_prepareDirection_RightPan_HighTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_CenterPan_UprightTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
@@ -30868,7 +30903,6 @@ public void dmxAnim_movingHead_prepareDirection_CenterPan_UprightTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_LeftPan_UprightTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
@@ -30877,7 +30911,6 @@ public void dmxAnim_movingHead_prepareDirection_LeftPan_UprightTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_RightPan_UprightTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
@@ -30886,7 +30919,6 @@ public void dmxAnim_movingHead_prepareDirection_RightPan_UprightTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_CenterPan_BackTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
@@ -30895,7 +30927,6 @@ public void dmxAnim_movingHead_prepareDirection_CenterPan_BackTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_LeftPan_BackTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
@@ -30904,7 +30935,6 @@ public void dmxAnim_movingHead_prepareDirection_LeftPan_BackTilt() {
 
 public void dmxAnim_movingHead_prepareDirection_RightPan_BackTilt() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
@@ -30917,7 +30947,6 @@ public void dmxAnim_movingHead_prepareDirection_RightPan_BackTilt() {
 // tiltValue_perCent: % of the angle between "max low" and "upright"
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(float openingWidthAngle_perCent, float tiltValue_perCent) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     float panHalfWidth = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
     float pan_perCent  = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, panHalfWidth, 100 - panHalfWidth);
@@ -30981,7 +31010,6 @@ public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPa
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(float openingWidthAngle_perCent, float tiltValue_perCent) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     float panHalfWidth = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
     float pan_perCent  = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, 100 - panHalfWidth, panHalfWidth);
@@ -31044,7 +31072,6 @@ public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowP
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(float openingTiltAngle_perCent) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
 
     float pan_perCent = movingHead.dmxVal_specificVal_pan_center_perCent;
@@ -31078,7 +31105,6 @@ public void dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentT
 // openingTiltAngle_perCent corresponds to the angle between the front position (upright + 90\u00b0) and the upright position
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(float openingWidthAngle_perCent, float openingTiltAngle_perCent) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    movingHead.performLight_blackout();
     movingHead.setSpeed_maxSpeed();
     float panHalfWidth   = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
     float pan_perCent    = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, panHalfWidth, 100 - panHalfWidth);
@@ -31138,25 +31164,25 @@ public void dmxAnim_movingHead_setColor_allDev(int colorCode) {
 public void dmxAnim_movingHead_setColor_centerDev(int colorCode) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads_center) {
     movingHead.setColor(colorCode);
-  }  
+  }
 }
 
 public void dmxAnim_movingHead_setColor_sideDev(int colorCode) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads_side) {
     movingHead.setColor(colorCode);
-  }  
+  }
 }
 
 public void dmxAnim_movingHead_setColor_leftDev(int colorCode) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads_left) {
     movingHead.setColor(colorCode);
-  }  
+  }
 }
 
 public void dmxAnim_movingHead_setColor_rightDev(int colorCode) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads_right) {
     movingHead.setColor(colorCode);
-  }  
+  }
 }
 
 ////////////////////////////////////////////////////////////
@@ -31164,34 +31190,9 @@ public void dmxAnim_movingHead_setColor_rightDev(int colorCode) {
 
 public void dmxAnim_movingHead_noMovement_performCurrentLightStyle(ArrayList<DMX_MovingHead> movingHeadList) {
   for (DMX_MovingHead movingHead: movingHeadList) {
-    boolean performEnabled = movingHead.checkBPMSync();
-    if (performEnabled) {
-      println(movingHead.currentLightStyle);
-      switch (movingHead.currentLightStyle) {
-        case DMXANIM_BLACKOUT:                       movingHead.performLight_blackout();                  break;
-        case DMXANIM_CONTINUOUS_LIGHT:               movingHead.performLight_continuousLight();           break;
-        case DMXANIM_SINGLE_LONG_FLASH:              movingHead.performLight_singleLongFlash();           break;
-        case DMXANIM_SINGLE_SHORT_FLASH:             movingHead.performLight_singleShortFlash();          break;
-        case DMXANIM_SLOW_CRESCENDO:                 movingHead.performLight_slowCrescendo();             break;
-        case DMXANIM_FAST_CRESCENDO:                 movingHead.performLight_fastCrescendo();             break;
-        case DMXANIM_SLOW_STROBE:                    movingHead.performLight_slowStrobe();                break;
-        case DMXANIM_MEDIUM_STROBE:                  movingHead.performLight_mediumStrobe();              break;
-        case DMXANIM_FAST_STROBE:                    movingHead.performLight_fastStrobe();                break;
-        case DMXANIM_SLOW_SINE_WAVE_CLOCKWISE:       movingHead.performLight_slowClockwiseSineWave();     break;
-        case DMXANIM_FAST_SINE_WAVE_CLOCKWISE:       movingHead.performLight_fastClockwiseSineWave();     break;
-        case DMXANIM_SLOW_SINE_WAVE_ANTICLOCKWISE:   movingHead.performLight_slowAntiClockwiseSineWave(); break;
-        case DMXANIM_FAST_SINE_WAVE_ANTICLOCKWISE:   movingHead.performLight_fastAntiClockwiseSineWave(); break;
-        case DMXANIM_RANDOM_GLITCH:                  movingHead.performLight_randomGlitch();              break;
-        case DMXANIM_MIN_APERTURE_BEAM:              movingHead.performLight_minimalApertureBeam();       break;
-        default:                                     break;
-      }
-    }
-    else {
-      movingHead.performLight_standbyBlackout();
-    }
+    movingHead.performLight_currentStyle();
   }
 }
-
 
 public void dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle() {
   dmxAnim_movingHead_noMovement_performCurrentLightStyle(DMXList_MovingHeads);
@@ -32220,7 +32221,449 @@ public void dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_Narro
 
 ////////////////////////////////////////////////////////////////////////
 
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_LeftToRight() {
+  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.125f, true, offset, false);
+}
 
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_LeftToRight() {
+  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.25f, true, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_LeftToRight() {
+  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.5f, true, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.125f, false, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.25f, false, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.5f , false, offset, false);
+}
+
+
+
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_LeftToRight() {
+  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.125f, true, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_LeftToRight() {
+  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.25f, true, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_LeftToRight() {
+  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.5f, true, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.125f, false, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.25f, false, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.5f , false, offset, true);
+}
+
+// Each moving head has an equal phase difference - the furthest moving heads have a PI phase difference
+// The "performCurrentLightStyle" is only called during the first half of the movement: while the head
+// goes "back" to the original position, ready to shine again, the light is off. 
+// t0  0       PI/3    2*PI/3  PI
+// t1  PI/3    2*PI/3  PI      2*PI/3
+// t2  2*PI/3  PI      2*PI/3  PI/3
+// t3  PI      2*PI/3  PI/3    0
+// t4  2*PI/3  PI/3    0       PI/3
+// t5  PI/3    0       PI/3    2*PI/3
+// t6  0       PI/3    2*PI/3  PI
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(float factor, boolean leftToRight, float offset, boolean oneShot) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.setSpeed_maxSpeed();
+    // The initial value must calculated so that in the case of a leftToRight movement, the device the furthest to the right is ready to flash (ie. pan=1, panDiff>0)
+    float pan     = 0;
+    float panDiff = 0;
+    if (leftToRight) {
+      pan     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      panDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+    }
+    else {
+      pan     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      panDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+    }
+
+    movingHead.setPan(map(pan,0,1, movingHead.dmxVal_specificVal_pan_left_perCent, movingHead.dmxVal_specificVal_pan_right_perCent));
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+    
+    if (leftToRight) {
+      if (panDiff > 0) {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+          movingHead.performLight_currentStyle();
+          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+        }
+        else {
+          movingHead.performLight_blackout();
+        }
+      }
+      else {
+        movingHead.performLight_blackout();
+        if (movingHead.animCpt1 == 1) {
+          movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+        }
+      }
+    }
+    else {
+      if (panDiff > 0) {
+        movingHead.performLight_blackout();
+        movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+      }
+      else {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+          movingHead.performLight_currentStyle();
+          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+        }
+        else {
+          movingHead.performLight_blackout();
+        }
+      }
+    }
+  }
+  float stepSize = factor * 2*PI / (frameRate*60.0f/automaticSequencer.currentBPM);
+  dmxAnim_movingHead_globalAnimCpt += stepSize;
+}
+
+/////////////////////////////////
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_LeftToRight() {
+  //float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.125f, true, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.25f, true, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.5f, true, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.125f, false, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.25f, false, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.5f , false, offset, false);
+}
+
+
+
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.125f, true, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.25f, true, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.5f, true, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.125f, false, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.25f, false, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.5f , false, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(float factor, boolean leftToRight, float offset, boolean oneShot) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.setSpeed_maxSpeed();
+    // The initial value must calculated so that in the case of a leftToRight movement, the device the furthest to the right is ready to flash (ie. pan=1, panDiff>0)
+    float tilt     = 0;
+    float tiltDiff = 0;
+    if (leftToRight) {
+      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+    }
+    else {
+      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+    }
+
+    movingHead.setTilt(map(tilt,0,1, movingHead.dmxVal_specificVal_tilt_front_perCent, movingHead.dmxVal_specificVal_tilt_back_perCent));
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    
+    if (leftToRight) {
+      if (tiltDiff > 0) {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+          movingHead.performLight_currentStyle();
+          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+        }
+        else {
+          movingHead.performLight_blackout();
+        }
+      }
+      else {
+        movingHead.performLight_blackout();
+        if (movingHead.animCpt1 == 1) {
+          movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+        }
+      }
+    }
+    else {
+      if (tiltDiff > 0) {
+        movingHead.performLight_blackout();
+        movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+      }
+      else {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+          movingHead.performLight_currentStyle();
+          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+        }
+        else {
+          movingHead.performLight_blackout();
+        }
+      }
+    }
+  }
+  float stepSize = factor * 2*PI / (frameRate*60.0f/automaticSequencer.currentBPM);
+  dmxAnim_movingHead_globalAnimCpt += stepSize;
+}
+
+
+///////////////////////////
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.125f, true, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Regular_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.25f, true, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Fast_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.5f, true, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.125f, false, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Regular_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.25f, false, offset, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Fast_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.5f , false, offset, false);
+}
+
+
+
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Slow_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.125f, true, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Regular_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.25f, true, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_LeftToRight() {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.5f, true, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Slow_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.125f, false, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Regular_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.25f, false, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_RightToLeft() {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.5f , false, offset, true);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(float factor, boolean leftToRight, float offset, boolean oneShot) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.setSpeed_maxSpeed();
+    // The initial value must calculated so that in the case of a leftToRight movement, the device the furthest to the right is ready to flash (ie. pan=1, panDiff>0)
+    float tilt     = 0;
+    float tiltDiff = 0;
+    if (leftToRight) {
+      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+    }
+    else {
+      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+    }
+
+    movingHead.setTilt(map(tilt,0,1, movingHead.dmxVal_specificVal_tilt_front_perCent, movingHead.dmxVal_specificVal_tilt_back_perCent));
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    
+    if (leftToRight) {
+      if (tiltDiff > 0) {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+          movingHead.performLight_currentStyle();
+          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+        }
+        else {
+          movingHead.performLight_blackout();
+        }
+      }
+      else {
+        movingHead.performLight_blackout();
+        if (movingHead.animCpt1 == 1) {
+          movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+        }
+      }
+    }
+    else {
+      if (tiltDiff > 0) {
+        movingHead.performLight_blackout();
+        movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+      }
+      else {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+          movingHead.performLight_currentStyle();
+          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+        }
+        else {
+          movingHead.performLight_blackout();
+        }
+      }
+    }
+  }
+  float stepSize = factor * 2*PI / (frameRate*60.0f/automaticSequencer.currentBPM);
+  dmxAnim_movingHead_globalAnimCpt += stepSize;
+}
+
+/////////////////////////////////////
+
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent() {
+  //float offset1 = PI/2*(-1 - (DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size());
+  float offset1 = PI;
+  float offset2 = PI;
+
+  //le dev au centre a un pan nul
+  // les des le plus proche du centre ont un pan soit egal a 0, soit PI/2
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.125f, true, offset1, offset2, false);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(float factor, boolean convergent, float offset1, float offset2, boolean oneShot) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.setSpeed_maxSpeed();
+    // The initial value must calculated so that in the case of a leftToRight movement, the device the furthest to the right is ready to flash (ie. pan=1, panDiff>0)
+    float pan     = 0;
+    float panDiff = 0;
+    if (convergent) {
+      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
+        pan     = 0.5f+0.5f*sin(offset1 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+        panDiff = cos(offset1 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());        
+      }
+      else if (movingHead.getDeviceID() >= DMXList_MovingHeads.size()/2) {
+        pan     = 0.5f+0.5f*sin(offset2 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+        panDiff = cos(offset2 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      }
+    }
+    else {
+      // pan     = 0.5+0.5*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      // panDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+    }
+
+    movingHead.setPan(map(pan,0,1, movingHead.dmxVal_specificVal_pan_left_perCent, movingHead.dmxVal_specificVal_pan_right_perCent));
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+    
+    if (convergent) {
+      if (panDiff > 0) {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+          movingHead.performLight_currentStyle();
+          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+        }
+        else {
+          movingHead.performLight_blackout();
+        }
+      }
+      else {
+        movingHead.performLight_blackout();
+        if (movingHead.animCpt1 == 1) {
+          movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+        }
+      }
+    }
+    else {
+      if (panDiff < 0) {
+        movingHead.performLight_blackout();
+        movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+      }
+      else {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+          movingHead.performLight_currentStyle();
+          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+        }
+        else {
+          movingHead.performLight_blackout();
+        }
+      }
+    }
+  }
+  float stepSize = factor * 2*PI / (frameRate*60.0f/automaticSequencer.currentBPM);
+  dmxAnim_movingHead_globalAnimCpt += stepSize;
+}
 //////////////////////////////////////
 //   Fixture management - strobes   //
 //////////////////////////////////////
