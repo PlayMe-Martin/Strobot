@@ -200,56 +200,83 @@ void setupDMXAnimation_strobe() {
 void setupDMXAnimation_movingHead_initDirection() {
   switch(dmxAnimationNumber_movingHead_initDirection) {
     // Prepare direction : set all moving heads facing towards a specific direction in order to anticipate the subsequent animation
-    case 1:   dmxAnim_movingHead_prepareDirection_CenterPan_LowTilt();                                                  break;
-    case 2:   dmxAnim_movingHead_prepareDirection_LeftPan_LowTilt();                                                    break;
-    case 3:   dmxAnim_movingHead_prepareDirection_RightPan_LowTilt();                                                   break;
-    case 4:   dmxAnim_movingHead_prepareDirection_CenterPan_FrontTilt();                                                break;
-    case 5:   dmxAnim_movingHead_prepareDirection_LeftPan_FrontTilt();                                                  break;
-    case 6:   dmxAnim_movingHead_prepareDirection_RightPan_FrontTilt();                                                 break;
-    case 7:   dmxAnim_movingHead_prepareDirection_CenterPan_HighTilt();                                                 break;
-    case 8:   dmxAnim_movingHead_prepareDirection_LeftPan_HighTilt();                                                   break;
-    case 9:   dmxAnim_movingHead_prepareDirection_RightPan_HighTilt();                                                  break;
-    case 10:  dmxAnim_movingHead_prepareDirection_CenterPan_UprightTilt();                                              break;
-    case 11:  dmxAnim_movingHead_prepareDirection_LeftPan_UprightTilt();                                                break;
-    case 12:  dmxAnim_movingHead_prepareDirection_RightPan_UprightTilt();                                               break;
-    case 13:  dmxAnim_movingHead_prepareDirection_CenterPan_BackTilt();                                                 break;
-    case 14:  dmxAnim_movingHead_prepareDirection_LeftPan_BackTilt();                                                   break;
-    case 15:  dmxAnim_movingHead_prepareDirection_RightPan_BackTilt();                                                  break;
+    case 1:   dmxAnim_movingHead_prepareDirection_CenterPan_LowTilt();                                                       break;
+    case 2:   dmxAnim_movingHead_prepareDirection_LeftPan_LowTilt();                                                         break;
+    case 3:   dmxAnim_movingHead_prepareDirection_RightPan_LowTilt();                                                        break;
+    case 4:   dmxAnim_movingHead_prepareDirection_CenterPan_FrontTilt();                                                     break;
+    case 5:   dmxAnim_movingHead_prepareDirection_LeftPan_FrontTilt();                                                       break;
+    case 6:   dmxAnim_movingHead_prepareDirection_RightPan_FrontTilt();                                                      break;
+    case 7:   dmxAnim_movingHead_prepareDirection_CenterPan_HighTilt();                                                      break;
+    case 8:   dmxAnim_movingHead_prepareDirection_LeftPan_HighTilt();                                                        break;
+    case 9:   dmxAnim_movingHead_prepareDirection_RightPan_HighTilt();                                                       break;
+    case 10:  dmxAnim_movingHead_prepareDirection_CenterPan_UprightTilt();                                                   break;
+    case 11:  dmxAnim_movingHead_prepareDirection_LeftPan_UprightTilt();                                                     break;
+    case 12:  dmxAnim_movingHead_prepareDirection_RightPan_UprightTilt();                                                    break;
+    case 13:  dmxAnim_movingHead_prepareDirection_CenterPan_BackTilt();                                                      break;
+    case 14:  dmxAnim_movingHead_prepareDirection_LeftPan_BackTilt();                                                        break;
+    case 15:  dmxAnim_movingHead_prepareDirection_RightPan_BackTilt();                                                       break;
 
-    case 16:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowTilt();                            break;
-    case 17:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowTilt();                         break;
-    case 18:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowTilt();                          break;
-    case 19:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontTilt();                          break;
-    case 20:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontTilt();                       break;
-    case 21:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontTilt();                        break;
-    case 22:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighTilt();                           break;
-    case 23:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighTilt();                        break;
-    case 24:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighTilt();                         break;
-    case 25:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightTilt();                        break;
-    case 26:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightTilt();                     break;
-    case 27:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightTilt();                      break;
+    case 16:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowTilt();                                 break;
+    case 17:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowTilt();                              break;
+    case 18:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowTilt();                               break;
+    case 19:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontTilt();                               break;
+    case 20:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontTilt();                            break;
+    case 21:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontTilt();                             break;
+    case 22:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighTilt();                                break;
+    case 23:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighTilt();                             break;
+    case 24:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighTilt();                              break;
+    case 25:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightTilt();                             break;
+    case 26:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightTilt();                          break;
+    case 27:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightTilt();                           break;
 
-    case 28:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowTilt();                           break;
-    case 29:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowTilt();                        break;
-    case 30:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowTilt();                         break;
-    case 31:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontTilt();                         break;
-    case 32:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt();                      break;
-    case 33:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontTilt();                       break;
-    case 34:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighTilt();                          break;
-    case 35:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighTilt();                       break;
-    case 36:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighTilt();                        break;
-    case 37:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightTilt();                       break;
-    case 38:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightTilt();                    break;
-    case 39:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightTilt();                     break;
+    case 28:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowTilt();                                break;
+    case 29:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowTilt();                             break;
+    case 30:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowTilt();                              break;
+    case 31:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontTilt();                              break;
+    case 32:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt();                           break;
+    case 33:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontTilt();                            break;
+    case 34:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighTilt();                               break;
+    case 35:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighTilt();                            break;
+    case 36:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighTilt();                             break;
+    case 37:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightTilt();                            break;
+    case 38:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightTilt();                         break;
+    case 39:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightTilt();                          break;
 
-    case 40:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WideNegTilt();       break;
-    case 41:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowNegTilt();     break;
-    case 42:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WideNegTilt();          break;
-    case 43:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowNegTilt();        break;
-    case 44:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WidePosTilt();       break;
-    case 45:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt();     break;
-    case 46:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WidePosTilt();          break;
-    case 47:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowPosTilt();        break;
+    case 40:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WideNegTilt();            break;
+    case 41:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowNegTilt();          break;
+    case 42:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WideNegTilt();               break;
+    case 43:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowNegTilt();             break;
+    case 44:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WidePosTilt();            break;
+    case 45:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt();          break;
+    case 46:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WidePosTilt();               break;
+    case 47:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowPosTilt();             break;
+
+    case 48:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowOppositeTilt();                         break;
+    case 49:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowOppositeTilt();                      break;
+    case 50:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowOppositeTilt();                       break;
+    case 51:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontOppositeTilt();                       break;
+    case 52:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontOppositeTilt();                    break;
+    case 53:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontOppositeTilt();                     break;
+    case 54:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighOppositeTilt();                        break;
+    case 55:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighOppositeTilt();                     break;
+    case 56:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighOppositeTilt();                      break;
+    case 57:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightOppositeTilt();                     break;
+    case 58:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightOppositeTilt();                  break;
+    case 59:  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightOppositeTilt();                   break;
+
+    case 60:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowOppositeTilt();                        break;
+    case 61:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowOppositeTilt();                     break;
+    case 62:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowOppositeTilt();                      break;
+    case 63:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontOppositeTilt();                      break;
+    case 64:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontOppositeTilt();                   break;
+    case 65:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontOppositeTilt();                    break;
+    case 66:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighOppositeTilt();                       break;
+    case 67:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighOppositeTilt();                    break;
+    case 68:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighOppositeTilt();                     break;
+    case 69:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightOppositeTilt();                    break;
+    case 70:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightOppositeTilt();                 break;
+    case 71:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightOppositeTilt();                  break;
+
     default: break;
   }
 }
@@ -574,10 +601,88 @@ void playDMXAnimation_movingHead() {
     case 68: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_RightToLeft();                        break;
 
     case 69: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent();        break;
+    case 70: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalConvergent();     break;
+    case 71: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalConvergent();        break;
+    case 72: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalConvergent();            break;
+    case 73: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalConvergent();         break;
+    case 74: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalConvergent();            break;
 
-    //Rajouter:
-    // perlin noise en l'air, avec tous les projos qui bougent ensemble ou sur un meme seed (décalés ou non, pour symetrie)
-    // Le seed est defini par un random au setup, et change a chaque fois que l'anim est appelee
+    case 75: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalDivergent();         break;
+    case 76: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalDivergent();      break;
+    case 77: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalDivergent();         break;
+    case 78: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalDivergent();             break;
+    case 79: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalDivergent();          break;
+    case 80: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalDivergent();             break;
+
+    ////////////////////////////////////
+
+    case 81: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_VerySlow();                 break;
+    case 82: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Slow();                     break;
+    case 83: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Regular();                  break;
+    case 84: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Fast();                     break;
+    case 85: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_VerySlow();                 break;
+    case 86: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Slow();                     break;
+    case 87: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Regular();                  break;
+    case 88: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Fast();                     break;
+    case 89: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow();         break;
+    case 90: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Slow();             break;
+    case 91: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Regular();          break;
+    case 92: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Fast();             break;
+    case 93: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow();         break;
+    case 94: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Slow();             break;
+    case 95: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Regular();          break;
+    case 96: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Fast();             break;
+
+    case 97: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_VerySlow();                break;
+    case 98: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Slow();                    break;
+    case 99: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Regular();                 break;
+    case 100: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Fast();                   break;
+    case 101: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_VerySlow();               break;
+    case 102: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Slow();                   break;
+    case 103: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Regular();                break;
+    case 104: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Fast();                   break;
+    case 105: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow();       break;
+    case 106: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Slow();           break;
+    case 107: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Regular();        break;
+    case 108: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Fast();           break;
+    case 109: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow();       break;
+    case 110: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Slow();           break;
+    case 111: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Regular();        break;
+    case 112: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Fast();           break;
+
+    case 113: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_VerySlow();              break;
+    case 114: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Slow();                  break;
+    case 115: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Regular();               break;
+    case 116: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Fast();                  break;
+    case 117: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_VerySlow();              break;
+    case 118: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Slow();                  break;
+    case 119: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Regular();               break;
+    case 120: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Fast();                  break;
+    case 121: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow();      break;
+    case 122: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Slow();          break;
+    case 123: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Regular();       break;
+    case 124: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Fast();          break;
+    case 125: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow();      break;
+    case 126: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Slow();          break;
+    case 127: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Regular();       break;
+    case 128: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Fast();          break;
+
+
+    case 129: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_slow();                              break;
+    case 130: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_regular();                           break;
+    case 131: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_fast();                              break;
+    case 132: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_slow();                           break;
+    case 133: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_regular();                        break;
+    case 134: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_fast();                           break;
+    case 135: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_slow();                            break;
+    case 136: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_regular();                         break;
+    case 137: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_fast();                            break;
+
+    case 138: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_verySlow();                   break;
+    case 139: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_slow();                       break;
+    case 140: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_regular();                    break;
+    case 141: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_fast();                       break;
+
 
 
     // case xxx: dmxAnim_movingHead_lightOn_fastMove_centerDev_Symmetric_CenterPan_LowTilt();                      break;
@@ -625,46 +730,121 @@ void playDMXAnimation_movingHead() {
 void setupDMXAnimation_movingHeadAnimation() {
   switch(dmxAnimationNumber_movingHead_setAnimation) {
 
-    case 33: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 34: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 35: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 36: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 37: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 38: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 39: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 40: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 41: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 42: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 43: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 44: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 45: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 46: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 47: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 48: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 49: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 50: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 51: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 52: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 53: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 54: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 55: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 56: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 57: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 58: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 59: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 60: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 61: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 62: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 63: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 64: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 65: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 66: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 67: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
-    case 68: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 33: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 34: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 35: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 36: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 37: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 38: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 39: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 40: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 41: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 42: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 43: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 44: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 45: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 46: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 47: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 48: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 49: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 50: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 51: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 52: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 53: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 54: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 55: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 56: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 57: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 58: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 59: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 60: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 61: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 62: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 63: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 64: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 65: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 66: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 67: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 68: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
 
-    case 69: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices();        break;
+    case 69: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 70: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 71: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 72: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 73: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 74: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 75: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 76: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 77: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 78: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 79: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 80: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
 
-    default: break;
+    case 81: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 82: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 83: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 84: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 85: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 86: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 87: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 88: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 89: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 90: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 91: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 92: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 93: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 94: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 95: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 96: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 97: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 98: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 99: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 100: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 101: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 102: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 103: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 104: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 105: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 106: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 107: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 108: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 109: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 110: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 111: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 112: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 113: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 114: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 115: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 116: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 117: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 118: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 119: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 120: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 121: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 122: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 123: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 124: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 125: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 126: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 127: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+    case 128: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
+
+    case 129: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 130: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 131: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 132: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 133: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 134: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 135: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 136: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 137: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+
+    case 138: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                  break;
+    case 139: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                  break;
+    case 140: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                  break;
+    case 141: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                  break;
+
+    default:  dmxAnim_movingHead_reinitLightStyleCpt_allDevices(); break;
   }
 }
 

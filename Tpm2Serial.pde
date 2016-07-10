@@ -75,7 +75,6 @@ public byte[] createImagePayload(int packetNumber, int totalPackets, byte[] data
 
     //copy payload
     System.arraycopy(data, 0, outputBuffer, TPM2_NET_HEADER_SIZE, frameSize);
-    
     return outputBuffer;
 }
 

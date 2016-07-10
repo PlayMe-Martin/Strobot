@@ -501,8 +501,19 @@ void setup()
 
 void draw()
 {  
+
   if (setupcomplete == true) 
   {
+
+    // for (Tpm2 outputDevice: outputDevices) {
+      // try {
+      //   outputDevices[0].readDebugData();
+      // }
+      // catch (Exception e) {
+      //   println("Exception while trying to read - " + e);
+      // }
+      
+    // }
 
     //Execute the draw function for the animation corresponding to animationnumber
     //The specific setup is executed once, upon reception of an MIDI message changing the animation
