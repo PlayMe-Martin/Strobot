@@ -138,6 +138,9 @@ final float audioMonitoring_maxSignalLevel_Bass    = 3.0;
 final float audioMonitoring_maxSignalLevel_Keys    = 1.2;
 final float audioMonitoring_maxSignalLevel_Guitar  = 1.2;
 
+final int FRAMERATE_NOSIMU = 12;
+final int FRAMERATE_SIMU   = 24;
+
 
 void setup_gui() {
   
@@ -169,7 +172,7 @@ void addControlFrame(String _name, int _width, int _height) {
   auxFrame.setLocation(0, 0);
   auxFrame.setResizable(false);
   auxFrame.setVisible(true);
-  auxControlFrame.frameRate(24);    // Put a limit on the GUI's framerate - very important in order to limit the CPU usage
+  auxControlFrame.frameRate(FRAMERATE_NOSIMU);    // Put a limit on the GUI's framerate - very important in order to limit the CPU usage
 }
 
 
@@ -1843,8 +1846,8 @@ public class ControlFrame extends PApplet {
 
   void gui_loadDMXAnimation_movingHead_LightStyle(int animNbr) {
     dmxAutomaticControl = true;
-    dmxAnimationNumber_movingHead_setColor = animNbr;
-    setupDMXAnimation_movingHead_setColor();
+    dmxAnimationNumber_movingHead_setLightStyle = animNbr;
+    setupDMXAnimation_movingHead_setLightStyle();
   }
 
   void gui_loadDMXAnimation_movingHead(int animNbr) {
@@ -2248,6 +2251,12 @@ public class ControlFrame extends PApplet {
 
       if (theEvent.getName() == "Activate Simulator") {
         gui_activateSimulator = !gui_activateSimulator;
+        if (gui_activateSimulator) {
+          auxControlFrame.frameRate(FRAMERATE_SIMU);
+        }
+        else {
+          auxControlFrame.frameRate(FRAMERATE_NOSIMU);    // Put a limit on the GUI's framerate - very important in order to limit the CPU usage
+        }
       }
       else if (theEvent.getName() == "Auto Mode") {
         AUTOMATIC_MODE = setAutomaticModeToggle.getState();

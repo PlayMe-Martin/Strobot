@@ -306,6 +306,16 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
       return buffer;
     }
 
+    //Read data sent by the microcontroller - usually for debug only
+    public void readDebugData() {
+      while (tpm2.port.available() > 0) {
+        String inBuffer = tpm2.port.readString();   
+        if (inBuffer != null) {
+          println(inBuffer);
+        }
+      }      
+    }
+
 }
 
 //////////////////////////////////////////////////////////////

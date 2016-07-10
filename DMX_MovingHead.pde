@@ -123,10 +123,6 @@ final int    DMXANIM_LIGHTRHYTHM_RANDOM_BARSYNC             = 24;
 
 
 
-
-
-
-
 class DMX_MovingHead {
 
   Fixture movingHead;                                 // The fixture defining this object
@@ -217,11 +213,14 @@ class DMX_MovingHead {
 
   //// - End of the physical moving head description - ////
 
-  int currentLightStyle                   = DMXANIM_BLACKOUT;                 // Used by the global animations
+  int currentLightStyle                   = DMXANIM_CONTINUOUS_LIGHT;         // Used by the global animations
   int currentRhythmPattern                = DMXANIM_LIGHTRHYTHM_NOSYNC;       // Used by the global animations
-  int animCpt1                            = 0;                                // Counters used for the global animations
+  int animCpt1_performLight               = 0;                                // Counters used for the global animations
   int animCpt2                            = 0;
   int animCpt3                            = 0;
+  int animCpt4                            = 0;
+  int animCpt5                            = 0;
+
 
   
   //Additional variables which might be used by other non-DMX related functions (most notably, the simulator)
@@ -1093,11 +1092,15 @@ class DMX_MovingHead {
   }
 
   void reinitAnimVars() {
-    this.animCpt1 = 0;
+    this.animCpt1_performLight = 0;
     this.animCpt2 = 0;
     this.animCpt3 = 0;
   }
 
+
+  void reinitLightStyleCpt() {
+    this.animCpt1_performLight = 0;
+  }
 
   ////////////////////////////////////////////////////////////////////////////////
   // MOVING HEAD VARIABLES ACCESSORS
@@ -1140,7 +1143,7 @@ class DMX_MovingHead {
 
   void performLight_standbyBlackout() {
     performLight_blackout();
-    reinitAnimVars();
+    reinitLightStyleCpt();
   }
 
   void performLight_currentStyle() {
@@ -1182,30 +1185,30 @@ class DMX_MovingHead {
 
   void performLight_singleLongFlash() {
     this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
-    this.setDimmer(max(0,100-this.animCpt1));
+    this.setDimmer(max(0,100-this.animCpt1_performLight));
     this.setApertureReduction(0);
-    this.animCpt1 += 1;
+    this.animCpt1_performLight += 1;
   }
 
   void performLight_singleShortFlash() {
     this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
-    this.setDimmer(max(0,100-4*this.animCpt1));
+    this.setDimmer(max(0,100-4*this.animCpt1_performLight));
     this.setApertureReduction(0);
-    this.animCpt1 += 1;
+    this.animCpt1_performLight += 1;
   }
 
   void performLight_slowCrescendo() {
     this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
-    this.setDimmer(min(100,this.animCpt1));
+    this.setDimmer(min(100,this.animCpt1_performLight));
     this.setApertureReduction(0);
-    this.animCpt1 += 1;
+    this.animCpt1_performLight += 1;
   }
 
   void performLight_fastCrescendo() {
     this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
-    this.setDimmer(min(100,4*this.animCpt1));
+    this.setDimmer(min(100,4*this.animCpt1_performLight));
     this.setApertureReduction(0);
-    this.animCpt1 += 1;
+    this.animCpt1_performLight += 1;
   }
 
   void performLight_strobe(float dimmer_perCent, float strobeSpeed_perCent) {
@@ -1231,13 +1234,13 @@ class DMX_MovingHead {
     this.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
     float offset = this.deviceID * TWO_PI/float(DMXList_MovingHeads.size());
     if (clockwise) {
-      this.setDimmer(100 *  (0.5 + 0.5*sin(offset + animCpt1 * speed)));
+      this.setDimmer(100 *  (0.5 + 0.5*sin(offset + animCpt1_performLight * speed)));
     }
     else {
-      this.setDimmer(100 *  (0.5 + 0.5*sin(offset - animCpt1 * speed)));
+      this.setDimmer(100 *  (0.5 + 0.5*sin(offset - animCpt1_performLight * speed)));
     }
     this.setApertureReduction(0);
-    this.animCpt1 += 1;
+    this.animCpt1_performLight += 1;
   }
 
   void performLight_slowClockwiseSineWave() {
@@ -1276,6 +1279,12 @@ class DMX_MovingHead {
 void dmxAnim_movingHead_setupReinit_allDevices() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
     movingHead.reinitAnimVars();
+  }
+}
+
+void dmxAnim_movingHead_reinitLightStyleCpt_allDevices() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.reinitLightStyleCpt();
   }
 }
 
@@ -1633,6 +1642,138 @@ void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_W
 
 
 
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(float openingWidthAngle_perCent, float tiltValue_perCent) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.setSpeed_maxSpeed();
+    float panHalfWidth = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
+    float pan_perCent  = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, panHalfWidth, 100 - panHalfWidth);
+    float tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_low_perCent, movingHead.dmxVal_specificVal_tilt_upright_perCent);
+    if (movingHead.getDeviceID() % 2 == 0) {
+      tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_upright_perCent, movingHead.dmxVal_specificVal_tilt_low_perCent);
+    }
+    movingHead.setPan(pan_perCent);
+    movingHead.setTilt(tilt_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 0);
+}
+
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 100 - 100*90.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 100 - 100*90.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 100 - 100*90.0/135.0);
+}
+
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 100 - 100*45.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 100 - 100*45.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 100 - 100*45.0/135.0);
+}
+
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 100);
+}
+
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(float openingWidthAngle_perCent, float tiltValue_perCent) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.setSpeed_maxSpeed();
+    float panHalfWidth = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
+    float pan_perCent  = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, 100 - panHalfWidth, panHalfWidth);
+    float tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_low_perCent, movingHead.dmxVal_specificVal_tilt_upright_perCent);
+    if (movingHead.getDeviceID() % 2 == 0) {
+      tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_upright_perCent, movingHead.dmxVal_specificVal_tilt_low_perCent);
+    }
+    movingHead.setPan(pan_perCent);
+    movingHead.setTilt(tilt_perCent);
+  }
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 100 - 100*90.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 100 - 100*90.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 100 - 100*90.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 100 - 100*45.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 100 - 100*45.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 100 - 100*45.0/135.0);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 100);
+}
+
+void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightOppositeTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 100);
+}
+
+
+
+
+
 ////////////////////////////////////////////////////////////
 // Set the color to use in the more complex animations
 
@@ -1697,6 +1838,11 @@ void dmxAnim_movingHead_noMovement_rightDev_performCurrentLightStyle() {
 
 ////////////////////////////////////////////////////////////
 
+void dmxAnim_movingHead_noMovement_allDev_performStandbyBlackout() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+  }
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -2795,9 +2941,9 @@ void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(float factor, 
     
     if (leftToRight) {
       if (panDiff > 0) {
-        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
           movingHead.performLight_currentStyle();
-          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+          movingHead.animCpt2 = 1;    //Set the "was lit once" flag
         }
         else {
           movingHead.performLight_blackout();
@@ -2805,20 +2951,20 @@ void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(float factor, 
       }
       else {
         movingHead.performLight_blackout();
-        if (movingHead.animCpt1 == 1) {
-          movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+        if (movingHead.animCpt2 == 1) {
+          movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
         }
       }
     }
     else {
       if (panDiff > 0) {
         movingHead.performLight_blackout();
-        movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+        movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
       }
       else {
-        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
           movingHead.performLight_currentStyle();
-          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+          movingHead.animCpt2 = 1;    //Set the "was lit once" flag
         }
         else {
           movingHead.performLight_blackout();
@@ -2916,9 +3062,9 @@ void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(float factor, bo
     
     if (leftToRight) {
       if (tiltDiff > 0) {
-        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
           movingHead.performLight_currentStyle();
-          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+          movingHead.animCpt2 = 1;    //Set the "was lit once" flag
         }
         else {
           movingHead.performLight_blackout();
@@ -2926,20 +3072,20 @@ void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(float factor, bo
       }
       else {
         movingHead.performLight_blackout();
-        if (movingHead.animCpt1 == 1) {
-          movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+        if (movingHead.animCpt2 == 1) {
+          movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
         }
       }
     }
     else {
       if (tiltDiff > 0) {
         movingHead.performLight_blackout();
-        movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+        movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
       }
       else {
-        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
           movingHead.performLight_currentStyle();
-          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+          movingHead.animCpt2 = 1;    //Set the "was lit once" flag
         }
         else {
           movingHead.performLight_blackout();
@@ -3037,9 +3183,9 @@ void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(float factor, bo
     
     if (leftToRight) {
       if (tiltDiff > 0) {
-        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
           movingHead.performLight_currentStyle();
-          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+          movingHead.animCpt2 = 1;    //Set the "was lit once" flag
         }
         else {
           movingHead.performLight_blackout();
@@ -3047,20 +3193,20 @@ void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(float factor, bo
       }
       else {
         movingHead.performLight_blackout();
-        if (movingHead.animCpt1 == 1) {
-          movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+        if (movingHead.animCpt2 == 1) {
+          movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
         }
       }
     }
     else {
       if (tiltDiff > 0) {
         movingHead.performLight_blackout();
-        movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+        movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
       }
       else {
-        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
+        if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
           movingHead.performLight_currentStyle();
-          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+          movingHead.animCpt2 = 1;    //Set the "was lit once" flag
         }
         else {
           movingHead.performLight_blackout();
@@ -3076,14 +3222,78 @@ void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(float factor, bo
 
 
 void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent() {
-  //float offset1 = PI/2*(-1 - (DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size());
-  float offset1 = -PI/2;
-  float offset2 = PI;
-
-  //le dev au centre a un pan nul
-  // les des le plus proche du centre ont un pan soit egal a 0, soit PI/2
+  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
+  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
   dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.125, true, offset1, offset2, false);
 }
+
+void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalConvergent() {
+  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
+  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.25, true, offset1, offset2, false);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalConvergent() {
+  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
+  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.5, true, offset1, offset2, false);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalDivergent() {
+  float offset1 = PI/2;
+  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.125, false, offset1, offset2, false);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalDivergent() {
+  float offset1 = PI/2;
+  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.25, false, offset1, offset2, false);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalDivergent() {
+  float offset1 = PI/2;
+  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.5, false, offset1, offset2, false);
+}
+
+
+void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalConvergent() {
+  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
+  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.125, true, offset1, offset2, true);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalConvergent() {
+  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
+  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.25, true, offset1, offset2, true);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalConvergent() {
+  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
+  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.5, true, offset1, offset2, true);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalDivergent() {
+  float offset1 = PI/2;
+  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.125, false, offset1, offset2, true);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalDivergent() {
+  float offset1 = PI/2;
+  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.25, false, offset1, offset2, true);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalDivergent() {
+  float offset1 = PI/2;
+  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
+  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.5, false, offset1, offset2, true);
+}
+
 
 void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(float factor, boolean convergent, float offset1, float offset2, boolean oneShot) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
@@ -3094,54 +3304,489 @@ void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(fl
     if (convergent) {
       if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
         pan     = 0.5+0.5*sin(offset1 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-        panDiff = cos(offset1 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());        
+        panDiff = cos(offset1 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
       }
-      else if (movingHead.getDeviceID() >= DMXList_MovingHeads.size()/2) {
+      else if (movingHead.getDeviceID() >= ceil((DMXList_MovingHeads.size()/2))) {
         pan     = 0.5+0.5*sin(offset2 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
         panDiff = cos(offset2 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
       }
+      else {
+        // Center device in the case of an odd number of projectors
+        pan     = 0;
+        panDiff = 0;
+      }
     }
-    else {
-      // pan     = 0.5+0.5*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-      // panDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+    else {  // Divergent
+      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
+        pan     = 0.5+0.5*sin(offset1 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+        panDiff = cos(offset1 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      }
+      else if (movingHead.getDeviceID() >= ceil((DMXList_MovingHeads.size()/2))) {
+        pan     = 0.5+0.5*sin(offset2 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+        panDiff = cos(offset2 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      }
+      else {
+        // Center device in the case of an odd number of projectors
+        pan     = 0;
+        panDiff = 0;
+      }
     }
 
     movingHead.setPan(map(pan,0,1, movingHead.dmxVal_specificVal_pan_left_perCent, movingHead.dmxVal_specificVal_pan_right_perCent));
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
     
     if (convergent) {
-      if (panDiff > 0) {
-        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
-          movingHead.performLight_currentStyle();
-          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {    // Left devices
+        if (panDiff > 0) {
+          if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
+            movingHead.performLight_currentStyle();
+            movingHead.animCpt2 = 1;    //Set the "was lit once" flag
+          }
+          else {
+            movingHead.performLight_blackout();
+          }
         }
         else {
           movingHead.performLight_blackout();
+          if (movingHead.animCpt2 == 1) {
+            movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
+          }
         }
       }
-      else {
-        movingHead.performLight_blackout();
-        if (movingHead.animCpt1 == 1) {
-          movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
+      else if (movingHead.getDeviceID() >= ceil((DMXList_MovingHeads.size()/2))) {    // Right devices
+        if (panDiff > 0) {
+          movingHead.performLight_blackout();
+          movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
         }
+        else {
+          if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
+            movingHead.performLight_currentStyle();
+            movingHead.animCpt2 = 1;    //Set the "was lit once" flag
+          }
+          else {
+            movingHead.performLight_blackout();
+          }
+        }
+      }
+      else {    // Center device in the case of an odd number of projectors
+        movingHead.performLight_blackout();
       }
     }
+
+
     else {
-      if (panDiff < 0) {
-        movingHead.performLight_blackout();
-        movingHead.animCpt2 = 1;    //Set the "was turned off once" flag
-      }
-      else {
-        if (oneShot == false || (oneShot == true && !(movingHead.animCpt1 == 1 && movingHead.animCpt2 == 1))) {
-          movingHead.performLight_currentStyle();
-          movingHead.animCpt1 = 1;    //Set the "was lit once" flag
+      
+      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {    // Left devices
+        if (panDiff < 0) {
+          if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
+            movingHead.performLight_currentStyle();
+            movingHead.animCpt2 = 1;    //Set the "was lit once" flag
+          }
+          else {
+            movingHead.performLight_blackout();
+          }
         }
         else {
           movingHead.performLight_blackout();
+          if (movingHead.animCpt2 == 1) {
+            movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
+          }
         }
       }
+      else if (movingHead.getDeviceID() >= ceil((DMXList_MovingHeads.size()/2))) {    // Right devices
+        if (panDiff < 0) {
+          movingHead.performLight_blackout();
+          movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
+        }
+        else {
+          if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
+            movingHead.performLight_currentStyle();
+            movingHead.animCpt2 = 1;    //Set the "was lit once" flag
+          }
+          else {
+            movingHead.performLight_blackout();
+          }
+        }
+      }
+      else {    // Center device in the case of an odd number of projectors
+        movingHead.performLight_blackout();
+      }
+
+
+
     }
   }
   float stepSize = factor * 2*PI / (frameRate*60.0/automaticSequencer.currentBPM);
   dmxAnim_movingHead_globalAnimCpt += stepSize;
+}
+
+
+/////////////////////////////////////////////
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical() {
+ dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 60, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(boolean upDown, boolean opposite, int angleWidth, float factor) {
+  if (opposite == false) {
+    if (upDown) {
+      if (angleWidth < 0) {
+        dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(-angleWidth, max(100 - dmxAnim_movingHead_globalAnimCpt, 0));
+      }
+      else {
+        dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(angleWidth, max(100 - dmxAnim_movingHead_globalAnimCpt, 0));
+      }
+      
+    }
+    else {
+      if (angleWidth < 0) {
+        dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(-angleWidth, min(dmxAnim_movingHead_globalAnimCpt, 100));
+      }
+      else {
+        dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(angleWidth, min(dmxAnim_movingHead_globalAnimCpt, 100));
+      }
+    }
+  }
+  else {
+    if (upDown) {
+      dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(angleWidth, max(100 - dmxAnim_movingHead_globalAnimCpt, 0));
+    }
+    else {
+      dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(angleWidth, min(dmxAnim_movingHead_globalAnimCpt, 100));
+    }
+  }
+  
+  if (dmxAnim_movingHead_globalAnimCpt < 100) {
+    dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+  }
+  else {
+    dmxAnim_movingHead_noMovement_allDev_performStandbyBlackout();
+  }
+
+  float stepSize = factor * 100 / (frameRate*60.0/automaticSequencer.currentBPM);
+  dmxAnim_movingHead_globalAnimCpt += stepSize;
+}
+
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 0, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 0, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 0, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 0, 1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 0, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 0, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 0, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 0, 1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 0, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 0, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 0, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 0, 1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 0, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 0, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 0, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 0, 1);
+}
+
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 60, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 60, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 60, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 60, 1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 60, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 60, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 60, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 60, 1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 60, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 60, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 60, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 60, 1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 60, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 60, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 60, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 60, 1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, -60, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, -60, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, -60, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, -60, 1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, -60, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, -60, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, -60, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, -60, 1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, -60, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, -60, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, -60, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, -60, 1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, -60, 0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Slow() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, -60, 0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Regular() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, -60, 0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Fast() {
+  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, -60, 1);
+}
+
+
+
+
+/////////////////////////////////////////////
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(float speed, float intensity) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    // movingHead.setPan(constrain(movingHead.animCpt2 + intensity*(noise((movingHead.animCpt2+frameCount)*speed) - 0.5), 0, 100));
+    // movingHead.setTilt(constrain(movingHead.animCpt3 + intensity*(noise((movingHead.animCpt3+frameCount)*speed) - 0.5), 0, 100));
+    movingHead.setPan(constrain(movingHead.animCpt2 + intensity*(noise((frameCount)*speed) - 0.5), 0, 100));
+    movingHead.setTilt(constrain(movingHead.animCpt3 + intensity*(noise((frameCount)*speed) - 0.5), 0, 100));
+    movingHead.performLight_currentStyle();
+  }
+}
+
+
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup() {
+  dmxAnim_movingHead_globalAnimCpt = 0;
+  noiseDetail(3,0.5);
+
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.animCpt2 = int(random(movingHead.dmxVal_specificVal_pan_left_perCent,movingHead.dmxVal_specificVal_pan_right_perCent));
+    movingHead.animCpt3 = int(random(movingHead.dmxVal_specificVal_tilt_front_perCent,movingHead.dmxVal_specificVal_tilt_upright_perCent));
+  }
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_slow() {
+  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.05,15);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_regular() {
+  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.1,15);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_fast() {
+  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.2,15);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_slow() {
+  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.05,30);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_regular() {
+  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.1,30);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_fast() {
+  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.2,30);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_slow() {
+  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.05,50);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_regular() {
+  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.1,50);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_fast() {
+  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.2,50);
+}
+
+
+/////////////////////////////////////////////////
+
+void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_verySlow() {
+  dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(0.125);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_slow() {
+  dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(0.25);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_regular() {
+  dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(0.5);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_fast() {
+  dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(1);
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(float factor) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.setPan(map(dmxAnim_movingHead_globalAnimCpt, 0, 1, movingHead.animCpt2, movingHead.animCpt4));
+    movingHead.setTilt(map(dmxAnim_movingHead_globalAnimCpt, 0, 1, movingHead.animCpt3, movingHead.animCpt5));
+    movingHead.performLight_currentStyle();
+  }
+  float stepSize = factor * 1 / (frameRate*60.0/automaticSequencer.currentBPM);
+  dmxAnim_movingHead_globalAnimCpt += stepSize;
+  if (dmxAnim_movingHead_globalAnimCpt > 1) {
+    dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();
+  }
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup() {
+  dmxAnim_movingHead_globalAnimCpt = 0; 
+  dmxAnim_movingHead_reinitLightStyleCpt_allDevices();
+  dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setNewObjective();
+}
+
+void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setNewObjective() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    // If coming from another animation, the "old pan/tilt objectives" variables will be invalid (not in the expected range)
+    // Set these variables to the current pan
+    int oldPanObjective  = 0;
+    int oldTiltObjective = 0;
+    if (movingHead.animCpt2 < 20 || movingHead.animCpt2 > 80 || movingHead.animCpt3 < 10 || movingHead.animCpt3 > 60) {
+      movingHead.animCpt2 = int(map(movingHead.dmxVal[movingHead.chIndex_pan],  0, 255, 0, 100));
+      movingHead.animCpt3 = int(map(movingHead.dmxVal[movingHead.chIndex_tilt], 0, 255, 0, 100));
+      oldPanObjective  = movingHead.animCpt2;
+      oldTiltObjective = movingHead.animCpt3;
+    }
+    else {
+      oldPanObjective  = movingHead.animCpt4;
+      oldTiltObjective = movingHead.animCpt5;
+    }
+
+    // Define a new objective for both pan and tilt, within a set range, and different enough from the current angle
+    int panCandidate = int(random(20,80));
+    int tiltCandidate = int(random(10,60));
+    while (abs(movingHead.animCpt2 - panCandidate) < 20 || abs(movingHead.animCpt3 - tiltCandidate) < 20) {
+      panCandidate = int(random(20,80));
+      tiltCandidate = int(random(10,60));
+    }
+    movingHead.animCpt2 = oldPanObjective;
+    movingHead.animCpt3 = oldTiltObjective;
+    movingHead.animCpt4 = panCandidate;    // new pan objective
+    movingHead.animCpt5 = tiltCandidate;   // new tilt objective
+  }
 }
