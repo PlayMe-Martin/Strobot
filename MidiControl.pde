@@ -46,28 +46,27 @@ final int PITCH_LOAD_ANIMATION_BANK2_TEMP                 = 97;
 final int PITCH_LOAD_ANIMATION_BANK3_TEMP                 = 98;
 final int PITCH_LOAD_ANIMATION_BANK4_TEMP                 = 99;
 
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION  = 101;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR       = 102;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION  = 100;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR       = 101;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM      = 102;
 final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE = 103;
 final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1 = 104;
 final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2 = 105;
+final int PITCH_DMX_ANIMATION_STROBE                      = 106;    //DMX bank used for the strobes
+final int PITCH_DMX_ANIMATION_PAR                         = 107;    //DMX bank used for the PAR effects
 
-
-final int PITCH_DMX_ANIMATION_STROBE        = 106;    //DMX bank used for the strobes
-final int PITCH_DMX_ANIMATION_PAR           = 107;    //DMX bank used for the PAR effects
-
-final int PITCH_ENABLE_MAN_INPUT           = 110;
-final int PITCH_DISABLE_MAN_INPUT          = 111;
-final int PITCH_CUSTOM_DEVICE_BANK1        = 118;
-final int PITCH_CUSTOM_DEVICE_BANK2        = 119;
-final int PITCH_CUSTOM_DEVICE_BANK3        = 120;
-final int PITCH_DISPLAY_EFFECT             = 121;
-final int PITCH_LOAD_ANIMATION_BANK1       = 123;
-final int PITCH_LOAD_ANIMATION_BANK2       = 124;
-final int PITCH_LOAD_ANIMATION_BANK3       = 125;
-final int PITCH_LOAD_ANIMATION_BANK4       = 122;
-final int PITCH_LOAD_IMAGE_BANK1           = 126;
-final int PITCH_CHANGE_OUTPUTMAPPING       = 127;
+final int PITCH_ENABLE_MAN_INPUT                          = 110;
+final int PITCH_DISABLE_MAN_INPUT                         = 111;
+final int PITCH_CUSTOM_DEVICE_BANK1                       = 118;
+final int PITCH_CUSTOM_DEVICE_BANK2                       = 119;
+final int PITCH_CUSTOM_DEVICE_BANK3                       = 120;
+final int PITCH_DISPLAY_EFFECT                            = 121;
+final int PITCH_LOAD_ANIMATION_BANK1                      = 123;
+final int PITCH_LOAD_ANIMATION_BANK2                      = 124;
+final int PITCH_LOAD_ANIMATION_BANK3                      = 125;
+final int PITCH_LOAD_ANIMATION_BANK4                      = 122;
+final int PITCH_LOAD_IMAGE_BANK1                          = 126;
+final int PITCH_CHANGE_OUTPUTMAPPING                      = 127;
 
 //The RMX has a pretty specific MIDI implementation - only one knob to control a range of effects
 //When activating the effect, a specific note on 127 is sent, afterwards the activated effect is controlled with a single MIDI CC (the same for all effects)
@@ -203,8 +202,9 @@ void processMidiInfo_semiAutoMode(int pitch, int velocity) {
     //Standard mode, MIDI incoming from Ableton
     case PITCH_SET_AUTOMODE_OFF:                            setAutomaticModeOff();break;                                             //F#5   - Disable the automatic mode
     case PITCH_SET_AUTOMODE_ON:                             setAutomaticModeOn();break;                                              //G5    - Enable the automatic mode
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(velocity); break;              //F7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(velocity); break;                   //F#7
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(velocity); break;              //E7
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(velocity); break;                   //F7
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM:        loadDMXAnimation_movingHead_setRhythm(velocity); break;                  //F#7
     case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(velocity); break;              //G7
     case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   loadDMXAnimation_movingHead_setAnimation1(velocity); break;              //G#7
     case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   loadDMXAnimation_movingHead_setAnimation2(velocity); break;              //A7
@@ -586,6 +586,11 @@ void loadDMXAnimation_movingHead_setColor(int velocity) {
   setupDMXAnimation_movingHead_setColor();
 }
 
+void loadDMXAnimation_movingHead_setRhythm(int velocity) {
+  dmxAnimationNumber_movingHead_setRhythm = velocity;
+  setupDMXAnimation_movingHead_setRhythm();
+}
+
 void loadDMXAnimation_movingHead_setLightStyle(int velocity) {
   dmxAnimationNumber_movingHead_setLightStyle = velocity;
   setupDMXAnimation_movingHead_setLightStyle();
@@ -828,11 +833,11 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
         case PITCH_DMX_ANIMATION_PAR:                           unloadDMXAnimation_par(); break;                            //B7
 
         case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM:        break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
-
 
         case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   unloadAnimation();break;                                    //C7    - Unload a temporary animation using the LED panels
         case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   unloadAnimation();break;                                    //C#7

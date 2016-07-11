@@ -816,6 +816,14 @@ String getStringFromDMXAnimationNumber_movingHead_Color(int animNbr) {
   return temp;
 }
 
+String getStringFromDMXAnimationNumber_movingHead_Rhythm(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM) + "  |  " + str(animNbr);
+  }
+  return temp;
+}
+
 String getStringFromDMXAnimationNumber_movingHead_LightStyle(int animNbr) {
   String temp = "Undefined";
   if (animNbr <= 127) {                                                                   
