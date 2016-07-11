@@ -272,6 +272,7 @@ void setup()
   DMXStrobeAttributes                    = new ArrayList<Attribute>();
   DMXMovingHead_MovementAttributes       = new ArrayList<Attribute>();
   DMXMovingHead_ColorAttributes          = new ArrayList<Attribute>();
+  DMXMovingHead_RhythmAttributes         = new ArrayList<Attribute>();
   DMXMovingHead_LightStyleAttributes     = new ArrayList<Attribute>();
   DMXMovingHead_AnimationAttributes      = new ArrayList<Attribute>();
   DMXOtherFixturesAttributes             = new ArrayList<Attribute>();

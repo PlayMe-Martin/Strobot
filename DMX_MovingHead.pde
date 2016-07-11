@@ -2809,7 +2809,7 @@ void dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_FrontTilt() {
   dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
 }
 
-void dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConergentPan_FrontTilt() {
+void dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_FrontTilt() {
   dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt();
   dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
 }
@@ -3761,12 +3761,13 @@ void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup() 
 }
 
 void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setNewObjective() {
+
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
     // If coming from another animation, the "old pan/tilt objectives" variables will be invalid (not in the expected range)
     // Set these variables to the current pan
     int oldPanObjective  = 0;
     int oldTiltObjective = 0;
-    if (movingHead.animCpt2 < 20 || movingHead.animCpt2 > 80 || movingHead.animCpt3 < 10 || movingHead.animCpt3 > 60) {
+    if (movingHead.animCpt2 < 20 || movingHead.animCpt2 > 80 || movingHead.animCpt3 < 10 || movingHead.animCpt3 > 50) {
       movingHead.animCpt2 = int(map(movingHead.dmxVal[movingHead.chIndex_pan],  0, 255, 0, 100));
       movingHead.animCpt3 = int(map(movingHead.dmxVal[movingHead.chIndex_tilt], 0, 255, 0, 100));
       oldPanObjective  = movingHead.animCpt2;
@@ -3782,7 +3783,7 @@ void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setNewOb
     int tiltCandidate = int(random(10,60));
     while (abs(movingHead.animCpt2 - panCandidate) < 20 || abs(movingHead.animCpt3 - tiltCandidate) < 20) {
       panCandidate = int(random(20,80));
-      tiltCandidate = int(random(10,60));
+      tiltCandidate = int(random(10,50));
     }
     movingHead.animCpt2 = oldPanObjective;
     movingHead.animCpt3 = oldTiltObjective;
