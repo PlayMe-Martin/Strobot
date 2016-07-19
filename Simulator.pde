@@ -451,7 +451,7 @@ void drawMovingHeads(int simulatorWidth, int positionY) {
       auxControlFrame.noStroke();
 
       //Internal color light
-      if (movingHead.getSimulatorShutterMode() == DMX_SHUTTERMODE_STROBE) {
+      if (movingHead.getSimulatorShutterMode() == DMX_MOVINGHEAD_SHUTTERMODE_STROBE) {
         if (auxControlFrame.frameCount % int(map(movingHead.getSimulatorShutter(), 0, 255, 7, 2)) == 0) {
           auxControlFrame.fill(movingHead.getSimulatorColor()[0], movingHead.getSimulatorColor()[1], movingHead.getSimulatorColor()[2], movingHead.getSimulatorDimmer());  
         }

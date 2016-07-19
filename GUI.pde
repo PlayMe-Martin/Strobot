@@ -113,20 +113,99 @@ final int GUI_ATTR_CUSTOMDEV_LEFTSIDE      = 24;
 final int GUI_ATTR_CUSTOMDEV_RIGHTSIDE     = 25;
 
 //Attributes for the DMX animations
-final int GUI_ATTR_DMX_ALL       = 0;
-final int GUI_ATTR_DMX_RIGHT     = 1;
-final int GUI_ATTR_DMX_LEFT      = 2;
-final int GUI_ATTR_DMX_CENTER    = 3;
-final int GUI_ATTR_DMX_RHYTHMIC  = 4;
-final int GUI_ATTR_DMX_STROBE    = 5;
-final int GUI_ATTR_DMX_PAR       = 6;
-final int GUI_ATTR_DMX_VERYSLOW  = 7;
-final int GUI_ATTR_DMX_SLOW      = 8;
-final int GUI_ATTR_DMX_MEDIUM    = 9;
-final int GUI_ATTR_DMX_FAST      = 10;
-final int GUI_ATTR_DMX_VERYFAST  = 11;
-final int GUI_ATTR_DMX_AUDIO     = 12;
-final int GUI_ATTR_DMX_ATOMIC    = 13;
+final int GUI_ATTR_DMX_STROBE_ALL       = 0;
+final int GUI_ATTR_DMX_STROBE_RIGHT     = 1;
+final int GUI_ATTR_DMX_STROBE_LEFT      = 2;
+final int GUI_ATTR_DMX_STROBE_CENTER    = 3;
+final int GUI_ATTR_DMX_STROBE_RHYTHMIC  = 4;
+final int GUI_ATTR_DMX_STROBE_STROBE    = 5;
+final int GUI_ATTR_DMX_STROBE_PAR       = 6;
+final int GUI_ATTR_DMX_STROBE_VERYSLOW  = 7;
+final int GUI_ATTR_DMX_STROBE_SLOW      = 8;
+final int GUI_ATTR_DMX_STROBE_MEDIUM    = 9;
+final int GUI_ATTR_DMX_STROBE_FAST      = 10;
+final int GUI_ATTR_DMX_STROBE_VERYFAST  = 11;
+final int GUI_ATTR_DMX_STROBE_AUDIO     = 12;
+final int GUI_ATTR_DMX_STROBE_ATOMIC    = 13;
+
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_ALL           = 0;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_LEFT          = 1;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_RIGHT         = 2;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_SIDE          = 3;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_CENTER        = 4;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_UNIFORM       = 5;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_DIVERGENT     = 6;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_CONVERGENT    = 7;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_SYMMETRICAL   = 8;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_SUN           = 9;
+
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_ALL          = 0;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_LEFT         = 1;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_RIGHT        = 2;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_SIDE         = 3;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_CENTER       = 4;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_WHITE        = 5;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_RED          = 6;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_DEEPRED      = 7;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_BLUE         = 8;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_DEEPBLUE     = 9;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_YELLOW       = 10;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_GREEN        = 11;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_ULTRAVIOLET  = 12;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_ORANGE       = 13;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_CTO          = 14;
+
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_ALL         = 0;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_LEFT        = 1;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_RIGHT       = 2;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_SIDE        = 3;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_CENTER      = 4;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_NOSYNC      = 5;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_TOGETHER    = 6;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_CLOCK       = 7;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_ANTICLOCK   = 8;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_RANDOM      = 9;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_32ND        = 10;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_16TH        = 11;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_8TH         = 12;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_4TH         = 13;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_2ND         = 14;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_BAR         = 15;
+
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_ALL          = 0;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_LEFT         = 1;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_RIGHT        = 2;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_SIDE         = 3;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_CENTER       = 4;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_STILL        = 5;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_CRESCENDO    = 6;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_FLASH        = 7;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_STROBE       = 8;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_SINE         = 9;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_GLITCH       = 10;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_TIGHT        = 11;
+
+
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_ALL           = 0;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_LEFT          = 1;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_RIGHT         = 2;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_SIDE          = 3;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_CENTER        = 4;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_STILL         = 5;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_FASTMOVE      = 6;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_CONTSWEEP     = 7;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_SINGSWEEP     = 8;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_RANDOM        = 9;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_PARALLEL      = 10;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_DIVERGENT     = 11;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_CONVERGENT    = 12;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_HORIZONTAL    = 13;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_VERTICAL      = 14;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_SLOW          = 15;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_REGULAR       = 16;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_FAST          = 17;
+
+
 
 
 final int audioMonitoring_barWidth                 = 90;
@@ -138,7 +217,7 @@ final float audioMonitoring_maxSignalLevel_Bass    = 3.0;
 final float audioMonitoring_maxSignalLevel_Keys    = 1.2;
 final float audioMonitoring_maxSignalLevel_Guitar  = 1.2;
 
-final int FRAMERATE_NOSIMU = 12;
+final int FRAMERATE_NOSIMU = 8;
 final int FRAMERATE_SIMU   = 24;
 
 
@@ -1536,75 +1615,133 @@ public class ControlFrame extends PApplet {
     DMXMovingHeadAnimations_Movement_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Prepare Direction")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
-                                                                .setItemsPerRow(7)
-                                                                .setSpacingColumn(spacingColumn)
+                                                                .setItemsPerRow(5)
+                                                                .setSpacingColumn(spacingColumn + 15)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
                                                                 .setColorActive(color(160,0,0))
                                                                 .setColorLabel(color(255))
-                                                                .addItem("All ",        0)  //Small trick, controlP5 does not allow two elements with the same name
-                                                                .addItem("Right ",      1)
-                                                                .addItem("Left ",       2)
+                                                                .addItem("ALL",          0)  //Small trick, controlP5 does not allow two elements with the same name
+                                                                .addItem("LEFT",         1)
+                                                                .addItem("RIGHT",        2)
+                                                                .addItem("SIDE",         3)
+                                                                .addItem("CENTER",       4)
+                                                                .addItem("UNIFORM",      5)
+                                                                .addItem("DIVERGENT",    6)
+                                                                .addItem("CONVERGENT",   7)
+                                                                .addItem("SYMMETRICAL",  8)
+                                                                .addItem("SUN",          9)
                                                                 .setGroup(DMXAnimations_Movement_animListGroup)
                                                                 ;
 
     DMXMovingHeadAnimations_Color_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Color")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
-                                                                .setItemsPerRow(7)
+                                                                .setItemsPerRow(8)
                                                                 .setSpacingColumn(spacingColumn)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
                                                                 .setColorActive(color(160,0,0))
                                                                 .setColorLabel(color(255))
-                                                                .addItem("Attr1",        0)  //Small trick, controlP5 does not allow two elements with the same name
-                                                                .addItem("Attr2",        1)
-                                                                .addItem("Attr3",        2)
+                                                                .addItem("ALL ",           0)  //Small trick, controlP5 does not allow two elements with the same name
+                                                                .addItem("LEFT ",          1)
+                                                                .addItem("RIGHT ",         2)
+                                                                .addItem("SIDE ",          3)
+                                                                .addItem("CENTER ",        4)
+                                                                .addItem("WHITE ",         5)
+                                                                .addItem("RED ",           6)
+                                                                .addItem("DEEPRED ",       7)
+                                                                .addItem("BLUE ",          8)
+                                                                .addItem("DEEPBLUE ",      9)
+                                                                .addItem("YELLOW ",        10)
+                                                                .addItem("GREEN ",         11)
+                                                                .addItem("ULTRAVIOLET ",   12)
+                                                                .addItem("ORANGE ",        13)
+                                                                .addItem("CTO ",           14)
                                                                 .setGroup(DMXAnimations_Color_animListGroup)
                                                                 ;
     
     DMXMovingHeadAnimations_Rhythm_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Rhythm")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
-                                                                .setItemsPerRow(7)
-                                                                .setSpacingColumn(spacingColumn)
+                                                                .setItemsPerRow(8)
+                                                                .setSpacingColumn(spacingColumn-15)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
                                                                 .setColorActive(color(160,0,0))
                                                                 .setColorLabel(color(255))
-                                                                .addItem("Attr15",        0)  //Small trick, controlP5 does not allow two elements with the same name
-                                                                .addItem("Attr26",        1)
-                                                                .addItem("Attr37",        2)
+                                                                .addItem("ALL  ",           0)
+                                                                .addItem("LEFT  ",          1)
+                                                                .addItem("RIGHT  ",         2)
+                                                                .addItem("SIDE  ",          3)
+                                                                .addItem("CENTER  ",        4)                                                                
+                                                                .addItem("NOSYNC",          5)                                                                
+                                                                .addItem("TOGETHER",        6)
+                                                                .addItem("CLOCK",           7)
+                                                                .addItem("ANTICLOCK",       8)
+                                                                .addItem("RANDOm",          9)
+                                                                .addItem("32ND  ",          10)
+                                                                .addItem("16TH  ",          11)
+                                                                .addItem("8TH  ",           12)
+                                                                .addItem("4TH  ",           13)
+                                                                .addItem("2ND  ",           14)
+                                                                .addItem("BAR  ",           15)
                                                                 .setGroup(DMXAnimations_Rhythm_animListGroup)
                                                                 ;
 
     DMXMovingHeadAnimations_LightStyle_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Light Style")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
-                                                                .setItemsPerRow(7)
+                                                                .setItemsPerRow(6)
                                                                 .setSpacingColumn(spacingColumn)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
                                                                 .setColorActive(color(160,0,0))
                                                                 .setColorLabel(color(255))
-                                                                .addItem("Attr4",        0)  //Small trick, controlP5 does not allow two elements with the same name
-                                                                .addItem("Attr5",        1)
-                                                                .addItem("Attr6",        2)
+                                                                .addItem("ALl",          0)
+                                                                .addItem("LEFt",         1)
+                                                                .addItem("RIGHt",        2)
+                                                                .addItem("SIDe",         3)
+                                                                .addItem("CENTEr",       4)
+                                                                .addItem("STILl",        5)
+                                                                .addItem("CRESCENDo",    6)
+                                                                .addItem("FLASh",        7)
+                                                                .addItem("STROBe",       8)
+                                                                .addItem("SINe",         9)
+                                                                .addItem("GLITCh",       10)
+                                                                .addItem("TIGHt",        11)
                                                                 .setGroup(DMXAnimations_LightStyle_animListGroup)
                                                                 ;
+
+
 
     DMXMovingHeadAnimations_Animations_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Perform Animations")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
-                                                                .setItemsPerRow(7)
+                                                                .setItemsPerRow(6)
                                                                 .setSpacingColumn(spacingColumn)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
                                                                 .setColorActive(color(160,0,0))
                                                                 .setColorLabel(color(255))
-                                                                .addItem("Attr7",        0)  //Small trick, controlP5 does not allow two elements with the same name
-                                                                .addItem("Attr8",        1)
-                                                                .addItem("Attr9",        2)
+                                                                .addItem("All ",         0)
+                                                                .addItem("LEft",         1)
+                                                                .addItem("RIGht",        2)
+                                                                .addItem("SIde",         3)
+                                                                .addItem("CENTer",       4)
+                                                                .addItem("STIll",        5)
+                                                                .addItem("FASTMOve",     6)
+                                                                .addItem("CONTSWEep",    7)
+                                                                .addItem("SINGSWEep",    8)
+                                                                .addItem("RANDom",       9)
+                                                                .addItem("PARALLel",     10)
+                                                                .addItem("DIVERGEnt",    11)
+                                                                .addItem("CONVERGEnt",   12)
+                                                                .addItem("HORIZONTal",   13)
+                                                                .addItem("VERTICal",     14)
+                                                                .addItem("SLow",         15)
+                                                                .addItem("REGULar",      16)
+                                                                .addItem("FAst",         17)
                                                                 .setGroup(DMXAnimations_Animations_animListGroup)
                                                                 ;
 
@@ -1633,39 +1770,39 @@ public class ControlFrame extends PApplet {
 
     //Initialize the filtered animation list with all the available animations
     DMXMovingHeadAnimations_Movement_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Prepare Direction")
-                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
-                                                           .setSize(3*DMXAnimations_Movement_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Movement_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
+                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow - 2)
+                                                           .setSize(3*DMXAnimations_Movement_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Movement_animListGroup.getBackgroundHeight() - (3*toggleHeight + 2*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_Movement)
                                                            .hideBar() 
                                                            .disableCollapse()
                                                            .moveTo(DMXAnimations_Movement_animListGroup)
                                                            ;
     DMXMovingHeadAnimations_Color_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Set Color")
-                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
-                                                           .setSize(3*DMXAnimations_Color_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Color_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
+                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow - 2)
+                                                           .setSize(3*DMXAnimations_Color_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Color_animListGroup.getBackgroundHeight() - (3*toggleHeight + 2*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_Color)
                                                            .hideBar() 
                                                            .disableCollapse()
                                                            .moveTo(DMXAnimations_Color_animListGroup)
                                                            ;
     DMXMovingHeadAnimations_Rhythm_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Set Rhythm")
-                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
-                                                           .setSize(3*DMXAnimations_Rhythm_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Rhythm_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
+                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow - 2)
+                                                           .setSize(3*DMXAnimations_Rhythm_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Rhythm_animListGroup.getBackgroundHeight() - (3*toggleHeight + 2*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_Rhythm)
                                                            .hideBar() 
                                                            .disableCollapse()
                                                            .moveTo(DMXAnimations_Rhythm_animListGroup)
                                                            ;
     DMXMovingHeadAnimations_LightStyle_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Set Light Style")
-                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
-                                                           .setSize(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_LightStyle_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
+                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow - 2)
+                                                           .setSize(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_LightStyle_animListGroup.getBackgroundHeight() - (3*toggleHeight + 2*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_LightStyle)
                                                            .hideBar() 
                                                            .disableCollapse()
                                                            .moveTo(DMXAnimations_LightStyle_animListGroup)
                                                            ;
     DMXMovingHeadAnimations_Animations_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Perform Animations")
-                                                           .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
+                                                           .setPosition(leftOffset, 4*toggleHeight + 4*spacingRow)
                                                            .setSize(3*DMXAnimations_Animations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Animations_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_Animations)
                                                            .hideBar() 
@@ -1803,8 +1940,8 @@ public class ControlFrame extends PApplet {
   
   
   void rebuildFilteredDMXStrobeAnimationList(float[] checkBoxArrayValue) {
-
-    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXStrobeAttributes);
+    String[] wantedAttributes = createDMXAnimationListFilter_Strobe(checkBoxArrayValue);
+    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXStrobeAttributes, wantedAttributes);
 
     for (String item[]: DMXStrobeAnimations_animationListBox.getListBoxItems()) {
       DMXStrobeAnimations_animationListBox.removeItem(item[0]);
@@ -1813,8 +1950,8 @@ public class ControlFrame extends PApplet {
   }
 
   void rebuildFilteredDMXMovingHead_Movement_AnimationList(float[] checkBoxArrayValue) {
-
-    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXMovingHead_MovementAttributes);
+    String[] wantedAttributes = createDMXAnimationListFilter_MovingHead_Movement(checkBoxArrayValue);
+    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXMovingHead_MovementAttributes, wantedAttributes);
 
     for (String item[]: DMXMovingHeadAnimations_Movement_animationListBox.getListBoxItems()) {
       DMXMovingHeadAnimations_Movement_animationListBox.removeItem(item[0]);
@@ -1823,8 +1960,8 @@ public class ControlFrame extends PApplet {
   }
 
   void rebuildFilteredDMXMovingHead_Color_AnimationList(float[] checkBoxArrayValue) {
-
-    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXMovingHead_ColorAttributes);
+    String[] wantedAttributes = createDMXAnimationListFilter_MovingHead_Color(checkBoxArrayValue);
+    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXMovingHead_ColorAttributes, wantedAttributes);
 
     for (String item[]: DMXMovingHeadAnimations_Color_animationListBox.getListBoxItems()) {
       DMXMovingHeadAnimations_Color_animationListBox.removeItem(item[0]);
@@ -1833,8 +1970,8 @@ public class ControlFrame extends PApplet {
   }
 
   void rebuildFilteredDMXMovingHead_Rhythm_AnimationList(float[] checkBoxArrayValue) {
-
-    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXMovingHead_RhythmAttributes);
+    String[] wantedAttributes = createDMXAnimationListFilter_MovingHead_Rhythm(checkBoxArrayValue);
+    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXMovingHead_RhythmAttributes, wantedAttributes);
 
     for (String item[]: DMXMovingHeadAnimations_Rhythm_animationListBox.getListBoxItems()) {
       DMXMovingHeadAnimations_Rhythm_animationListBox.removeItem(item[0]);
@@ -1843,8 +1980,8 @@ public class ControlFrame extends PApplet {
   }
 
   void rebuildFilteredDMXMovingHead_LightStyle_AnimationList(float[] checkBoxArrayValue) {
-
-    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXMovingHead_LightStyleAttributes);
+    String[] wantedAttributes = createDMXAnimationListFilter_MovingHead_Animation(checkBoxArrayValue);
+    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXMovingHead_LightStyleAttributes, wantedAttributes);
 
     for (String item[]: DMXMovingHeadAnimations_LightStyle_animationListBox.getListBoxItems()) {
       DMXMovingHeadAnimations_LightStyle_animationListBox.removeItem(item[0]);
@@ -1853,8 +1990,8 @@ public class ControlFrame extends PApplet {
   }
 
   void rebuildFilteredDMXMovingHead_Animations_AnimationList(float[] checkBoxArrayValue) {
-
-    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList(checkBoxArrayValue, DMXMovingHead_AnimationAttributes);
+    String[] wantedAttributes = createDMXAnimationListFilter_MovingHead_Movement(checkBoxArrayValue);
+    List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXMovingHead_AnimationAttributes, wantedAttributes);
 
     for (String item[]: DMXMovingHeadAnimations_Animations_animationListBox.getListBoxItems()) {
       DMXMovingHeadAnimations_Animations_animationListBox.removeItem(item[0]);
@@ -1862,8 +1999,7 @@ public class ControlFrame extends PApplet {
     DMXMovingHeadAnimations_Animations_animationListBox.addItems(filteredAnimationsStringList);
   }
 
-  List<String> getFilteredAnimationsStringList(float[] checkBoxArrayValue, ArrayList<Attribute> attrList) {
-    String[] wantedAttributes = createDMXAnimationListFilter(checkBoxArrayValue);
+  List<String> getFilteredAnimationsStringList_DMX(float[] checkBoxArrayValue, ArrayList<Attribute> attrList, String[] wantedAttributes) {
     List<String> filteredAnimationsStringList = new ArrayList<String>();
     boolean init = false;
     if (wantedAttributes.length == 0) {
@@ -2757,16 +2893,16 @@ public class ControlFrame extends PApplet {
         rebuildFilteredDMXStrobeAnimationList(DMXStrobeAnimations_animationListCheckBox.getArrayValue());        
       }
       else if (theEvent.getName() == "Attributes - DMX Moving Head animations - Prepare Direction") {
-        rebuildFilteredDMXMovingHead_Movement_AnimationList(DMXMovingHeadAnimations_Movement_animationListCheckBox.getArrayValue());        
+        rebuildFilteredDMXMovingHead_Movement_AnimationList(DMXMovingHeadAnimations_Movement_animationListCheckBox.getArrayValue());
       }
       else if (theEvent.getName() == "Attributes - DMX Moving Head animations - Set Color") {
-        rebuildFilteredDMXMovingHead_Color_AnimationList(DMXMovingHeadAnimations_Color_animationListCheckBox.getArrayValue());        
+        rebuildFilteredDMXMovingHead_Color_AnimationList(DMXMovingHeadAnimations_Color_animationListCheckBox.getArrayValue());
       }
       else if (theEvent.getName() == "Attributes - DMX Moving Head animations - Set Light Style") {
-        rebuildFilteredDMXMovingHead_LightStyle_AnimationList(DMXMovingHeadAnimations_LightStyle_animationListCheckBox.getArrayValue());        
+        rebuildFilteredDMXMovingHead_LightStyle_AnimationList(DMXMovingHeadAnimations_LightStyle_animationListCheckBox.getArrayValue());
       }
       else if (theEvent.getName() == "Attributes - DMX Moving Head animations - Perform Animations") {
-        rebuildFilteredDMXMovingHead_Animations_AnimationList(DMXMovingHeadAnimations_Animations_animationListCheckBox.getArrayValue());        
+        rebuildFilteredDMXMovingHead_Animations_AnimationList(DMXMovingHeadAnimations_Animations_animationListCheckBox.getArrayValue());
       }
       //With listBoxes, it is necessary to also check if theEvent.isGroup()
       else if (theEvent.getName() == "Filtered LED Panel Animation List" && theEvent.isGroup()) {
@@ -2918,8 +3054,8 @@ public class ControlFrame extends PApplet {
 
       }
       else if (theEvent.getName() == "Filtered DMX Moving Head Animation List - Perform Animations") {
-        int selectedVal = int(DMXMovingHeadAnimations_Movement_animationListBox.getValue());
-        String selectedItem =  DMXMovingHeadAnimations_Movement_animationListBox.getListBoxItems()[selectedVal][0];
+        int selectedVal = int(DMXMovingHeadAnimations_Animations_animationListBox.getValue());
+        String selectedItem =  DMXMovingHeadAnimations_Animations_animationListBox.getListBoxItems()[selectedVal][0];
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
 
@@ -3208,25 +3344,186 @@ String[] createCustomDeviceAnimationListFilter(float[] checkBoxArrayvalue) {
   return filter;
 }
 
-String[] createDMXAnimationListFilter(float[] checkBoxArrayvalue) {
+String[] createDMXAnimationListFilter_Strobe(float[] checkBoxArrayvalue) {
   StringList temp = new StringList();
   for (int i = 0; i<checkBoxArrayvalue.length; i++) {
     if (checkBoxArrayvalue[i] == 1.0) {
       switch(i) {
-        case GUI_ATTR_DMX_ALL       : temp.append("All");break;
-        case GUI_ATTR_DMX_LEFT      : temp.append("Left");break;
-        case GUI_ATTR_DMX_RIGHT     : temp.append("Right");break;
-        case GUI_ATTR_DMX_CENTER    : temp.append("Center");break;
-        case GUI_ATTR_DMX_RHYTHMIC  : temp.append("Rhythmic");break;
-        case GUI_ATTR_DMX_STROBE    : temp.append("Strobe");break;
-        case GUI_ATTR_DMX_PAR       : temp.append("PAR");break;
-        case GUI_ATTR_DMX_VERYSLOW  : temp.append("Very Slow");break;
-        case GUI_ATTR_DMX_SLOW      : temp.append("Slow");break;
-        case GUI_ATTR_DMX_MEDIUM    : temp.append("Medium");break;
-        case GUI_ATTR_DMX_FAST      : temp.append("Fast");break;
-        case GUI_ATTR_DMX_VERYFAST  : temp.append("Very Fast");break;
-        case GUI_ATTR_DMX_AUDIO     : temp.append("AudioInput");break;
-        case GUI_ATTR_DMX_ATOMIC    : temp.append("Atomic");break;
+        case GUI_ATTR_DMX_STROBE_ALL       : temp.append("All");break;
+        case GUI_ATTR_DMX_STROBE_LEFT      : temp.append("Left");break;
+        case GUI_ATTR_DMX_STROBE_RIGHT     : temp.append("Right");break;
+        case GUI_ATTR_DMX_STROBE_CENTER    : temp.append("Center");break;
+        case GUI_ATTR_DMX_STROBE_RHYTHMIC  : temp.append("Rhythmic");break;
+        case GUI_ATTR_DMX_STROBE_STROBE    : temp.append("Strobe");break;
+        case GUI_ATTR_DMX_STROBE_PAR       : temp.append("PAR");break;
+        case GUI_ATTR_DMX_STROBE_VERYSLOW  : temp.append("Very Slow");break;
+        case GUI_ATTR_DMX_STROBE_SLOW      : temp.append("Slow");break;
+        case GUI_ATTR_DMX_STROBE_MEDIUM    : temp.append("Medium");break;
+        case GUI_ATTR_DMX_STROBE_FAST      : temp.append("Fast");break;
+        case GUI_ATTR_DMX_STROBE_VERYFAST  : temp.append("Very Fast");break;
+        case GUI_ATTR_DMX_STROBE_AUDIO     : temp.append("AudioInput");break;
+        case GUI_ATTR_DMX_STROBE_ATOMIC    : temp.append("Atomic");break;
+        default: break;
+      }
+    }
+  }
+  
+  String[] filter = new String[temp.size()];
+  for (int i = 0; i<temp.size(); i++) {
+    filter[i] = temp.get(i);
+  }
+  return filter;
+}
+
+
+
+String[] createDMXAnimationListFilter_MovingHead_Movement(float[] checkBoxArrayvalue) {
+  StringList temp = new StringList();
+  for (int i = 0; i<checkBoxArrayvalue.length; i++) {
+    if (checkBoxArrayvalue[i] == 1.0) {
+      switch(i) {
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_ALL        : temp.append("MovingHead-SetDirection-All");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_LEFT       : temp.append("MovingHead-SetDirection-Left");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_RIGHT      : temp.append("MovingHead-SetDirection-Right");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_SIDE       : temp.append("MovingHead-SetDirection-Side");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_CENTER     : temp.append("MovingHead-SetDirection-Center");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_UNIFORM    : temp.append("MovingHead-Uniform");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_DIVERGENT  : temp.append("MovingHead-Divergent");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_CONVERGENT : temp.append("MovingHead-Convergent");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_SYMMETRICAL: temp.append("MovingHead-Symmetrical");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_SUN        : temp.append("MovingHead-Sun");break;
+        default: break;
+      }
+    }
+  }
+  
+  String[] filter = new String[temp.size()];
+  for (int i = 0; i<temp.size(); i++) {
+    filter[i] = temp.get(i);
+  }
+  return filter;
+}
+
+String[] createDMXAnimationListFilter_MovingHead_Light(float[] checkBoxArrayvalue) {
+  StringList temp = new StringList();
+  for (int i = 0; i<checkBoxArrayvalue.length; i++) {
+    if (checkBoxArrayvalue[i] == 1.0) {
+      switch(i) {
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_ALL       : temp.append("MovingHead-SetLight-All");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_LEFT      : temp.append("MovingHead-SetLight-Left");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_RIGHT     : temp.append("MovingHead-SetLight-Right");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_SIDE      : temp.append("MovingHead-SetLight-Side");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_CENTER    : temp.append("MovingHead-SetLight-Center");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_STILL     : temp.append("MovingHead-Still");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_CRESCENDO : temp.append("MovingHead-Crescendo");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_FLASH     : temp.append("MovingHead-Flash");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_STROBE    : temp.append("MovingHead-Strobe");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_SINE      : temp.append("MovingHead-Sine");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_GLITCH    : temp.append("MovingHead-Glitch");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_TIGHT     : temp.append("MovingHead-Tight");break;
+        default: break;
+      }
+    }
+  }
+  
+  String[] filter = new String[temp.size()];
+  for (int i = 0; i<temp.size(); i++) {
+    filter[i] = temp.get(i);
+  }
+  return filter;
+
+}
+
+String[] createDMXAnimationListFilter_MovingHead_Color(float[] checkBoxArrayvalue) {
+  StringList temp = new StringList();
+  for (int i = 0; i<checkBoxArrayvalue.length; i++) {
+    if (checkBoxArrayvalue[i] == 1.0) {
+      switch(i) {
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_ALL        : temp.append("MovingHead-SetColor-All");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_LEFT       : temp.append("MovingHead-SetColor-Left");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_RIGHT      : temp.append("MovingHead-SetColor-Right");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_SIDE       : temp.append("MovingHead-SetColor-Side");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_CENTER     : temp.append("MovingHead-SetColor-Center");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_WHITE      : temp.append("MovingHead-White");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_RED        : temp.append("MovingHead-Red");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_DEEPRED    : temp.append("MovingHead-Deep Red");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_BLUE       : temp.append("MovingHead-Blue");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_DEEPBLUE   : temp.append("MovingHead-Deep Blue");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_YELLOW     : temp.append("MovingHead-Yellow");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_GREEN      : temp.append("MovingHead-Green");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_ULTRAVIOLET: temp.append("MovingHead-Ultraviolet");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_ORANGE     : temp.append("MovingHead-Orange");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_CTO        : temp.append("MovingHead-CTO");break;
+        default: break;
+      }
+    }
+  }
+  
+  String[] filter = new String[temp.size()];
+  for (int i = 0; i<temp.size(); i++) {
+    filter[i] = temp.get(i);
+  }
+  return filter;
+}
+
+String[] createDMXAnimationListFilter_MovingHead_Rhythm(float[] checkBoxArrayvalue) {
+  StringList temp = new StringList();
+  for (int i = 0; i<checkBoxArrayvalue.length; i++) {
+    if (checkBoxArrayvalue[i] == 1.0) {
+      switch(i) {
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_ALL      : temp.append("MovingHead-SetRhythm-All");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_LEFT     : temp.append("MovingHead-SetRhythm-Center");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_RIGHT    : temp.append("MovingHead-SetRhythm-Side");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_SIDE     : temp.append("MovingHead-SetRhythm-Left");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_CENTER   : temp.append("MovingHead-SetRhythm-Right");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_NOSYNC   : temp.append("MovingHead-No Sync");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_TOGETHER : temp.append("MovingHead-Together");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_CLOCK    : temp.append("MovingHead-Clockwise");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_ANTICLOCK: temp.append("MovingHead-AntiClockwise");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_RANDOM   : temp.append("MovingHead-Random");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_32ND     : temp.append("MovingHead-32nd");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_16TH     : temp.append("MovingHead-16th");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_8TH      : temp.append("MovingHead-8th");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_4TH      : temp.append("MovingHead-4th");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_2ND      : temp.append("MovingHead-2nd");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_BAR      : temp.append("MovingHead-Bar");break;
+        default: break;
+      }
+    }
+  }
+  
+  String[] filter = new String[temp.size()];
+  for (int i = 0; i<temp.size(); i++) {
+    filter[i] = temp.get(i);
+  }
+  return filter;
+
+}
+
+String[] createDMXAnimationListFilter_MovingHead_Animation(float[] checkBoxArrayvalue) {
+  StringList temp = new StringList();
+  for (int i = 0; i<checkBoxArrayvalue.length; i++) {
+    if (checkBoxArrayvalue[i] == 1.0) {
+      switch(i) {
+
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_ALL           : temp.append("MovingHead-Anim-All");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_LEFT          : temp.append("MovingHead-Anim-Center");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_RIGHT         : temp.append("MovingHead-Anim-Side");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_SIDE          : temp.append("MovingHead-Anim-Left");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_CENTER        : temp.append("MovingHead-Anim-Right");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_STILL         : temp.append("MovingHead-Anim-Still");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_FASTMOVE      : temp.append("MovingHead-Anim-FastMove");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_CONTSWEEP     : temp.append("MovingHead-Anim-ContinuousSweep");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_SINGSWEEP     : temp.append("MovingHead-Anim-SingleSweep");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_RANDOM        : temp.append("MovingHead-Anim-Random");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_PARALLEL      : temp.append("MovingHead-Anim-Parallel");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_DIVERGENT     : temp.append("MovingHead-Anim-Divergent");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_CONVERGENT    : temp.append("MovingHead-Anim-Convergent");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_HORIZONTAL    : temp.append("MovingHead-Anim-Horizontal");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_VERTICAL      : temp.append("MovingHead-Anim-Vertical");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_SLOW          : temp.append("MovingHead-Anim-Slow");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_REGULAR       : temp.append("MovingHead-Anim-Regular");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_FAST          : temp.append("MovingHead-Anim-Fast");break;
         default: break;
       }
     }

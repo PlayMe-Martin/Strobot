@@ -278,6 +278,46 @@ void setupDMXAnimation_movingHead_initDirection() {
     case 70:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightOppositeTilt();                 break;
     case 71:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightOppositeTilt();                  break;
 
+    case 72:  dmxAnim_movingHead_prepareDirection_centerDev_CenterPan_FrontTilt();                                           break;
+    case 73:  dmxAnim_movingHead_prepareDirection_centerDev_LeftPan_FrontTilt();                                             break;
+    case 74:  dmxAnim_movingHead_prepareDirection_centerDev_RightPan_FrontTilt();                                            break;
+    case 75:  dmxAnim_movingHead_prepareDirection_centerDev_CenterPan_HighTilt();                                            break;
+    case 76:  dmxAnim_movingHead_prepareDirection_centerDev_LeftPan_HighTilt();                                              break;
+    case 77:  dmxAnim_movingHead_prepareDirection_centerDev_RightPan_HighTilt();                                             break;
+    case 78:  dmxAnim_movingHead_prepareDirection_centerDev_CenterPan_UprightTilt();                                         break;
+    case 79:  dmxAnim_movingHead_prepareDirection_centerDev_LeftPan_UprightTilt();                                           break;
+    case 80:  dmxAnim_movingHead_prepareDirection_centerDev_RightPan_UprightTilt();                                          break;
+
+    case 81:  dmxAnim_movingHead_prepareDirection_sideDev_CenterPan_FrontTilt();                                           break;
+    case 82:  dmxAnim_movingHead_prepareDirection_sideDev_LeftPan_FrontTilt();                                             break;
+    case 83:  dmxAnim_movingHead_prepareDirection_sideDev_RightPan_FrontTilt();                                            break;
+    case 84:  dmxAnim_movingHead_prepareDirection_sideDev_CenterPan_HighTilt();                                            break;
+    case 85:  dmxAnim_movingHead_prepareDirection_sideDev_LeftPan_HighTilt();                                              break;
+    case 86:  dmxAnim_movingHead_prepareDirection_sideDev_RightPan_HighTilt();                                             break;
+    case 87:  dmxAnim_movingHead_prepareDirection_sideDev_CenterPan_UprightTilt();                                         break;
+    case 88:  dmxAnim_movingHead_prepareDirection_sideDev_LeftPan_UprightTilt();                                           break;
+    case 89:  dmxAnim_movingHead_prepareDirection_sideDev_RightPan_UprightTilt();                                          break;
+
+    case 90:  dmxAnim_movingHead_prepareDirection_leftDev_CenterPan_FrontTilt();                                           break;
+    case 91:  dmxAnim_movingHead_prepareDirection_leftDev_LeftPan_FrontTilt();                                             break;
+    case 92:  dmxAnim_movingHead_prepareDirection_leftDev_RightPan_FrontTilt();                                            break;
+    case 93:  dmxAnim_movingHead_prepareDirection_leftDev_CenterPan_HighTilt();                                            break;
+    case 94:  dmxAnim_movingHead_prepareDirection_leftDev_LeftPan_HighTilt();                                              break;
+    case 95:  dmxAnim_movingHead_prepareDirection_leftDev_RightPan_HighTilt();                                             break;
+    case 96:  dmxAnim_movingHead_prepareDirection_leftDev_CenterPan_UprightTilt();                                         break;
+    case 97:  dmxAnim_movingHead_prepareDirection_leftDev_LeftPan_UprightTilt();                                           break;
+    case 98:  dmxAnim_movingHead_prepareDirection_leftDev_RightPan_UprightTilt();                                          break;
+
+    case 99:  dmxAnim_movingHead_prepareDirection_rightDev_CenterPan_FrontTilt();                                           break;
+    case 100: dmxAnim_movingHead_prepareDirection_rightDev_LeftPan_FrontTilt();                                             break;
+    case 101: dmxAnim_movingHead_prepareDirection_rightDev_RightPan_FrontTilt();                                            break;
+    case 102: dmxAnim_movingHead_prepareDirection_rightDev_CenterPan_HighTilt();                                            break;
+    case 103: dmxAnim_movingHead_prepareDirection_rightDev_LeftPan_HighTilt();                                              break;
+    case 104: dmxAnim_movingHead_prepareDirection_rightDev_RightPan_HighTilt();                                             break;
+    case 105: dmxAnim_movingHead_prepareDirection_rightDev_CenterPan_UprightTilt();                                         break;
+    case 106: dmxAnim_movingHead_prepareDirection_rightDev_LeftPan_UprightTilt();                                           break;
+    case 107: dmxAnim_movingHead_prepareDirection_rightDev_RightPan_UprightTilt();                                          break;
+
     default: break;
   }
 }
@@ -898,6 +938,6 @@ void dmxAnim_movingHead_blackout() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
     movingHead.setDimmer(0);
     movingHead.setSpeed_maxSpeed();
-    movingHead.setShutterMode(DMX_SHUTTERMODE_DEFAULT);
+    movingHead.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
   }
 }
