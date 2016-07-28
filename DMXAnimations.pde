@@ -15,7 +15,9 @@ int dmxAnimationNumber_movingHead_setColor          = 0;
 int dmxAnimationNumber_movingHead_setRhythm         = 0;
 int dmxAnimationNumber_movingHead_setLightStyle     = 0;
 int dmxAnimationNumber_movingHead_setAnimation      = 0;
-int dmxAnimationNumber_par                          = 0;
+int dmxAnimationNumber_par_setColor                 = 0;
+int dmxAnimationNumber_par_setLightStyle            = 0;
+int dmxAnimationNumber_par_setAnimation             = 0;
 
 float dmxAnim_movingHead_globalAnimCpt              = 0;          // Global counter used for the animations
 int dmxAnim_movingHead_nbRhythmSyncedDev            = 0;
@@ -732,6 +734,8 @@ void playDMXAnimation_movingHead() {
 
 
 
+    // AJOUTER : Faire des "8" plus ou moins larges, avec l'angle de reference tournant
+
     // case xxx: dmxAnim_movingHead_lightOn_fastMove_centerDev_Symmetric_CenterPan_LowTilt();                      break;
     // case xxx: dmxAnim_movingHead_lightOn_fastMove_centerDev_Symmetric_CenterPan_LowTilt();                      break;
 
@@ -896,14 +900,28 @@ void setupDMXAnimation_movingHeadAnimation() {
 }
 
 
-void playDMXAnimation_par() {
-  switch(dmxAnimationNumber_par) {
+
+
+void setupDMXAnimation_par_setColor() {
+  switch(dmxAnimationNumber_par_setColor) {
+    default: break;
+  }
+}
+
+void setupDMXAnimation_par_setLightStyle() {
+  switch(dmxAnimationNumber_par_setLightStyle) {
+    default: break;
+  }
+}
+
+void playDMXAnimation_parAnimation() {
+  switch(dmxAnimationNumber_par_setAnimation) {
     default: break;
   }
 }
 
 void setupDMXAnimation_par() {
-  switch(dmxAnimationNumber_par) {
+  switch(dmxAnimationNumber_par_setAnimation) {
     default: break;
   }
 }

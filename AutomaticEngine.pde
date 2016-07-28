@@ -253,8 +253,11 @@ class PlayMeSequencer {
     if (eventType == NOTE_ON) {
       switch (actionNumber) {
         case PITCH_DMX_ANIMATION_STROBE:                        loadDMXAnimation_strobe(actionValue); break;
-        case PITCH_DMX_ANIMATION_PAR:                           loadDMXAnimation_par(actionValue); break;
-        
+
+        case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 loadDMXAnimation_par_setColor(actionValue);      break;
+        case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           loadDMXAnimation_par_setLightStyle(actionValue); break;
+        case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             loadDMXAnimation_par_setAnimation(actionValue);  break;
+
         case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(actionValue); break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(actionValue);      break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(actionValue); break;
@@ -276,7 +279,7 @@ class PlayMeSequencer {
     else if (eventType == NOTE_OFF) {
       switch (actionNumber) {        
         case PITCH_DMX_ANIMATION_STROBE:                        unloadDMXAnimation_strobe(); break;
-        case PITCH_DMX_ANIMATION_PAR:                           unloadDMXAnimation_par(); break;
+        case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             unloadDMXAnimation_par(); break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
