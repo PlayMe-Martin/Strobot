@@ -791,10 +791,28 @@ String getStringFromDMXAnimationNumber_strobe(int animNbr) {
   return temp;
 }
 
-String getStringFromDMXAnimationNumber_par(int animNbr) {
+String getStringFromDMXAnimationNumber_par_Color(int animNbr) {
   String temp = "Undefined";
   if (animNbr <= 127) {                                                                   
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR) + "  |  " + str(animNbr);
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR_SET_COLOR) + "  |  " + str(animNbr);
+  }
+  
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_par_LightStyle(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE) + "  |  " + str(animNbr);
+  }
+  
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_par_Animation(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR_SET_ANIMATION) + "  |  " + str(animNbr);
   }
   
   return temp;
@@ -843,8 +861,6 @@ String getStringFromDMXAnimationNumber_movingHead_Animation(int animNbr) {
 
   return temp;
 }
-
-
 
 int convertStringToInt(String text) {
   //Allow to parse either regular ints (ie MIDI notes "0", "1"...), or real notes (ie "C3", "A#-1"...) 

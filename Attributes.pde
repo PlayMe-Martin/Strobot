@@ -20,6 +20,9 @@ ArrayList<Attribute> DMXMovingHead_ColorAttributes;
 ArrayList<Attribute> DMXMovingHead_RhythmAttributes;
 ArrayList<Attribute> DMXMovingHead_LightStyleAttributes;
 ArrayList<Attribute> DMXMovingHead_AnimationAttributes;
+ArrayList<Attribute> DMXPar_ColorAttributes;
+ArrayList<Attribute> DMXPar_LightStyleAttributes;
+ArrayList<Attribute> DMXPar_AnimationAttributes;
 ArrayList<Attribute> DMXOtherFixturesAttributes;
 //StringList registeredAttributes_DMX;
 
@@ -1498,6 +1501,23 @@ void setDMXAnimationsAttributes() {
   DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 140, "All Fixtures - Smooth Beat Sync Random Direction - Regular"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"} );
   DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 141, "All Fixtures - Smooth Beat Sync Random Direction - Fast"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"} );
 
+
+  /////////////////////////////////////////////////////////////////////////
+
+  DMXPar_ColorAttributes = registerAttribute(DMXPar_ColorAttributes, 1,  "All Fixtures - White"                                                   , new String[] { "PAR-SetColor-All", "PAR-White"                              } );
+  DMXPar_ColorAttributes = registerAttribute(DMXPar_ColorAttributes, 2,  "All Fixtures - Red"                                                     , new String[] { "PAR-SetColor-All", "PAR-Red"                                } );
+  DMXPar_ColorAttributes = registerAttribute(DMXPar_ColorAttributes, 3,  "All Fixtures - Deep Red"                                                , new String[] { "PAR-SetColor-All", "PAR-Deep Red"                           } );
+  DMXPar_ColorAttributes = registerAttribute(DMXPar_ColorAttributes, 4,  "All Fixtures - Blue"                                                    , new String[] { "PAR-SetColor-All", "PAR-Blue"                               } );
+  DMXPar_ColorAttributes = registerAttribute(DMXPar_ColorAttributes, 5,  "All Fixtures - Deep Blue"                                               , new String[] { "PAR-SetColor-All", "PAR-Deep Blue"                          } );
+  DMXPar_ColorAttributes = registerAttribute(DMXPar_ColorAttributes, 6,  "All Fixtures - Yellow"                                                  , new String[] { "PAR-SetColor-All", "PAR-Yellow"                             } );
+  DMXPar_ColorAttributes = registerAttribute(DMXPar_ColorAttributes, 7,  "All Fixtures - Green"                                                   , new String[] { "PAR-SetColor-All", "PAR-Green"                              } );
+  DMXPar_ColorAttributes = registerAttribute(DMXPar_ColorAttributes, 8,  "All Fixtures - Ultraviolet"                                             , new String[] { "PAR-SetColor-All", "PAR-Ultraviolet"                        } );
+  DMXPar_ColorAttributes = registerAttribute(DMXPar_ColorAttributes, 9,  "All Fixtures - Orange"                                                  , new String[] { "PAR-SetColor-All", "PAR-Orange"                             } );
+  DMXPar_ColorAttributes = registerAttribute(DMXPar_ColorAttributes, 10, "All Fixtures - CTO"                                                     , new String[] { "PAR-SetColor-All", "PAR-CTO"                                } );
+
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 1,   "All Fixtures - Continuous Light"                             , new String[] {"PAR-SetLight-All", "PAR-Still"                           } );
+
+  DMXPar_AnimationAttributes = registerAttribute(DMXPar_AnimationAttributes, 1,   "All Fixtures - Perform Current Light Style"                           , new String[] {"PAR-Anim-All", "PAR-Anim-Still"}        );
 }
 
 

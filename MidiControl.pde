@@ -52,8 +52,10 @@ final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM      = 102;
 final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE = 103;
 final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1 = 104;
 final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2 = 105;
-final int PITCH_DMX_ANIMATION_STROBE                      = 106;    //DMX bank used for the strobes
-final int PITCH_DMX_ANIMATION_PAR                         = 107;    //DMX bank used for the PAR effects
+final int PITCH_DMX_ANIMATION_STROBE                      = 106;
+final int PITCH_DMX_ANIMATION_PAR_SET_COLOR               = 107;
+final int PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE         = 108;
+final int PITCH_DMX_ANIMATION_PAR_SET_ANIMATION           = 109;
 
 final int PITCH_ENABLE_MAN_INPUT                          = 110;
 final int PITCH_DISABLE_MAN_INPUT                         = 111;
@@ -202,14 +204,20 @@ void processMidiInfo_semiAutoMode(int pitch, int velocity) {
     //Standard mode, MIDI incoming from Ableton
     case PITCH_SET_AUTOMODE_OFF:                            setAutomaticModeOff();break;                                             //F#5   - Disable the automatic mode
     case PITCH_SET_AUTOMODE_ON:                             setAutomaticModeOn();break;                                              //G5    - Enable the automatic mode
+    
     case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(velocity); break;              //E7
     case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(velocity); break;                   //F7
     case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM:        loadDMXAnimation_movingHead_setRhythm(velocity); break;                  //F#7
     case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(velocity); break;              //G7
     case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   loadDMXAnimation_movingHead_setAnimation1(velocity); break;              //G#7
     case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   loadDMXAnimation_movingHead_setAnimation2(velocity); break;              //A7
+    
     case PITCH_DMX_ANIMATION_STROBE:                        loadDMXAnimation_strobe(velocity); break;                                //A#7   - Load an animation using DMX devices - Strobe bank
-    case PITCH_DMX_ANIMATION_PAR:                           loadDMXAnimation_par(velocity); break;                                   //B7
+    
+    case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 loadDMXAnimation_par_setColor(velocity);break;                           //B7
+    case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           loadDMXAnimation_par_setLightStyle(velocity);break;                      //C8
+    case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             loadDMXAnimation_par_setAnimation(velocity);break;                       //C#8
+
     case PITCH_ENABLE_MAN_INPUT:                            enableManualInput();break;                                               //D8
     case PITCH_DISABLE_MAN_INPUT:                           disableManualInput();break;                                              //D#8
     case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(velocity);break;                              //A#8   - Load an animation for the custom devices
@@ -619,12 +627,23 @@ void loadDMXAnimation_strobe(int dmxAnimNumber) {
   setupDMXAnimation_strobe();
 }
 
-void loadDMXAnimation_par(int dmxAnimNumber) {
-  //When such a command is received, and while the note continues, the DMX control is up to Strobot
+
+void loadDMXAnimation_par_setColor(int velocity) {
+  dmxAnimationNumber_par_setColor = velocity;
+  setupDMXAnimation_par_setColor();
+}
+void loadDMXAnimation_par_setLightStyle(int velocity) {
+  dmxAnimationNumber_par_setLightStyle = velocity;
+  setupDMXAnimation_par_setLightStyle();
+}
+
+void loadDMXAnimation_par_setAnimation(int velocity) {
   dmxAutomaticControl = true;
-  dmxAnimationNumber_par = dmxAnimNumber;
+  dmxAnimationNumber_par_setAnimation = velocity;
   setupDMXAnimation_par();
 }
+
+
 
 void loadCustomDeviceAnimation1(int velocity) {
   customDeviceAnimation(velocity);
@@ -830,7 +849,7 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
       //AUTOMATIC_MODE = false;
       switch (pitch) {
         case PITCH_DMX_ANIMATION_STROBE:                        unloadDMXAnimation_strobe(); break;                         //A#7   - Unload an animation using DMX devices : noteOff releases DMX
-        case PITCH_DMX_ANIMATION_PAR:                           unloadDMXAnimation_par(); break;                            //B7
+        case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             unloadDMXAnimation_par(); break;
 
         case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM:        break;
@@ -896,8 +915,8 @@ void unloadDMXAnimation_strobe() {
 void unloadDMXAnimation_par() {
   //Note off for the DMX animation, kill the DMX animation by switching everything back to a blackout
   dmxAutomaticControl = false;
-  dmxAnimationNumber_par = 1;
-  dmxAnim_par_blackout();
+  dmxAnimationNumber_par_setAnimation = 1;
+  //dmxAnim_par_blackout();
 }
 
 void unloadDMXAnimation_movingHead() {

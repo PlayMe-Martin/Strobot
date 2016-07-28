@@ -275,6 +275,9 @@ void setup()
   DMXMovingHead_RhythmAttributes         = new ArrayList<Attribute>();
   DMXMovingHead_LightStyleAttributes     = new ArrayList<Attribute>();
   DMXMovingHead_AnimationAttributes      = new ArrayList<Attribute>();
+  DMXPar_ColorAttributes                 = new ArrayList<Attribute>();
+  DMXPar_LightStyleAttributes            = new ArrayList<Attribute>();
+  DMXPar_AnimationAttributes             = new ArrayList<Attribute>();
   DMXOtherFixturesAttributes             = new ArrayList<Attribute>();
   setDMXAnimationsAttributes();
 
@@ -591,17 +594,4 @@ void draw()
       gifRecordingFrameNumber += 1;
     }      
   }
-}
-
-void create_logfileHeader() {
-    outputLog = createWriter("Strobot_logfile.txt");
-    
-    outputLog.println("///////////////////////////////////////////");
-    outputLog.println("//Xi Light Setup - Output logger file//");
-    outputLog.println("///////////////////////////////////////////");
-    outputLog.println("");
-    outputLog.println("");
-    outputLog.println("// All information output by the application shall be stored in this log file //");
-    outputLog.println("");
-    outputLog.flush();
 }

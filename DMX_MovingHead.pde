@@ -145,6 +145,9 @@ class DMX_MovingHead {
   boolean finePanControl                   = false;
   int pan_minVal                           = -1;
   int pan_maxVal                           = -1;
+  int panFine_minVal                       = -1;
+  int panFine_maxVal                       = -1;
+  boolean invertedPan                      = false;   // The pan control may have to be inverted: for example, an upside-down fixture
 
   int chIndex_tilt                         = -1;
   int chIndex_tiltFine                     = -1;
@@ -215,7 +218,7 @@ class DMX_MovingHead {
 
   int currentLightStyle                   = DMXANIM_MOVINGHEAD_CONTINUOUS_LIGHT;         // Used by the global animations
   int currentRhythmPattern                = DMXANIM_MOVINGHEAD_LIGHTRHYTHM_NOSYNC;       // Used by the global animations
-  int animCpt1_performLight               = 0;                                // Counters used for the global animations
+  int animCpt1_performLight               = 0;                                           // Counters used for the global animations
   int animCpt2                            = 0;
   int animCpt3                            = 0;
   int animCpt4                            = 0;
@@ -226,12 +229,15 @@ class DMX_MovingHead {
   //Additional variables which might be used by other non-DMX related functions (most notably, the simulator)
   int[] simulator_colorRGB;
 
+  DMX_MovingHead(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
+    this(name, deviceID, startAddr, false);
+  }
 
   // Fixtures are instanciated using their name: the constructor will then look up in the fixture library if such a device exists, and throw an exception if not
-  DMX_MovingHead(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
-
+  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan) throws UndefinedFixtureException {
     this.deviceID = deviceID;
     this.dmxStartAddr = startAddr;
+    this.invertedPan = invertedPan;
 
     // Init
     movingHead = getFixtureFromName(name);
@@ -275,6 +281,8 @@ class DMX_MovingHead {
     setMainChannelsDefaultValues();
     setMiscVariablesDefaultValues();
   }
+
+  ///////////////////////////////////
 
   int getDeviceID() {
     return this.deviceID;
@@ -705,12 +713,23 @@ class DMX_MovingHead {
 
   void setPan(float val_percent) {
     if (finePanControl) {
-      int val = int( map(val_percent, 0.0, 100.0, 0, 65535) );
+      int val; 
+      if (!invertedPan) {
+        val = int( map(val_percent, 0.0, 100.0, 0, 65535) );
+      }
+      else {
+        val = int( map(val_percent, 0.0, 100.0, 65535, 0) );
+      }
       dmxVal[chIndex_pan]     = (val & 0xffff) >> 8;
       dmxVal[chIndex_panFine] = (val & 0xffff) &  0xFF;
     }
     else {
-      dmxVal[chIndex_pan] = int( map(val_percent, 0.0, 100.0, pan_minVal, pan_maxVal) );
+      if (!invertedPan) {
+        dmxVal[chIndex_pan] = int( map(val_percent, 0.0, 100.0, pan_minVal, pan_maxVal) );
+      }
+      else {
+        dmxVal[chIndex_pan] = int( map(val_percent, 0.0, 100.0, pan_maxVal, pan_minVal) ); 
+      }
     }
   }
 
@@ -1033,7 +1052,7 @@ class DMX_MovingHead {
 
   boolean checkBPMSync_antiClockwiseRhythm(float factor) {
     int seqRef = int((automaticSequencer.currentPosition*factor % dmxAnim_syncedMovingHeads.size()));
-    seqRef = dmxAnim_syncedMovingHeads.size() - seqRef;
+    seqRef = dmxAnim_syncedMovingHeads.size() - 1 - seqRef;
     if (seqRef == this.syncIdx) {
       return true;
     }
@@ -1043,37 +1062,9 @@ class DMX_MovingHead {
   }
 
   boolean checkBPMSync_randomRhythm(float factor) {
-
-    //outils: frameCount --- frameRate ?
-    //nbDevRhythm
-    //int dmxAnim_movingHead_nbRhythmSyncedDev            = 0;
-    //int dmxAnim_movingHead_currentSelectionIdx          = 0;
-    //automaticSequencer.currentPosition
-
-    // automaticSequencer.currentPosition: x.0 -> 
-    // automaticSequencer.currentPosition: x.1 -> 
-    // automaticSequencer.currentPosition: x.2 -> 
-    // automaticSequencer.currentPosition: x.3 -> 
-
-    // nbTotalDev ### deviceId
-    // -> Diviser une mesure en fractions de devices ?
-    // Modulo de automaticSequencer.currentPosition + deviceID*factor par nbTotalDev
-
-    // -> random: on peut utiliser un seed particulier ? En se liant a framecount, on peut recuperer une valeur random pareille pour chaque dev
-
-    // noise(frameCount)
-
-    // int candidateIdx = dmxAnim_movingHead_currentSelectionIdx;
-    // while (candidateIdx == dmxAnim_movingHead_currentSelectionIdx) {
-    //   candidateIdx = int(random(min(dmxAnim_movingHead_nbRhythmSyncedDev,2)));   //At least 2, even when only one fixture is in the group
-    // }
-
-
-    // TBIL
-    // DOES NOT WORK YET
     int seqRef = int((automaticSequencer.currentPosition*factor % dmxAnim_syncedMovingHeads.size()));
-    seqRef = dmxAnim_syncedMovingHeads.size() - seqRef;
-    if (seqRef == this.syncIdx) {
+    int randomIdx = getGlobalRandomVal_ChangingInt(dmxAnim_syncedMovingHeads.size(), seqRef);
+    if (randomIdx == this.syncIdx) {
       return true;
     }
     else {
@@ -1082,7 +1073,6 @@ class DMX_MovingHead {
   }
 
   boolean checkBPMSync_syncedRhythm(float factor) {
-    // println(this.getDeviceID() + " - " + automaticSequencer.currentPosition + " -- " + ((int)(automaticSequencer.currentPosition * factor * 2.0)) + " // " + ((int)(automaticSequencer.currentPosition * factor * 2.0) % 2 == 0));
     if ((int)(automaticSequencer.currentPosition * factor * 2.0) % 2 == 0) {
       return true;
     }
@@ -1271,8 +1261,6 @@ class DMX_MovingHead {
     this.setDimmer(100);
     this.setApertureReduction(80);
   }
-
-
 
 }
 
@@ -4053,6 +4041,7 @@ void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(float fa
   float stepSize = factor * 1 / (frameRate*60.0/automaticSequencer.currentBPM);
   dmxAnim_movingHead_globalAnimCpt += stepSize;
   if (dmxAnim_movingHead_globalAnimCpt > 1) {
+    println("reinit " + dmxAnim_movingHead_globalAnimCpt);
     dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();
   }
 }

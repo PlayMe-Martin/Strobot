@@ -17,6 +17,7 @@ ArrayList<DMX_Stroboscope> DMXList_FrontLeftStroboscopes;
 ArrayList<DMX_Stroboscope> DMXList_FrontRightStroboscopes;
 ArrayList<DMX_Stroboscope> DMXList_BackStroboscopes;
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads;
+ArrayList<DMX_PAR>         DMXList_PARs;
 
 //Create sublists of the registered devices
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads_side;
@@ -88,7 +89,7 @@ void dmxInit_registerDefaultStrobes() {
   DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
   DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
   DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
-  DMXList_MovingHeads            = new ArrayList<DMX_MovingHead>();
+  // DMXList_MovingHeads            = new ArrayList<DMX_MovingHead>();
 
   //The default DMX devices consist of two small stroboscopes on the left and on the right, and one big in the middle
   DMXList_BackStroboscopes.add(new DMX_Stroboscope(5,6,7,8));
@@ -191,19 +192,6 @@ void dmx_buildFixtureSublists_movingHead() {
   if (DMXList_MovingHeads.size() == 1) {
     DMXList_MovingHeads_left  = DMXList_MovingHeads;
     DMXList_MovingHeads_right = DMXList_MovingHeads;
-  }
-
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads_side) {
-    println("DMXList_MovingHeads_side - " + movingHead.getDeviceID());
-  }
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads_center) {
-    println("DMXList_MovingHeads_center - " + movingHead.getDeviceID());
-  }
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads_right) {
-    println("DMXList_MovingHeads_right - " + movingHead.getDeviceID());
-  }
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads_left) {
-    println("DMXList_MovingHeads_left - " + movingHead.getDeviceID());
   }
 
 }
