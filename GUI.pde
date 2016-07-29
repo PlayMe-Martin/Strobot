@@ -319,17 +319,17 @@ public class ControlFrame extends PApplet {
   controlP5.Button DMXParAnimations_LightStyle_reinitButton;
   controlP5.Button DMXParAnimations_Animations_reinitButton;
 
-  controlP5.ListBox LEDPanelAnimations_animationListBox;
-  controlP5.ListBox CustomDeviceAnimations_animationListBox;
-  controlP5.ListBox DMXStrobeAnimations_animationListBox;
-  controlP5.ListBox DMXMovingHeadAnimations_Movement_animationListBox;
-  controlP5.ListBox DMXMovingHeadAnimations_Color_animationListBox;
-  controlP5.ListBox DMXMovingHeadAnimations_Rhythm_animationListBox;
-  controlP5.ListBox DMXMovingHeadAnimations_LightStyle_animationListBox;
-  controlP5.ListBox DMXMovingHeadAnimations_Animations_animationListBox;
-  controlP5.ListBox DMXParAnimations_Color_animationListBox;
-  controlP5.ListBox DMXParAnimations_LightStyle_animationListBox;
-  controlP5.ListBox DMXParAnimations_Animations_animationListBox;
+  controlP5.ScrollableList LEDPanelAnimations_animationListBox;
+  controlP5.ScrollableList CustomDeviceAnimations_animationListBox;
+  controlP5.ScrollableList DMXStrobeAnimations_animationListBox;
+  controlP5.ScrollableList DMXMovingHeadAnimations_Movement_animationListBox;
+  controlP5.ScrollableList DMXMovingHeadAnimations_Color_animationListBox;
+  controlP5.ScrollableList DMXMovingHeadAnimations_Rhythm_animationListBox;
+  controlP5.ScrollableList DMXMovingHeadAnimations_LightStyle_animationListBox;
+  controlP5.ScrollableList DMXMovingHeadAnimations_Animations_animationListBox;
+  controlP5.ScrollableList DMXParAnimations_Color_animationListBox;
+  controlP5.ScrollableList DMXParAnimations_LightStyle_animationListBox;
+  controlP5.ScrollableList DMXParAnimations_Animations_animationListBox;
 
   controlP5.Textarea LEDPanelAnimations_currentAnimationDescription;
   controlP5.Textarea CustomDeviceAnimations_currentAnimationDescription;
@@ -1264,12 +1264,13 @@ public class ControlFrame extends PApplet {
       filteredAnimationsStringList.add(attr.animationNbr + ": " + attr.name);
     }
     //Initialize the filtered animation list with all the available animations
-    LEDPanelAnimations_animationListBox = cp5.addListBox("Filtered LED Panel Animation List")
+    LEDPanelAnimations_animationListBox = cp5.addScrollableList("Filtered LED Panel Animation List")
                                              .setPosition(leftOffset, 5*toggleHeight + 6*spacingRow )
                                              .setSize(3*LEDPanelAnimations_animListGroup.getWidth()/5 - 2*leftOffset, LEDPanelAnimations_animListGroup.getBackgroundHeight() - (6*toggleHeight + 5*spacingRow) + 3)
                                              .addItems(filteredAnimationsStringList)
-                                             .hideBar() 
-                                             .disableCollapse()
+                                             .setBarVisible(false) 
+                                             //.disableCollapse()
+                                             .setType(ScrollableList.LIST)
                                              .moveTo(LEDPanelAnimations_animListGroup)
                                              ;
     
@@ -1407,18 +1408,19 @@ public class ControlFrame extends PApplet {
       filteredAnimationsStringList.add(attr.animationNbr + ": " + attr.name);
     }
     //Initialize the filtered animation list with all the available animations
-    CustomDeviceAnimations_animationListBox = cp5.addListBox("Filtered Custom Device Animation List")
+    CustomDeviceAnimations_animationListBox = cp5.addScrollableList("Filtered Custom Device Animation List")
                                                  .setPosition(leftOffset, 5*toggleHeight + 6*spacingRow)
                                                  .setSize(3*CustomDeviceAnimations_animListGroup.getWidth()/5 - 2*leftOffset, CustomDeviceAnimations_animListGroup.getBackgroundHeight() - (6*toggleHeight + 5*spacingRow) + 1)
                                                  .addItems(filteredAnimationsStringList)
-                                                 .hideBar() 
-                                                 .disableCollapse()
+                                                 .setBarVisible(false) 
+                                                 //.disableCollapse()
+                                                 .setType(ScrollableList.LIST)
                                                  .moveTo(CustomDeviceAnimations_animListGroup)
                                                  ;
     
     CustomDeviceAnimations_currentAnimationDescription = cp5.addTextarea("Current Custom Device Animation Description")
                                                             .setPosition(3*CustomDeviceAnimations_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(CustomDeviceAnimations_animListGroup.getWidth() - CustomDeviceAnimations_animationListBox.getWidth() - 3*leftOffset, CustomDeviceAnimations_animationListBox.getBackgroundHeight())
+                                                            .setSize(CustomDeviceAnimations_animListGroup.getWidth() - CustomDeviceAnimations_animationListBox.getWidth() - 3*leftOffset, CustomDeviceAnimations_animationListBox.getHeight())
                                                             .setColor(color(255))
                                                             //.setFont(createFont("",8,true))
                                                             .setFont(minimlFont)
@@ -1506,18 +1508,19 @@ public class ControlFrame extends PApplet {
       filteredAnimationsStringList.add(attr.animationNbr + ": " + attr.name);
     }
     //Initialize the filtered animation list with all the available animations
-    DMXStrobeAnimations_animationListBox = cp5.addListBox("Filtered DMX Strobe Animation List")
+    DMXStrobeAnimations_animationListBox = cp5.addScrollableList("Filtered DMX Strobe Animation List")
                                                  .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow)
-                                                 .setSize(3*DMXAnimations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_animListGroup.getBackgroundHeight() - (3*toggleHeight + 2*spacingRow) + 1)
+                                                 .setSize(3*DMXAnimations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_animListGroup.getBackgroundHeight() - (4*toggleHeight + 3*spacingRow) + 1)
                                                  .addItems(filteredAnimationsStringList)
-                                                 .hideBar() 
-                                                 .disableCollapse()
+                                                 .setBarVisible(false) 
+                                                 //.disableCollapse()
+                                                 .setType(ScrollableList.LIST)
                                                  .moveTo(DMXAnimations_animListGroup)
                                                  ;
     
     DMXStrobeAnimations_currentAnimationDescription = cp5.addTextarea("Current DMX Strobe Animation Description")
-                                                            .setPosition(3*DMXAnimations_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_animListGroup.getWidth() - DMXStrobeAnimations_animationListBox.getWidth() - 3*leftOffset, DMXStrobeAnimations_animationListBox.getBackgroundHeight() - toggleHeight - spacingRow)
+                                                            .setPosition(3*DMXAnimations_animListGroup.getWidth()/5, 5*toggleHeight + 5*spacingRow)
+                                                            .setSize(DMXAnimations_animListGroup.getWidth() - DMXStrobeAnimations_animationListBox.getWidth() - 3*leftOffset, DMXStrobeAnimations_animationListBox.getHeight() - 4*(toggleHeight - spacingRow))
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -1797,50 +1800,55 @@ public class ControlFrame extends PApplet {
     }
 
     //Initialize the filtered animation list with all the available animations
-    DMXMovingHeadAnimations_Movement_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Prepare Direction")
+    DMXMovingHeadAnimations_Movement_animationListBox = cp5.addScrollableList("Filtered DMX Moving Head Animation List - Prepare Direction")
                                                            .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow - 2)
                                                            .setSize(3*DMXAnimations_Movement_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Movement_animListGroup.getBackgroundHeight() - (3*toggleHeight + 3*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_Movement)
-                                                           .hideBar() 
-                                                           .disableCollapse()
+                                                           .setBarVisible(false) 
+                                                           //.disableCollapse()
+                                                           .setType(ScrollableList.LIST)
                                                            .moveTo(DMXAnimations_Movement_animListGroup)
                                                            ;
-    DMXMovingHeadAnimations_Color_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Set Color")
+    DMXMovingHeadAnimations_Color_animationListBox = cp5.addScrollableList("Filtered DMX Moving Head Animation List - Set Color")
                                                            .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow - 2)
                                                            .setSize(3*DMXAnimations_Color_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Color_animListGroup.getBackgroundHeight() - (3*toggleHeight + 3*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_Color)
-                                                           .hideBar() 
-                                                           .disableCollapse()
+                                                           .setBarVisible(false) 
+                                                           //.disableCollapse()
+                                                           .setType(ScrollableList.LIST)
                                                            .moveTo(DMXAnimations_Color_animListGroup)
                                                            ;
-    DMXMovingHeadAnimations_Rhythm_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Set Rhythm")
+    DMXMovingHeadAnimations_Rhythm_animationListBox = cp5.addScrollableList("Filtered DMX Moving Head Animation List - Set Rhythm")
                                                            .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow - 2)
                                                            .setSize(3*DMXAnimations_Rhythm_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Rhythm_animListGroup.getBackgroundHeight() - (3*toggleHeight + 3*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_Rhythm)
-                                                           .hideBar() 
-                                                           .disableCollapse()
+                                                           .setBarVisible(false) 
+                                                           //.disableCollapse()
+                                                           .setType(ScrollableList.LIST)
                                                            .moveTo(DMXAnimations_Rhythm_animListGroup)
                                                            ;
-    DMXMovingHeadAnimations_LightStyle_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Set Light Style")
+    DMXMovingHeadAnimations_LightStyle_animationListBox = cp5.addScrollableList("Filtered DMX Moving Head Animation List - Set Light Style")
                                                            .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow - 2)
                                                            .setSize(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_LightStyle_animListGroup.getBackgroundHeight() - (3*toggleHeight + 3*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_LightStyle)
-                                                           .hideBar() 
-                                                           .disableCollapse()
+                                                           .setBarVisible(false) 
+                                                           //.disableCollapse()
+                                                           .setType(ScrollableList.LIST)
                                                            .moveTo(DMXAnimations_LightStyle_animListGroup)
                                                            ;
-    DMXMovingHeadAnimations_Animations_animationListBox = cp5.addListBox("Filtered DMX Moving Head Animation List - Perform Animations")
+    DMXMovingHeadAnimations_Animations_animationListBox = cp5.addScrollableList("Filtered DMX Moving Head Animation List - Perform Animations")
                                                            .setPosition(leftOffset, 4*toggleHeight + 4*spacingRow)
                                                            .setSize(3*DMXAnimations_Animations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Animations_animListGroup.getBackgroundHeight() - (4*toggleHeight + 4*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_Animations)
-                                                           .hideBar() 
-                                                           .disableCollapse()
+                                                           .setBarVisible(false) 
+                                                           //.disableCollapse()
+                                                           .setType(ScrollableList.LIST)
                                                            .moveTo(DMXAnimations_Animations_animListGroup)
                                                            ;
     
     DMXMovingHeadAnimations_Movement_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Prepare Direction")
-                                                            .setPosition(3*DMXAnimations_Movement_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_Movement_animListGroup.getWidth() - DMXMovingHeadAnimations_Movement_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Movement_animationListBox.getBackgroundHeight() - 5*(toggleHeight - spacingRow))
+                                                            .setPosition(3*DMXAnimations_Movement_animListGroup.getWidth()/5, 5*toggleHeight + 5*spacingRow)
+                                                            .setSize(DMXAnimations_Movement_animListGroup.getWidth() - DMXMovingHeadAnimations_Movement_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Movement_animationListBox.getHeight() - 4*(toggleHeight - spacingRow))
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -1849,8 +1857,8 @@ public class ControlFrame extends PApplet {
                                                             .moveTo(DMXAnimations_Movement_animListGroup)
                                                             ;
     DMXMovingHeadAnimations_Color_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Set Color")
-                                                            .setPosition(3*DMXAnimations_Color_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_Color_animListGroup.getWidth() - DMXMovingHeadAnimations_Color_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Color_animationListBox.getBackgroundHeight() - 5*(toggleHeight - spacingRow))
+                                                            .setPosition(3*DMXAnimations_Color_animListGroup.getWidth()/5, 5*toggleHeight + 5*spacingRow)
+                                                            .setSize(DMXAnimations_Color_animListGroup.getWidth() - DMXMovingHeadAnimations_Color_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Color_animationListBox.getHeight() - 4*(toggleHeight - spacingRow))
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -1859,8 +1867,8 @@ public class ControlFrame extends PApplet {
                                                             .moveTo(DMXAnimations_Color_animListGroup)
                                                             ;
     DMXMovingHeadAnimations_Rhythm_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Set Rhythm")
-                                                            .setPosition(3*DMXAnimations_Rhythm_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_Rhythm_animListGroup.getWidth() - DMXMovingHeadAnimations_Rhythm_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Rhythm_animationListBox.getBackgroundHeight() - 5*(toggleHeight - spacingRow))
+                                                            .setPosition(3*DMXAnimations_Rhythm_animListGroup.getWidth()/5, 5*toggleHeight + 5*spacingRow)
+                                                            .setSize(DMXAnimations_Rhythm_animListGroup.getWidth() - DMXMovingHeadAnimations_Rhythm_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Rhythm_animationListBox.getHeight() - 4*(toggleHeight - spacingRow))
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -1869,8 +1877,8 @@ public class ControlFrame extends PApplet {
                                                             .moveTo(DMXAnimations_Rhythm_animListGroup)
                                                             ;
     DMXMovingHeadAnimations_LightStyle_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Set Light Style")
-                                                            .setPosition(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_LightStyle_animListGroup.getWidth() - DMXMovingHeadAnimations_LightStyle_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_LightStyle_animationListBox.getBackgroundHeight() - 5*(toggleHeight - spacingRow))
+                                                            .setPosition(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5, 5*toggleHeight + 5*spacingRow)
+                                                            .setSize(DMXAnimations_LightStyle_animListGroup.getWidth() - DMXMovingHeadAnimations_LightStyle_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_LightStyle_animationListBox.getHeight() - 4*(toggleHeight - spacingRow))
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -1879,8 +1887,8 @@ public class ControlFrame extends PApplet {
                                                             .moveTo(DMXAnimations_LightStyle_animListGroup)
                                                             ;
     DMXMovingHeadAnimations_Animations_currentAnimationDescription = cp5.addTextarea("Current DMX Moving Head Animation Description - Perform Animations")
-                                                            .setPosition(3*DMXAnimations_Animations_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_Animations_animListGroup.getWidth() - DMXMovingHeadAnimations_Animations_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Animations_animationListBox.getBackgroundHeight() - 5*(toggleHeight - spacingRow))
+                                                            .setPosition(3*DMXAnimations_Animations_animListGroup.getWidth()/5, 5*toggleHeight + 5*spacingRow)
+                                                            .setSize(DMXAnimations_Animations_animListGroup.getWidth() - DMXMovingHeadAnimations_Animations_animationListBox.getWidth() - 3*leftOffset, DMXMovingHeadAnimations_Animations_animationListBox.getHeight() - 4*(toggleHeight - spacingRow))
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -2078,35 +2086,38 @@ public class ControlFrame extends PApplet {
     }
 
     //Initialize the filtered animation list with all the available animations
-    DMXParAnimations_Color_animationListBox = cp5.addListBox("Filtered DMX PAR Animation List - Set Color")
+    DMXParAnimations_Color_animationListBox = cp5.addScrollableList("Filtered DMX PAR Animation List - Set Color")
                                                            .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow - 2)
                                                            .setSize(3*DMXAnimations_Color_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Color_animListGroup.getBackgroundHeight() - (3*toggleHeight + 3*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_Color)
-                                                           .hideBar() 
-                                                           .disableCollapse()
+                                                           .setBarVisible(false) 
+                                                           //.disableCollapse()
+                                                           .setType(ScrollableList.LIST)
                                                            .moveTo(DMXAnimations_Color_animListGroup)
                                                            ;
-    DMXParAnimations_LightStyle_animationListBox = cp5.addListBox("Filtered DMX PAR Animation List - Set Light Style")
+    DMXParAnimations_LightStyle_animationListBox = cp5.addScrollableList("Filtered DMX PAR Animation List - Set Light Style")
                                                            .setPosition(leftOffset, 3*toggleHeight + 4*spacingRow - 2)
                                                            .setSize(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_LightStyle_animListGroup.getBackgroundHeight() - (3*toggleHeight + 3*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_LightStyle)
-                                                           .hideBar() 
-                                                           .disableCollapse()
+                                                           .setBarVisible(false) 
+                                                           //.disableCollapse()
+                                                           .setType(ScrollableList.LIST)
                                                            .moveTo(DMXAnimations_LightStyle_animListGroup)
                                                            ;
-    DMXParAnimations_Animations_animationListBox = cp5.addListBox("Filtered DMX PAR Animation List - Perform Animations")
+    DMXParAnimations_Animations_animationListBox = cp5.addScrollableList("Filtered DMX PAR Animation List - Perform Animations")
                                                            .setPosition(leftOffset, 4*toggleHeight + 4*spacingRow)
                                                            .setSize(3*DMXAnimations_Animations_animListGroup.getWidth()/5 - 2*leftOffset, DMXAnimations_Animations_animListGroup.getBackgroundHeight() - (4*toggleHeight + 4*spacingRow) + 1)
                                                            .addItems(filteredAnimationsStringList_Animations)
-                                                           .hideBar() 
-                                                           .disableCollapse()
+                                                           .setBarVisible(false) 
+                                                           //.disableCollapse()
+                                                           .setType(ScrollableList.LIST)
                                                            .moveTo(DMXAnimations_Animations_animListGroup)
                                                            ;
     
 
     DMXParAnimations_Color_currentAnimationDescription = cp5.addTextarea("Current DMX PAR Animation Description - Set Color")
-                                                            .setPosition(3*DMXAnimations_Color_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_Color_animListGroup.getWidth() - DMXParAnimations_Color_animationListBox.getWidth() - 3*leftOffset, DMXParAnimations_Color_animationListBox.getBackgroundHeight() - 5*(toggleHeight - spacingRow))
+                                                            .setPosition(3*DMXAnimations_Color_animListGroup.getWidth()/5, 5*toggleHeight + 5*spacingRow)
+                                                            .setSize(DMXAnimations_Color_animListGroup.getWidth() - DMXParAnimations_Color_animationListBox.getWidth() - 3*leftOffset, DMXParAnimations_Color_animationListBox.getHeight() - 4*(toggleHeight - spacingRow))
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -2115,8 +2126,8 @@ public class ControlFrame extends PApplet {
                                                             .moveTo(DMXAnimations_Color_animListGroup)
                                                             ;
     DMXParAnimations_LightStyle_currentAnimationDescription = cp5.addTextarea("Current DMX PAR Animation Description - Set Light Style")
-                                                            .setPosition(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_LightStyle_animListGroup.getWidth() - DMXParAnimations_LightStyle_animationListBox.getWidth() - 3*leftOffset, DMXParAnimations_LightStyle_animationListBox.getBackgroundHeight() - 5*(toggleHeight - spacingRow))
+                                                            .setPosition(3*DMXAnimations_LightStyle_animListGroup.getWidth()/5, 5*toggleHeight + 5*spacingRow)
+                                                            .setSize(DMXAnimations_LightStyle_animListGroup.getWidth() - DMXParAnimations_LightStyle_animationListBox.getWidth() - 3*leftOffset, DMXParAnimations_LightStyle_animationListBox.getHeight() - 4*(toggleHeight - spacingRow))
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -2125,8 +2136,8 @@ public class ControlFrame extends PApplet {
                                                             .moveTo(DMXAnimations_LightStyle_animListGroup)
                                                             ;
     DMXParAnimations_Animations_currentAnimationDescription = cp5.addTextarea("Current DMX PAR Animation Description - Perform Animations")
-                                                            .setPosition(3*DMXAnimations_Animations_animListGroup.getWidth()/5, 5*toggleHeight + 6*spacingRow)
-                                                            .setSize(DMXAnimations_Animations_animListGroup.getWidth() - DMXParAnimations_Animations_animationListBox.getWidth() - 3*leftOffset, DMXParAnimations_Animations_animationListBox.getBackgroundHeight() - 5*(toggleHeight - spacingRow))
+                                                            .setPosition(3*DMXAnimations_Animations_animListGroup.getWidth()/5, 5*toggleHeight + 5*spacingRow)
+                                                            .setSize(DMXAnimations_Animations_animListGroup.getWidth() - DMXParAnimations_Animations_animationListBox.getWidth() - 3*leftOffset, DMXParAnimations_Animations_animationListBox.getHeight() - 4*(toggleHeight - spacingRow))
                                                             .setColor(color(255))
                                                             .setFont(minimlFont)
                                                             .hideScrollbar()
@@ -2174,10 +2185,7 @@ public class ControlFrame extends PApplet {
         filteredAnimationsStringList.add(attr.animationNbr + ": " + attr.name);
       }
     }
-
-    for (String item[]: LEDPanelAnimations_animationListBox.getListBoxItems()) {
-      LEDPanelAnimations_animationListBox.removeItem(item[0]);
-    }
+    LEDPanelAnimations_animationListBox.clear();
     LEDPanelAnimations_animationListBox.addItems(filteredAnimationsStringList);
   }
   
@@ -2202,10 +2210,7 @@ public class ControlFrame extends PApplet {
         filteredAnimationsStringList.add(attr.animationNbr + ": " + attr.name);
       }
     }
-
-    for (String item[]: CustomDeviceAnimations_animationListBox.getListBoxItems()) {
-      CustomDeviceAnimations_animationListBox.removeItem(item[0]);
-    }
+    CustomDeviceAnimations_animationListBox.clear();
     CustomDeviceAnimations_animationListBox.addItems(filteredAnimationsStringList);
   }
   
@@ -2214,9 +2219,11 @@ public class ControlFrame extends PApplet {
     String[] wantedAttributes = createDMXAnimationListFilter_Strobe(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXStrobeAttributes, wantedAttributes);
 
-    for (String item[]: DMXStrobeAnimations_animationListBox.getListBoxItems()) {
-      DMXStrobeAnimations_animationListBox.removeItem(item[0]);
+    List<Map> items = DMXStrobeAnimations_animationListBox.getItems();
+    for (Map item: items) {
+      DMXStrobeAnimations_animationListBox.removeItem((String)item.get("text"));
     }
+
     DMXStrobeAnimations_animationListBox.addItems(filteredAnimationsStringList);
   }
 
@@ -2224,9 +2231,7 @@ public class ControlFrame extends PApplet {
     String[] wantedAttributes = createDMXAnimationListFilter_MovingHead_Movement(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXMovingHead_MovementAttributes, wantedAttributes);
 
-    for (String item[]: DMXMovingHeadAnimations_Movement_animationListBox.getListBoxItems()) {
-      DMXMovingHeadAnimations_Movement_animationListBox.removeItem(item[0]);
-    }
+    DMXMovingHeadAnimations_Movement_animationListBox.clear();
     DMXMovingHeadAnimations_Movement_animationListBox.addItems(filteredAnimationsStringList);
   }
 
@@ -2234,9 +2239,7 @@ public class ControlFrame extends PApplet {
     String[] wantedAttributes = createDMXAnimationListFilter_MovingHead_Color(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXMovingHead_ColorAttributes, wantedAttributes);
 
-    for (String item[]: DMXMovingHeadAnimations_Color_animationListBox.getListBoxItems()) {
-      DMXMovingHeadAnimations_Color_animationListBox.removeItem(item[0]);
-    }
+    DMXMovingHeadAnimations_Color_animationListBox.clear();
     DMXMovingHeadAnimations_Color_animationListBox.addItems(filteredAnimationsStringList);
   }
 
@@ -2244,9 +2247,7 @@ public class ControlFrame extends PApplet {
     String[] wantedAttributes = createDMXAnimationListFilter_MovingHead_Rhythm(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXMovingHead_RhythmAttributes, wantedAttributes);
 
-    for (String item[]: DMXMovingHeadAnimations_Rhythm_animationListBox.getListBoxItems()) {
-      DMXMovingHeadAnimations_Rhythm_animationListBox.removeItem(item[0]);
-    }
+    DMXMovingHeadAnimations_Rhythm_animationListBox.clear();
     DMXMovingHeadAnimations_Rhythm_animationListBox.addItems(filteredAnimationsStringList);
   }
 
@@ -2254,9 +2255,7 @@ public class ControlFrame extends PApplet {
     String[] wantedAttributes = createDMXAnimationListFilter_MovingHead_Light(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXMovingHead_LightStyleAttributes, wantedAttributes);
 
-    for (String item[]: DMXMovingHeadAnimations_LightStyle_animationListBox.getListBoxItems()) {
-      DMXMovingHeadAnimations_LightStyle_animationListBox.removeItem(item[0]);
-    }
+    DMXMovingHeadAnimations_LightStyle_animationListBox.clear();
     DMXMovingHeadAnimations_LightStyle_animationListBox.addItems(filteredAnimationsStringList);
   }
 
@@ -2264,9 +2263,7 @@ public class ControlFrame extends PApplet {
     String[] wantedAttributes = createDMXAnimationListFilter_MovingHead_Animation(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXMovingHead_AnimationAttributes, wantedAttributes);
 
-    for (String item[]: DMXMovingHeadAnimations_Animations_animationListBox.getListBoxItems()) {
-      DMXMovingHeadAnimations_Animations_animationListBox.removeItem(item[0]);
-    }
+    DMXMovingHeadAnimations_Animations_animationListBox.clear();
     DMXMovingHeadAnimations_Animations_animationListBox.addItems(filteredAnimationsStringList);
   }
 
@@ -2274,9 +2271,7 @@ public class ControlFrame extends PApplet {
     String[] wantedAttributes = createDMXAnimationListFilter_Par_Color(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXPar_ColorAttributes, wantedAttributes);
 
-    for (String item[]: DMXParAnimations_Color_animationListBox.getListBoxItems()) {
-      DMXParAnimations_Color_animationListBox.removeItem(item[0]);
-    }
+    DMXParAnimations_Color_animationListBox.clear();
     DMXParAnimations_Color_animationListBox.addItems(filteredAnimationsStringList);
   }
 
@@ -2284,9 +2279,7 @@ public class ControlFrame extends PApplet {
     String[] wantedAttributes = createDMXAnimationListFilter_Par_Light(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXPar_LightStyleAttributes, wantedAttributes);
 
-    for (String item[]: DMXParAnimations_LightStyle_animationListBox.getListBoxItems()) {
-      DMXParAnimations_LightStyle_animationListBox.removeItem(item[0]);
-    }
+    DMXParAnimations_LightStyle_animationListBox.clear();
     DMXParAnimations_LightStyle_animationListBox.addItems(filteredAnimationsStringList);
   }
 
@@ -2294,9 +2287,7 @@ public class ControlFrame extends PApplet {
     String[] wantedAttributes = createDMXAnimationListFilter_Par_Animation(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXPar_AnimationAttributes, wantedAttributes);
 
-    for (String item[]: DMXParAnimations_Animations_animationListBox.getListBoxItems()) {
-      DMXParAnimations_Animations_animationListBox.removeItem(item[0]);
-    }
+    DMXParAnimations_Animations_animationListBox.clear();
     DMXParAnimations_Animations_animationListBox.addItems(filteredAnimationsStringList);
   }
 
@@ -2545,7 +2536,7 @@ public class ControlFrame extends PApplet {
     GUIMessageBox.setBackgroundHeight(120 + marginY);
     
     Textfield f = cp5.addTextfield("inputbox_" + device,20,45+marginY,messageBoxInputFieldWidth,messageBoxInputFieldHeight);
-    f.captionLabel().setVisible(false);
+    f.getCaptionLabel().setVisible(false);
     f.setFocus(true);
     f.moveTo(GUIMessageBox);
     f.setColorActive(color(100));
@@ -2562,8 +2553,8 @@ public class ControlFrame extends PApplet {
     b1.setBroadcast(true);
     b1.setCaptionLabel("OK");
     // centering of a label needs to be done manually with marginTop and marginLeft
-    b1.captionLabel().style().marginTop = 0;
-    b1.captionLabel().style().marginLeft = 30;
+    b1.getCaptionLabel().getStyle().marginTop = 0;
+    b1.getCaptionLabel().getStyle().marginLeft = 30;
     
     // add the Cancel button to the messageBox. 
     controlP5.Button b2 = cp5.addButton("buttonCancel_" + device,0,155,80 + marginY,80,24);
@@ -2575,20 +2566,20 @@ public class ControlFrame extends PApplet {
     b2.setColorBackground(color(40));
     b2.setColorActive(color(20));
     // centering of a label needs to be done manually with marginTop and marginLeft
-    b2.captionLabel().style().marginTop = 0;
-    b2.captionLabel().style().marginLeft = 22;
+    b2.getCaptionLabel().getStyle().marginTop = 0;
+    b2.getCaptionLabel().getStyle().marginLeft = 22;
   }
   
   // buttonOK will be triggered when pressing the OK button of the messageBox.
   void buttonOK_FrontLeftStrobe(int theValue) {
-    GUIMessageBoxString = ((Textfield)cp5.controller("inputbox_FrontLeftStrobe")).getText();
+    GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_FrontLeftStrobe")).getText();
     GUIMessageBoxResult = theValue;
     gui_parseMessageBoxFrontLeftStrobe(GUIMessageBoxString);
     GUIMessageBox.hide();
   }
   
   void buttonOK_FrontRightStrobe(int theValue) {
-    GUIMessageBoxString = ((Textfield)cp5.controller("inputbox_FrontRightStrobe")).getText();
+    GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_FrontRightStrobe")).getText();
     GUIMessageBoxResult = theValue;
     gui_parseMessageBoxFrontRightStrobe(GUIMessageBoxString);
     GUIMessageBox.hide();
@@ -2619,7 +2610,7 @@ public class ControlFrame extends PApplet {
   }
 
   void buttonOK_BackStrobe(int theValue) {
-    GUIMessageBoxString = ((Textfield)cp5.controller("inputbox_BackStrobe")).getText();
+    GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_BackStrobe")).getText();
     GUIMessageBoxResult = theValue;
     gui_parseMessageBoxBackStrobe(GUIMessageBoxString);
     GUIMessageBox.hide();
@@ -2635,7 +2626,7 @@ public class ControlFrame extends PApplet {
   }
 
   void buttonOK_LEDTube(int theValue) {
-    GUIMessageBoxString = ((Textfield)cp5.controller("inputbox_LEDTube")).getText();
+    GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_LEDTube")).getText();
     GUIMessageBoxResult = theValue;
     gui_parseMessageBoxLEDTube(GUIMessageBoxString);
     GUIMessageBox.hide();
@@ -2651,7 +2642,7 @@ public class ControlFrame extends PApplet {
   }
   
   void buttonOK_RackLight(int theValue) {
-    GUIMessageBoxString = ((Textfield)cp5.controller("inputbox_LEDTube")).getText();
+    GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_LEDTube")).getText();
     GUIMessageBoxResult = theValue;
     gui_parseMessageBoxRackLight(GUIMessageBoxString);
     GUIMessageBox.hide();
@@ -2778,6 +2769,7 @@ public class ControlFrame extends PApplet {
     
 
   void controlEvent(ControlEvent theEvent) {
+
     if (gui_initComplete) {
 
       if (theEvent.getName() == "Activate Simulator") {
@@ -3237,10 +3229,9 @@ public class ControlFrame extends PApplet {
       }
 
 
-      //With listBoxes, it is necessary to also check if theEvent.isGroup()
-      else if (theEvent.getName() == "Filtered LED Panel Animation List" && theEvent.isGroup()) {
+      else if (theEvent.getName() == "Filtered LED Panel Animation List") {
         int selectedVal = int(LEDPanelAnimations_animationListBox.getValue());
-        String selectedItem =  LEDPanelAnimations_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)LEDPanelAnimations_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
         
@@ -3253,13 +3244,13 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromAnimationNumber(animationAttributes.get(animNbr).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + animationAttributes.get(animNbr).attributes;
-        LEDPanelAnimations_currentAnimationDescription.setText(textDescription);
+        LEDPanelAnimations_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         gui_loadLEDPanelAnimation(animNbr);
       }
       else if (theEvent.getName() == "Filtered Custom Device Animation List") {
         int selectedVal = int(CustomDeviceAnimations_animationListBox.getValue());
-        String selectedItem =  CustomDeviceAnimations_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)CustomDeviceAnimations_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
         
@@ -3273,7 +3264,7 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromCustomDeviceAnimationNumber(customDevicesAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + customDevicesAttributes.get(animNbr - 1).attributes;
-        CustomDeviceAnimations_currentAnimationDescription.setText(textDescription);
+        CustomDeviceAnimations_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         //Load the animation
         customDeviceAnimation(animNbr);
@@ -3281,7 +3272,7 @@ public class ControlFrame extends PApplet {
       }
       else if (theEvent.getName() == "Filtered DMX Strobe Animation List") {
         int selectedVal = int(DMXStrobeAnimations_animationListBox.getValue());
-        String selectedItem =  DMXStrobeAnimations_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)DMXStrobeAnimations_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
         
@@ -3295,7 +3286,7 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_strobe(DMXStrobeAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + DMXStrobeAttributes.get(animNbr - 1).attributes;
-        DMXStrobeAnimations_currentAnimationDescription.setText(textDescription);
+        DMXStrobeAnimations_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         //Load the animation
         gui_loadDMXAnimation_strobe(animNbr);
@@ -3303,7 +3294,7 @@ public class ControlFrame extends PApplet {
       }
       else if (theEvent.getName() == "Filtered DMX Moving Head Animation List - Prepare Direction") {
         int selectedVal = int(DMXMovingHeadAnimations_Movement_animationListBox.getValue());
-        String selectedItem =  DMXMovingHeadAnimations_Movement_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)DMXMovingHeadAnimations_Movement_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
 
@@ -3317,7 +3308,7 @@ public class ControlFrame extends PApplet {
                                       + "Attributes:\n"
                                       + DMXMovingHead_MovementAttributes.get(animNbr - 1).attributes;
 
-        DMXMovingHeadAnimations_Movement_currentAnimationDescription.setText(textDescription);
+        DMXMovingHeadAnimations_Movement_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         //Load the animation
         gui_loadDMXAnimation_movingHead_Movement(animNbr);
@@ -3325,7 +3316,7 @@ public class ControlFrame extends PApplet {
       }
       else if (theEvent.getName() == "Filtered DMX Moving Head Animation List - Set Color") {
         int selectedVal = int(DMXMovingHeadAnimations_Color_animationListBox.getValue());
-        String selectedItem =  DMXMovingHeadAnimations_Color_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)DMXMovingHeadAnimations_Color_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
 
@@ -3338,7 +3329,7 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_movingHead_Color(DMXMovingHead_ColorAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + DMXMovingHead_ColorAttributes.get(animNbr - 1).attributes;
-        DMXMovingHeadAnimations_Color_currentAnimationDescription.setText(textDescription);
+        DMXMovingHeadAnimations_Color_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         //Load the animation
         gui_loadDMXAnimation_movingHead_Color(animNbr);
@@ -3346,7 +3337,7 @@ public class ControlFrame extends PApplet {
       }
       else if (theEvent.getName() == "Filtered DMX Moving Head Animation List - Set Rhythm") {
         int selectedVal = int(DMXMovingHeadAnimations_Rhythm_animationListBox.getValue());
-        String selectedItem =  DMXMovingHeadAnimations_Rhythm_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)DMXMovingHeadAnimations_Rhythm_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
 
@@ -3359,7 +3350,7 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_movingHead_Rhythm(DMXMovingHead_RhythmAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + DMXMovingHead_RhythmAttributes.get(animNbr - 1).attributes;
-        DMXMovingHeadAnimations_Rhythm_currentAnimationDescription.setText(textDescription);
+        DMXMovingHeadAnimations_Rhythm_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         //Load the animation
         gui_loadDMXAnimation_movingHead_Rhythm(animNbr);
@@ -3367,7 +3358,7 @@ public class ControlFrame extends PApplet {
       }
       else if (theEvent.getName() == "Filtered DMX Moving Head Animation List - Set Light Style") {
         int selectedVal = int(DMXMovingHeadAnimations_LightStyle_animationListBox.getValue());
-        String selectedItem =  DMXMovingHeadAnimations_LightStyle_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)DMXMovingHeadAnimations_LightStyle_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
 
@@ -3380,7 +3371,7 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_movingHead_LightStyle(DMXMovingHead_LightStyleAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + DMXMovingHead_LightStyleAttributes.get(animNbr - 1).attributes;
-        DMXMovingHeadAnimations_LightStyle_currentAnimationDescription.setText(textDescription);
+        DMXMovingHeadAnimations_LightStyle_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         //Load the animation
         gui_loadDMXAnimation_movingHead_LightStyle(animNbr);
@@ -3388,7 +3379,7 @@ public class ControlFrame extends PApplet {
       }
       else if (theEvent.getName() == "Filtered DMX Moving Head Animation List - Perform Animations") {
         int selectedVal = int(DMXMovingHeadAnimations_Animations_animationListBox.getValue());
-        String selectedItem =  DMXMovingHeadAnimations_Animations_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)DMXMovingHeadAnimations_Animations_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
 
@@ -3401,7 +3392,7 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_movingHead_Animation(DMXMovingHead_AnimationAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + DMXMovingHead_AnimationAttributes.get(animNbr - 1).attributes;
-        DMXMovingHeadAnimations_Animations_currentAnimationDescription.setText(textDescription);
+        DMXMovingHeadAnimations_Animations_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         //Load the animation
         gui_loadDMXAnimation_movingHead(animNbr);
@@ -3409,7 +3400,7 @@ public class ControlFrame extends PApplet {
       }
       else if (theEvent.getName() == "Filtered DMX PAR Animation List - Set Color") {
         int selectedVal = int(DMXParAnimations_Color_animationListBox.getValue());
-        String selectedItem =  DMXParAnimations_Color_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)DMXParAnimations_Color_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
 
@@ -3422,7 +3413,7 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_par_Color(DMXPar_ColorAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + DMXPar_ColorAttributes.get(animNbr - 1).attributes;
-        DMXParAnimations_Color_currentAnimationDescription.setText(textDescription);
+        DMXParAnimations_Color_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         //Load the animation
         gui_loadDMXAnimation_par_Color(animNbr);
@@ -3430,7 +3421,7 @@ public class ControlFrame extends PApplet {
       }
       else if (theEvent.getName() == "Filtered DMX PAR Animation List - Set Light Style") {
         int selectedVal = int(DMXParAnimations_LightStyle_animationListBox.getValue());
-        String selectedItem =  DMXParAnimations_LightStyle_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)DMXParAnimations_LightStyle_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
 
@@ -3443,7 +3434,7 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_par_LightStyle(DMXPar_LightStyleAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + DMXPar_LightStyleAttributes.get(animNbr - 1).attributes;
-        DMXParAnimations_LightStyle_currentAnimationDescription.setText(textDescription);
+        DMXParAnimations_LightStyle_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         //Load the animation
         gui_loadDMXAnimation_par_LightStyle(animNbr);
@@ -3451,7 +3442,7 @@ public class ControlFrame extends PApplet {
       }
       else if (theEvent.getName() == "Filtered DMX PAR Animation List - Perform Animations") {
         int selectedVal = int(DMXParAnimations_Animations_animationListBox.getValue());
-        String selectedItem =  DMXParAnimations_Animations_animationListBox.getListBoxItems()[selectedVal][0];
+        String selectedItem =  (String)DMXParAnimations_Animations_animationListBox.getItem(selectedVal).get("text");
         String[] selectedItemSplit = split(selectedItem, ":");
         int animNbr = Integer.parseInt(selectedItemSplit[0]);
 
@@ -3464,7 +3455,7 @@ public class ControlFrame extends PApplet {
                                       + "Corresponding note/velocity : " + getStringFromDMXAnimationNumber_par_Animation(DMXPar_AnimationAttributes.get(animNbr - 1).animationNbr) + "\n"
                                       + "Attributes:\n"
                                       + DMXPar_AnimationAttributes.get(animNbr - 1).attributes;
-        DMXParAnimations_Animations_currentAnimationDescription.setText(textDescription);
+        DMXParAnimations_Animations_currentAnimationDescription.setText(textDescription.toUpperCase());
         
         //Load the animation
         gui_loadDMXAnimation_par(animNbr);
@@ -3488,7 +3479,7 @@ public class ControlFrame extends PApplet {
                                     .setPosition(gui_audioMonitoringGroupOffsetX, gui_audioMonitoringGroupBaseHeight)
                                     .setWidth(gui_audioMonitoringGroupWidth)
                                     .activateEvent(true)
-                                    .disableCollapse() 
+                                    //.disableCollapse() 
                                     .setBackgroundColor(color(255,40))
                                     .setBackgroundHeight(170)
                                     .setLabel("Audio monitoring")
