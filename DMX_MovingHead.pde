@@ -866,7 +866,7 @@ class DMX_MovingHead {
       case DMX_MOVINGHEAD_COLORMODE_WHEEL    : dmxVal[chIndex_color_WHEEL] = colorWheel_code; break; 
       case DMX_MOVINGHEAD_COLORMODE_RGB      : dmxVal[chIndex_color_RGB_R] = colorRGB[0];       dmxVal[chIndex_color_RGB_G] = colorRGB[1];       dmxVal[chIndex_color_RGB_B] = colorRGB[2];       break; 
       case DMX_MOVINGHEAD_COLORMODE_CMY      : dmxVal[chIndex_color_CMY_C] = 255 - colorRGB[0]; dmxVal[chIndex_color_CMY_M] = 255 - colorRGB[1]; dmxVal[chIndex_color_CMY_Y] = 255 - colorRGB[2]; break; 
-      case DMX_MOVINGHEAD_COLORMODE_RGBW     : dmxVal[chIndex_color_RGB_R] = colorRGB[0];       dmxVal[chIndex_color_RGB_G] = colorRGB[1];       dmxVal[chIndex_color_RGB_B] = colorRGB[2];       dmxVal[chIndex_color_RGB_W] = colorRGB[3]; break; 
+      case DMX_MOVINGHEAD_COLORMODE_RGBW     : dmxVal[chIndex_color_RGB_R] = colorRGBW[0];      dmxVal[chIndex_color_RGB_G] = colorRGBW[1];      dmxVal[chIndex_color_RGB_B] = colorRGBW[2];      dmxVal[chIndex_color_RGB_W] = colorRGBW[3]; break; 
       case DMX_MOVINGHEAD_COLORMODE_UNDEFINED: break; 
       default: break;
     }
@@ -4041,7 +4041,6 @@ void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(float fa
   float stepSize = factor * 1 / (frameRate*60.0/automaticSequencer.currentBPM);
   dmxAnim_movingHead_globalAnimCpt += stepSize;
   if (dmxAnim_movingHead_globalAnimCpt > 1) {
-    println("reinit " + dmxAnim_movingHead_globalAnimCpt);
     dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();
   }
 }

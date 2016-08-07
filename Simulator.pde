@@ -39,16 +39,18 @@ int   panel_borderSize = 8;       //Distance between the panel's border and the 
 int   panel_lowerBoardSize = 30;  //Size of the lower board, raising the panel's size
 int   gui_distanceBetweenPanels;
 
-int strobe_sizeX = 60;
-int strobe_sizeY = 30;
-int strobe_borderSize = 4;
-int gui_frontStrobePositionY = 260;
+int   strobe_sizeX = 60;
+int   strobe_sizeY = 30;
+int   strobe_borderSize = 4;
+int   gui_frontStrobePositionY = 260;
 
-int gui_ledTubePositionY = 30;
-int gui_rackLightPositionY = 160;
-int gui_rackLightSpacing = 5;
+int   gui_ledTubePositionY = 30;
+int   gui_rackLightPositionY = 160;
+int   gui_rackLightSpacing = 5;
 
-int gui_movingHeadsPositionY = 310;
+int   gui_movingHeadsPositionY = 310;
+int   gui_parsPositionY = 320;
+int   gui_parSpacing    = 40;
 
 // TO BE DELETED
 // //Define more positions than needed, when the time comes just fill in the new values
@@ -142,6 +144,9 @@ void draw_simulator(int x, int y) {
 
   //Moving heads
   drawMovingHeads(gui_simulatorWidth, gui_movingHeadsPositionY);
+
+  //PAR
+  drawPars(gui_simulatorWidth, gui_parsPositionY);
   
 }
 
@@ -423,18 +428,14 @@ void drawMovingHeads(int simulatorWidth, int positionY) {
     int nbMovingHeads = DMXList_MovingHeads.size();
     int centerX = simulatorWidth/2;
     int maxWidth = (80 - 6*nbMovingHeads) * nbMovingHeads;
-    //int spacing = maxWidth / nbMovingHeads;
 
     for (int i = 0; i<nbMovingHeads; i++) {
-
-      //centerX - maxWidth/2 + i*maxWidth/(nbMovingHeads-2);
-
 
       DMX_MovingHead movingHead = DMXList_MovingHeads.get(i);
       auxControlFrame.pushMatrix();
       int posX;
       if (nbMovingHeads%2 == 0) {
-        posX = centerX-maxWidth/2+(i+1)*maxWidth/(nbMovingHeads+1);
+        //posX = centerX-maxWidth/2+(i+1)*maxWidth/(nbMovingHeads+1);
         posX = centerX -  int((5.0/3.0) * (maxWidth/2-(i+1)*maxWidth/(nbMovingHeads+1)));        
       }
       else {
@@ -486,6 +487,44 @@ void drawMovingHeads(int simulatorWidth, int positionY) {
       auxControlFrame.stroke(255);
       //auxControlFrame.fill(255,0,0);
       auxControlFrame.triangle(0,4,0,-4,7,0);
+
+      auxControlFrame.popMatrix();
+    }
+    auxControlFrame.noStroke();
+  }
+
+}
+
+void drawPars(int simulatorWidth, int positionY) {
+  
+  if (DMXList_Pars.size() > 0) {
+    int nbPars = DMXList_Pars.size();
+    int centerX = simulatorWidth/2;
+    int maxWidth = simulatorWidth - 50;
+
+    for (int i = 0; i<nbPars; i++) {
+
+      DMX_PAR par = DMXList_Pars.get(i);
+      auxControlFrame.pushMatrix();
+      int posX;
+      if (i<nbPars/2) {
+        posX = centerX - maxWidth/2 + i*gui_parSpacing;
+      }
+      else {
+        posX = centerX + maxWidth/2 - (nbPars-1-i)*gui_parSpacing;
+      }
+      
+      auxControlFrame.translate(posX + 10,positionY);
+
+      //External circle
+      auxControlFrame.fill(0);
+      auxControlFrame.stroke(255);
+      auxControlFrame.ellipse(0, 0, 18, 18);
+      auxControlFrame.noStroke();
+
+      //Internal color light
+      auxControlFrame.fill(par.getSimulatorColor()[0], par.getSimulatorColor()[1], par.getSimulatorColor()[2], par.getSimulatorDimmer()); 
+      auxControlFrame.ellipse(0, 0, 10,10);
 
       auxControlFrame.popMatrix();
     }
