@@ -205,6 +205,32 @@ final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_SLOW          = 15;
 final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_REGULAR       = 16;
 final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_FAST          = 17;
 
+final int GUI_ATTR_DMX_PAR_LIGHT_ALL                 = 0;
+final int GUI_ATTR_DMX_PAR_LIGHT_LEFT                = 1;
+final int GUI_ATTR_DMX_PAR_LIGHT_RIGHT               = 2;
+final int GUI_ATTR_DMX_PAR_LIGHT_CENTER              = 3;
+final int GUI_ATTR_DMX_PAR_LIGHT_SIDE                = 4;
+final int GUI_ATTR_DMX_PAR_LIGHT_STILL               = 5;
+final int GUI_ATTR_DMX_PAR_LIGHT_FLASH               = 6;
+final int GUI_ATTR_DMX_PAR_LIGHT_CRESCENDO           = 7;
+final int GUI_ATTR_DMX_PAR_LIGHT_STROBE              = 8;
+final int GUI_ATTR_DMX_PAR_LIGHT_SINE                = 9;
+final int GUI_ATTR_DMX_PAR_LIGHT_GLITCH              = 10;
+
+final int GUI_ATTR_DMX_PAR_COLOR_ALL                 = 0;
+final int GUI_ATTR_DMX_PAR_COLOR_LEFT                = 1;
+final int GUI_ATTR_DMX_PAR_COLOR_RIGHT               = 2;
+final int GUI_ATTR_DMX_PAR_COLOR_CENTER              = 3;
+final int GUI_ATTR_DMX_PAR_COLOR_SIDE                = 4;
+final int GUI_ATTR_DMX_PAR_COLOR_WHITE               = 5;
+final int GUI_ATTR_DMX_PAR_COLOR_RED                 = 6;
+final int GUI_ATTR_DMX_PAR_COLOR_BLUE                = 7;
+final int GUI_ATTR_DMX_PAR_COLOR_YELLOW              = 8;
+final int GUI_ATTR_DMX_PAR_COLOR_GREEN               = 9;
+final int GUI_ATTR_DMX_PAR_COLOR_ULTRAVIOLET         = 10;
+final int GUI_ATTR_DMX_PAR_COLOR_PINK                = 11;
+final int GUI_ATTR_DMX_PAR_COLOR_ORANGE              = 12;
+final int GUI_ATTR_DMX_PAR_COLOR_CTO                 = 13;
 
 final int audioMonitoring_barWidth                 = 90;
 final int audioMonitoring_barHeight                = 10;
@@ -1998,21 +2024,19 @@ public class ControlFrame extends PApplet {
                                                                 .addItem(" ALL ",           0)  //Small trick, controlP5 does not allow two elements with the same name
                                                                 .addItem(" LEFT ",          1)
                                                                 .addItem(" RIGHT ",         2)
-                                                                .addItem(" SIDE ",          3)
-                                                                .addItem(" CENTER ",        4)
+                                                                .addItem(" CENTER ",        3)
+                                                                .addItem(" SIDE ",          4)
                                                                 .addItem(" WHITE ",         5)
                                                                 .addItem(" RED ",           6)
-                                                                .addItem(" DEEPRED ",       7)
-                                                                .addItem(" BLUE ",          8)
-                                                                .addItem(" DEEPBLUE ",      9)
-                                                                .addItem(" YELLOW ",        10)
-                                                                .addItem(" GREEN ",         11)
-                                                                .addItem(" ULTRAVIOLET ",   12)
-                                                                .addItem(" ORANGE ",        13)
-                                                                .addItem(" CTO ",           14)
+                                                                .addItem(" BLUE ",          7)
+                                                                .addItem(" YELLOW ",        8)
+                                                                .addItem(" GREEN ",         9)
+                                                                .addItem(" ULTRAVIOLET ",   10)
+                                                                .addItem(" PINK ",          11)
+                                                                .addItem(" ORANGE ",        12)
+                                                                .addItem(" CTO ",           13)
                                                                 .setGroup(DMXAnimations_Color_animListGroup)
                                                                 ;
-    
 
     DMXParAnimations_LightStyle_animationListCheckBox = cp5.addCheckBox("Attributes - DMX PAR animations - Set Light Style")
                                                                 .setPosition(leftOffset,toggleHeight)
@@ -2029,16 +2053,13 @@ public class ControlFrame extends PApplet {
                                                                 .addItem(" SIDe",         3)
                                                                 .addItem(" CENTEr",       4)
                                                                 .addItem(" STILl",        5)
-                                                                .addItem(" CRESCENDo",    6)
-                                                                .addItem(" FLASh",        7)
+                                                                .addItem(" FLASh",        6)
+                                                                .addItem(" CRESCENDo",    7)
                                                                 .addItem(" STROBe",       8)
                                                                 .addItem(" SINe",         9)
                                                                 .addItem(" GLITCh",       10)
-                                                                .addItem(" TIGHt",        11)
                                                                 .setGroup(DMXAnimations_LightStyle_animListGroup)
                                                                 ;
-
-
 
     DMXParAnimations_Animations_animationListCheckBox = cp5.addCheckBox("Attributes - DMX PAR animations - Perform Animations")
                                                                 .setPosition(leftOffset,toggleHeight)
@@ -2270,7 +2291,6 @@ public class ControlFrame extends PApplet {
   void rebuildFilteredDMXPar_Color_AnimationList(float[] checkBoxArrayValue) {
     String[] wantedAttributes = createDMXAnimationListFilter_Par_Color(checkBoxArrayValue);
     List<String> filteredAnimationsStringList = getFilteredAnimationsStringList_DMX(checkBoxArrayValue, DMXPar_ColorAttributes, wantedAttributes);
-
     DMXParAnimations_Color_animationListBox.clear();
     DMXParAnimations_Color_animationListBox.addItems(filteredAnimationsStringList);
   }
@@ -2769,7 +2789,6 @@ public class ControlFrame extends PApplet {
     
 
   void controlEvent(ControlEvent theEvent) {
-
     if (gui_initComplete) {
 
       if (theEvent.getName() == "Activate Simulator") {
@@ -3929,6 +3948,17 @@ String[] createDMXAnimationListFilter_Par_Light(float[] checkBoxArrayvalue) {
   for (int i = 0; i<checkBoxArrayvalue.length; i++) {
     if (checkBoxArrayvalue[i] == 1.0) {
       switch(i) {
+        case GUI_ATTR_DMX_PAR_LIGHT_ALL          : temp.append("PAR-SetLight-All");break;
+        case GUI_ATTR_DMX_PAR_LIGHT_CENTER       : temp.append("PAR-SetLight-Center");break;
+        case GUI_ATTR_DMX_PAR_LIGHT_SIDE         : temp.append("PAR-SetLight-Side");break;
+        case GUI_ATTR_DMX_PAR_LIGHT_LEFT         : temp.append("PAR-SetLight-Left");break;
+        case GUI_ATTR_DMX_PAR_LIGHT_RIGHT        : temp.append("PAR-SetLight-Right");break;
+        case GUI_ATTR_DMX_PAR_LIGHT_STILL        : temp.append("PAR-Still");break;
+        case GUI_ATTR_DMX_PAR_LIGHT_FLASH        : temp.append("PAR-Flash");break;
+        case GUI_ATTR_DMX_PAR_LIGHT_CRESCENDO    : temp.append("PAR-Crescendo");break;
+        case GUI_ATTR_DMX_PAR_LIGHT_STROBE       : temp.append("PAR-Strobe");break;
+        case GUI_ATTR_DMX_PAR_LIGHT_SINE         : temp.append("PAR-Sine");break;
+        case GUI_ATTR_DMX_PAR_LIGHT_GLITCH       : temp.append("PAR-Glitch");break;
 
         default: break;
       }
@@ -3948,6 +3978,20 @@ String[] createDMXAnimationListFilter_Par_Color(float[] checkBoxArrayvalue) {
   for (int i = 0; i<checkBoxArrayvalue.length; i++) {
     if (checkBoxArrayvalue[i] == 1.0) {
       switch(i) {
+        case GUI_ATTR_DMX_PAR_COLOR_ALL           : temp.append("PAR-SetColor-All");break;
+        case GUI_ATTR_DMX_PAR_COLOR_LEFT          : temp.append("PAR-SetColor-Left");break;
+        case GUI_ATTR_DMX_PAR_COLOR_RIGHT         : temp.append("PAR-SetColor-Right");break;
+        case GUI_ATTR_DMX_PAR_COLOR_CENTER        : temp.append("PAR-SetColor-Center");break;
+        case GUI_ATTR_DMX_PAR_COLOR_SIDE          : temp.append("PAR-SetColor-Side");break;
+        case GUI_ATTR_DMX_PAR_COLOR_WHITE         : temp.append("PAR-White");break;
+        case GUI_ATTR_DMX_PAR_COLOR_RED           : temp.append("PAR-Red");break;
+        case GUI_ATTR_DMX_PAR_COLOR_BLUE          : temp.append("PAR-Blue");break;
+        case GUI_ATTR_DMX_PAR_COLOR_YELLOW        : temp.append("PAR-Yellow");break;
+        case GUI_ATTR_DMX_PAR_COLOR_GREEN         : temp.append("PAR-Green");break;
+        case GUI_ATTR_DMX_PAR_COLOR_ULTRAVIOLET   : temp.append("PAR-Ultraviolet");break;
+        case GUI_ATTR_DMX_PAR_COLOR_PINK          : temp.append("PAR-Pink");break;
+        case GUI_ATTR_DMX_PAR_COLOR_ORANGE        : temp.append("PAR-Orange");break;
+        case GUI_ATTR_DMX_PAR_COLOR_CTO           : temp.append("PAR-CTO");break;
 
         default: break;
       }

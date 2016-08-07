@@ -8,6 +8,9 @@ final String DMX_PAR_DIMMER_RED                              = "DIMMER_RED";
 final String DMX_PAR_DIMMER_GREEN                            = "DIMMER_GREEN";
 final String DMX_PAR_DIMMER_BLUE                             = "DIMMER_BLUE";
 final String DMX_PAR_DIMMER_WHITE                            = "DIMMER_WHITE";
+final String DMX_PAR_DIMMER_CYAN                             = "DIMMER_CYAN";
+final String DMX_PAR_DIMMER_MAGENTA                          = "DIMMER_MAGENTA";
+final String DMX_PAR_DIMMER_YELLOW                           = "DIMMER_YELLOW";
 final String DMX_PAR_STROBE                                  = "DIMMER_STROBE";
 final String DMX_PAR_INTENSITY_RED                           = "INTENSITY_RED";
 final String DMX_PAR_INTENSITY_GREEN                         = "INTENSITY_GREEN";
@@ -23,37 +26,44 @@ final int    DMX_PAR_COLORMODE_CMY                    = 3;
 final String DMX_PAR_COLORMODE_CMY_TEXT               = "CMY";
 final int    DMX_PAR_COLORMODE_RGBW                   = 4;
 final String DMX_PAR_COLORMODE_RGBW_TEXT              = "RGBW";
-final int    DMX_PAR_COLORMODE_SINGLE                 = 5;
-final String DMX_PAR_COLORMODE_SINGLE_TEXT            = "SINGLE";
-
-// final String DMX_MOVINGHEAD_COLORMODE_RGB_R                  = "R";
-// final String DMX_MOVINGHEAD_COLORMODE_RGB_G                  = "G";
-// final String DMX_MOVINGHEAD_COLORMODE_RGB_B                  = "B";
-// final String DMX_MOVINGHEAD_COLORMODE_RGB_W                  = "W";
-// final String DMX_MOVINGHEAD_COLORMODE_CMY_C                  = "C";
-// final String DMX_MOVINGHEAD_COLORMODE_CMY_M                  = "M";
-// final String DMX_MOVINGHEAD_COLORMODE_CMY_Y                  = "Y";
+final int    DMX_PAR_COLORMODE_SINGLE_RED             = 5;
+final String DMX_PAR_COLORMODE_SINGLE_RED_TEXT        = "SINGLE RED";
+final int    DMX_PAR_COLORMODE_SINGLE_GREEN           = 6;
+final String DMX_PAR_COLORMODE_SINGLE_GREEN_TEXT      = "SINGLE GREEN";
+final int    DMX_PAR_COLORMODE_SINGLE_BLUE            = 7;
+final String DMX_PAR_COLORMODE_SINGLE_BLUE_TEXT       = "SINGLE BLUE";
+final int    DMX_PAR_COLORMODE_SINGLE_WHITE           = 8;
+final String DMX_PAR_COLORMODE_SINGLE_WHITE_TEXT      = "SINGLE WHITE";
+final int    DMX_PAR_COLORMODE_GLOBAL_DIMMER          = 9;
+final String DMX_PAR_COLORMODE_GLOBAL_DIMMER_TEXT     = "GLOBAL DIMMER";
 
 final String DMX_PAR_COLORWHEEL_WHITE_TEXT            = "WHITE";
 final String DMX_PAR_COLORWHEEL_RED_TEXT              = "RED";
 final String DMX_PAR_COLORWHEEL_DEEP_RED_TEXT         = "DEEP_RED";
 final String DMX_PAR_COLORWHEEL_BLUE_TEXT             = "BLUE";
 final String DMX_PAR_COLORWHEEL_DEEP_BLUE_TEXT        = "DEEP_BLUE";
+final String DMX_PAR_COLORWHEEL_TURQUOISE_TEXT        = "TURQUOISE";
 final String DMX_PAR_COLORWHEEL_YELLOW_TEXT           = "YELLOW";
+final String DMX_PAR_COLORWHEEL_LIME_TEXT             = "LIME";
 final String DMX_PAR_COLORWHEEL_GREEN_TEXT            = "GREEN";
 final String DMX_PAR_COLORWHEEL_ULTRAVIOLET_TEXT      = "ULTRAVIOLET";
+final String DMX_PAR_COLORWHEEL_PINK_TEXT             = "PINK";
 final String DMX_PAR_COLORWHEEL_ORANGE_TEXT           = "ORANGE";
 final String DMX_PAR_COLORWHEEL_CTO_TEXT              = "CTO";
+final int    DMX_PAR_COLORWHEEL_BLACKOUT              = -1;      //Black, or 0/0/0, is useful as a last case fallback value, if the PAR has no way of rendering a color (ex: single color Red PAR -> "white")
 final int    DMX_PAR_COLORWHEEL_WHITE                 = 0;
 final int    DMX_PAR_COLORWHEEL_RED                   = 1;
 final int    DMX_PAR_COLORWHEEL_DEEP_RED              = 2;
 final int    DMX_PAR_COLORWHEEL_BLUE                  = 3;
 final int    DMX_PAR_COLORWHEEL_DEEP_BLUE             = 4;
-final int    DMX_PAR_COLORWHEEL_YELLOW                = 5;
-final int    DMX_PAR_COLORWHEEL_GREEN                 = 6;
-final int    DMX_PAR_COLORWHEEL_ULTRAVIOLET           = 7;
-final int    DMX_PAR_COLORWHEEL_ORANGE                = 8;
-final int    DMX_PAR_COLORWHEEL_CTO                   = 9;
+final int    DMX_PAR_COLORWHEEL_TURQUOISE             = 5;
+final int    DMX_PAR_COLORWHEEL_YELLOW                = 6;
+final int    DMX_PAR_COLORWHEEL_LIME                  = 7;
+final int    DMX_PAR_COLORWHEEL_GREEN                 = 8;
+final int    DMX_PAR_COLORWHEEL_ULTRAVIOLET           = 9;
+final int    DMX_PAR_COLORWHEEL_PINK                  = 10;
+final int    DMX_PAR_COLORWHEEL_ORANGE                = 11;
+final int    DMX_PAR_COLORWHEEL_CTO                   = 12;
 
 final String DMX_PAR_STROBE_OPEN                      = "OPEN";
 final String DMX_PAR_SHUTTER_STROBE                   = "STROBE";
@@ -123,11 +133,11 @@ class DMX_PAR {
   int[] dmxVal;                                       // Array which shall contain all the instant DMX values for all of this fixture's channels
 
   // Config parameters - depending on these values, the library functions will behave differently
+  int colorControlMode                     = DMX_PAR_COLORMODE_UNDEFINED;
+
   int chIndex_dimmer_global                = -1;
   int dimmer_global_minVal                 = -1;
   int dimmer_global_maxVal                 = -1;
-
-  int colorControlMode                     = DMX_PAR_COLORMODE_UNDEFINED;
 
   int chIndex_dimmer_red                   = -1;
   int dimmer_red_minVal                    = -1;
@@ -144,6 +154,19 @@ class DMX_PAR {
   int chIndex_dimmer_white                 = -1;
   int dimmer_white_minVal                  = -1;
   int dimmer_white_maxVal                  = -1;
+
+  int chIndex_dimmer_cyan                  = -1;
+  int dimmer_cyan_minVal                   = -1;
+  int dimmer_cyan_maxVal                   = -1;
+
+  int chIndex_dimmer_magenta               = -1;
+  int dimmer_magenta_minVal                = -1;
+  int dimmer_magenta_maxVal                = -1;
+
+  int chIndex_dimmer_yellow                = -1;
+  int dimmer_yellow_minVal                 = -1;
+  int dimmer_yellow_maxVal                 = -1;
+
 
   int chIndex_intensity_red                = -1;
   int intensity_red_minVal                 = -1;
@@ -162,29 +185,20 @@ class DMX_PAR {
   int strobe_maxVal                        = -1;
 
   int chIndex_colorWheel                   = -1;
-  
-  
   IntList available_chIndex_color;
-  
-  // int chIndex_color_WHEEL                  = -1;
-  // int chIndex_color_CMY_C                  = -1;      // Shall be defined only if used
-  // int chIndex_color_CMY_M                  = -1;      // Shall be defined only if used
-  // int chIndex_color_CMY_Y                  = -1;      // Shall be defined only if used
-  // int chIndex_color_RGB_R                  = -1;      // Shall be defined only if used
-  // int chIndex_color_RGB_G                  = -1;      // Shall be defined only if used
-  // int chIndex_color_RGB_B                  = -1;      // Shall be defined only if used
-  // int chIndex_color_RGB_W                  = -1;      // Shall be defined only if used
-      
-
   // Constants corresponding to specific values
+  int dmxVal_color_colorWheel_blackout     = -1;
   int dmxVal_color_colorWheel_white        = -1;
   int dmxVal_color_colorWheel_red          = -1;
   int dmxVal_color_colorWheel_deepRed      = -1;
   int dmxVal_color_colorWheel_blue         = -1;
   int dmxVal_color_colorWheel_deepBlue     = -1;
+  int dmxVal_color_colorWheel_turquoise    = -1;
   int dmxVal_color_colorWheel_yellow       = -1;
   int dmxVal_color_colorWheel_green        = -1;
+  int dmxVal_color_colorWheel_lime         = -1;
   int dmxVal_color_colorWheel_ultraviolet  = -1;
+  int dmxVal_color_colorWheel_pink         = -1;
   int dmxVal_color_colorWheel_orange       = -1;
   int dmxVal_color_colorWheel_cto          = -1;
 
@@ -192,15 +206,21 @@ class DMX_PAR {
   //// - End of the physical PAR description - ////
 
   int currentLightStyle                   = DMXANIM_PAR_CONTINUOUS_LIGHT_MAX;     // Used by the global animations
+
+  float currentGlobalDimmerValue_perCent  = 0;
+  int currentRedVal                       = 0;
+  int currentGreenVal                     = 0;
+  int currentBlueVal                      = 0;
+  int currentWhiteVal                     = 0;
+  int currentCyanVal                      = 0;
+  int currentMagentaVal                   = 0;
+  int currentYellowVal                    = 0;
+
   // int currentRhythmPattern                = DMXANIM_PAR_LIGHTRHYTHM_NOSYNC;       // Used by the global animations
-  int animCpt1                            = 0;                                    // Counters used for the global animations
-  int animCpt2                            = 0;
+  float animCpt1                          = 0;                                    // Counters used for the global animations
+  float animCpt2                          = 0;
 
-
-  
-  //Additional variables which might be used by other non-DMX related functions (most notably, the simulator)
   int[] simulator_colorRGB;
-
 
   // Fixtures are instanciated using their name: the constructor will then look up in the fixture library if such a device exists, and throw an exception if not
   DMX_PAR(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
@@ -229,19 +249,16 @@ class DMX_PAR {
 
     parseFixtureDimmerControl();
     parseFixtureIndividualColorIntensityControl();
+    parseColorWheelChannel();
     
-    // If more than one color mode is available, the priority goes to the color wheel. If not, use what's possible
-    // parseFixtureColorModes();
-    // colorControlMode = defineColorMode();
-
-
-    // parseFixtureShutterModes();
+    // In regard to the available controls, define how we're going to control the dimmer and the colors
+    this.colorControlMode = defineColorMode();
 
     // Check other functions this fixture may have - search for all channels with a recommended channel set - this will become the default value for these channels
     parseDefaultChannels();
 
-
     setMiscVariablesDefaultValues();
+    setColor(DMX_PAR_COLORWHEEL_WHITE);   //Default color: white
   }
 
   int getDeviceID() {
@@ -252,16 +269,6 @@ class DMX_PAR {
     this.syncIdx = idx;
   }
 
-
-
-  // Set the default values for non-dmx related variables
-  void setMiscVariablesDefaultValues() {
-    simulator_colorRGB = new int[3];
-    simulator_colorRGB[0] = 255;   // White
-    simulator_colorRGB[1] = 255;   // White
-    simulator_colorRGB[2] = 255;   // White
-  }
-
   void parseFixtureDimmerControl() {
 
     chIndex_dimmer_global  = par.getChannelIndexCorrespondingToFunction(DMX_PAR_DIMMER_GLOBAL);
@@ -269,6 +276,9 @@ class DMX_PAR {
     chIndex_dimmer_green   = par.getChannelIndexCorrespondingToFunction(DMX_PAR_DIMMER_GREEN);
     chIndex_dimmer_blue    = par.getChannelIndexCorrespondingToFunction(DMX_PAR_DIMMER_BLUE);
     chIndex_dimmer_white   = par.getChannelIndexCorrespondingToFunction(DMX_PAR_DIMMER_WHITE);
+    chIndex_dimmer_cyan    = par.getChannelIndexCorrespondingToFunction(DMX_PAR_DIMMER_CYAN);
+    chIndex_dimmer_magenta = par.getChannelIndexCorrespondingToFunction(DMX_PAR_DIMMER_MAGENTA);
+    chIndex_dimmer_yellow  = par.getChannelIndexCorrespondingToFunction(DMX_PAR_DIMMER_YELLOW);
 
     ChannelDesc channel;
     ArrayList<ChannelSet> channelSets;
@@ -295,7 +305,7 @@ class DMX_PAR {
       }
     }
 
-    if (chIndex_dimmer_global != -1) {
+    if (chIndex_dimmer_green != -1) {
       channel = par.getChannelCorrespondingToIndex(chIndex_dimmer_green);
       channelSets = channel.getAllChannelSets();
       for (ChannelSet channelSet: channelSets) {
@@ -306,7 +316,7 @@ class DMX_PAR {
       }
     }
 
-    if (chIndex_dimmer_global != -1) {
+    if (chIndex_dimmer_blue != -1) {
       channel = par.getChannelCorrespondingToIndex(chIndex_dimmer_blue);
       channelSets = channel.getAllChannelSets();
       for (ChannelSet channelSet: channelSets) {
@@ -327,6 +337,41 @@ class DMX_PAR {
         }
       }
     }
+
+    if (chIndex_dimmer_cyan != -1) {
+      channel = par.getChannelCorrespondingToIndex(chIndex_dimmer_cyan);
+      channelSets = channel.getAllChannelSets();
+      for (ChannelSet channelSet: channelSets) {
+        if (channelSet.getSubfunction().equals(DMX_PAR_DIMMER_CYAN)) {
+            dimmer_cyan_minVal = channelSet.getFrom_dmx();
+            dimmer_cyan_maxVal = channelSet.getTo_dmx();
+        }
+      }
+    }
+
+    if (chIndex_dimmer_magenta != -1) {
+      channel = par.getChannelCorrespondingToIndex(chIndex_dimmer_magenta);
+      channelSets = channel.getAllChannelSets();
+      for (ChannelSet channelSet: channelSets) {
+        if (channelSet.getSubfunction().equals(DMX_PAR_DIMMER_MAGENTA)) {
+            dimmer_magenta_minVal = channelSet.getFrom_dmx();
+            dimmer_magenta_maxVal = channelSet.getTo_dmx();
+        }
+      }
+    }
+
+
+    if (chIndex_dimmer_yellow != -1) {
+      channel = par.getChannelCorrespondingToIndex(chIndex_dimmer_yellow);
+      channelSets = channel.getAllChannelSets();
+      for (ChannelSet channelSet: channelSets) {
+        if (channelSet.getSubfunction().equals(DMX_PAR_DIMMER_YELLOW)) {
+            dimmer_yellow_minVal = channelSet.getFrom_dmx();
+            dimmer_yellow_maxVal = channelSet.getTo_dmx();
+        }
+      }
+    }
+
 
   }
 
@@ -350,7 +395,7 @@ class DMX_PAR {
       }
     }
 
-    if (chIndex_dimmer_global != -1) {
+    if (chIndex_dimmer_green != -1) {
       channel = par.getChannelCorrespondingToIndex(chIndex_intensity_green);
       channelSets = channel.getAllChannelSets();
       for (ChannelSet channelSet: channelSets) {
@@ -361,7 +406,7 @@ class DMX_PAR {
       }
     }
 
-    if (chIndex_dimmer_global != -1) {
+    if (chIndex_dimmer_blue != -1) {
       channel = par.getChannelCorrespondingToIndex(chIndex_intensity_blue);
       channelSets = channel.getAllChannelSets();
       for (ChannelSet channelSet: channelSets) {
@@ -375,141 +420,91 @@ class DMX_PAR {
   }
 
 
+  void parseColorWheelChannel() {
 
+    chIndex_colorWheel = par.getChannelIndexCorrespondingToFunction(DMX_PAR_COLORWHEEL);
+    ChannelDesc chColorWheel = par.getChannelCorrespondingToIndex(chIndex_colorWheel);
+    if (chIndex_colorWheel != -1) {
+      ArrayList<ChannelSet> channelSets = chColorWheel.getAllChannelSets();
+      for (ChannelSet channelSet: channelSets) {
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_WHITE_TEXT)) {
+          dmxVal_color_colorWheel_white = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_RED_TEXT)) {
+          dmxVal_color_colorWheel_red = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_DEEP_RED_TEXT)) {
+          dmxVal_color_colorWheel_deepRed = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_BLUE_TEXT)) {
+          dmxVal_color_colorWheel_blue = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_DEEP_BLUE_TEXT)) {
+          dmxVal_color_colorWheel_deepBlue = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_TURQUOISE_TEXT)) {
+          dmxVal_color_colorWheel_turquoise = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_YELLOW_TEXT)) {
+          dmxVal_color_colorWheel_yellow = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_LIME_TEXT)) {
+          dmxVal_color_colorWheel_green = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_GREEN_TEXT)) {
+          dmxVal_color_colorWheel_lime = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_ULTRAVIOLET_TEXT)) {
+          dmxVal_color_colorWheel_ultraviolet = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_PINK_TEXT)) {
+          dmxVal_color_colorWheel_pink = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_ORANGE_TEXT)) {
+          dmxVal_color_colorWheel_orange = channelSet.getFrom_dmx();
+        }
+        if (channelSet.getSubfunction().equals(DMX_PAR_COLORWHEEL_CTO_TEXT)) {
+          dmxVal_color_colorWheel_cto = channelSet.getFrom_dmx();
+        }
+      }
 
+      dmxVal_color_colorWheel_blackout = 0;      
+    }
 
-  void parseFixtureColorModes() {
-    // Define the available color modes
-    // available_chIndex_color = par.getAllChannelIndexesCorrespondingToFunction(DMX_MOVINGHEAD_COLOR);
-    // for (int chIndex: available_chIndex_color) {
-    //   ChannelDesc channel = movingHead.getChannelCorrespondingToIndex(chIndex);
-    //   if (channel.getOption().equals(DMX_MOVINGHEAD_COLORMODE_WHEEL_TEXT)) {
-    //     chIndex_color_WHEEL = channel.getIndex();
-    //     parseColorWheelChannel(channel);
-    //   }
-    //   else if (channel.getOption().equals(DMX_MOVINGHEAD_COLORMODE_RGB_TEXT)) {
-    //     if (channel.getOptionArgument().equals(DMX_MOVINGHEAD_COLORMODE_RGB_R)) {
-    //       chIndex_color_RGB_R = channel.getIndex();
-    //     }
-    //     else if (channel.getOptionArgument().equals(DMX_MOVINGHEAD_COLORMODE_RGB_G)) {
-    //       chIndex_color_RGB_G = channel.getIndex();
-    //     }
-    //     else if (channel.getOptionArgument().equals(DMX_MOVINGHEAD_COLORMODE_RGB_B)) {
-    //       chIndex_color_RGB_B = channel.getIndex();
-    //     }
-    //   }
-    //   else if (channel.getOption().equals(DMX_MOVINGHEAD_COLORMODE_CMY_TEXT)) {
-    //     if (channel.getOptionArgument().equals(DMX_MOVINGHEAD_COLORMODE_CMY_C)) {
-    //       chIndex_color_CMY_C = channel.getIndex();
-    //     }
-    //     else if (channel.getOptionArgument().equals(DMX_MOVINGHEAD_COLORMODE_CMY_M)) {
-    //       chIndex_color_CMY_M = channel.getIndex();
-    //     }
-    //     else if (channel.getOptionArgument().equals(DMX_MOVINGHEAD_COLORMODE_CMY_Y)) {
-    //       chIndex_color_CMY_Y = channel.getIndex();
-    //     }
-    //   }
-    //   else if (channel.getOption().equals(DMX_MOVINGHEAD_COLORMODE_RGBW_TEXT)) {
-    //     if (channel.getOptionArgument().equals(DMX_MOVINGHEAD_COLORMODE_RGB_R)) {
-    //       chIndex_color_RGB_R = channel.getIndex();
-    //     }
-    //     else if (channel.getOptionArgument().equals(DMX_MOVINGHEAD_COLORMODE_RGB_G)) {
-    //       chIndex_color_RGB_G = channel.getIndex();
-    //     }
-    //     else if (channel.getOptionArgument().equals(DMX_MOVINGHEAD_COLORMODE_RGB_B)) {
-    //       chIndex_color_RGB_B = channel.getIndex();
-    //     }
-    //     else if (channel.getOptionArgument().equals(DMX_MOVINGHEAD_COLORMODE_RGB_W)) {
-    //       chIndex_color_RGB_W = channel.getIndex();
-    //     }
-    //   }
-    // }
-  }
-
-  void parseColorWheelChannel(ChannelDesc colorWheelCh) {
-    // ArrayList<ChannelSet> channelSets = colorWheelCh.getAllChannelSets();
-    // for (ChannelSet channelSet: channelSets) {
-    //   if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_COLORWHEEL_WHITE_TEXT)) {
-    //     dmxVal_color_colorWheel_white = channelSet.getFrom_dmx();
-    //   }
-    //   else if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_COLORWHEEL_RED_TEXT)) {
-    //     dmxVal_color_colorWheel_red = channelSet.getFrom_dmx();
-    //   }
-    //   else if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_COLORWHEEL_DEEP_RED_TEXT)) {
-    //     dmxVal_color_colorWheel_deepRed = channelSet.getFrom_dmx();
-    //   }
-    //   else if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_COLORWHEEL_BLUE_TEXT)) {
-    //     dmxVal_color_colorWheel_blue = channelSet.getFrom_dmx();
-    //   }
-    //   else if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_COLORWHEEL_DEEP_BLUE_TEXT)) {
-    //     dmxVal_color_colorWheel_deepBlue = channelSet.getFrom_dmx();
-    //   }
-    //   else if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_COLORWHEEL_YELLOW_TEXT)) {
-    //     dmxVal_color_colorWheel_yellow = channelSet.getFrom_dmx();
-    //   }
-    //   else if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_COLORWHEEL_GREEN_TEXT)) {
-    //     dmxVal_color_colorWheel_green = channelSet.getFrom_dmx();
-    //   }
-    //   else if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_COLORWHEEL_ULTRAVIOLET_TEXT)) {
-    //     dmxVal_color_colorWheel_ultraviolet = channelSet.getFrom_dmx();
-    //   }
-    //   else if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_COLORWHEEL_ORANGE_TEXT)) {
-    //     dmxVal_color_colorWheel_orange = channelSet.getFrom_dmx();
-    //   }
-    //   else if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_COLORWHEEL_CTO_TEXT)) {
-    //     dmxVal_color_colorWheel_cto = channelSet.getFrom_dmx();
-    //   }
-    // }
   }
 
   int defineColorMode() {
-    // if (chIndex_color_WHEEL != -1) {
-    //   return DMX_MOVINGHEAD_COLORMODE_WHEEL;
-    // }
-    // else if (chIndex_color_RGB_R != -1 && chIndex_color_RGB_G != -1 && chIndex_color_RGB_B != -1 && chIndex_color_RGB_W != -1) {
-    //   return DMX_MOVINGHEAD_COLORMODE_RGBW;
-    // }
-    // else if (chIndex_color_RGB_R != -1 && chIndex_color_RGB_G != -1 && chIndex_color_RGB_B != -1) {
-    //   return DMX_MOVINGHEAD_COLORMODE_RGB;
-    // }
-    // else if (chIndex_color_CMY_C != -1 && chIndex_color_CMY_M != -1 && chIndex_color_CMY_Y != -1) {
-    //   return DMX_MOVINGHEAD_COLORMODE_CMY;
-    // }
-    // else {
-    //   return DMX_MOVINGHEAD_COLORMODE_UNDEFINED;
-    // }
-    return 0;
-  }
-
-  void parseFixtureShutterModes() {
-    // chIndex_shutter = movingHead.getChannelIndexCorrespondingToFunction(DMX_MOVINGHEAD_SHUTTER);
-    // ArrayList<ChannelSet> channelSets = movingHead.getChannelCorrespondingToIndex(chIndex_shutter).getAllChannelSets();
-
-    // for (ChannelSet channelSet: channelSets) {
-    //   if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_SHUTTER_OPEN)) {
-    //     shutter_open = channelSet.getFrom_dmx();
-    //   }
-    //   if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_SHUTTER_CLOSED)) { 
-    //     shutter_closed = channelSet.getFrom_dmx();
-    //   }
-    //   if (channelSet.getSubfunction().equals(DMX_MOVINGHEAD_SHUTTER_STROBE)) { 
-    //     if (channelSet.isProportional()) {
-    //       if (channelSet.isProportional_Increasing()) {
-    //         shutter_strobe_minSpeed = channelSet.getFrom_dmx();
-    //         shutter_strobe_maxSpeed = channelSet.getTo_dmx();
-    //       }
-    //     }
-    //     else {
-    //       // Shouldn't really matter as the channel is set as "non-proportional". However, it is strange that the progressive mode should be defined as such
-    //       // By default, set these values as proportional-increasing
-    //       shutter_strobe_minSpeed = channelSet.getFrom_dmx();
-    //       shutter_strobe_maxSpeed = channelSet.getTo_dmx();
-    //     }
-    //   }
-    // }
-  }
-
-
+    if (chIndex_dimmer_red != -1 && chIndex_dimmer_green != -1 && chIndex_dimmer_blue != -1 && chIndex_dimmer_white != -1) {
+      return DMX_PAR_COLORMODE_RGBW;
+    }
+    else if (chIndex_dimmer_red != -1 && chIndex_dimmer_green != -1 && chIndex_dimmer_blue != -1) {
+      return DMX_PAR_COLORMODE_RGB;
+    }
+    else if (chIndex_colorWheel != -1) {
+      return DMX_PAR_COLORMODE_WHEEL;
+    }
+    else if (chIndex_dimmer_cyan != -1 && chIndex_dimmer_magenta != -1 && chIndex_dimmer_yellow != -1) {
+      return DMX_PAR_COLORMODE_CMY;
+    }
+    else if (chIndex_dimmer_red != -1 && chIndex_dimmer_green == -1 && chIndex_dimmer_blue == -1 && chIndex_dimmer_white == -1) {
+      return DMX_PAR_COLORMODE_SINGLE_RED;
+    }
+    else if (chIndex_dimmer_red == -1 && chIndex_dimmer_green != -1 && chIndex_dimmer_blue == -1 && chIndex_dimmer_white == -1) {
+      return DMX_PAR_COLORMODE_SINGLE_GREEN;
+    }
+    else if (chIndex_dimmer_red == -1 && chIndex_dimmer_green == -1 && chIndex_dimmer_blue != -1 && chIndex_dimmer_white == -1) {
+      return DMX_PAR_COLORMODE_SINGLE_WHITE;
+    }
+    else if (chIndex_dimmer_red == -1 && chIndex_dimmer_green == -1 && chIndex_dimmer_blue == -1 && chIndex_dimmer_white != -1) {
+      return DMX_PAR_COLORMODE_SINGLE_RED;
+    }
+    else if (chIndex_dimmer_global != -1 && chIndex_intensity_red != -1 && chIndex_intensity_green != -1 && chIndex_intensity_blue != -1) {
+      return DMX_PAR_COLORMODE_GLOBAL_DIMMER;
+    }
+    else {
+      return DMX_PAR_COLORMODE_UNDEFINED;
+    }
+  }  
 
   void parseDefaultChannels() {
     ArrayList<ChannelDesc> channelsWithDefaultVal = par.getAllChannelsWithDefaultVal();
@@ -527,340 +522,255 @@ class DMX_PAR {
     }
   }
 
+  // Set the default values for non-dmx related variables
+  void setMiscVariablesDefaultValues() {
+    simulator_colorRGB = new int[3];
+    simulator_colorRGB[0] = 0;
+    simulator_colorRGB[1] = 0;
+    simulator_colorRGB[2] = 0;
+  }
+
 
   //// BASIC LIB FUNCTIONS
   //////////////////////////////
 
   //DMX control : use percentage values
 
-//   void setDimmer(float val_percent) {
-//     if (fineDimmerControl) {
-//       int val = int( map(val_percent, 0.0, 100.0, 0, 65535) );
-//       dmxVal[chIndex_dimmer]     = (val & 0xffff) >> 8;
-//       dmxVal[chIndex_dimmerFine] = (val & 0xffff) &  0xFF;
-//     }
-//     else {
-//       dmxVal[chIndex_dimmer] = int( map(val_percent, 0.0, 100.0, dimmer_minVal, dimmer_maxVal) );
-//     }
-//   }
+  void setColor(int requestedColor) {
+    switch (requestedColor) {
+      case DMX_PAR_COLORWHEEL_BLACKOUT     : setColor_blackout(); break;
+      case DMX_PAR_COLORWHEEL_WHITE        : setColor_white(); break;
+      case DMX_PAR_COLORWHEEL_RED          : setColor_red(); break;
+      case DMX_PAR_COLORWHEEL_DEEP_RED     : setColor_deepRed(); break;
+      case DMX_PAR_COLORWHEEL_BLUE         : setColor_blue(); break;
+      case DMX_PAR_COLORWHEEL_DEEP_BLUE    : setColor_deepBlue(); break;
+      case DMX_PAR_COLORWHEEL_TURQUOISE    : setColor_turquoise(); break;
+      case DMX_PAR_COLORWHEEL_YELLOW       : setColor_yellow(); break;
+      case DMX_PAR_COLORWHEEL_LIME         : setColor_lime(); break;
+      case DMX_PAR_COLORWHEEL_GREEN        : setColor_green(); break;
+      case DMX_PAR_COLORWHEEL_ULTRAVIOLET  : setColor_ultraviolet(); break;
+      case DMX_PAR_COLORWHEEL_PINK         : setColor_pink(); break;
+      case DMX_PAR_COLORWHEEL_ORANGE       : setColor_orange(); break;
+      case DMX_PAR_COLORWHEEL_CTO          : setColor_cto(); break;
 
-//   void setPan(float val_percent) {
-//     if (finePanControl) {
-//       int val = int( map(val_percent, 0.0, 100.0, 0, 65535) );
-//       dmxVal[chIndex_pan]     = (val & 0xffff) >> 8;
-//       dmxVal[chIndex_panFine] = (val & 0xffff) &  0xFF;
-//     }
-//     else {
-//       dmxVal[chIndex_pan] = int( map(val_percent, 0.0, 100.0, pan_minVal, pan_maxVal) );
-//     }
-//   }
+      default: break;
+    }
+  }
 
-//   void setTilt(float val_percent) {
-//     if (fineTiltControl) {
-//       int val = int( map(val_percent, 0.0, 100.0, 0, 65535) );
-//       dmxVal[chIndex_tilt]     = (val & 0xffff) >> 8;
-//       dmxVal[chIndex_tiltFine] = (val & 0xffff) &  0xFF;
-//     }
-//     else {
-//       dmxVal[chIndex_tilt] = int( map(val_percent, 0.0, 100.0, tilt_minVal, tilt_maxVal) );
-//     }
-//   }
+  void setColor_blackout() {
+    int   colorWheel = dmxVal_color_colorWheel_blackout;
+    int[] colorRGB   = {0, 0, 0};
+    int[] colorRGBW  = {0, 0, 0, 0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);    
+  }
 
-//   void setSpeed(float val_percent) {
-//     switch (speedMode) {
-//       case DMX_MOVINGHEAD_SPEEDMODE_DEFAULT:       dmxVal[chIndex_speedSet] = speedMode_standardSpeed_val; break;  //Ignore the input argument: default speed mode
-//       case DMX_MOVINGHEAD_SPEEDMODE_MAX:           dmxVal[chIndex_speedSet] = speedMode_maxSpeed_val; break;       //Ignore the input argument: max speed mode
-//       case DMX_MOVINGHEAD_SPEEDMODE_PROGRESSIVE:   dmxVal[chIndex_speedSet] = int( map(val_percent, 0.0, 100.0, speedMode_fine_range_min, speedMode_fine_range_max) ); break;
-//       case DMX_MOVINGHEAD_SPEEDMODE_FIXED:         break;  // Nothing to do, no channel reserved for pan/tilt movement speed
-//       default: break;
-//     }
-//   }
-
-//   void setSpeedMode(int requestedMode) {
-//     if (requestedMode == DMX_MOVINGHEAD_SPEEDMODE_DEFAULT) {
-//       if (chIndex_speedSet != -1 && speedMode_standardSpeed_val != -1) {
-//         speedMode = DMX_MOVINGHEAD_SPEEDMODE_DEFAULT;
-//       }
-//       else {
-//         speedMode = DMX_MOVINGHEAD_SPEEDMODE_FIXED;
-//       }
-//     }
-//     else if (requestedMode == DMX_MOVINGHEAD_SPEEDMODE_MAX) {
-//       if (chIndex_speedSet != -1 && speedMode_maxSpeed_val != -1) {
-//         speedMode = DMX_MOVINGHEAD_SPEEDMODE_MAX;
-//       }
-//       else if (chIndex_speedSet != -1 && speedMode_standardSpeed_val != -1) {
-//         speedMode = DMX_MOVINGHEAD_SPEEDMODE_DEFAULT;
-//       }
-//       else {
-//         speedMode = DMX_MOVINGHEAD_SPEEDMODE_FIXED;
-//       }
-//     }
-//     else if (requestedMode == DMX_MOVINGHEAD_SPEEDMODE_PROGRESSIVE) {
-//       if (chIndex_speedSet != -1 && speedMode_fine_range_min != -1 && speedMode_fine_range_max != -1) {
-//         speedMode = DMX_MOVINGHEAD_SPEEDMODE_MAX;
-//       }
-//       else if (chIndex_speedSet != -1 && speedMode_standardSpeed_val != -1) {
-//         speedMode = DMX_MOVINGHEAD_SPEEDMODE_DEFAULT;
-//       }
-//       else {
-//         speedMode = DMX_MOVINGHEAD_SPEEDMODE_FIXED;
-//       }
-//     }
-//     else {
-//       speedMode = DMX_MOVINGHEAD_SPEEDMODE_FIXED;
-//     }
-//   }
-
-//   void setSpeed_defaultSpeed() {
-//     setSpeedMode(DMX_MOVINGHEAD_SPEEDMODE_DEFAULT);
-//     setSpeed(50.0);
-//   }
-
-//   void setSpeed_maxSpeed() {
-//     setSpeedMode(DMX_MOVINGHEAD_SPEEDMODE_MAX);
-//     setSpeed(100.0);
-//   }
-
-//   void setSpeed_progressiveSpeed(float val) {
-//     setSpeedMode(DMX_MOVINGHEAD_SPEEDMODE_PROGRESSIVE);
-//     setSpeed(val);
-//   }
+  void setColor_white() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_white);
+    int[] colorRGB   = {255, 255, 255};
+    int[] colorRGBW  = {0,   0,   0, 255};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);
+  }
 
 
-//   void setShutter(float val_percent) {
-//     if (chIndex_shutter != -1 && shutter_open != -1 && shutter_closed != -1) {
-//       if (shutterMode == DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT) {
-//         if (val_percent < 50.0) {
-//           dmxVal[chIndex_shutter] = shutter_open;
-//         }
-//         else {
-//           dmxVal[chIndex_shutter] = shutter_closed;
-//         }
-//       }
-//       else if (shutterMode == DMX_MOVINGHEAD_SHUTTERMODE_STROBE) {
-//         if (shutter_strobe_maxSpeed != -1 && shutter_strobe_minSpeed != -1) {
-//           dmxVal[chIndex_shutter] = int( map(val_percent, 0.0, 100.0, shutter_strobe_minSpeed, shutter_strobe_maxSpeed) );
-//         }
-//         else {
-//           dmxVal[chIndex_shutter] = shutter_open;   // This fuxture does not have a strobe control incorporated to its shutter channel
-//         }
-//       }
-//     }
-//     else {
-//       // Do nothing - this fixture does not support shutter control
-//     }
-//   }
+  void setColor_red() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_red);
+    int[] colorRGB   = {255, 0,   0};
+    int[] colorRGBW  = {255, 0,   0,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
+  }
 
-//   void setShutterMode(int requestedMode) {
-//     if (requestedMode == DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT) {
-//       shutterMode = DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT;
-//     }
-//     else if (requestedMode == DMX_MOVINGHEAD_SHUTTERMODE_STROBE) {
-//       if (shutter_strobe_maxSpeed != -1 && shutter_strobe_minSpeed != -1) {
-//         shutterMode = DMX_MOVINGHEAD_SHUTTERMODE_STROBE;
-//       }
-//       else {
-//         shutterMode = DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT;  // Unsupoorted strobe mode   
-//       }
-//     }
-//   }
+  void setColor_deepRed() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_deepRed, dmxVal_color_colorWheel_red);
+    int[] colorRGB   = {139, 0,   0};
+    int[] colorRGBW  = {139, 0,   0,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
+  }
 
-//   void setColor(int requestedColor) {
-//     switch (requestedColor) {
-//       case DMX_MOVINGHEAD_COLORWHEEL_WHITE      : setColor_white();break;
-//       case DMX_MOVINGHEAD_COLORWHEEL_RED        : setColor_red();break;
-//       case DMX_MOVINGHEAD_COLORWHEEL_DEEP_RED   : setColor_deepRed();break;
-//       case DMX_MOVINGHEAD_COLORWHEEL_BLUE       : setColor_blue();break;
-//       case DMX_MOVINGHEAD_COLORWHEEL_DEEP_BLUE  : setColor_deepBlue();break;
-//       case DMX_MOVINGHEAD_COLORWHEEL_YELLOW     : setColor_yellow();break;
-//       case DMX_MOVINGHEAD_COLORWHEEL_GREEN      : setColor_green();break;
-//       case DMX_MOVINGHEAD_COLORWHEEL_ULTRAVIOLET: setColor_ultraviolet();break;
-//       case DMX_MOVINGHEAD_COLORWHEEL_ORANGE     : setColor_orange();break;
-//       case DMX_MOVINGHEAD_COLORWHEEL_CTO        : setColor_cto();break;
-//       default: break;
-//     }
-//   }
+  void setColor_blue() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_blue);
+    int[] colorRGB   = {0,   0, 255};
+    int[] colorRGBW  = {0,   0, 255,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
+  }
 
-//   void setColor_genericColor(int colorWheel_code, int[] colorRGB, int[] colorRGBW) {
-//     int[] colorCMY   = {255 - colorRGB[0], 255 - colorRGB[1], 255 - colorRGB[2]};
-//     switch (colorControlMode) {
-//       case DMX_MOVINGHEAD_COLORMODE_WHEEL    : dmxVal[chIndex_color_WHEEL] = colorWheel_code; break; 
-//       case DMX_MOVINGHEAD_COLORMODE_RGB      : dmxVal[chIndex_color_RGB_R] = colorRGB[0];       dmxVal[chIndex_color_RGB_G] = colorRGB[1];       dmxVal[chIndex_color_RGB_B] = colorRGB[2];       break; 
-//       case DMX_MOVINGHEAD_COLORMODE_CMY      : dmxVal[chIndex_color_CMY_C] = 255 - colorRGB[0]; dmxVal[chIndex_color_CMY_M] = 255 - colorRGB[1]; dmxVal[chIndex_color_CMY_Y] = 255 - colorRGB[2]; break; 
-//       case DMX_MOVINGHEAD_COLORMODE_RGBW     : dmxVal[chIndex_color_RGB_R] = colorRGB[0];       dmxVal[chIndex_color_RGB_G] = colorRGB[1];       dmxVal[chIndex_color_RGB_B] = colorRGB[2];       dmxVal[chIndex_color_RGB_W] = colorRGB[3]; break; 
-//       case DMX_MOVINGHEAD_COLORMODE_UNDEFINED: break; 
-//       default: break;
-//     }
+  void setColor_deepBlue() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_deepBlue, dmxVal_color_colorWheel_blue);
+    int[] colorRGB   = {0,   0, 155};
+    int[] colorRGBW  = {0,   0, 155,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
+  }
 
-//     // Save colorRGB in order to have the simulator know which color is currently active easily
-//     simulator_colorRGB = colorRGB;
-//   }
+  void setColor_turquoise() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_turquoise);
+    int[] colorRGB   = {0,   255, 255};
+    int[] colorRGBW  = {0,   255, 255,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
+  }
 
-//   int getFallbackColorIfInvalidColorVal(int inputColor) {
-//     if (inputColor == -1) {
-//       if (dmxVal_color_colorWheel_white != -1) {
-//         return dmxVal_color_colorWheel_white;
-//       }
-//       else {
-//         return 0;
-//       }
-//     }
-//     else {
-//       return inputColor;
-//     }
-//   }
+  void setColor_yellow() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_yellow);
+    int[] colorRGB   = {255, 240, 0};
+    int[] colorRGBW  = {255, 240, 0,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
+  }
 
-//   int getFallbackColorIfInvalidColorVal(int inputColor, int fallbackColor) {
-//     if (inputColor == -1) {
-//       if (fallbackColor != -1) {
-//         return fallbackColor;
-//       }
-//       else if (dmxVal_color_colorWheel_white != -1) {
-//         return dmxVal_color_colorWheel_white;
-//       }
-//       else {
-//         return 0;
-//       }
-//     }
-//     else {
-//       return inputColor;
-//     }
-//   }
+  void setColor_lime() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_lime);
+    int[] colorRGB   = {131, 255, 0};
+    int[] colorRGBW  = {131, 255, 0, 0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);
+  }
 
-//   void setColor_white() {
-//     int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_white);
-//     int[] colorRGB   = {255, 255, 255};
-//     int[] colorRGBW  = {0,   0,   0, 255};
-//     setColor_genericColor(colorWheel, colorRGB, colorRGBW);
-//   }
+  void setColor_green() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_green);
+    int[] colorRGB   = {71, 182, 164};
+    int[] colorRGBW  = {71, 182, 164,   0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
+  }
 
-//   void setColor_red() {
-//     int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_red);
-//     int[] colorRGB   = {255, 0,   0};
-//     int[] colorRGBW  = {255, 0,   0,   0};
-//     setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
-//   }
+  void setColor_ultraviolet() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_ultraviolet);
+    int[] colorRGB   = {111, 0, 255};
+    int[] colorRGBW  = {111, 0, 255, 0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);
+  }
 
-//   void setColor_deepRed() {
-//     int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_deepRed, dmxVal_color_colorWheel_red);
-//     int[] colorRGB   = {139, 0,   0};
-//     int[] colorRGBW  = {139, 0,   0,   0};
-//     setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
-//   }
+  void setColor_pink() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_pink);
+    int[] colorRGB   = {255,   0, 255};
+    int[] colorRGBW  = {255,   0, 255, 0};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);
+  }
 
-//   void setColor_blue() {
-//     int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_blue);
-//     int[] colorRGB   = {0,   0, 255};
-//     int[] colorRGBW  = {0,   0, 255,   0};
-//     setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
-//   }
+  void setColor_orange() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_orange, dmxVal_color_colorWheel_red);
+    int[] colorRGB   = {253, 141, 28};
+    int[] colorRGBW  = {255,   0,  0, 160};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
+  }
 
-//   void setColor_deepBlue() {
-//     int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_deepBlue, dmxVal_color_colorWheel_blue);
-//     int[] colorRGB   = {0,   0, 155};
-//     int[] colorRGBW  = {0,   0, 155,   0};
-//     setColor_genericColor(colorWheel, colorRGB, colorRGBW); 
-//   }
+  void setColor_cto() {
+    int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_cto);
+    int[] colorRGB   = {255, 241, 224};
+    int[] colorRGBW  = {200,   0,  0, 255};
+    setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
+  }
 
-//   void setColor_yellow() {
-//     int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_yellow);
-//     int[] colorRGB   = {255, 240, 0};
-//     int[] colorRGBW  = {255, 240, 0,   0};
-//     setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
-//   }
+  void setColor_genericColor(int colorWheel_code, int[] colorRGB, int[] colorRGBW) {
+    int[] colorCMY   = {255 - colorRGB[0], 255 - colorRGB[1], 255 - colorRGB[2]};
+    switch (colorControlMode) {
+      case DMX_PAR_COLORMODE_WHEEL         : dmxVal[chIndex_colorWheel] = colorWheel_code; currentRedVal     = colorRGB[0];                 currentGreenVal  = colorRGB[1];                currentBlueVal   = colorRGB[2];   simulator_colorRGB = colorRGB;       break;   // The currentXVal are functionnally not needed - however they need to be saved for the simulator
+      case DMX_PAR_COLORMODE_CMY           : currentCyanVal  = 255 - colorRGB[0];          currentMagentaVal = 255 - colorRGB[1];           currentYellowVal = 255 - colorRGB[2];                                            simulator_colorRGB = colorRGB;       break;
+      case DMX_PAR_COLORMODE_RGB           : currentRedVal   = colorRGBW[0];               currentGreenVal   = colorRGBW[1];                currentBlueVal   = colorRGBW[2];                                                 simulator_colorRGB = colorRGB;       break;
+      case DMX_PAR_COLORMODE_RGBW          : currentRedVal   = colorRGBW[0];               currentGreenVal   = colorRGBW[1];                currentBlueVal   = colorRGBW[2];               currentWhiteVal = colorRGBW[3];   simulator_colorRGB = colorRGB;       break;
+      case DMX_PAR_COLORMODE_SINGLE_RED    : currentRedVal   = colorRGB[0];                simulator_colorRGB[0] = colorRGB[0];             simulator_colorRGB[1] = 0;                     simulator_colorRGB[2] = 0;                                             break;
+      case DMX_PAR_COLORMODE_SINGLE_GREEN  : currentGreenVal = colorRGB[1];                simulator_colorRGB[1] = colorRGB[1];             simulator_colorRGB[0] = 0;                     simulator_colorRGB[2] = 0;                                             break;
+      case DMX_PAR_COLORMODE_SINGLE_BLUE   : currentBlueVal  = colorRGB[2];                simulator_colorRGB[2] = colorRGB[2];             simulator_colorRGB[0] = 0;                     simulator_colorRGB[1] = 0;                                             break;
+      case DMX_PAR_COLORMODE_SINGLE_WHITE  : currentWhiteVal = colorRGBW[3];               simulator_colorRGB[0] = colorRGB[0];             simulator_colorRGB[1] = colorRGB[1];           simulator_colorRGB[2] = colorRGB[2];                                   break;
+      case DMX_PAR_COLORMODE_GLOBAL_DIMMER : dmxVal[chIndex_intensity_red] = colorRGB[0];  dmxVal[chIndex_intensity_green] = colorRGB[1];   dmxVal[chIndex_intensity_blue] = colorRGB[2];  simulator_colorRGB = colorRGB;                                         break;
+      case DMX_PAR_COLORMODE_UNDEFINED     : break; 
+      default: break;
+    }
 
-//   void setColor_green() {
-//     int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_green);
-//     int[] colorRGB   = {71, 182, 164};
-//     int[] colorRGBW  = {71, 182, 164,   0};
-//     setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
-//   }
+  }
 
-//   void setColor_ultraviolet() {
-//     int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_ultraviolet, dmxVal_color_colorWheel_blue);
-//     int[] colorRGB   = {62,  6, 148};
-//     int[] colorRGBW  = {62,  6, 148,   0};
-//     setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
-//   }
+  void setDimmer(float val_percent) {
+    currentGlobalDimmerValue_perCent = val_percent;
+    switch (colorControlMode) {
+      case DMX_PAR_COLORMODE_WHEEL         : dmxVal[chIndex_dimmer_global]  = int( map(currentGlobalDimmerValue_perCent, 0.0, 100.0, dimmer_global_minVal, dimmer_global_maxVal) );                              break;
+      case DMX_PAR_COLORMODE_RGB           : dmxVal[chIndex_dimmer_red]     = int( map(currentGlobalDimmerValue_perCent * currentRedVal     / 100, 0.0, 255.0, dimmer_red_minVal,     dimmer_red_maxVal    ) );
+                                             dmxVal[chIndex_dimmer_green]   = int( map(currentGlobalDimmerValue_perCent * currentGreenVal   / 100, 0.0, 255.0, dimmer_green_minVal,   dimmer_green_maxVal  ) );
+                                             dmxVal[chIndex_dimmer_blue]    = int( map(currentGlobalDimmerValue_perCent * currentBlueVal    / 100, 0.0, 255.0, dimmer_blue_minVal,    dimmer_blue_maxVal   ) );  break;
+      case DMX_PAR_COLORMODE_CMY           : dmxVal[chIndex_dimmer_cyan]    = int( map(currentGlobalDimmerValue_perCent * currentCyanVal    / 100, 0.0, 255.0, dimmer_cyan_minVal,    dimmer_cyan_maxVal   ) );
+                                             dmxVal[chIndex_dimmer_magenta] = int( map(currentGlobalDimmerValue_perCent * currentMagentaVal / 100, 0.0, 255.0, dimmer_magenta_minVal, dimmer_magenta_maxVal) );
+                                             dmxVal[chIndex_dimmer_yellow]  = int( map(currentGlobalDimmerValue_perCent * currentYellowVal  / 100, 0.0, 255.0, dimmer_yellow_minVal,  dimmer_yellow_maxVal ) );  break;
+      case DMX_PAR_COLORMODE_RGBW          : dmxVal[chIndex_dimmer_red]     = int( map(currentGlobalDimmerValue_perCent * currentRedVal     / 100, 0.0, 255.0, dimmer_red_minVal,     dimmer_red_maxVal    ) );
+                                             dmxVal[chIndex_dimmer_green]   = int( map(currentGlobalDimmerValue_perCent * currentGreenVal   / 100, 0.0, 255.0, dimmer_green_minVal,   dimmer_green_maxVal  ) );
+                                             dmxVal[chIndex_dimmer_blue]    = int( map(currentGlobalDimmerValue_perCent * currentBlueVal    / 100, 0.0, 255.0, dimmer_blue_minVal,    dimmer_blue_maxVal   ) );
+                                             dmxVal[chIndex_dimmer_white]   = int( map(currentGlobalDimmerValue_perCent * currentWhiteVal   / 100, 0.0, 255.0, dimmer_white_minVal,   dimmer_white_maxVal  ) );  break;
+      case DMX_PAR_COLORMODE_SINGLE_RED    : dmxVal[chIndex_dimmer_red]     = int( map(currentGlobalDimmerValue_perCent * currentRedVal     / 100, 0.0, 255.0, dimmer_red_minVal,     dimmer_red_maxVal    ) );  break;
+      case DMX_PAR_COLORMODE_SINGLE_GREEN  : dmxVal[chIndex_dimmer_green]   = int( map(currentGlobalDimmerValue_perCent * currentGreenVal   / 100, 0.0, 255.0, dimmer_green_minVal,   dimmer_green_maxVal  ) );  break;
+      case DMX_PAR_COLORMODE_SINGLE_BLUE   : dmxVal[chIndex_dimmer_blue]    = int( map(currentGlobalDimmerValue_perCent * currentBlueVal    / 100, 0.0, 255.0, dimmer_blue_minVal,    dimmer_blue_maxVal   ) );  break;
+      case DMX_PAR_COLORMODE_SINGLE_WHITE  : dmxVal[chIndex_dimmer_white]   = int( map(currentGlobalDimmerValue_perCent * currentWhiteVal   / 100, 0.0, 255.0, dimmer_white_minVal,   dimmer_white_maxVal  ) );  break;
+      case DMX_PAR_COLORMODE_GLOBAL_DIMMER : dmxVal[chIndex_dimmer_global]  = int( map(currentGlobalDimmerValue_perCent, 0.0, 100.0, dimmer_global_minVal, dimmer_global_maxVal) );                              break;
+      case DMX_PAR_COLORMODE_UNDEFINED     : break;
+      default: break;
+    }
+  }
 
-//   void setColor_orange() {
-//     int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_orange, dmxVal_color_colorWheel_red);
-//     int[] colorRGB   = {253, 141, 28};
-//     int[] colorRGBW  = {255,   0,  0, 160};
-//     setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
-//   }
+  int getFallbackColorIfInvalidColorVal(int inputColor) {
+    if (inputColor == -1) {
+      if (dmxVal_color_colorWheel_white != -1) {
+        return dmxVal_color_colorWheel_white;
+      }
+      else {
+        return 0;
+      }
+    }
+    else {
+      return inputColor;
+    }
+  }
 
-//   void setColor_cto() {
-//     int   colorWheel = getFallbackColorIfInvalidColorVal(dmxVal_color_colorWheel_cto);
-//     int[] colorRGB   = {255, 241, 224};
-//     int[] colorRGBW  = {200,   0,  0, 255};
-//     setColor_genericColor(colorWheel, colorRGB, colorRGBW);  
-//   }
+  int getFallbackColorIfInvalidColorVal(int inputColor, int fallbackColor) {
+    if (inputColor == -1) {
+      if (fallbackColor != -1) {
+        return fallbackColor;
+      }
+      else if (dmxVal_color_colorWheel_white != -1) {
+        return dmxVal_color_colorWheel_white;
+      }
+      else {
+        return 0;
+      }
+    }
+    else {
+      return inputColor;
+    }
+  }
 
 
-
-//   void setApertureReduction(float val_percent) {
-//     // 100% -> closed aperture. 0% -> open aperture
-//     // Different implementations available for the aperture:
-//     // - Iris width (continuous control)
-//     // - Beam reduction using gobos (step control)
-//     if (apertureMode == DMX_MOVINGHEAD_APERTUREMODE_DEFAULT) {
-//       // Do nothing: no aperture control for this device
-//     }
-//     else if (apertureMode == DMX_MOVINGHEAD_APERTUREMODE_PROGRESSIVE) {
-//       if (chIndex_aperture != -1 && aperture_progressive_min != -1 && aperture_progressive_max != -1) {
-//         dmxVal[chIndex_aperture] = int( map(val_percent, 0.0, 100.0, aperture_progressive_min, aperture_progressive_max) );
-//       }
-//     }
-//     else if (apertureMode == DMX_MOVINGHEAD_APERTUREMODE_STEP) {
-//       if (aperture_steps.size() > 0) {
-//         int step =  int( map(val_percent,0,100.0, 0, aperture_steps.size()));
-//         dmxVal[chIndex_aperture] = aperture_steps.get(min(step, aperture_steps.size()-1))[1];
-//       }
-//     }
-//   }
-
-//   void setCurrentLightStyle(int style) {
-//     currentLightStyle = style;
-//   }
+  void setCurrentLightStyle(int style) {
+    currentLightStyle = style;
+  }
 
 //   void setCurrentRhythmPattern(int rhythm) {
 //     currentRhythmPattern = rhythm;
 //     dmxAnim_movingHead_computeNbSyncedFixtures();
 //   }
 
-//   boolean checkBPMSync() {
-//     switch(currentRhythmPattern) {
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_NOSYNC:                      return true;
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_32NDSYNC:           return checkBPMSync_syncedRhythm(8.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_16THSYNC:           return checkBPMSync_syncedRhythm(4.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_8THSYNC:            return checkBPMSync_syncedRhythm(2.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_4THSYNC:            return checkBPMSync_syncedRhythm(1.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_2NDSYNC:            return checkBPMSync_syncedRhythm(0.5);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_BARSYNC:            return checkBPMSync_syncedRhythm(0.25);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_32NDSYNC:          return checkBPMSync_clockwiseRhythm(8.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_16THSYNC:          return checkBPMSync_clockwiseRhythm(4.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_8THSYNC:           return checkBPMSync_clockwiseRhythm(2.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_4THSYNC:           return checkBPMSync_clockwiseRhythm(1.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_2NDSYNC:           return checkBPMSync_clockwiseRhythm(0.5);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_BARSYNC:           return checkBPMSync_clockwiseRhythm(0.25);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_32NDSYNC:      return checkBPMSync_antiClockwiseRhythm(8.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_16THSYNC:      return checkBPMSync_antiClockwiseRhythm(4.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_8THSYNC:       return checkBPMSync_antiClockwiseRhythm(2.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_4THSYNC:       return checkBPMSync_antiClockwiseRhythm(1.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_2NDSYNC:       return checkBPMSync_antiClockwiseRhythm(0.5);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_BARSYNC:       return checkBPMSync_antiClockwiseRhythm(0.25);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_32NDSYNC:             return checkBPMSync_randomRhythm(8.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_16THSYNC:             return checkBPMSync_randomRhythm(4.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_8THSYNC:              return checkBPMSync_randomRhythm(2.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_4THSYNC:              return checkBPMSync_randomRhythm(1.0);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_2NDSYNC:              return checkBPMSync_randomRhythm(0.5);
-//       case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_BARSYNC:              return checkBPMSync_randomRhythm(0.25);
+  boolean checkBPMSync() {
+    // switch(currentRhythmPattern) {
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_NOSYNC:                      return true;
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_32NDSYNC:           return checkBPMSync_syncedRhythm(8.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_16THSYNC:           return checkBPMSync_syncedRhythm(4.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_8THSYNC:            return checkBPMSync_syncedRhythm(2.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_4THSYNC:            return checkBPMSync_syncedRhythm(1.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_2NDSYNC:            return checkBPMSync_syncedRhythm(0.5);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_BARSYNC:            return checkBPMSync_syncedRhythm(0.25);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_32NDSYNC:          return checkBPMSync_clockwiseRhythm(8.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_16THSYNC:          return checkBPMSync_clockwiseRhythm(4.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_8THSYNC:           return checkBPMSync_clockwiseRhythm(2.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_4THSYNC:           return checkBPMSync_clockwiseRhythm(1.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_2NDSYNC:           return checkBPMSync_clockwiseRhythm(0.5);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_CLOCKWISE_BARSYNC:           return checkBPMSync_clockwiseRhythm(0.25);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_32NDSYNC:      return checkBPMSync_antiClockwiseRhythm(8.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_16THSYNC:      return checkBPMSync_antiClockwiseRhythm(4.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_8THSYNC:       return checkBPMSync_antiClockwiseRhythm(2.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_4THSYNC:       return checkBPMSync_antiClockwiseRhythm(1.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_2NDSYNC:       return checkBPMSync_antiClockwiseRhythm(0.5);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_ANTICLOCKWISE_BARSYNC:       return checkBPMSync_antiClockwiseRhythm(0.25);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_32NDSYNC:             return checkBPMSync_randomRhythm(8.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_16THSYNC:             return checkBPMSync_randomRhythm(4.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_8THSYNC:              return checkBPMSync_randomRhythm(2.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_4THSYNC:              return checkBPMSync_randomRhythm(1.0);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_2NDSYNC:              return checkBPMSync_randomRhythm(0.5);
+      // case DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_BARSYNC:              return checkBPMSync_randomRhythm(0.25);
 
-//       default:                                              return false;
-//     }
-//   }
+    //   default:                                              return false;
+    // }
+    return true;
+  }
 
 //   boolean checkBPMSync_clockwiseRhythm(float factor) {
 //     int seqRef = int((automaticSequencer.currentPosition*factor % dmxAnim_syncedMovingHeads.size()));
@@ -910,80 +820,153 @@ class DMX_PAR {
 //   }
 
 
-//   void reinitLightStyleCpt() {
-//     this.animCpt1_performLight = 0;
-//   }
+  void reinitLightStyleCpt() {
+    this.animCpt1 = 0;
+  }
 
-//   ////////////////////////////////////////////////////////////////////////////////
-//   // MOVING HEAD VARIABLES ACCESSORS
-//   //////////////////////
-
-
-//   int[] getSimulatorColor() {
-//     return simulator_colorRGB;
-//   }
-
-//   int getSimulatorDimmer() {
-//     return int( map(dmxVal[chIndex_dimmer], dimmer_minVal, dimmer_maxVal, 0.0, 255.0) );
-//   }
-
-//   int getSimulatorTilt() {
-//     return dmxVal[chIndex_tilt];
-//   }
-
-//   float getSimulatorPan() {
-//     if (chIndex_panFine != -1) {
-//       return (255.0*dmxVal[chIndex_pan] + dmxVal[chIndex_panFine]) / 255.0;
-//     }
-//     else {
-//       return dmxVal[chIndex_pan];
-//     }
-//   }
-
-//   int getSimulatorShutterMode() {
-//     return shutterMode;
-//   }
-
-//   int getSimulatorShutter() {
-//     return int( map(dmxVal[chIndex_shutter], shutter_strobe_minSpeed, shutter_strobe_maxSpeed, 0.0, 255.0) );
-//   }
+  ////////////////////////////////////////////////////////////////////////////////
+  // MOVING HEAD VARIABLES ACCESSORS
+  //////////////////////
 
 
-//   ////////////////////////////////////////////////////////////////////////////////
-//   // ANIMATION FUNCTIONS
-//   //////////////////////
+  int[] getSimulatorColor() {
+    return simulator_colorRGB;
+  }
 
-//   void performLight_standbyBlackout() {
-//     performLight_blackout();
-//     reinitLightStyleCpt();
-//   }
+  int getSimulatorDimmer() {
+    return int( map(currentGlobalDimmerValue_perCent, 0, 100, 0.0, 255.0) );
+  }
 
-//   void performLight_currentStyle() {
-//     boolean performEnabled = this.checkBPMSync();
-//     if (performEnabled) {
-//       switch (this.currentLightStyle) {
-//         case DMXANIM_MOVINGHEAD_BLACKOUT:                       this.performLight_blackout();                  break;
-//         case DMXANIM_MOVINGHEAD_CONTINUOUS_LIGHT:               this.performLight_continuousLight();           break;
-//         case DMXANIM_MOVINGHEAD_SINGLE_LONG_FLASH:              this.performLight_singleLongFlash();           break;
-//         case DMXANIM_MOVINGHEAD_SINGLE_SHORT_FLASH:             this.performLight_singleShortFlash();          break;
-//         case DMXANIM_MOVINGHEAD_SLOW_CRESCENDO:                 this.performLight_slowCrescendo();             break;
-//         case DMXANIM_MOVINGHEAD_FAST_CRESCENDO:                 this.performLight_fastCrescendo();             break;
-//         case DMXANIM_MOVINGHEAD_SLOW_STROBE:                    this.performLight_slowStrobe();                break;
-//         case DMXANIM_MOVINGHEAD_MEDIUM_STROBE:                  this.performLight_mediumStrobe();              break;
-//         case DMXANIM_MOVINGHEAD_FAST_STROBE:                    this.performLight_fastStrobe();                break;
-//         case DMXANIM_MOVINGHEAD_SLOW_SINE_WAVE_CLOCKWISE:       this.performLight_slowClockwiseSineWave();     break;
-//         case DMXANIM_MOVINGHEAD_FAST_SINE_WAVE_CLOCKWISE:       this.performLight_fastClockwiseSineWave();     break;
-//         case DMXANIM_MOVINGHEAD_SLOW_SINE_WAVE_ANTICLOCKWISE:   this.performLight_slowAntiClockwiseSineWave(); break;
-//         case DMXANIM_MOVINGHEAD_FAST_SINE_WAVE_ANTICLOCKWISE:   this.performLight_fastAntiClockwiseSineWave(); break;
-//         case DMXANIM_MOVINGHEAD_RANDOM_GLITCH:                  this.performLight_randomGlitch();              break;
-//         case DMXANIM_MOVINGHEAD_MIN_APERTURE_BEAM:              this.performLight_minimalApertureBeam();       break;
-//         default:                                     break;
-//       }
-//     }
-//     else {
-//       this.performLight_standbyBlackout();
-//     }
-//   }
+  ////////////////////////////////////////////////////////////////////////////////
+  // ANIMATION FUNCTIONS
+  //////////////////////
+
+  void performLight_standbyBlackout() {
+    performLight_blackout();
+    reinitLightStyleCpt();
+  }
+
+
+  void performLight_currentStyle() {
+    boolean performEnabled = this.checkBPMSync();
+    if (performEnabled) {
+      switch(currentLightStyle) {
+        case DMXANIM_PAR_BLACKOUT                     : performLight_blackout();                    break;
+        case DMXANIM_PAR_CONTINUOUS_LIGHT_MAX         : performLight_continuousLight_max();         break;
+        case DMXANIM_PAR_CONTINUOUS_LIGHT_STRONG      : performLight_continuousLight_strong();      break;
+        case DMXANIM_PAR_CONTINUOUS_LIGHT_MEDIUM      : performLight_continuousLight_medium();      break;
+        case DMXANIM_PAR_CONTINUOUS_LIGHT_WEAK        : performLight_continuousLight_weak();        break;
+        case DMXANIM_PAR_SINGLE_LONG_FLASH            : performLight_singleLongFlash();             break;
+        case DMXANIM_PAR_SINGLE_SHORT_FLASH           : performLight_singleShortFlash();            break;
+        case DMXANIM_PAR_SLOW_CRESCENDO               : performLight_slowCrescendo();               break;
+        case DMXANIM_PAR_FAST_CRESCENDO               : performLight_fastCrescendo();               break;
+        case DMXANIM_PAR_SLOW_STROBE                  : performLight_slowStrobe();                  break;
+        case DMXANIM_PAR_MEDIUM_STROBE                : performLight_mediumStrobe();                break;
+        case DMXANIM_PAR_FAST_STROBE                  : performLight_fastStrobe();                  break;
+        case DMXANIM_PAR_SLOW_SINE_WAVE_CLOCKWISE     : performLight_slowSineWaveClockwise();       break;
+        case DMXANIM_PAR_FAST_SINE_WAVE_CLOCKWISE     : performLight_fastSineWaveClockwise();       break;
+        case DMXANIM_PAR_SLOW_SINE_WAVE_ANTICLOCKWISE : performLight_slowSineWaveAnticlockwise();   break;
+        case DMXANIM_PAR_FAST_SINE_WAVE_ANTICLOCKWISE : performLight_fastSineWaveAnticlockwise();   break;
+        case DMXANIM_PAR_RANDOM_GLITCH                : performLight_randomGlitch();                break;
+      }
+    }
+    else {
+      this.performLight_standbyBlackout();
+    }
+  }
+
+
+  void performLight_blackout() {
+    this.setDimmer(0);
+  }
+
+  void performLight_continuousLight_max() {
+    this.setDimmer(100);
+  }
+
+  void performLight_continuousLight_strong() {
+    this.setDimmer(80);
+  }
+
+  void performLight_continuousLight_medium() {
+    this.setDimmer(60);
+  }
+
+  void performLight_continuousLight_weak() {
+    this.setDimmer(40);
+  }
+
+  void performLight_singleLongFlash() {
+    // The single long flash is one bar long  
+    performLight_singleFlash(0.250);
+    
+  }
+  
+  void performLight_singleShortFlash() {
+    // The single short flash is one beat long
+    performLight_singleFlash(1.0);
+  }
+
+  void performLight_singleFlash(float factor) {
+    setDimmer(this.animCpt1);
+    float stepSize = factor * 1 / (frameRate*60.0/automaticSequencer.currentBPM);
+    this.animCpt1 += stepSize;
+  }
+
+  void performLight_slowCrescendo() {
+
+  }
+
+  void performLight_fastCrescendo() {
+
+  }
+
+  void performLight_slowStrobe() {
+    performLight_strobe(1.0);
+  }
+
+  void performLight_mediumStrobe() {
+    performLight_strobe(2.0);
+  }
+
+  void performLight_fastStrobe() {
+    performLight_strobe(4.0);
+  }
+
+  void performLight_strobe(float factor) {
+    if ((int)(automaticSequencer.currentPosition * factor * 2.0) % 2 == 0) {
+      this.setDimmer(100);
+    }
+    else {
+      this.setDimmer(0); 
+    }
+  }
+
+  void performLight_slowSineWaveClockwise() {
+
+  }
+
+  void performLight_fastSineWaveClockwise() {
+
+  }
+
+  void performLight_slowSineWaveAnticlockwise() {
+
+  }
+
+  void performLight_fastSineWaveAnticlockwise() {
+
+  }
+
+  void performLight_randomGlitch() {
+
+  }
+
+
+
+
+
+
 
 //   void performLight_blackout() {
 //     this.setDimmer(0);
@@ -1072,22 +1055,630 @@ class DMX_PAR {
 //   }
 
 //   void performLight_randomGlitch() {
-//     // Use perlin noise + deviceID as random seed
-//     this.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
 //     this.setDimmer(100 * noise(frameCount*0.1));
-//     this.setApertureReduction(0);
 //   }
 
-//   void performLight_minimalApertureBeam() {
-//     this.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
-//     this.setDimmer(100);
-//     this.setApertureReduction(80);
-//   }
 
 }
 
+////////////////////////////////////////////////////////////
+// Set the color to use in the more complex animations
 
-// /////////////////////////////////////////////////////////////////////////////////////
-// // Each individual function is a single animation using the registered DMX devices
+void dmxAnim_par_setColor_allDev(int colorCode) {
+  for (DMX_PAR par: DMXList_Pars) {
+    par.setColor(colorCode);
+  }
+}
+
+void dmxAnim_par_setColor_centerDev(int colorCode) {
+  for (DMX_PAR par: DMXList_Pars_center) {
+    par.setColor(colorCode);
+  }
+}
+
+void dmxAnim_par_setColor_sideDev(int colorCode) {
+  for (DMX_PAR par: DMXList_Pars_side) {
+    par.setColor(colorCode);
+  }
+}
+
+void dmxAnim_par_setColor_leftDev(int colorCode) {
+  for (DMX_PAR par: DMXList_Pars_left) {
+    par.setColor(colorCode);
+  }
+}
+
+void dmxAnim_par_setColor_rightDev(int colorCode) {
+  for (DMX_PAR par: DMXList_Pars_right) {
+    par.setColor(colorCode);
+  }
+}
 
 
+/////////////////
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_white() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_WHITE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_red() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_RED);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_deepRed() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_DEEP_RED);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_blue() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_BLUE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_deepBlue() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_DEEP_BLUE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_turquoise() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_TURQUOISE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_yellow() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_YELLOW);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_lime() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_LIME);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_green() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_GREEN);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_ultraviolet() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_ULTRAVIOLET);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_pink() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_PINK);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_orange() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_ORANGE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_allDev_cto() {
+  dmxAnim_par_setColor_allDev(DMX_PAR_COLORWHEEL_CTO);
+}
+
+///////////////////
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_white() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_WHITE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_red() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_RED);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_deepRed() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_DEEP_RED);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_blue() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_BLUE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_deepBlue() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_DEEP_BLUE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_turquoise() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_TURQUOISE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_yellow() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_YELLOW);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_lime() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_LIME);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_green() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_GREEN);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_ultraviolet() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_ULTRAVIOLET);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_pink() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_PINK);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_orange() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_ORANGE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_centerDev_cto() {
+  dmxAnim_par_setColor_centerDev(DMX_PAR_COLORWHEEL_CTO);
+}
+
+///////////////////
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_white() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_WHITE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_red() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_RED);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_deepRed() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_DEEP_RED);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_blue() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_BLUE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_deepBlue() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_DEEP_BLUE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_turquoise() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_TURQUOISE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_yellow() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_YELLOW);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_lime() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_LIME);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_green() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_GREEN);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_ultraviolet() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_ULTRAVIOLET);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_pink() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_PINK);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_orange() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_ORANGE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_sideDev_cto() {
+  dmxAnim_par_setColor_sideDev(DMX_PAR_COLORWHEEL_CTO);
+}
+
+///////////////////
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_white() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_WHITE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_red() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_RED);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_deepRed() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_DEEP_RED);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_blue() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_BLUE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_deepBlue() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_DEEP_BLUE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_turquoise() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_TURQUOISE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_yellow() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_YELLOW);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_lime() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_LIME);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_green() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_GREEN);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_ultraviolet() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_ULTRAVIOLET);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_pink() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_PINK);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_orange() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_ORANGE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_leftDev_cto() {
+  dmxAnim_par_setColor_leftDev(DMX_PAR_COLORWHEEL_CTO);
+}
+
+///////////////////
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_white() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_WHITE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_red() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_RED);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_deepRed() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_DEEP_RED);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_blue() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_BLUE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_deepBlue() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_DEEP_BLUE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_turquoise() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_TURQUOISE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_yellow() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_YELLOW);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_lime() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_LIME);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_green() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_GREEN);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_ultraviolet() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_ULTRAVIOLET);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_pink() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_PINK);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_orange() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_ORANGE);
+}
+
+void dmxAnim_par_setColorForCompositeAnimations_rightDev_cto() {
+  dmxAnim_par_setColor_rightDev(DMX_PAR_COLORWHEEL_CTO);
+}
+
+
+/////////////////////////////////////////
+
+void dmxAnim_par_setLightStyle_allDev(int style) {
+  for (DMX_PAR par: DMXList_Pars) {
+    par.setCurrentLightStyle(style);
+  }
+}
+
+void dmxAnim_par_setLightStyle_centerDev(int style) {
+  for (DMX_PAR par: DMXList_Pars_center) {
+    par.setCurrentLightStyle(style);
+  }
+}
+
+void dmxAnim_par_setLightStyle_sideDev(int style) {
+  for (DMX_PAR par: DMXList_Pars_side) {
+    par.setCurrentLightStyle(style);
+  }
+}
+
+void dmxAnim_par_setLightStyle_leftDev(int style) {
+  for (DMX_PAR par: DMXList_Pars_left) {
+    par.setCurrentLightStyle(style);
+  }
+}
+
+void dmxAnim_par_setLightStyle_rightDev(int style) {
+  for (DMX_PAR par: DMXList_Pars_right) {
+    par.setCurrentLightStyle(style);
+  }
+}
+
+
+void dmxAnim_par_setLightStyle_allDev_continuousLightMax() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_CONTINUOUS_LIGHT_MAX);
+}
+void dmxAnim_par_setLightStyle_allDev_continuousLightStrong() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_CONTINUOUS_LIGHT_STRONG);
+}
+void dmxAnim_par_setLightStyle_allDev_continuousLightMedium() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_CONTINUOUS_LIGHT_MEDIUM);
+}
+void dmxAnim_par_setLightStyle_allDev_continuousLightWeak() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_CONTINUOUS_LIGHT_WEAK);
+}
+void dmxAnim_par_setLightStyle_allDev_singleLongFlash() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_SINGLE_LONG_FLASH);
+}
+void dmxAnim_par_setLightStyle_allDev_singleShortFlash() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_SINGLE_SHORT_FLASH);
+}
+void dmxAnim_par_setLightStyle_allDev_slowCrescendo() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_SLOW_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_allDev_fastCrescendo() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_FAST_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_allDev_slowStrobe() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_SLOW_STROBE);
+}
+void dmxAnim_par_setLightStyle_allDev_mediumStrobe() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_MEDIUM_STROBE);
+}
+void dmxAnim_par_setLightStyle_allDev_fastStrobe() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_FAST_STROBE);
+}
+void dmxAnim_par_setLightStyle_allDev_slowSineWaveClockwise() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_SLOW_SINE_WAVE_CLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_allDev_fastSineWaveClockwise() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_FAST_SINE_WAVE_CLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_allDev_slowSineWaveAnticlockwise() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_SLOW_SINE_WAVE_ANTICLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_allDev_fastSineWaveAnticlockwise() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_FAST_SINE_WAVE_ANTICLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_allDev_randomGlitch() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_RANDOM_GLITCH);
+}
+
+
+
+void dmxAnim_par_setLightStyle_centerDev_continuousLightMax() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_CONTINUOUS_LIGHT_MAX);
+}
+void dmxAnim_par_setLightStyle_centerDev_continuousLightStrong() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_CONTINUOUS_LIGHT_STRONG);
+}
+void dmxAnim_par_setLightStyle_centerDev_continuousLightMedium() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_CONTINUOUS_LIGHT_MEDIUM);
+}
+void dmxAnim_par_setLightStyle_centerDev_continuousLightWeak() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_CONTINUOUS_LIGHT_WEAK);
+}
+void dmxAnim_par_setLightStyle_centerDev_singleLongFlash() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_SINGLE_LONG_FLASH);
+}
+void dmxAnim_par_setLightStyle_centerDev_singleShortFlash() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_SINGLE_SHORT_FLASH);
+}
+void dmxAnim_par_setLightStyle_centerDev_slowCrescendo() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_SLOW_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_centerDev_fastCrescendo() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_FAST_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_centerDev_slowStrobe() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_SLOW_STROBE);
+}
+void dmxAnim_par_setLightStyle_centerDev_mediumStrobe() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_MEDIUM_STROBE);
+}
+void dmxAnim_par_setLightStyle_centerDev_fastStrobe() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_FAST_STROBE);
+}
+void dmxAnim_par_setLightStyle_centerDev_slowSineWaveClockwise() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_SLOW_SINE_WAVE_CLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_centerDev_fastSineWaveClockwise() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_FAST_SINE_WAVE_CLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_centerDev_slowSineWaveAnticlockwise() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_SLOW_SINE_WAVE_ANTICLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_centerDev_fastSineWaveAnticlockwise() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_FAST_SINE_WAVE_ANTICLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_centerDev_randomGlitch() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_RANDOM_GLITCH);
+}
+
+
+
+void dmxAnim_par_setLightStyle_sideDev_continuousLightMax() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_CONTINUOUS_LIGHT_MAX);
+}
+void dmxAnim_par_setLightStyle_sideDev_continuousLightStrong() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_CONTINUOUS_LIGHT_STRONG);
+}
+void dmxAnim_par_setLightStyle_sideDev_continuousLightMedium() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_CONTINUOUS_LIGHT_MEDIUM);
+}
+void dmxAnim_par_setLightStyle_sideDev_continuousLightWeak() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_CONTINUOUS_LIGHT_WEAK);
+}
+void dmxAnim_par_setLightStyle_sideDev_singleLongFlash() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_SINGLE_LONG_FLASH);
+}
+void dmxAnim_par_setLightStyle_sideDev_singleShortFlash() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_SINGLE_SHORT_FLASH);
+}
+void dmxAnim_par_setLightStyle_sideDev_slowCrescendo() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_SLOW_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_sideDev_fastCrescendo() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_FAST_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_sideDev_slowStrobe() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_SLOW_STROBE);
+}
+void dmxAnim_par_setLightStyle_sideDev_mediumStrobe() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_MEDIUM_STROBE);
+}
+void dmxAnim_par_setLightStyle_sideDev_fastStrobe() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_FAST_STROBE);
+}
+void dmxAnim_par_setLightStyle_sideDev_slowSineWaveClockwise() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_SLOW_SINE_WAVE_CLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_sideDev_fastSineWaveClockwise() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_FAST_SINE_WAVE_CLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_sideDev_slowSineWaveAnticlockwise() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_SLOW_SINE_WAVE_ANTICLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_sideDev_fastSineWaveAnticlockwise() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_FAST_SINE_WAVE_ANTICLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_sideDev_randomGlitch() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_RANDOM_GLITCH);
+}
+
+
+
+void dmxAnim_par_setLightStyle_leftDev_continuousLightMax() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_CONTINUOUS_LIGHT_MAX);
+}
+void dmxAnim_par_setLightStyle_leftDev_continuousLightStrong() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_CONTINUOUS_LIGHT_STRONG);
+}
+void dmxAnim_par_setLightStyle_leftDev_continuousLightMedium() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_CONTINUOUS_LIGHT_MEDIUM);
+}
+void dmxAnim_par_setLightStyle_leftDev_continuousLightWeak() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_CONTINUOUS_LIGHT_WEAK);
+}
+void dmxAnim_par_setLightStyle_leftDev_singleLongFlash() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_SINGLE_LONG_FLASH);
+}
+void dmxAnim_par_setLightStyle_leftDev_singleShortFlash() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_SINGLE_SHORT_FLASH);
+}
+void dmxAnim_par_setLightStyle_leftDev_slowCrescendo() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_SLOW_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_leftDev_fastCrescendo() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_FAST_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_leftDev_slowStrobe() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_SLOW_STROBE);
+}
+void dmxAnim_par_setLightStyle_leftDev_mediumStrobe() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_MEDIUM_STROBE);
+}
+void dmxAnim_par_setLightStyle_leftDev_fastStrobe() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_FAST_STROBE);
+}
+void dmxAnim_par_setLightStyle_leftDev_slowSineWaveClockwise() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_SLOW_SINE_WAVE_CLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_leftDev_fastSineWaveClockwise() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_FAST_SINE_WAVE_CLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_leftDev_slowSineWaveAnticlockwise() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_SLOW_SINE_WAVE_ANTICLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_leftDev_fastSineWaveAnticlockwise() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_FAST_SINE_WAVE_ANTICLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_leftDev_randomGlitch() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_RANDOM_GLITCH);
+}
+
+
+
+void dmxAnim_par_setLightStyle_rightDev_continuousLightMax() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_CONTINUOUS_LIGHT_MAX);
+}
+void dmxAnim_par_setLightStyle_rightDev_continuousLightStrong() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_CONTINUOUS_LIGHT_STRONG);
+}
+void dmxAnim_par_setLightStyle_rightDev_continuousLightMedium() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_CONTINUOUS_LIGHT_MEDIUM);
+}
+void dmxAnim_par_setLightStyle_rightDev_continuousLightWeak() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_CONTINUOUS_LIGHT_WEAK);
+}
+void dmxAnim_par_setLightStyle_rightDev_singleLongFlash() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_SINGLE_LONG_FLASH);
+}
+void dmxAnim_par_setLightStyle_rightDev_singleShortFlash() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_SINGLE_SHORT_FLASH);
+}
+void dmxAnim_par_setLightStyle_rightDev_slowCrescendo() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_SLOW_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_rightDev_fastCrescendo() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_FAST_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_rightDev_slowStrobe() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_SLOW_STROBE);
+}
+void dmxAnim_par_setLightStyle_rightDev_mediumStrobe() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_MEDIUM_STROBE);
+}
+void dmxAnim_par_setLightStyle_rightDev_fastStrobe() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_FAST_STROBE);
+}
+void dmxAnim_par_setLightStyle_rightDev_slowSineWaveClockwise() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_SLOW_SINE_WAVE_CLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_rightDev_fastSineWaveClockwise() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_FAST_SINE_WAVE_CLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_rightDev_slowSineWaveAnticlockwise() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_SLOW_SINE_WAVE_ANTICLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_rightDev_fastSineWaveAnticlockwise() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_FAST_SINE_WAVE_ANTICLOCKWISE);
+}
+void dmxAnim_par_setLightStyle_rightDev_randomGlitch() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_RANDOM_GLITCH);
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+// Each individual function is a single animation using the registered DMX devices
+
+void dmxAnim_par_allDev_performCurrentLightStyle_noSync() {
+  dmxAnim_par_performCurrentLightStyle_noSync(DMXList_Pars);
+}
+
+void dmxAnim_par_centerDev_performCurrentLightStyle_noSync() {
+  dmxAnim_par_performCurrentLightStyle_noSync(DMXList_Pars_center);
+}
+
+void dmxAnim_par_sideDev_performCurrentLightStyle_noSync() {
+  dmxAnim_par_performCurrentLightStyle_noSync(DMXList_Pars_side);
+}
+
+void dmxAnim_par_leftDev_performCurrentLightStyle_noSync() {
+  dmxAnim_par_performCurrentLightStyle_noSync(DMXList_Pars_left);
+}
+
+void dmxAnim_par_rightDev_performCurrentLightStyle_noSync() {
+  dmxAnim_par_performCurrentLightStyle_noSync(DMXList_Pars_right);
+}
+
+void dmxAnim_par_performCurrentLightStyle_noSync(ArrayList<DMX_PAR> parList) {
+  for (DMX_PAR par: parList) {
+    par.performLight_currentStyle();
+  }
+}
