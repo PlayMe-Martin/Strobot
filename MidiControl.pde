@@ -849,7 +849,6 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
       //AUTOMATIC_MODE = false;
       switch (pitch) {
         case PITCH_DMX_ANIMATION_STROBE:                        unloadDMXAnimation_strobe(); break;                         //A#7   - Unload an animation using DMX devices : noteOff releases DMX
-        case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             unloadDMXAnimation_par(); break;
 
         case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM:        break;
@@ -857,6 +856,10 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
+
+        case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 break;
+        case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           break;
+        case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             unloadDMXAnimation_par(); break;
 
         case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   unloadAnimation();break;                                    //C7    - Unload a temporary animation using the LED panels
         case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   unloadAnimation();break;                                    //C#7
@@ -907,21 +910,21 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
 
 void unloadDMXAnimation_strobe() {
   //Note off for the DMX animation, kill the DMX animation by switching everything back to a blackout
-  dmxAutomaticControl = false;
+  //dmxAutomaticControl = false;
   dmxAnimationNumber_strobe = 1;
   dmxAnim_strobe_blackout();
 }
 
 void unloadDMXAnimation_par() {
   //Note off for the DMX animation, kill the DMX animation by switching everything back to a blackout
-  dmxAutomaticControl = false;
+  //dmxAutomaticControl = false;
   dmxAnimationNumber_par_setAnimation = 1;
   //dmxAnim_par_blackout();
 }
 
 void unloadDMXAnimation_movingHead() {
   //Note off for the DMX animation, kill the DMX animation by switching everything back to a blackout
-  dmxAutomaticControl = false;
+  //dmxAutomaticControl = false;
   dmxAnimationNumber_movingHead_setAnimation = 0;
   dmxAnim_movingHead_blackout();
 }

@@ -567,12 +567,12 @@ public void draw()
   {
 
     // for (Tpm2 outputDevice: outputDevices) {
-      // try {
-      //   outputDevices[0].readDebugData();
-      // }
-      // catch (Exception e) {
-      //   println("Exception while trying to read - " + e);
-      // }
+    //   try {
+    //     outputDevices[0].readDebugData();
+    //   }
+    //   catch (Exception e) {
+    //     println("Exception while trying to read - " + e);
+    //   }
       
     // }
 
@@ -22660,79 +22660,84 @@ public void setDMXAnimationsAttributes() {
   DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 5,   "All Fixtures - Single Long Flash"                 , new String[] {"PAR-SetLight-All", "PAR-Flash"                  } );
   DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 6,   "All Fixtures - Single Short Flash"                , new String[] {"PAR-SetLight-All", "PAR-Flash"                  } );
   DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 7,   "All Fixtures - Slow Crescendo"                    , new String[] {"PAR-SetLight-All", "PAR-Crescendo"              } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 8,   "All Fixtures - Fast Crescendo"                    , new String[] {"PAR-SetLight-All", "PAR-Crescendo"              } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 9,   "All Fixtures - Slow Strobe"                       , new String[] {"PAR-SetLight-All", "PAR-Strobe"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 10,  "All Fixtures - Medium Strobe"                     , new String[] {"PAR-SetLight-All", "PAR-Strobe"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 11,  "All Fixtures - Fast Strobe"                       , new String[] {"PAR-SetLight-All", "PAR-Strobe"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 12,  "All Fixtures - Slow Sine Wave - Clockwise"        , new String[] {"PAR-SetLight-All", "PAR-Sine"                   } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 13,  "All Fixtures - Fast Sine Wave - Clockwise"        , new String[] {"PAR-SetLight-All", "PAR-Sine"                   } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 14,  "All Fixtures - Slow Sine Wave - Anticlockwise"    , new String[] {"PAR-SetLight-All", "PAR-Sine"                   } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 15,  "All Fixtures - Fast Sine Wave - Anticlockwise"    , new String[] {"PAR-SetLight-All", "PAR-Sine"                   } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 16,  "All Fixtures - Random Glitch"                     , new String[] {"PAR-SetLight-All", "PAR-Glitch"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 17,  "Center Fixtures - Continuous Light - Max"         , new String[] {"PAR-SetLight-Center", "PAR-Still"               } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 18,  "Center Fixtures - Continuous Light - Strong"      , new String[] {"PAR-SetLight-Center", "PAR-Still"               } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 19,  "Center Fixtures - Continuous Light - Medium"      , new String[] {"PAR-SetLight-Center", "PAR-Still"               } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 20,  "Center Fixtures - Continuous Light - Weak"        , new String[] {"PAR-SetLight-Center", "PAR-Still"               } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 21,  "Center Fixtures - Single Long Flash"              , new String[] {"PAR-SetLight-Center", "PAR-Flash"               } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 22,  "Center Fixtures - Single Short Flash"             , new String[] {"PAR-SetLight-Center", "PAR-Flash"               } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 23,  "Center Fixtures - Slow Crescendo"                 , new String[] {"PAR-SetLight-Center", "PAR-Crescendo"           } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 24,  "Center Fixtures - Fast Crescendo"                 , new String[] {"PAR-SetLight-Center", "PAR-Crescendo"           } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 25,  "Center Fixtures - Slow Strobe"                    , new String[] {"PAR-SetLight-Center", "PAR-Strobe"              } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 26,  "Center Fixtures - Medium Strobe"                  , new String[] {"PAR-SetLight-Center", "PAR-Strobe"              } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 27,  "Center Fixtures - Fast Strobe"                    , new String[] {"PAR-SetLight-Center", "PAR-Strobe"              } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 28,  "Center Fixtures - Slow Sine Wave - Clockwise"     , new String[] {"PAR-SetLight-Center", "PAR-Sine"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 29,  "Center Fixtures - Fast Sine Wave - Clockwise"     , new String[] {"PAR-SetLight-Center", "PAR-Sine"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 30,  "Center Fixtures - Slow Sine Wave - Anticlockwise" , new String[] {"PAR-SetLight-Center", "PAR-Sine"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 31,  "Center Fixtures - Fast Sine Wave - Anticlockwise" , new String[] {"PAR-SetLight-Center", "PAR-Sine"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 32,  "Center Fixtures - Random Glitch"                  , new String[] {"PAR-SetLight-Center", "PAR-Glitch"              } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 33,  "Side Fixtures - Continuous Light - Max"           , new String[] {"PAR-SetLight-Side", "PAR-Still"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 34,  "Side Fixtures - Continuous Light - Strong"        , new String[] {"PAR-SetLight-Side", "PAR-Still"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 35,  "Side Fixtures - Continuous Light - Medium"        , new String[] {"PAR-SetLight-Side", "PAR-Still"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 36,  "Side Fixtures - Continuous Light - Weak"          , new String[] {"PAR-SetLight-Side", "PAR-Still"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 37,  "Side Fixtures - Single Long Flash"                , new String[] {"PAR-SetLight-Side", "PAR-Flash"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 38,  "Side Fixtures - Single Short Flash"               , new String[] {"PAR-SetLight-Side", "PAR-Flash"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 39,  "Side Fixtures - Slow Crescendo"                   , new String[] {"PAR-SetLight-Side", "PAR-Crescendo"             } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 40,  "Side Fixtures - Fast Crescendo"                   , new String[] {"PAR-SetLight-Side", "PAR-Crescendo"             } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 41,  "Side Fixtures - Slow Strobe"                      , new String[] {"PAR-SetLight-Side", "PAR-Strobe"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 42,  "Side Fixtures - Medium Strobe"                    , new String[] {"PAR-SetLight-Side", "PAR-Strobe"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 43,  "Side Fixtures - Fast Strobe"                      , new String[] {"PAR-SetLight-Side", "PAR-Strobe"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 44,  "Side Fixtures - Slow Sine Wave - Clockwise"       , new String[] {"PAR-SetLight-Side", "PAR-Sine"                  } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 45,  "Side Fixtures - Fast Sine Wave - Clockwise"       , new String[] {"PAR-SetLight-Side", "PAR-Sine"                  } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 46,  "Side Fixtures - Slow Sine Wave - Anticlockwise"   , new String[] {"PAR-SetLight-Side", "PAR-Sine"                  } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 47,  "Side Fixtures - Fast Sine Wave - Anticlockwise"   , new String[] {"PAR-SetLight-Side", "PAR-Sine"                  } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 48,  "Side Fixtures - Random Glitch"                    , new String[] {"PAR-SetLight-Side", "PAR-Glitch"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 49,  "Left Fixtures - Continuous Light - Max"           , new String[] {"PAR-SetLight-Left", "PAR-Still"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 50,  "Left Fixtures - Continuous Light - Strong"        , new String[] {"PAR-SetLight-Left", "PAR-Still"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 51,  "Left Fixtures - Continuous Light - Medium"        , new String[] {"PAR-SetLight-Left", "PAR-Still"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 52,  "Left Fixtures - Continuous Light - Weak"          , new String[] {"PAR-SetLight-Left", "PAR-Still"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 53,  "Left Fixtures - Single Long Flash"                , new String[] {"PAR-SetLight-Left", "PAR-Flash"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 54,  "Left Fixtures - Single Short Flash"               , new String[] {"PAR-SetLight-Left", "PAR-Flash"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 55,  "Left Fixtures - Slow Crescendo"                   , new String[] {"PAR-SetLight-Left", "PAR-Crescendo"             } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 56,  "Left Fixtures - Fast Crescendo"                   , new String[] {"PAR-SetLight-Left", "PAR-Crescendo"             } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 57,  "Left Fixtures - Slow Strobe"                      , new String[] {"PAR-SetLight-Left", "PAR-Strobe"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 58,  "Left Fixtures - Medium Strobe"                    , new String[] {"PAR-SetLight-Left", "PAR-Strobe"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 59,  "Left Fixtures - Fast Strobe"                      , new String[] {"PAR-SetLight-Left", "PAR-Strobe"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 60,  "Left Fixtures - Slow Sine Wave - Clockwise"       , new String[] {"PAR-SetLight-Left", "PAR-Sine"                  } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 61,  "Left Fixtures - Fast Sine Wave - Clockwise"       , new String[] {"PAR-SetLight-Left", "PAR-Sine"                  } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 62,  "Left Fixtures - Slow Sine Wave - Anticlockwise"   , new String[] {"PAR-SetLight-Left", "PAR-Sine"                  } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 63,  "Left Fixtures - Fast Sine Wave - Anticlockwise"   , new String[] {"PAR-SetLight-Left", "PAR-Sine"                  } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 64,  "Left Fixtures - Random Glitch"                    , new String[] {"PAR-SetLight-Left", "PAR-Glitch"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 65,  "Right Fixtures - Continuous Light - Max"          , new String[] {"PAR-SetLight-Right", "PAR-Still"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 66,  "Right Fixtures - Continuous Light - Strong"       , new String[] {"PAR-SetLight-Right", "PAR-Still"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 67,  "Right Fixtures - Continuous Light - Medium"       , new String[] {"PAR-SetLight-Right", "PAR-Still"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 68,  "Right Fixtures - Continuous Light - Weak"         , new String[] {"PAR-SetLight-Right", "PAR-Still"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 69,  "Right Fixtures - Single Long Flash"               , new String[] {"PAR-SetLight-Right", "PAR-Flash"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 70,  "Right Fixtures - Single Short Flash"              , new String[] {"PAR-SetLight-Right", "PAR-Flash"                } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 71,  "Right Fixtures - Slow Crescendo"                  , new String[] {"PAR-SetLight-Right", "PAR-Crescendo"            } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 72,  "Right Fixtures - Fast Crescendo"                  , new String[] {"PAR-SetLight-Right", "PAR-Crescendo"            } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 73,  "Right Fixtures - Slow Strobe"                     , new String[] {"PAR-SetLight-Right", "PAR-Strobe"               } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 74,  "Right Fixtures - Medium Strobe"                   , new String[] {"PAR-SetLight-Right", "PAR-Strobe"               } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 75,  "Right Fixtures - Fast Strobe"                     , new String[] {"PAR-SetLight-Right", "PAR-Strobe"               } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 76,  "Right Fixtures - Slow Sine Wave - Clockwise"      , new String[] {"PAR-SetLight-Right", "PAR-Sine"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 77,  "Right Fixtures - Fast Sine Wave - Clockwise"      , new String[] {"PAR-SetLight-Right", "PAR-Sine"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 78,  "Right Fixtures - Slow Sine Wave - Anticlockwise"  , new String[] {"PAR-SetLight-Right", "PAR-Sine"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 79,  "Right Fixtures - Fast Sine Wave - Anticlockwise"  , new String[] {"PAR-SetLight-Right", "PAR-Sine"                 } );
-  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 80,  "Right Fixtures - Random Glitch"                   , new String[] {"PAR-SetLight-Right", "PAR-Glitch"               } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 8,   "All Fixtures - Medium Crescendo"                  , new String[] {"PAR-SetLight-All", "PAR-Crescendo"              } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 9,   "All Fixtures - Fast Crescendo"                    , new String[] {"PAR-SetLight-All", "PAR-Crescendo"              } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 10,  "All Fixtures - Slow Strobe"                       , new String[] {"PAR-SetLight-All", "PAR-Strobe"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 11,  "All Fixtures - Medium Strobe"                     , new String[] {"PAR-SetLight-All", "PAR-Strobe"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 12,  "All Fixtures - Fast Strobe"                       , new String[] {"PAR-SetLight-All", "PAR-Strobe"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 13,  "All Fixtures - Slow Sine Wave - Clockwise"        , new String[] {"PAR-SetLight-All", "PAR-Sine"                   } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 14,  "All Fixtures - Fast Sine Wave - Clockwise"        , new String[] {"PAR-SetLight-All", "PAR-Sine"                   } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 15,  "All Fixtures - Slow Sine Wave - Anticlockwise"    , new String[] {"PAR-SetLight-All", "PAR-Sine"                   } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 16,  "All Fixtures - Fast Sine Wave - Anticlockwise"    , new String[] {"PAR-SetLight-All", "PAR-Sine"                   } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 17,  "All Fixtures - Random Glitch"                     , new String[] {"PAR-SetLight-All", "PAR-Glitch"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 18,  "Center Fixtures - Continuous Light - Max"         , new String[] {"PAR-SetLight-Center", "PAR-Still"               } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 19,  "Center Fixtures - Continuous Light - Strong"      , new String[] {"PAR-SetLight-Center", "PAR-Still"               } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 20,  "Center Fixtures - Continuous Light - Medium"      , new String[] {"PAR-SetLight-Center", "PAR-Still"               } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 21,  "Center Fixtures - Continuous Light - Weak"        , new String[] {"PAR-SetLight-Center", "PAR-Still"               } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 22,  "Center Fixtures - Single Long Flash"              , new String[] {"PAR-SetLight-Center", "PAR-Flash"               } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 23,  "Center Fixtures - Single Short Flash"             , new String[] {"PAR-SetLight-Center", "PAR-Flash"               } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 24,  "Center Fixtures - Slow Crescendo"                 , new String[] {"PAR-SetLight-Center", "PAR-Crescendo"           } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 25,  "Center Fixtures - Medium Crescendo"               , new String[] {"PAR-SetLight-Center", "PAR-Crescendo"           } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 26,  "Center Fixtures - Fast Crescendo"                 , new String[] {"PAR-SetLight-Center", "PAR-Crescendo"           } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 27,  "Center Fixtures - Slow Strobe"                    , new String[] {"PAR-SetLight-Center", "PAR-Strobe"              } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 28,  "Center Fixtures - Medium Strobe"                  , new String[] {"PAR-SetLight-Center", "PAR-Strobe"              } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 29,  "Center Fixtures - Fast Strobe"                    , new String[] {"PAR-SetLight-Center", "PAR-Strobe"              } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 30,  "Center Fixtures - Slow Sine Wave - Clockwise"     , new String[] {"PAR-SetLight-Center", "PAR-Sine"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 31,  "Center Fixtures - Fast Sine Wave - Clockwise"     , new String[] {"PAR-SetLight-Center", "PAR-Sine"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 32,  "Center Fixtures - Slow Sine Wave - Anticlockwise" , new String[] {"PAR-SetLight-Center", "PAR-Sine"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 33,  "Center Fixtures - Fast Sine Wave - Anticlockwise" , new String[] {"PAR-SetLight-Center", "PAR-Sine"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 34,  "Center Fixtures - Random Glitch"                  , new String[] {"PAR-SetLight-Center", "PAR-Glitch"              } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 35,  "Side Fixtures - Continuous Light - Max"           , new String[] {"PAR-SetLight-Side", "PAR-Still"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 36,  "Side Fixtures - Continuous Light - Strong"        , new String[] {"PAR-SetLight-Side", "PAR-Still"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 37,  "Side Fixtures - Continuous Light - Medium"        , new String[] {"PAR-SetLight-Side", "PAR-Still"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 38,  "Side Fixtures - Continuous Light - Weak"          , new String[] {"PAR-SetLight-Side", "PAR-Still"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 39,  "Side Fixtures - Single Long Flash"                , new String[] {"PAR-SetLight-Side", "PAR-Flash"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 40,  "Side Fixtures - Single Short Flash"               , new String[] {"PAR-SetLight-Side", "PAR-Flash"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 41,  "Side Fixtures - Slow Crescendo"                   , new String[] {"PAR-SetLight-Side", "PAR-Crescendo"             } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 42,  "Side Fixtures - Medium Crescendo"                 , new String[] {"PAR-SetLight-Side", "PAR-Crescendo"             } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 43,  "Side Fixtures - Fast Crescendo"                   , new String[] {"PAR-SetLight-Side", "PAR-Crescendo"             } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 44,  "Side Fixtures - Slow Strobe"                      , new String[] {"PAR-SetLight-Side", "PAR-Strobe"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 45,  "Side Fixtures - Medium Strobe"                    , new String[] {"PAR-SetLight-Side", "PAR-Strobe"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 46,  "Side Fixtures - Fast Strobe"                      , new String[] {"PAR-SetLight-Side", "PAR-Strobe"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 47,  "Side Fixtures - Slow Sine Wave - Clockwise"       , new String[] {"PAR-SetLight-Side", "PAR-Sine"                  } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 48,  "Side Fixtures - Fast Sine Wave - Clockwise"       , new String[] {"PAR-SetLight-Side", "PAR-Sine"                  } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 49,  "Side Fixtures - Slow Sine Wave - Anticlockwise"   , new String[] {"PAR-SetLight-Side", "PAR-Sine"                  } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 50,  "Side Fixtures - Fast Sine Wave - Anticlockwise"   , new String[] {"PAR-SetLight-Side", "PAR-Sine"                  } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 51,  "Side Fixtures - Random Glitch"                    , new String[] {"PAR-SetLight-Side", "PAR-Glitch"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 52,  "Left Fixtures - Continuous Light - Max"           , new String[] {"PAR-SetLight-Left", "PAR-Still"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 53,  "Left Fixtures - Continuous Light - Strong"        , new String[] {"PAR-SetLight-Left", "PAR-Still"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 54,  "Left Fixtures - Continuous Light - Medium"        , new String[] {"PAR-SetLight-Left", "PAR-Still"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 55,  "Left Fixtures - Continuous Light - Weak"          , new String[] {"PAR-SetLight-Left", "PAR-Still"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 56,  "Left Fixtures - Single Long Flash"                , new String[] {"PAR-SetLight-Left", "PAR-Flash"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 57,  "Left Fixtures - Single Short Flash"               , new String[] {"PAR-SetLight-Left", "PAR-Flash"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 58,  "Left Fixtures - Slow Crescendo"                   , new String[] {"PAR-SetLight-Left", "PAR-Crescendo"             } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 59,  "Left Fixtures - Medium Crescendo"                 , new String[] {"PAR-SetLight-Left", "PAR-Crescendo"             } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 60,  "Left Fixtures - Fast Crescendo"                   , new String[] {"PAR-SetLight-Left", "PAR-Crescendo"             } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 61,  "Left Fixtures - Slow Strobe"                      , new String[] {"PAR-SetLight-Left", "PAR-Strobe"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 62,  "Left Fixtures - Medium Strobe"                    , new String[] {"PAR-SetLight-Left", "PAR-Strobe"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 63,  "Left Fixtures - Fast Strobe"                      , new String[] {"PAR-SetLight-Left", "PAR-Strobe"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 64,  "Left Fixtures - Slow Sine Wave - Clockwise"       , new String[] {"PAR-SetLight-Left", "PAR-Sine"                  } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 65,  "Left Fixtures - Fast Sine Wave - Clockwise"       , new String[] {"PAR-SetLight-Left", "PAR-Sine"                  } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 66,  "Left Fixtures - Slow Sine Wave - Anticlockwise"   , new String[] {"PAR-SetLight-Left", "PAR-Sine"                  } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 67,  "Left Fixtures - Fast Sine Wave - Anticlockwise"   , new String[] {"PAR-SetLight-Left", "PAR-Sine"                  } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 68,  "Left Fixtures - Random Glitch"                    , new String[] {"PAR-SetLight-Left", "PAR-Glitch"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 69,  "Right Fixtures - Continuous Light - Max"          , new String[] {"PAR-SetLight-Right", "PAR-Still"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 70,  "Right Fixtures - Continuous Light - Strong"       , new String[] {"PAR-SetLight-Right", "PAR-Still"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 71,  "Right Fixtures - Continuous Light - Medium"       , new String[] {"PAR-SetLight-Right", "PAR-Still"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 72,  "Right Fixtures - Continuous Light - Weak"         , new String[] {"PAR-SetLight-Right", "PAR-Still"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 73,  "Right Fixtures - Single Long Flash"               , new String[] {"PAR-SetLight-Right", "PAR-Flash"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 74,  "Right Fixtures - Single Short Flash"              , new String[] {"PAR-SetLight-Right", "PAR-Flash"                } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 75,  "Right Fixtures - Slow Crescendo"                  , new String[] {"PAR-SetLight-Right", "PAR-Crescendo"            } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 76,  "Right Fixtures - Medium Crescendo"                , new String[] {"PAR-SetLight-Right", "PAR-Crescendo"            } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 77,  "Right Fixtures - Fast Crescendo"                  , new String[] {"PAR-SetLight-Right", "PAR-Crescendo"            } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 78,  "Right Fixtures - Slow Strobe"                     , new String[] {"PAR-SetLight-Right", "PAR-Strobe"               } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 79,  "Right Fixtures - Medium Strobe"                   , new String[] {"PAR-SetLight-Right", "PAR-Strobe"               } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 80,  "Right Fixtures - Fast Strobe"                     , new String[] {"PAR-SetLight-Right", "PAR-Strobe"               } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 81,  "Right Fixtures - Slow Sine Wave - Clockwise"      , new String[] {"PAR-SetLight-Right", "PAR-Sine"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 82,  "Right Fixtures - Fast Sine Wave - Clockwise"      , new String[] {"PAR-SetLight-Right", "PAR-Sine"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 83,  "Right Fixtures - Slow Sine Wave - Anticlockwise"  , new String[] {"PAR-SetLight-Right", "PAR-Sine"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 84,  "Right Fixtures - Fast Sine Wave - Anticlockwise"  , new String[] {"PAR-SetLight-Right", "PAR-Sine"                 } );
+  DMXPar_LightStyleAttributes = registerAttribute(DMXPar_LightStyleAttributes, 85,  "Right Fixtures - Random Glitch"                   , new String[] {"PAR-SetLight-Right", "PAR-Glitch"               } );
 
   DMXPar_AnimationAttributes = registerAttribute(DMXPar_AnimationAttributes, 1,   "All Fixtures - Blackout"                            , new String[] {"PAR-Anim-All", "PAR-Anim-Still"                 } );
   DMXPar_AnimationAttributes = registerAttribute(DMXPar_AnimationAttributes, 2,   "All Fixtures - Perform Current Light Style"         , new String[] {"PAR-Anim-All", "PAR-Anim-Still"                 } );
@@ -28774,9 +28779,9 @@ public void empty_CustomDevices() {
   CustomDeviceList_RackLights = new ArrayList<CustomDevice_RackLight>();
 }
 
-///////////////////////////////
-//   DMX generic functions   //
-///////////////////////////////
+//////////////////////////////////////////////////////
+//   DMX generic functions and fixture declaration  //
+//////////////////////////////////////////////////////
 
 // Important note:
 // Due to the project's development history, the strobes are dealt with in a particular way
@@ -28795,6 +28800,8 @@ ArrayList<DMX_MovingHead>  DMXList_MovingHeads;
 ArrayList<DMX_PAR>         DMXList_Pars;
 
 //Create sublists of the registered devices
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads_top;
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads_bottom;
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads_side;
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads_center;
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads_right;
@@ -28931,6 +28938,8 @@ public void dmxInit_buildSubObjects() {
 
 public void dmx_buildFixtureSublists_movingHead() {
   //Initialize the sublists
+  DMXList_MovingHeads_top        = new ArrayList<DMX_MovingHead>();
+  DMXList_MovingHeads_bottom     = new ArrayList<DMX_MovingHead>();
   DMXList_MovingHeads_side       = new ArrayList<DMX_MovingHead>();
   DMXList_MovingHeads_center     = new ArrayList<DMX_MovingHead>();
   DMXList_MovingHeads_right      = new ArrayList<DMX_MovingHead>();
@@ -28938,10 +28947,21 @@ public void dmx_buildFixtureSublists_movingHead() {
 
   int nbMovingHeads = DMXList_MovingHeads.size();
   
+  // First, discriminate between the fixtures on the floor or not
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    if (movingHead.floorFixture) {
+      DMXList_MovingHeads_bottom.add(movingHead);
+    }
+    else {
+      DMXList_MovingHeads_top.add(movingHead); 
+    }
+  }
+
+  // Then, parse all the moving heads on the floor
   // Consider that about one third of the fixtures go in the "center" group
   float centerRatio = 1.0f/3.0f;
 
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
     if (nbMovingHeads%2 == 1) {
       // Left / Right fixtures
       if (movingHead.getDeviceID() < (nbMovingHeads-1)/2) {
@@ -28989,8 +29009,8 @@ public void dmx_buildFixtureSublists_movingHead() {
     DMXList_MovingHeads_center = DMXList_MovingHeads_side;
   }
   if (DMXList_MovingHeads.size() == 1) {
-    DMXList_MovingHeads_left  = DMXList_MovingHeads;
-    DMXList_MovingHeads_right = DMXList_MovingHeads;
+    DMXList_MovingHeads_left  = DMXList_MovingHeads_bottom;
+    DMXList_MovingHeads_right = DMXList_MovingHeads_bottom;
   }
 
 }
@@ -30056,79 +30076,84 @@ public void setupDMXAnimation_par_setLightStyle() {
     case 5:  dmxAnim_par_setLightStyle_allDev_singleLongFlash();                     break;
     case 6:  dmxAnim_par_setLightStyle_allDev_singleShortFlash();                    break;
     case 7:  dmxAnim_par_setLightStyle_allDev_slowCrescendo();                       break;
-    case 8:  dmxAnim_par_setLightStyle_allDev_fastCrescendo();                       break;
-    case 9:  dmxAnim_par_setLightStyle_allDev_slowStrobe();                          break;
-    case 10: dmxAnim_par_setLightStyle_allDev_mediumStrobe();                        break;
-    case 11: dmxAnim_par_setLightStyle_allDev_fastStrobe();                          break;
-    case 12: dmxAnim_par_setLightStyle_allDev_slowSineWaveClockwise();               break;
-    case 13: dmxAnim_par_setLightStyle_allDev_fastSineWaveClockwise();               break;
-    case 14: dmxAnim_par_setLightStyle_allDev_slowSineWaveAnticlockwise();           break;
-    case 15: dmxAnim_par_setLightStyle_allDev_fastSineWaveAnticlockwise();           break;
-    case 16: dmxAnim_par_setLightStyle_allDev_randomGlitch();                        break;
-    case 17: dmxAnim_par_setLightStyle_centerDev_continuousLightMax();               break;
-    case 18: dmxAnim_par_setLightStyle_centerDev_continuousLightStrong();            break;
-    case 19: dmxAnim_par_setLightStyle_centerDev_continuousLightMedium();            break;
-    case 20: dmxAnim_par_setLightStyle_centerDev_continuousLightWeak();              break;
-    case 21: dmxAnim_par_setLightStyle_centerDev_singleLongFlash();                  break;
-    case 22: dmxAnim_par_setLightStyle_centerDev_singleShortFlash();                 break;
-    case 23: dmxAnim_par_setLightStyle_centerDev_slowCrescendo();                    break;
-    case 24: dmxAnim_par_setLightStyle_centerDev_fastCrescendo();                    break;
-    case 25: dmxAnim_par_setLightStyle_centerDev_slowStrobe();                       break;
-    case 26: dmxAnim_par_setLightStyle_centerDev_mediumStrobe();                     break;
-    case 27: dmxAnim_par_setLightStyle_centerDev_fastStrobe();                       break;
-    case 28: dmxAnim_par_setLightStyle_centerDev_slowSineWaveClockwise();            break;
-    case 29: dmxAnim_par_setLightStyle_centerDev_fastSineWaveClockwise();            break;
-    case 30: dmxAnim_par_setLightStyle_centerDev_slowSineWaveAnticlockwise();        break;
-    case 31: dmxAnim_par_setLightStyle_centerDev_fastSineWaveAnticlockwise();        break;
-    case 32: dmxAnim_par_setLightStyle_centerDev_randomGlitch();                     break;
-    case 33: dmxAnim_par_setLightStyle_sideDev_continuousLightMax();                 break;
-    case 34: dmxAnim_par_setLightStyle_sideDev_continuousLightStrong();              break;
-    case 35: dmxAnim_par_setLightStyle_sideDev_continuousLightMedium();              break;
-    case 36: dmxAnim_par_setLightStyle_sideDev_continuousLightWeak();                break;
-    case 37: dmxAnim_par_setLightStyle_sideDev_singleLongFlash();                    break;
-    case 38: dmxAnim_par_setLightStyle_sideDev_singleShortFlash();                   break;
-    case 39: dmxAnim_par_setLightStyle_sideDev_slowCrescendo();                      break;
-    case 40: dmxAnim_par_setLightStyle_sideDev_fastCrescendo();                      break;
-    case 41: dmxAnim_par_setLightStyle_sideDev_slowStrobe();                         break;
-    case 42: dmxAnim_par_setLightStyle_sideDev_mediumStrobe();                       break;
-    case 43: dmxAnim_par_setLightStyle_sideDev_fastStrobe();                         break;
-    case 44: dmxAnim_par_setLightStyle_sideDev_slowSineWaveClockwise();              break;
-    case 45: dmxAnim_par_setLightStyle_sideDev_fastSineWaveClockwise();              break;
-    case 46: dmxAnim_par_setLightStyle_sideDev_slowSineWaveAnticlockwise();          break;
-    case 47: dmxAnim_par_setLightStyle_sideDev_fastSineWaveAnticlockwise();          break;
-    case 48: dmxAnim_par_setLightStyle_sideDev_randomGlitch();                       break;
-    case 49: dmxAnim_par_setLightStyle_leftDev_continuousLightMax();                 break;
-    case 50: dmxAnim_par_setLightStyle_leftDev_continuousLightStrong();              break;
-    case 51: dmxAnim_par_setLightStyle_leftDev_continuousLightMedium();              break;
-    case 52: dmxAnim_par_setLightStyle_leftDev_continuousLightWeak();                break;
-    case 53: dmxAnim_par_setLightStyle_leftDev_singleLongFlash();                    break;
-    case 54: dmxAnim_par_setLightStyle_leftDev_singleShortFlash();                   break;
-    case 55: dmxAnim_par_setLightStyle_leftDev_slowCrescendo();                      break;
-    case 56: dmxAnim_par_setLightStyle_leftDev_fastCrescendo();                      break;
-    case 57: dmxAnim_par_setLightStyle_leftDev_slowStrobe();                         break;
-    case 58: dmxAnim_par_setLightStyle_leftDev_mediumStrobe();                       break;
-    case 59: dmxAnim_par_setLightStyle_leftDev_fastStrobe();                         break;
-    case 60: dmxAnim_par_setLightStyle_leftDev_slowSineWaveClockwise();              break;
-    case 61: dmxAnim_par_setLightStyle_leftDev_fastSineWaveClockwise();              break;
-    case 62: dmxAnim_par_setLightStyle_leftDev_slowSineWaveAnticlockwise();          break;
-    case 63: dmxAnim_par_setLightStyle_leftDev_fastSineWaveAnticlockwise();          break;
-    case 64: dmxAnim_par_setLightStyle_leftDev_randomGlitch();                       break;
-    case 65: dmxAnim_par_setLightStyle_rightDev_continuousLightMax();                break;
-    case 66: dmxAnim_par_setLightStyle_rightDev_continuousLightStrong();             break;
-    case 67: dmxAnim_par_setLightStyle_rightDev_continuousLightMedium();             break;
-    case 68: dmxAnim_par_setLightStyle_rightDev_continuousLightWeak();               break;
-    case 69: dmxAnim_par_setLightStyle_rightDev_singleLongFlash();                   break;
-    case 70: dmxAnim_par_setLightStyle_rightDev_singleShortFlash();                  break;
-    case 71: dmxAnim_par_setLightStyle_rightDev_slowCrescendo();                     break;
-    case 72: dmxAnim_par_setLightStyle_rightDev_fastCrescendo();                     break;
-    case 73: dmxAnim_par_setLightStyle_rightDev_slowStrobe();                        break;
-    case 74: dmxAnim_par_setLightStyle_rightDev_mediumStrobe();                      break;
-    case 75: dmxAnim_par_setLightStyle_rightDev_fastStrobe();                        break;
-    case 76: dmxAnim_par_setLightStyle_rightDev_slowSineWaveClockwise();             break;
-    case 77: dmxAnim_par_setLightStyle_rightDev_fastSineWaveClockwise();             break;
-    case 78: dmxAnim_par_setLightStyle_rightDev_slowSineWaveAnticlockwise();         break;
-    case 79: dmxAnim_par_setLightStyle_rightDev_fastSineWaveAnticlockwise();         break;
-    case 80: dmxAnim_par_setLightStyle_rightDev_randomGlitch();                      break;
+    case 8:  dmxAnim_par_setLightStyle_allDev_mediumCrescendo();                     break;
+    case 9:  dmxAnim_par_setLightStyle_allDev_fastCrescendo();                       break;
+    case 10: dmxAnim_par_setLightStyle_allDev_slowStrobe();                          break;
+    case 11: dmxAnim_par_setLightStyle_allDev_mediumStrobe();                        break;
+    case 12: dmxAnim_par_setLightStyle_allDev_fastStrobe();                          break;
+    case 13: dmxAnim_par_setLightStyle_allDev_slowSineWaveClockwise();               break;
+    case 14: dmxAnim_par_setLightStyle_allDev_fastSineWaveClockwise();               break;
+    case 15: dmxAnim_par_setLightStyle_allDev_slowSineWaveAnticlockwise();           break;
+    case 16: dmxAnim_par_setLightStyle_allDev_fastSineWaveAnticlockwise();           break;
+    case 17: dmxAnim_par_setLightStyle_allDev_randomGlitch();                        break;
+    case 18: dmxAnim_par_setLightStyle_centerDev_continuousLightMax();               break;
+    case 19: dmxAnim_par_setLightStyle_centerDev_continuousLightStrong();            break;
+    case 20: dmxAnim_par_setLightStyle_centerDev_continuousLightMedium();            break;
+    case 21: dmxAnim_par_setLightStyle_centerDev_continuousLightWeak();              break;
+    case 22: dmxAnim_par_setLightStyle_centerDev_singleLongFlash();                  break;
+    case 23: dmxAnim_par_setLightStyle_centerDev_singleShortFlash();                 break;
+    case 24: dmxAnim_par_setLightStyle_centerDev_slowCrescendo();                    break;
+    case 25: dmxAnim_par_setLightStyle_centerDev_mediumCrescendo();                  break;
+    case 26: dmxAnim_par_setLightStyle_centerDev_fastCrescendo();                    break;
+    case 27: dmxAnim_par_setLightStyle_centerDev_slowStrobe();                       break;
+    case 28: dmxAnim_par_setLightStyle_centerDev_mediumStrobe();                     break;
+    case 29: dmxAnim_par_setLightStyle_centerDev_fastStrobe();                       break;
+    case 30: dmxAnim_par_setLightStyle_centerDev_slowSineWaveClockwise();            break;
+    case 31: dmxAnim_par_setLightStyle_centerDev_fastSineWaveClockwise();            break;
+    case 32: dmxAnim_par_setLightStyle_centerDev_slowSineWaveAnticlockwise();        break;
+    case 33: dmxAnim_par_setLightStyle_centerDev_fastSineWaveAnticlockwise();        break;
+    case 34: dmxAnim_par_setLightStyle_centerDev_randomGlitch();                     break;
+    case 35: dmxAnim_par_setLightStyle_sideDev_continuousLightMax();                 break;
+    case 36: dmxAnim_par_setLightStyle_sideDev_continuousLightStrong();              break;
+    case 37: dmxAnim_par_setLightStyle_sideDev_continuousLightMedium();              break;
+    case 38: dmxAnim_par_setLightStyle_sideDev_continuousLightWeak();                break;
+    case 39: dmxAnim_par_setLightStyle_sideDev_singleLongFlash();                    break;
+    case 40: dmxAnim_par_setLightStyle_sideDev_singleShortFlash();                   break;
+    case 41: dmxAnim_par_setLightStyle_sideDev_slowCrescendo();                      break;
+    case 42: dmxAnim_par_setLightStyle_sideDev_mediumCrescendo();                    break;
+    case 43: dmxAnim_par_setLightStyle_sideDev_fastCrescendo();                      break;
+    case 44: dmxAnim_par_setLightStyle_sideDev_slowStrobe();                         break;
+    case 45: dmxAnim_par_setLightStyle_sideDev_mediumStrobe();                       break;
+    case 46: dmxAnim_par_setLightStyle_sideDev_fastStrobe();                         break;
+    case 47: dmxAnim_par_setLightStyle_sideDev_slowSineWaveClockwise();              break;
+    case 48: dmxAnim_par_setLightStyle_sideDev_fastSineWaveClockwise();              break;
+    case 49: dmxAnim_par_setLightStyle_sideDev_slowSineWaveAnticlockwise();          break;
+    case 50: dmxAnim_par_setLightStyle_sideDev_fastSineWaveAnticlockwise();          break;
+    case 51: dmxAnim_par_setLightStyle_sideDev_randomGlitch();                       break;
+    case 52: dmxAnim_par_setLightStyle_leftDev_continuousLightMax();                 break;
+    case 53: dmxAnim_par_setLightStyle_leftDev_continuousLightStrong();              break;
+    case 54: dmxAnim_par_setLightStyle_leftDev_continuousLightMedium();              break;
+    case 55: dmxAnim_par_setLightStyle_leftDev_continuousLightWeak();                break;
+    case 56: dmxAnim_par_setLightStyle_leftDev_singleLongFlash();                    break;
+    case 57: dmxAnim_par_setLightStyle_leftDev_singleShortFlash();                   break;
+    case 58: dmxAnim_par_setLightStyle_leftDev_slowCrescendo();                      break;
+    case 59: dmxAnim_par_setLightStyle_leftDev_mediumCrescendo();                    break;
+    case 60: dmxAnim_par_setLightStyle_leftDev_fastCrescendo();                      break;
+    case 61: dmxAnim_par_setLightStyle_leftDev_slowStrobe();                         break;
+    case 62: dmxAnim_par_setLightStyle_leftDev_mediumStrobe();                       break;
+    case 63: dmxAnim_par_setLightStyle_leftDev_fastStrobe();                         break;
+    case 64: dmxAnim_par_setLightStyle_leftDev_slowSineWaveClockwise();              break;
+    case 65: dmxAnim_par_setLightStyle_leftDev_fastSineWaveClockwise();              break;
+    case 66: dmxAnim_par_setLightStyle_leftDev_slowSineWaveAnticlockwise();          break;
+    case 67: dmxAnim_par_setLightStyle_leftDev_fastSineWaveAnticlockwise();          break;
+    case 68: dmxAnim_par_setLightStyle_leftDev_randomGlitch();                       break;
+    case 69: dmxAnim_par_setLightStyle_rightDev_continuousLightMax();                break;
+    case 70: dmxAnim_par_setLightStyle_rightDev_continuousLightStrong();             break;
+    case 71: dmxAnim_par_setLightStyle_rightDev_continuousLightMedium();             break;
+    case 72: dmxAnim_par_setLightStyle_rightDev_continuousLightWeak();               break;
+    case 73: dmxAnim_par_setLightStyle_rightDev_singleLongFlash();                   break;
+    case 74: dmxAnim_par_setLightStyle_rightDev_singleShortFlash();                  break;
+    case 75: dmxAnim_par_setLightStyle_rightDev_slowCrescendo();                     break;
+    case 76: dmxAnim_par_setLightStyle_rightDev_mediumCrescendo();                   break;
+    case 77: dmxAnim_par_setLightStyle_rightDev_fastCrescendo();                     break;
+    case 78: dmxAnim_par_setLightStyle_rightDev_slowStrobe();                        break;
+    case 79: dmxAnim_par_setLightStyle_rightDev_mediumStrobe();                      break;
+    case 80: dmxAnim_par_setLightStyle_rightDev_fastStrobe();                        break;
+    case 81: dmxAnim_par_setLightStyle_rightDev_slowSineWaveClockwise();             break;
+    case 82: dmxAnim_par_setLightStyle_rightDev_fastSineWaveClockwise();             break;
+    case 83: dmxAnim_par_setLightStyle_rightDev_slowSineWaveAnticlockwise();         break;
+    case 84: dmxAnim_par_setLightStyle_rightDev_fastSineWaveAnticlockwise();         break;
+    case 85: dmxAnim_par_setLightStyle_rightDev_randomGlitch();                      break;
 
     default: break;
   }
@@ -30151,6 +30176,12 @@ public void playDMXAnimation_par() {
 
 public void setupDMXAnimation_par() {
   switch(dmxAnimationNumber_par_setAnimation) {
+    case 1:  dmxAnim_par_reinitLightStyleCpt_allDevices(); break;
+    case 2:  dmxAnim_par_reinitLightStyleCpt_allDevices(); break;
+    case 3:  dmxAnim_par_reinitLightStyleCpt_allDevices(); break;
+    case 4:  dmxAnim_par_reinitLightStyleCpt_allDevices(); break;
+    case 5:  dmxAnim_par_reinitLightStyleCpt_allDevices(); break;
+    case 6:  dmxAnim_par_reinitLightStyleCpt_allDevices(); break;
     default: break;
   }
 }
@@ -30319,6 +30350,7 @@ class DMX_MovingHead {
 
   Fixture movingHead;                                 // The fixture defining this object
   int deviceID;                                       // Device ID: defined at device instanciation, 0 for the fixtures located on house left, n for the fixtures on house right
+  boolean floorFixture;                               // Is the device on the floor -true-, or is it located high up -false- ?
   int dmxStartAddr;                                   // Address of the first channel
   int syncIdx                              = 0;       // Among the BPM-synced fixtures, define the index
 
@@ -30422,14 +30454,19 @@ class DMX_MovingHead {
   int[] simulator_colorRGB;
 
   DMX_MovingHead(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
-    this(name, deviceID, startAddr, false);
+    this(name, deviceID, startAddr, false, true);
+  }
+
+  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan) throws UndefinedFixtureException {
+    this(name, deviceID, startAddr, invertedPan, true);
   }
 
   // Fixtures are instanciated using their name: the constructor will then look up in the fixture library if such a device exists, and throw an exception if not
-  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan) throws UndefinedFixtureException {
+  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan, boolean floorFixture) throws UndefinedFixtureException {
     this.deviceID = deviceID;
     this.dmxStartAddr = startAddr;
     this.invertedPan = invertedPan;
+    this.floorFixture = floorFixture;
 
     // Init
     movingHead = getFixtureFromName(name);
@@ -34279,19 +34316,19 @@ public void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_s
 ///////////////////////////////////////////
 
 
-final String DMX_PAR_DIMMER_GLOBAL                           = "DIMMER";
-final String DMX_PAR_DIMMER_RED                              = "DIMMER_RED";
-final String DMX_PAR_DIMMER_GREEN                            = "DIMMER_GREEN";
-final String DMX_PAR_DIMMER_BLUE                             = "DIMMER_BLUE";
-final String DMX_PAR_DIMMER_WHITE                            = "DIMMER_WHITE";
-final String DMX_PAR_DIMMER_CYAN                             = "DIMMER_CYAN";
-final String DMX_PAR_DIMMER_MAGENTA                          = "DIMMER_MAGENTA";
-final String DMX_PAR_DIMMER_YELLOW                           = "DIMMER_YELLOW";
-final String DMX_PAR_STROBE                                  = "DIMMER_STROBE";
-final String DMX_PAR_INTENSITY_RED                           = "INTENSITY_RED";
-final String DMX_PAR_INTENSITY_GREEN                         = "INTENSITY_GREEN";
-final String DMX_PAR_INTENSITY_BLUE                          = "INTENSITY_BLUE";
-final String DMX_PAR_COLORWHEEL                              = "COLORWHEEL";
+final String DMX_PAR_DIMMER_GLOBAL                    = "DIMMER";
+final String DMX_PAR_DIMMER_RED                       = "DIMMER_RED";
+final String DMX_PAR_DIMMER_GREEN                     = "DIMMER_GREEN";
+final String DMX_PAR_DIMMER_BLUE                      = "DIMMER_BLUE";
+final String DMX_PAR_DIMMER_WHITE                     = "DIMMER_WHITE";
+final String DMX_PAR_DIMMER_CYAN                      = "DIMMER_CYAN";
+final String DMX_PAR_DIMMER_MAGENTA                   = "DIMMER_MAGENTA";
+final String DMX_PAR_DIMMER_YELLOW                    = "DIMMER_YELLOW";
+final String DMX_PAR_STROBE                           = "DIMMER_STROBE";
+final String DMX_PAR_INTENSITY_RED                    = "INTENSITY_RED";
+final String DMX_PAR_INTENSITY_GREEN                  = "INTENSITY_GREEN";
+final String DMX_PAR_INTENSITY_BLUE                   = "INTENSITY_BLUE";
+final String DMX_PAR_COLORWHEEL                       = "COLORWHEEL";
 
 final int    DMX_PAR_COLORMODE_UNDEFINED              = 0;
 final int    DMX_PAR_COLORMODE_WHEEL                  = 1;
@@ -34358,15 +34395,16 @@ final int    DMXANIM_PAR_CONTINUOUS_LIGHT_WEAK        = 4;
 final int    DMXANIM_PAR_SINGLE_LONG_FLASH            = 5;
 final int    DMXANIM_PAR_SINGLE_SHORT_FLASH           = 6;
 final int    DMXANIM_PAR_SLOW_CRESCENDO               = 7;
-final int    DMXANIM_PAR_FAST_CRESCENDO               = 8;
-final int    DMXANIM_PAR_SLOW_STROBE                  = 9;
-final int    DMXANIM_PAR_MEDIUM_STROBE                = 10;
-final int    DMXANIM_PAR_FAST_STROBE                  = 11;
-final int    DMXANIM_PAR_SLOW_SINE_WAVE_CLOCKWISE     = 12;
-final int    DMXANIM_PAR_FAST_SINE_WAVE_CLOCKWISE     = 13;
-final int    DMXANIM_PAR_SLOW_SINE_WAVE_ANTICLOCKWISE = 14;
-final int    DMXANIM_PAR_FAST_SINE_WAVE_ANTICLOCKWISE = 15;
-final int    DMXANIM_PAR_RANDOM_GLITCH                = 16;
+final int    DMXANIM_PAR_MEDIUM_CRESCENDO             = 8;
+final int    DMXANIM_PAR_FAST_CRESCENDO               = 9;
+final int    DMXANIM_PAR_SLOW_STROBE                  = 10;
+final int    DMXANIM_PAR_MEDIUM_STROBE                = 11;
+final int    DMXANIM_PAR_FAST_STROBE                  = 12;
+final int    DMXANIM_PAR_SLOW_SINE_WAVE_CLOCKWISE     = 13;
+final int    DMXANIM_PAR_FAST_SINE_WAVE_CLOCKWISE     = 14;
+final int    DMXANIM_PAR_SLOW_SINE_WAVE_ANTICLOCKWISE = 15;
+final int    DMXANIM_PAR_FAST_SINE_WAVE_ANTICLOCKWISE = 16;
+final int    DMXANIM_PAR_RANDOM_GLITCH                = 17;
 
 
 // // Constants used for the light rhythms
@@ -35135,6 +35173,7 @@ class DMX_PAR {
         case DMXANIM_PAR_SINGLE_LONG_FLASH            : performLight_singleLongFlash();             break;
         case DMXANIM_PAR_SINGLE_SHORT_FLASH           : performLight_singleShortFlash();            break;
         case DMXANIM_PAR_SLOW_CRESCENDO               : performLight_slowCrescendo();               break;
+        case DMXANIM_PAR_MEDIUM_CRESCENDO             : performLight_mediumCrescendo();             break;
         case DMXANIM_PAR_FAST_CRESCENDO               : performLight_fastCrescendo();               break;
         case DMXANIM_PAR_SLOW_STROBE                  : performLight_slowStrobe();                  break;
         case DMXANIM_PAR_MEDIUM_STROBE                : performLight_mediumStrobe();                break;
@@ -35184,17 +35223,27 @@ class DMX_PAR {
   }
 
   public void performLight_singleFlash(float factor) {
-    setDimmer(this.animCpt1);
+    setDimmer(max(0, 100 - 100*this.animCpt1));
     float stepSize = factor * 1 / (frameRate*60.0f/automaticSequencer.currentBPM);
     this.animCpt1 += stepSize;
   }
 
   public void performLight_slowCrescendo() {
+    performLight_crescendo(0.125f);
+  }
 
+  public void performLight_mediumCrescendo() {
+    performLight_crescendo(0.250f);
   }
 
   public void performLight_fastCrescendo() {
+    performLight_crescendo(1);
+  }
 
+  public void performLight_crescendo(float factor) {
+    setDimmer(min(100, 100*this.animCpt1));
+    float stepSize = factor * 1 / (frameRate*60.0f/automaticSequencer.currentBPM);
+    this.animCpt1 += stepSize;
   }
 
   public void performLight_slowStrobe() {
@@ -35218,30 +35267,36 @@ class DMX_PAR {
     }
   }
 
-  public void performLight_slowSineWaveClockwise() {
+  public void performLight_sineWave(float speed, boolean clockwise) {
+    float offset = this.deviceID * TWO_PI/PApplet.parseFloat(DMXList_Pars.size());
+    if (clockwise) {
+      this.setDimmer(100 *  (0.5f + 0.5f*sin(offset + animCpt1 * speed)));
+    }
+    else {
+      this.setDimmer(100 *  (0.5f + 0.5f*sin(offset - animCpt1 * speed)));
+    }
+    this.animCpt1 += 1;
+  }
 
+  public void performLight_slowSineWaveClockwise() {
+    performLight_sineWave(0.125f, true);
   }
 
   public void performLight_fastSineWaveClockwise() {
-
+    performLight_sineWave(0.250f, true);
   }
 
   public void performLight_slowSineWaveAnticlockwise() {
-
+    performLight_sineWave(0.125f, false);
   }
 
   public void performLight_fastSineWaveAnticlockwise() {
-
+    performLight_sineWave(0.250f, false);
   }
 
   public void performLight_randomGlitch() {
-
+    this.setDimmer(100 * noise(frameCount*0.1f));
   }
-
-
-
-
-
 
 
 //   void performLight_blackout() {
@@ -35367,6 +35422,12 @@ public void dmxAnim_par_setColor_leftDev(int colorCode) {
 public void dmxAnim_par_setColor_rightDev(int colorCode) {
   for (DMX_PAR par: DMXList_Pars_right) {
     par.setColor(colorCode);
+  }
+}
+
+public void dmxAnim_par_reinitLightStyleCpt_allDevices() {
+  for (DMX_PAR par: DMXList_Pars) {
+    par.reinitLightStyleCpt();
   }
 }
 
@@ -35696,6 +35757,9 @@ public void dmxAnim_par_setLightStyle_allDev_singleShortFlash() {
 public void dmxAnim_par_setLightStyle_allDev_slowCrescendo() {
   dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_SLOW_CRESCENDO);
 }
+public void dmxAnim_par_setLightStyle_allDev_mediumCrescendo() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_MEDIUM_CRESCENDO);
+}
 public void dmxAnim_par_setLightStyle_allDev_fastCrescendo() {
   dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_FAST_CRESCENDO);
 }
@@ -35746,6 +35810,9 @@ public void dmxAnim_par_setLightStyle_centerDev_singleShortFlash() {
 }
 public void dmxAnim_par_setLightStyle_centerDev_slowCrescendo() {
   dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_SLOW_CRESCENDO);
+}
+public void dmxAnim_par_setLightStyle_centerDev_mediumCrescendo() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_MEDIUM_CRESCENDO);
 }
 public void dmxAnim_par_setLightStyle_centerDev_fastCrescendo() {
   dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_FAST_CRESCENDO);
@@ -35798,6 +35865,9 @@ public void dmxAnim_par_setLightStyle_sideDev_singleShortFlash() {
 public void dmxAnim_par_setLightStyle_sideDev_slowCrescendo() {
   dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_SLOW_CRESCENDO);
 }
+public void dmxAnim_par_setLightStyle_sideDev_mediumCrescendo() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_MEDIUM_CRESCENDO);
+}
 public void dmxAnim_par_setLightStyle_sideDev_fastCrescendo() {
   dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_FAST_CRESCENDO);
 }
@@ -35849,6 +35919,9 @@ public void dmxAnim_par_setLightStyle_leftDev_singleShortFlash() {
 public void dmxAnim_par_setLightStyle_leftDev_slowCrescendo() {
   dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_SLOW_CRESCENDO);
 }
+public void dmxAnim_par_setLightStyle_leftDev_mediumCrescendo() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_MEDIUM_CRESCENDO);
+}
 public void dmxAnim_par_setLightStyle_leftDev_fastCrescendo() {
   dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_FAST_CRESCENDO);
 }
@@ -35899,6 +35972,9 @@ public void dmxAnim_par_setLightStyle_rightDev_singleShortFlash() {
 }
 public void dmxAnim_par_setLightStyle_rightDev_slowCrescendo() {
   dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_SLOW_CRESCENDO);
+}
+public void dmxAnim_par_setLightStyle_rightDev_mediumCrescendo() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_MEDIUM_CRESCENDO);
 }
 public void dmxAnim_par_setLightStyle_rightDev_fastCrescendo() {
   dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_FAST_CRESCENDO);
@@ -43725,7 +43801,6 @@ public void noteOff(int channel, int pitch, int velocity, long timestamp, String
       //AUTOMATIC_MODE = false;
       switch (pitch) {
         case PITCH_DMX_ANIMATION_STROBE:                        unloadDMXAnimation_strobe(); break;                         //A#7   - Unload an animation using DMX devices : noteOff releases DMX
-        case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             unloadDMXAnimation_par(); break;
 
         case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM:        break;
@@ -43733,6 +43808,10 @@ public void noteOff(int channel, int pitch, int velocity, long timestamp, String
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
+
+        case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 break;
+        case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           break;
+        case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             unloadDMXAnimation_par(); break;
 
         case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   unloadAnimation();break;                                    //C7    - Unload a temporary animation using the LED panels
         case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   unloadAnimation();break;                                    //C#7
@@ -43783,21 +43862,21 @@ public void noteOff(int channel, int pitch, int velocity, long timestamp, String
 
 public void unloadDMXAnimation_strobe() {
   //Note off for the DMX animation, kill the DMX animation by switching everything back to a blackout
-  dmxAutomaticControl = false;
+  //dmxAutomaticControl = false;
   dmxAnimationNumber_strobe = 1;
   dmxAnim_strobe_blackout();
 }
 
 public void unloadDMXAnimation_par() {
   //Note off for the DMX animation, kill the DMX animation by switching everything back to a blackout
-  dmxAutomaticControl = false;
+  //dmxAutomaticControl = false;
   dmxAnimationNumber_par_setAnimation = 1;
   //dmxAnim_par_blackout();
 }
 
 public void unloadDMXAnimation_movingHead() {
   //Note off for the DMX animation, kill the DMX animation by switching everything back to a blackout
-  dmxAutomaticControl = false;
+  //dmxAutomaticControl = false;
   dmxAnimationNumber_movingHead_setAnimation = 0;
   dmxAnim_movingHead_blackout();
 }
@@ -46185,7 +46264,6 @@ public void drawPars(int simulatorWidth, int positionY) {
       auxControlFrame.noStroke();
 
       //Internal color light
-      println("dev " + par.getDeviceID() + " - " + par.getSimulatorColor()[0] + " / " + par.getSimulatorColor()[1] + " / " + par.getSimulatorColor()[2] + " / " + par.getSimulatorDimmer());
       auxControlFrame.fill(par.getSimulatorColor()[0], par.getSimulatorColor()[1], par.getSimulatorColor()[2], par.getSimulatorDimmer()); 
       auxControlFrame.ellipse(0, 0, 10,10);
 

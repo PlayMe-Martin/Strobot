@@ -127,6 +127,7 @@ class DMX_MovingHead {
 
   Fixture movingHead;                                 // The fixture defining this object
   int deviceID;                                       // Device ID: defined at device instanciation, 0 for the fixtures located on house left, n for the fixtures on house right
+  boolean floorFixture;                               // Is the device on the floor -true-, or is it located high up -false- ?
   int dmxStartAddr;                                   // Address of the first channel
   int syncIdx                              = 0;       // Among the BPM-synced fixtures, define the index
 
@@ -230,14 +231,19 @@ class DMX_MovingHead {
   int[] simulator_colorRGB;
 
   DMX_MovingHead(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
-    this(name, deviceID, startAddr, false);
+    this(name, deviceID, startAddr, false, true);
+  }
+
+  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan) throws UndefinedFixtureException {
+    this(name, deviceID, startAddr, invertedPan, true);
   }
 
   // Fixtures are instanciated using their name: the constructor will then look up in the fixture library if such a device exists, and throw an exception if not
-  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan) throws UndefinedFixtureException {
+  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan, boolean floorFixture) throws UndefinedFixtureException {
     this.deviceID = deviceID;
     this.dmxStartAddr = startAddr;
     this.invertedPan = invertedPan;
+    this.floorFixture = floorFixture;
 
     // Init
     movingHead = getFixtureFromName(name);
