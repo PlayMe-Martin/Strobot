@@ -1,7 +1,7 @@
 
-///////////////////////////////
-//   DMX generic functions   //
-///////////////////////////////
+//////////////////////////////////////////////////////
+//   DMX generic functions and fixture declaration  //
+//////////////////////////////////////////////////////
 
 // Important note:
 // Due to the project's development history, the strobes are dealt with in a particular way
@@ -20,6 +20,8 @@ ArrayList<DMX_MovingHead>  DMXList_MovingHeads;
 ArrayList<DMX_PAR>         DMXList_Pars;
 
 //Create sublists of the registered devices
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads_top;
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads_bottom;
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads_side;
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads_center;
 ArrayList<DMX_MovingHead>  DMXList_MovingHeads_right;
@@ -156,6 +158,8 @@ void dmxInit_buildSubObjects() {
 
 void dmx_buildFixtureSublists_movingHead() {
   //Initialize the sublists
+  DMXList_MovingHeads_top        = new ArrayList<DMX_MovingHead>();
+  DMXList_MovingHeads_bottom     = new ArrayList<DMX_MovingHead>();
   DMXList_MovingHeads_side       = new ArrayList<DMX_MovingHead>();
   DMXList_MovingHeads_center     = new ArrayList<DMX_MovingHead>();
   DMXList_MovingHeads_right      = new ArrayList<DMX_MovingHead>();
@@ -163,10 +167,21 @@ void dmx_buildFixtureSublists_movingHead() {
 
   int nbMovingHeads = DMXList_MovingHeads.size();
   
+  // First, discriminate between the fixtures on the floor or not
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    if (movingHead.floorFixture) {
+      DMXList_MovingHeads_bottom.add(movingHead);
+    }
+    else {
+      DMXList_MovingHeads_top.add(movingHead); 
+    }
+  }
+
+  // Then, parse all the moving heads on the floor
   // Consider that about one third of the fixtures go in the "center" group
   float centerRatio = 1.0/3.0;
 
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
     if (nbMovingHeads%2 == 1) {
       // Left / Right fixtures
       if (movingHead.getDeviceID() < (nbMovingHeads-1)/2) {
@@ -214,8 +229,8 @@ void dmx_buildFixtureSublists_movingHead() {
     DMXList_MovingHeads_center = DMXList_MovingHeads_side;
   }
   if (DMXList_MovingHeads.size() == 1) {
-    DMXList_MovingHeads_left  = DMXList_MovingHeads;
-    DMXList_MovingHeads_right = DMXList_MovingHeads;
+    DMXList_MovingHeads_left  = DMXList_MovingHeads_bottom;
+    DMXList_MovingHeads_right = DMXList_MovingHeads_bottom;
   }
 
 }

@@ -3,19 +3,19 @@
 ///////////////////////////////////////////
 
 
-final String DMX_PAR_DIMMER_GLOBAL                           = "DIMMER";
-final String DMX_PAR_DIMMER_RED                              = "DIMMER_RED";
-final String DMX_PAR_DIMMER_GREEN                            = "DIMMER_GREEN";
-final String DMX_PAR_DIMMER_BLUE                             = "DIMMER_BLUE";
-final String DMX_PAR_DIMMER_WHITE                            = "DIMMER_WHITE";
-final String DMX_PAR_DIMMER_CYAN                             = "DIMMER_CYAN";
-final String DMX_PAR_DIMMER_MAGENTA                          = "DIMMER_MAGENTA";
-final String DMX_PAR_DIMMER_YELLOW                           = "DIMMER_YELLOW";
-final String DMX_PAR_STROBE                                  = "DIMMER_STROBE";
-final String DMX_PAR_INTENSITY_RED                           = "INTENSITY_RED";
-final String DMX_PAR_INTENSITY_GREEN                         = "INTENSITY_GREEN";
-final String DMX_PAR_INTENSITY_BLUE                          = "INTENSITY_BLUE";
-final String DMX_PAR_COLORWHEEL                              = "COLORWHEEL";
+final String DMX_PAR_DIMMER_GLOBAL                    = "DIMMER";
+final String DMX_PAR_DIMMER_RED                       = "DIMMER_RED";
+final String DMX_PAR_DIMMER_GREEN                     = "DIMMER_GREEN";
+final String DMX_PAR_DIMMER_BLUE                      = "DIMMER_BLUE";
+final String DMX_PAR_DIMMER_WHITE                     = "DIMMER_WHITE";
+final String DMX_PAR_DIMMER_CYAN                      = "DIMMER_CYAN";
+final String DMX_PAR_DIMMER_MAGENTA                   = "DIMMER_MAGENTA";
+final String DMX_PAR_DIMMER_YELLOW                    = "DIMMER_YELLOW";
+final String DMX_PAR_STROBE                           = "DIMMER_STROBE";
+final String DMX_PAR_INTENSITY_RED                    = "INTENSITY_RED";
+final String DMX_PAR_INTENSITY_GREEN                  = "INTENSITY_GREEN";
+final String DMX_PAR_INTENSITY_BLUE                   = "INTENSITY_BLUE";
+final String DMX_PAR_COLORWHEEL                       = "COLORWHEEL";
 
 final int    DMX_PAR_COLORMODE_UNDEFINED              = 0;
 final int    DMX_PAR_COLORMODE_WHEEL                  = 1;
@@ -82,15 +82,16 @@ final int    DMXANIM_PAR_CONTINUOUS_LIGHT_WEAK        = 4;
 final int    DMXANIM_PAR_SINGLE_LONG_FLASH            = 5;
 final int    DMXANIM_PAR_SINGLE_SHORT_FLASH           = 6;
 final int    DMXANIM_PAR_SLOW_CRESCENDO               = 7;
-final int    DMXANIM_PAR_FAST_CRESCENDO               = 8;
-final int    DMXANIM_PAR_SLOW_STROBE                  = 9;
-final int    DMXANIM_PAR_MEDIUM_STROBE                = 10;
-final int    DMXANIM_PAR_FAST_STROBE                  = 11;
-final int    DMXANIM_PAR_SLOW_SINE_WAVE_CLOCKWISE     = 12;
-final int    DMXANIM_PAR_FAST_SINE_WAVE_CLOCKWISE     = 13;
-final int    DMXANIM_PAR_SLOW_SINE_WAVE_ANTICLOCKWISE = 14;
-final int    DMXANIM_PAR_FAST_SINE_WAVE_ANTICLOCKWISE = 15;
-final int    DMXANIM_PAR_RANDOM_GLITCH                = 16;
+final int    DMXANIM_PAR_MEDIUM_CRESCENDO             = 8;
+final int    DMXANIM_PAR_FAST_CRESCENDO               = 9;
+final int    DMXANIM_PAR_SLOW_STROBE                  = 10;
+final int    DMXANIM_PAR_MEDIUM_STROBE                = 11;
+final int    DMXANIM_PAR_FAST_STROBE                  = 12;
+final int    DMXANIM_PAR_SLOW_SINE_WAVE_CLOCKWISE     = 13;
+final int    DMXANIM_PAR_FAST_SINE_WAVE_CLOCKWISE     = 14;
+final int    DMXANIM_PAR_SLOW_SINE_WAVE_ANTICLOCKWISE = 15;
+final int    DMXANIM_PAR_FAST_SINE_WAVE_ANTICLOCKWISE = 16;
+final int    DMXANIM_PAR_RANDOM_GLITCH                = 17;
 
 
 // // Constants used for the light rhythms
@@ -859,6 +860,7 @@ class DMX_PAR {
         case DMXANIM_PAR_SINGLE_LONG_FLASH            : performLight_singleLongFlash();             break;
         case DMXANIM_PAR_SINGLE_SHORT_FLASH           : performLight_singleShortFlash();            break;
         case DMXANIM_PAR_SLOW_CRESCENDO               : performLight_slowCrescendo();               break;
+        case DMXANIM_PAR_MEDIUM_CRESCENDO             : performLight_mediumCrescendo();             break;
         case DMXANIM_PAR_FAST_CRESCENDO               : performLight_fastCrescendo();               break;
         case DMXANIM_PAR_SLOW_STROBE                  : performLight_slowStrobe();                  break;
         case DMXANIM_PAR_MEDIUM_STROBE                : performLight_mediumStrobe();                break;
@@ -908,17 +910,27 @@ class DMX_PAR {
   }
 
   void performLight_singleFlash(float factor) {
-    setDimmer(this.animCpt1);
+    setDimmer(max(0, 100 - 100*this.animCpt1));
     float stepSize = factor * 1 / (frameRate*60.0/automaticSequencer.currentBPM);
     this.animCpt1 += stepSize;
   }
 
   void performLight_slowCrescendo() {
+    performLight_crescendo(0.125);
+  }
 
+  void performLight_mediumCrescendo() {
+    performLight_crescendo(0.250);
   }
 
   void performLight_fastCrescendo() {
+    performLight_crescendo(1);
+  }
 
+  void performLight_crescendo(float factor) {
+    setDimmer(min(100, 100*this.animCpt1));
+    float stepSize = factor * 1 / (frameRate*60.0/automaticSequencer.currentBPM);
+    this.animCpt1 += stepSize;
   }
 
   void performLight_slowStrobe() {
@@ -942,30 +954,36 @@ class DMX_PAR {
     }
   }
 
-  void performLight_slowSineWaveClockwise() {
+  void performLight_sineWave(float speed, boolean clockwise) {
+    float offset = this.deviceID * TWO_PI/float(DMXList_Pars.size());
+    if (clockwise) {
+      this.setDimmer(100 *  (0.5 + 0.5*sin(offset + animCpt1 * speed)));
+    }
+    else {
+      this.setDimmer(100 *  (0.5 + 0.5*sin(offset - animCpt1 * speed)));
+    }
+    this.animCpt1 += 1;
+  }
 
+  void performLight_slowSineWaveClockwise() {
+    performLight_sineWave(0.125, true);
   }
 
   void performLight_fastSineWaveClockwise() {
-
+    performLight_sineWave(0.250, true);
   }
 
   void performLight_slowSineWaveAnticlockwise() {
-
+    performLight_sineWave(0.125, false);
   }
 
   void performLight_fastSineWaveAnticlockwise() {
-
+    performLight_sineWave(0.250, false);
   }
 
   void performLight_randomGlitch() {
-
+    this.setDimmer(100 * noise(frameCount*0.1));
   }
-
-
-
-
-
 
 
 //   void performLight_blackout() {
@@ -1091,6 +1109,12 @@ void dmxAnim_par_setColor_leftDev(int colorCode) {
 void dmxAnim_par_setColor_rightDev(int colorCode) {
   for (DMX_PAR par: DMXList_Pars_right) {
     par.setColor(colorCode);
+  }
+}
+
+void dmxAnim_par_reinitLightStyleCpt_allDevices() {
+  for (DMX_PAR par: DMXList_Pars) {
+    par.reinitLightStyleCpt();
   }
 }
 
@@ -1420,6 +1444,9 @@ void dmxAnim_par_setLightStyle_allDev_singleShortFlash() {
 void dmxAnim_par_setLightStyle_allDev_slowCrescendo() {
   dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_SLOW_CRESCENDO);
 }
+void dmxAnim_par_setLightStyle_allDev_mediumCrescendo() {
+  dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_MEDIUM_CRESCENDO);
+}
 void dmxAnim_par_setLightStyle_allDev_fastCrescendo() {
   dmxAnim_par_setLightStyle_allDev(DMXANIM_PAR_FAST_CRESCENDO);
 }
@@ -1470,6 +1497,9 @@ void dmxAnim_par_setLightStyle_centerDev_singleShortFlash() {
 }
 void dmxAnim_par_setLightStyle_centerDev_slowCrescendo() {
   dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_SLOW_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_centerDev_mediumCrescendo() {
+  dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_MEDIUM_CRESCENDO);
 }
 void dmxAnim_par_setLightStyle_centerDev_fastCrescendo() {
   dmxAnim_par_setLightStyle_centerDev(DMXANIM_PAR_FAST_CRESCENDO);
@@ -1522,6 +1552,9 @@ void dmxAnim_par_setLightStyle_sideDev_singleShortFlash() {
 void dmxAnim_par_setLightStyle_sideDev_slowCrescendo() {
   dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_SLOW_CRESCENDO);
 }
+void dmxAnim_par_setLightStyle_sideDev_mediumCrescendo() {
+  dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_MEDIUM_CRESCENDO);
+}
 void dmxAnim_par_setLightStyle_sideDev_fastCrescendo() {
   dmxAnim_par_setLightStyle_sideDev(DMXANIM_PAR_FAST_CRESCENDO);
 }
@@ -1573,6 +1606,9 @@ void dmxAnim_par_setLightStyle_leftDev_singleShortFlash() {
 void dmxAnim_par_setLightStyle_leftDev_slowCrescendo() {
   dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_SLOW_CRESCENDO);
 }
+void dmxAnim_par_setLightStyle_leftDev_mediumCrescendo() {
+  dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_MEDIUM_CRESCENDO);
+}
 void dmxAnim_par_setLightStyle_leftDev_fastCrescendo() {
   dmxAnim_par_setLightStyle_leftDev(DMXANIM_PAR_FAST_CRESCENDO);
 }
@@ -1623,6 +1659,9 @@ void dmxAnim_par_setLightStyle_rightDev_singleShortFlash() {
 }
 void dmxAnim_par_setLightStyle_rightDev_slowCrescendo() {
   dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_SLOW_CRESCENDO);
+}
+void dmxAnim_par_setLightStyle_rightDev_mediumCrescendo() {
+  dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_MEDIUM_CRESCENDO);
 }
 void dmxAnim_par_setLightStyle_rightDev_fastCrescendo() {
   dmxAnim_par_setLightStyle_rightDev(DMXANIM_PAR_FAST_CRESCENDO);

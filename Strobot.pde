@@ -510,12 +510,12 @@ void draw()
   {
 
     // for (Tpm2 outputDevice: outputDevices) {
-      // try {
-      //   outputDevices[0].readDebugData();
-      // }
-      // catch (Exception e) {
-      //   println("Exception while trying to read - " + e);
-      // }
+    //   try {
+    //     outputDevices[0].readDebugData();
+    //   }
+    //   catch (Exception e) {
+    //     println("Exception while trying to read - " + e);
+    //   }
       
     // }
 
