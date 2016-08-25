@@ -854,10 +854,16 @@ String getStringFromDMXAnimationNumber_movingHead_Animation(int animNbr) {
   String temp = "Undefined";
   if (animNbr <= 127) {                                                                   
     temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1) + "  |  " + str(animNbr);
-  }                                                                                              
+  }
   else if (animNbr <= 254) {
     temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2) + "  |  " + str(animNbr - 127);
-  }                                                                                              
+  }
+  else if (animNbr <= 381) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3) + "  |  " + str(animNbr - 381);
+  }
+  else if (animNbr <= 508) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_4) + "  |  " + str(animNbr - 508);
+  }
 
   return temp;
 }

@@ -38,8 +38,8 @@ int initFlasher_pixelSize = 4;
 
 //Va et vient parameters
 float va_et_vient_progress = 0;
-float va_et_vient_speed_horizontal = 8;
-float va_et_vient_speed_vertical = 4;
+float va_et_vient_speed_horizontal = 16;
+float va_et_vient_speed_vertical = 8;
 
 //Spiraluality parameters
 float spiraluality_i;
@@ -555,7 +555,7 @@ float inwardsspiral_radius = 50+(NUMBER_OF_PANELS-3)*15;
 
 //ExplodingCircle parameters
 int explodingcircle_counter = 0;
-int explodingcircle_speed = 8 + 2*(NUMBER_OF_PANELS-3);
+int explodingcircle_speed = 10 + 2*(NUMBER_OF_PANELS-3);
 
 //Rotozoom parameters
 int rotozoom_w=256,rotozoom_a,rotozoom_b,rotozoom_c,rotozoom_d;
@@ -732,7 +732,7 @@ float butterfly_t=0,butterfly_s,butterfly_p,butterfly_k,butterfly_l;
 float butterfly_x,butterfly_y,butterfly_x2,butterfly_y2,butterfly_x3,butterfly_y3,butterfly_x4,butterfly_y4;
 float butterfly_a1,butterfly_b1,butterfly_a2,butterfly_b2,butterfly_a3,butterfly_b3,butterfly_a4,butterfly_b4;
 float butterfly_formFactor = 0.15;
-float butterfly_speedFactor = 0.02;
+float butterfly_speedFactor = 0.03;
 float butterfly_scale = 0.3;
 
 //CirclePusher
@@ -1259,7 +1259,7 @@ boolean energytriangles_init = false;
 PGraphics reverseTriangles_red;
 PGraphics reverseTriangles_green;
 float reverseTriangles_sizeInit = 0.4;
-float reverseTriangles_speed = 1.15;
+float reverseTriangles_speed = 1.30;
 float reverseTriangles_size;
 
 //TrigoShapes parameters
@@ -1450,7 +1450,7 @@ int spiderweb_fadespeed   = 8;
 ArrayList<WoubLine> woublines_list;
 boolean woublines_init  = false;
 boolean woublines_audio = false;
-float woublines_speed   = 2;
+float woublines_speed   = 4;
 
 // Signal Waveform
 final int signalWaveForm_offsetY = (PANEL_RESOLUTION_Y * DISPLAY_SCALING_FACTOR)/2 - DISPLAY_SCALING_FACTOR/2;
@@ -1465,10 +1465,10 @@ int tvpoweroff_speed = 3;
 
 //White Spread
 int whitespread_progress = 0;
-int whitespread_speed = 4;
+int whitespread_speed = 8;
 
 //ScannerLine
 float scannerLine_progress = 0;
-float scannerLine_SlowSpeed = 1;
-float scannerLine_FastSpeed = 3;
-float scannerLine_SpeedVar = 0.0007;
+float scannerLine_SlowSpeed = 2;
+float scannerLine_FastSpeed = 6;
+float scannerLine_SpeedVar = 0.0014;

@@ -152,6 +152,7 @@ public class Tpm2Serial {
         if (portName != "") {
                 //open specific port
                 serialPortName = portName;
+                println("Is this alright ? " + portName);
                 port = openPort(portName, baud);
         } else {
                 //the port was not defined, try to find it by guessing

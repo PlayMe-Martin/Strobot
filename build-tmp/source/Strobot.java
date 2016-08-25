@@ -30,6 +30,7 @@ import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Sequence; 
 import javax.sound.midi.ShortMessage; 
 import javax.sound.midi.Track; 
+import java.util.Hashtable; 
 import java.awt.Graphics; 
 import java.awt.Graphics2D; 
 import java.awt.RenderingHints; 
@@ -146,52 +147,14 @@ boolean output_PHP = false;
 boolean debug_without_dmx = false;
 boolean debug_without_custom_devices = false;
 
-String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
-String CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/tty.usbserial-A961L7NJ";
 
-//////////////////////////////////////////////////////
-//Define the initial config of the LED matrix here !//
-//////////////////////////////////////////////////////
 
-final static int PANEL_RESOLUTION_X = 8;        //Resolution for each individual panel - width
-final static int PANEL_RESOLUTION_Y = 16;       //Resolution for each individual panel - height 
-final static String LED_COLOR_FORMAT = "RGB";   //LED color arrangement
-int NUMBER_OF_PANELS = 5;                       //Number of panels - TBIL : automatic detection of the number of panels connected, either 3 or 5
-
-//Define the serial ports for the microcontrollers
-//String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
-//All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
-String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
-String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem479061", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem707701", "/dev/tty.usbmodem814421"}; // 707701 to add
-String[] devicesToParse;
-
-//Define the Gamma value to be used for the panels - recommended for WS2801 modules : gamma_25
-final String panelGamma = "gamma_25";
-
-//Mapping for an individual LED Panel - if the LEDs are cabled the following way, follow the example to create the mapping
-//    8 7 6
-//    3 4 5     ->    {6,7,8,3,4,5,0,1,2}
-//    2 1 0
-final int[] MANUAL_MAPPING = {127, 126, 125, 124, 123, 122, 121, 120,
-                              112, 113, 114, 115, 116, 117, 118, 119,
-                              111, 110, 109, 108, 107, 106, 105, 104,
-                               96,  97,  98,  99, 100, 101, 102, 103,
-                               95,  94,  93,  92,  91,  90,  89,  88,
-                               80,  81,  82,  83,  84,  85,  86,  87,
-                               79,  78,  77,  76,  75,  74,  73,  72,
-                               64,  65,  66,  67,  68,  69,  70,  71,
-                               63,  62,  61,  60,  59,  58,  57,  56,
-                               48,  49,  50,  51,  52,  53,  54,  55,
-                               47,  46,  45,  44,  43,  42,  41,  40,
-                               32,  33,  34,  35,  36,  37,  38,  39,
-                               31,  30,  29,  28,  27,  26,  25,  24,
-                               16,  17,  18,  19,  20,  21,  22,  23,
-                               15,  14,  13,  12,  11,  10,   9,   8,
-                                0,   1,   2,   3,   4,   5,   6,   7};
 
 //Resize option : choose either QUALITY for a slow, but good resize (using mean average), or SPEED, for a faster, but low quality pixel resize
 //Possible values : "QUALITY", "SPEED"
-final String RESIZE_OPTION = "QUALITY";
+final String RESIZE_OPTION = "SPEED";
+
+int NUMBER_OF_PANELS = 5;                       // Preferred number of panels - note: this value is updated in accordance to the available output microcontrollers
 
 //Choose the device from which Processing should receive MIDI commands
 //Standard choice : IEC bus to receive internal MIDI messages from the DAW -> "Bus 1"
@@ -200,8 +163,7 @@ String MIDI_BUS_PIONEER_CONTROLLER_INPUT = "PIONEER RMX-500";
 String MIDI_BUS_CONTROLLER_INPUT = "LPD8";
 String MIDI_BUS_KEYBOARD_INPUT   = "LPK25";
 
-//Used to changed on the fly the panel order (LED remapping), using MIDI commands
-int[] screen_order_configuration = new int [NUMBER_OF_PANELS];
+
 
 /////////////////////////////////////////////////////
 //--Should also be configured :                    //
@@ -225,7 +187,7 @@ static PrintWriter outputLog;
 final int DISPLAY_SCALING_FACTOR = 4;
 int PIXELS_X;                                                   //To be defined once the number of panels is known
 int PIXELS_Y;                                                   //16 pixels high -> 64 pixels wide
-int COM_BAUD_RATE = 115200;                                     //Serial communication rate between Processing and the LED Panel Teensy microcontrollers
+int COM_BAUD_RATE = 115200;                                     //Serial communication rate between Processing and the LED Panel Teensy microcontrollers - actually, doesn't matter, as Teensy always communicate at 12 Mbps
 int COM_BAUD_RATE_NANO = 57600;                                 //Serial communication rate between Processing and the Arduino Nano used to dispatch orders to custom devices
 
 //Buffers used to stock the displayed pixels (not yet resized)
@@ -345,7 +307,7 @@ public void setup()
   }
   
   //Useful for debug : initialize the sketch with a specific animation
-  //Initial release : display 12345 on the panels -> change this to "light up all the panels in white" ("12345" is hardly elegant if a reset needs to be done live)
+  //Initial release : display 12345 on the panels -> this was changed to "light up all the panels in white" ("12345" is hardly elegant if a reset needs to be done live)
   //The mapping must be requested explicitely using the dedicated procedure
   animationnumber = 2;
   drawAnimation = 1;
@@ -357,124 +319,11 @@ public void setup()
   transformedBuffersLEDPanels = new int[NUMBER_OF_PANELS][PANEL_RESOLUTION_X*PANEL_RESOLUTION_Y];
   outputLog.println("Frame buffers initialized. Size : " + str(PIXELS_X*PIXELS_Y));
   
-  devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
-  if (NUMBER_OF_PANELS == 3) {
-    devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
-  }
-  else if (NUMBER_OF_PANELS == 5) {
-    devicesToParse = TEENSY_SERIAL_PORT_LIST_5;
-  }
-  IntList nonstaticDeviceArrayNumber = new IntList();  
-  ArrayList<String> candidateDevices = new ArrayList<String>();
-  registeredDevices = new ArrayList<String>();
-  if (DMX_MICROCONTROLLER_NAME.equals("NONSTATIC") == false) {
-    registeredDevices.add(DMX_MICROCONTROLLER_NAME);
-  }
-  for (int i = 0; i < devicesToParse.length; i++) {
-    if (devicesToParse[i].equals("NONSTATIC") == false) {
-      registeredDevices.add(devicesToParse[i]);
-    }
-    else {
-      nonstaticDeviceArrayNumber.append(i);
-    }
-  }
-  if (nonstaticDeviceArrayNumber.size() == 0) {
-    outputLog.println("All USB serial devices are defined statically, no guesswork is needed"); 
-  }
-  else {
-    outputLog.println(nonstaticDeviceArrayNumber.size() + " non static USB serial device configured, trying to guess the mystery Teensy...");
-  }
-  
-  //Find out which microcontrollers of the configuration list are defined as non-static
-  for (int i = 0; i < devicesToParse.length; i++) {
-    if (devicesToParse[i].equals("NONSTATIC") == true) {
-      nonstaticDeviceArrayNumber.append(i);
-    }
-  }  
-  
-  boolean nameExceptionFound = false;
-  if (nonstaticDeviceArrayNumber.size() >= 1) {
-    String rootName = "/dev/tty.usbmodem";
-    for (int i =0; i < nonstaticDeviceArrayNumber.size();i++) {
-      for (String portName: Serial.list()) {
-
-        if (portName.contains(rootName) == true) {
-          for (String registeredDevice: registeredDevices) {
-
-            if (registeredDevice.contains(portName.substring(5, portName.length())) == false || portName.equals("/dev/tty.usbmodem1")) {
-              boolean newCandidate = true;
-              for (int j = 0; j<candidateDevices.size();j++) {
-                for (String registered: registeredDevices) {
-                  if (portName.contains(registered) || registered.contains(portName)) {
-                    newCandidate = false;
-                  }
-                  if (portName.equals("/dev/tty.usbmodem1")) {
-                    newCandidate = true;
-                  }
-                }
-                if (candidateDevices.get(j).equals(portName)) {
-                  newCandidate = false;
-                }
-              }
-              if (newCandidate) {
-                if (portName.equals("/dev/tty.usbmodem1")) {
-                  if (nameExceptionFound == false) {
-                    outputLog.println("--- Found possible candidate for the non static device : " + portName);
-                    candidateDevices.add(portName);
-                    nameExceptionFound = true;
-                  }
-                }
-                else { 
-                  outputLog.println("--- Found possible candidate for the non static device : " + portName);
-                  candidateDevices.add(portName);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  for (int i = 0; i<candidateDevices.size();i++) {
-    registeredDevices.add(candidateDevices.get(i));
-  }
-  for (int i = 0; i<candidateDevices.size();i++) {
-    devicesToParse[nonstaticDeviceArrayNumber.get(i)] = candidateDevices.get(i);
-  }
-  
+  //Detect the available Teensy microcontollers, and which ones to use (RF/USB, with a priority on USB)
+  // The detection of how many panels should be used is also automatic
+  detectPanelOutputs();
 
   
-  for (int i = 0; i<devicesToParse.length;i++) {
-    if (devicesToParse[i].contains("NONSTATIC")) {
-        outputLog.println("!!!!! -------------------------------------- !!!!!");
-        outputLog.println("!!!!! Error - Among the serial devices registered by the OS, couldn't find a possible candidate for non static device number " + i + ", the corresponding panel will not be initialised");
-        outputLog.println("!!!!! For information, the only available serial devices are :");
-        for (String portName: Serial.list()) { 
-            outputLog.println("!!!!! --- " + portName);
-        }
-        outputLog.println("!!!!! -------------------------------------- !!!!!");
-    }
-  }
-  
-  if (NUMBER_OF_PANELS == 3) {
-    TEENSY_SERIAL_PORT_LIST_3 = devicesToParse;
-  }
-  else if (NUMBER_OF_PANELS == 5) {
-    TEENSY_SERIAL_PORT_LIST_5 = devicesToParse;
-  }
-  
-  
-  //Initialize the output objects
-  outputDevices = new Tpm2[NUMBER_OF_PANELS];
-  for (int i=0; i<NUMBER_OF_PANELS; i++) {
-    outputDevices[i] = new Tpm2(i);
-  }
-  
-  //Map the output objects to their respective panel
-  for (int i=0; i<outputDevices.length; i++) {
-    outputDevices[i].panelNumber = screen_order_configuration[i];
-    outputLog.println("Microcontroller init - device " + outputDevices[i].serialPort + " is affected to output #" + outputDevices[i].panelNumber);
-  }
   
   //Initialize the resize objects
   //--- try out the results with the shitty resize, it might be enough, and the performance could be better
@@ -485,21 +334,6 @@ public void setup()
   frameRate(50);
   //Define the size of the display
   size(PIXELS_X, PIXELS_Y);
-  //Sanity check regarding the Teensy serial list
-  if (NUMBER_OF_PANELS == 3) {
-    if (TEENSY_SERIAL_PORT_LIST_3.length < NUMBER_OF_PANELS) {
-      outputLog.println("!!! Error on Teensy Serial Port List ! Please fill in a correct serial port, or 'NONSTATIC' for each output !!!");
-      println("!!! Error on Teensy Serial Port List ! Please fill in a correct serial port, or 'NONSTATIC' for each output !!!");
-      System.exit(1);    //Quit application
-    }
-  }
-  else if (NUMBER_OF_PANELS == 5) {
-    if (TEENSY_SERIAL_PORT_LIST_5.length < NUMBER_OF_PANELS) {
-      outputLog.println("!!! Error on Teensy Serial Port List ! Please fill in a correct serial port, or 'NONSTATIC' for each output !!!");
-      println("!!! Error on Teensy Serial Port List ! Please fill in a correct serial port, or 'NONSTATIC' for each output !!!");
-      System.exit(1);    //Quit application
-    }
-  }  
   
   //Initialize Object for Serial2DMX microcontroller
   myDMX = new DMX(this);
@@ -562,10 +396,10 @@ public void setup()
 
 public void draw()
 {  
-
   if (setupcomplete == true) 
   {
 
+    // Uncomment this if you want to debug the physical output devices
     // for (Tpm2 outputDevice: outputDevices) {
     //   try {
     //     outputDevices[0].readDebugData();
@@ -573,7 +407,6 @@ public void draw()
     //   catch (Exception e) {
     //     println("Exception while trying to read - " + e);
     //   }
-      
     // }
 
     //Execute the draw function for the animation corresponding to animationnumber
@@ -652,1480 +485,6 @@ public void draw()
     }      
   }
 }
-
-//////////////////////////////////////////////////////////////////////////////////////
-/////////Contains parameters specific to animations called in the main sketch/////////
-//////////////////////////////////////////////////////////////////////////////////////
-
-
-//Carglass parameters
-float carglass_progress = 0;
-float carglass_speed = 0.1f;
-float carglass_linelength;
-
-//initFlasher (intro) parameters
-int initFlasher_progress = 0;
-int initFlasher_firstFlashSpeed = 1;
-int initFlasher_startNoise = 220;
-int initFlasher_startNoise2 = 450;
-int initFlasher_startNoise3 = 550;
-int initFlasher_startNoise4 = 600;
-int initFlasher_startBlackout = 700;
-int initFlasher_startWhiteout = 1000;
-int initFlasher_startMegawhiteout = 1200;
-int initFlasher_startStrobo = 1320;
-float initFlasher_noiseBrightness = 0;
-int initFlasher_startJitter = 2000;
-float initFlasher_noiseSpeed_1 = 0.03f;
-float initFlasher_noiseSpeed_2 = 0.06f;
-float initFlasher_noiseSpeed_3 = 0.09f;
-float initFlasher_blackoutProbability = 0;
-float initFlasher_blackoutProbability_max = 0.4f;
-float initFlasher_blackoutProbability_speed = 0.001f;
-float initFlasher_whiteoutProbability = 0;
-float initFlasher_whiteoutProbability_max = 0.7f;
-float initFlasher_whiteoutProbability_speed = 0.001f;
-float initFlasher_flashProbability = 0;
-float initFlasher_flashProbability_max = 0.5f;
-float initFlasher_flashProbability_speed = 0.0025f;
-int initFlasher_pixelSize = 4;
-
-//Va et vient parameters
-float va_et_vient_progress = 0;
-float va_et_vient_speed_horizontal = 8;
-float va_et_vient_speed_vertical = 4;
-
-//Spiraluality parameters
-float spiraluality_i;
-int spiraluality_numCircles = 23;
-float spiraluality_1stdiameter = 300;
-float spiraluality_diameterDiff = 13;
-float spiraluality_xArticulation = 13;
-float spiraluality_yArticulation;
-float spiraluality_speed = 0.002f;
-
-//Shadows parameters
-float rand = random(1);
-
-//RedWhiteGlowingBalls parameters
-float redGlowingBalls_size = 20;
-float redGlowingBalls_noiseSpeed = 0.1f;
-
-
-//Bouncing Circle parameters
-int rad = 10;        // Width of the shape
-float xpos, ypos;    // Starting position of shape    
-float xspeed = 2.9f;  // Speed of the shape
-float yspeed = 2.9f;  // Speed of the shape
-int xdirection = 1;  // Left or Right
-int ydirection = 1;  // Top to Bottom
-
-//Rotating Circles parameters
-int background_color = 255;
-int circle_color = 0;
-int objNum = 20;
-float degrees = 360/5;
-float distance = 50;
-float angleOffset = 0;
-int positionX = NUMBER_OF_PANELS*32/2;
-int positionY = 64/2;
-int diameter = 30;
-
-//Waveform parameters
-float yoff = 0.0f;        // 2nd dimension of perlin noise
-float waveform_y_growing = 32.0f;
-
-//Worms parameters
-Worm[] worms;
-int numWorms = 4*NUMBER_OF_PANELS;
-boolean worms_init = false;
-PVector pulse;
-boolean pulsed;
-
-//Upwards Line parameters
-float line_height;
-
-//Wind particles parameters
-Particle[] particle ;
-int NUMPARTICLES = 15*NUMBER_OF_PANELS ;
-Wind wind ;
-
-//PanelFill parameters
-ArrayList<PanelFillLineClass> panelFillLinesList;
-boolean panelFillLinesListInit = false;
-boolean panelfilllines_kill = false;
-int panelfilllines_j = 0;
-int panelfilllines_maxsize = 4;
-int panelfilllines_maxspeed = 3;
-int panelfilllines_frequency = 35;
-boolean panelfilllines_draw = false;
-int panelfilllines_randtype = 0;
-
-//Symmetry parameters
-static int SHADES = 255 ;                // - Number of shades of gray that can be displayed
-static int CYCLESBEFORECHANGE = 3 ;     // - Number of times the featured pattern is drawn before cycling to the next pattern
- 
-// The three patterns that can be displayed
-static public int CIRCLE_PATTERN = 0;
-static public int SPIKE_PATTERN = 1;
-static public int FLOWER_PATTERN = 2;
-static int NUM_PATTERNS = 3;
-static int NUM_MODES = 7;
-static int MODES[][] =
-  { {6, 3, 10, 20, 30},
-    {8, 100, 30, 20, 50}, 
-    {3, 3, 20, 20, 60},
-    {5, 3, 1, 60, 60},
-    {4, 6, 40, 2, 1},
-    {7, 250, 20, 8, 10},
-    {77, 1, 30, 10, 10 }
-  } ;
-  
-int framesToCycle = 90 ;   // Time to complete half a pattern (180 degrees) - 3 seconds
-// Variables that define the 'mode' being displayed
-int numSegments;          // number of reflections
-public int numRibbons;     // Number of ribbons drawn in each segment
-public float redChange, greenChange, blueChange ; // Speed at which each colour is cycled
-int redVal, greenVal, blueVal; // Holds the current colour of the line
-public Ribbon[] ribbons ; // An array to hold the ribbons
-int mode = 0;
-public float delta = 0;
-int frames = 0;
-int fadeFrames = 0;
-
-
-//Flashleft, center and right parameters
-int flash_sustain = 1;
-int drawextremeleft    = flash_sustain;
-int drawleft           = flash_sustain;
-int drawcenter         = flash_sustain;
-int drawright          = flash_sustain;
-int drawextremeright   = flash_sustain;
-int drawwide           = flash_sustain;
-
-//Rhombus parameters
-float rhombus_diaX = NUMBER_OF_PANELS*32/2;
-float rhombus_diaR = 30;
-float rhombus_diaS = 6;
-
-//KaleidoTriangle parameters
-float trianglepos;
-
-//Glitch parameters
-PImage redImg, greenImg, blueImg;
-float sincounter = 0;
-
-//Snow parameters
-Floco[] snowMatrix=new Floco[30*NUMBER_OF_PANELS];
-int snowflakecounter;
-int snowflakeSize=4;
-float snowflakemaxValue=0.5f;
-
-//MechanicLines parameters
-float mechaniclines_w = 30;
-float mechaniclines_h = 20;
-float mechaniclines_wspeed = 1;
-float mechaniclines_hspeed = 0.5f;
-
-//RedvsBlackvsWhite parameters
-ArrayList dots;
-float dots_row = 5;
-float redvsblackvswhite_incr;
-float redvsblackvswhite_start;
-float redvsblackvswhite_angle = 0;
-int redvsblackvswhite_i=0;
-int redvsblackvswhite_frameCount=0;
-boolean one_off = false;
-
-//RotatingSquare parameters
-float thetaStart;
-TriRot [] TriRotElem = new TriRot[1];
-boolean rotatingSquare_init = false;
-int rotatingSquare_strokeweight = 6;
-
-//MovingSine parameters
-int movingsine_howMany = 32*NUMBER_OF_PANELS;
-float movingsine_speed;
-ExLine [] SineElem = new ExLine[movingsine_howMany];
-
-//Smoke parameters
-float smoke_particles_movement = 0;
-
-//Sinefuckedup parameters
-int sine_fuckedup_counter = 0;
-float v = 0;
-float w = 0;
-
-//Manual/AutomaticCircle parameters
-ArrayList rings = new ArrayList();
-float howManyRings= 10;
-float dropcircle_x, dropcircle_y;
-float dropcircle_sz = 0;
-boolean dropcircle_kill = false;
-int dropcircle_j = 0;
-
-//Rain parameters
-int howManyRainDrops = 50;
-float[] raindrops_x = new float[howManyRainDrops];
-float[] raindrops_y = new float[howManyRainDrops];
-float[] raindrops_speed = new float[howManyRainDrops];
-
-
-//PulseStar parameters
-float pulsestar_R;
-float pulsestar_r;
-int pulsestar_N = 9;
-float pulsestar_OMEGA = 0.2f;
-float pulsestar_t;
-
-//MovingLines parameters
-ArrayList<MovingLine> movingLines = new ArrayList<MovingLine>();
-boolean movingline_kill = false;
-int movingline_j = 0;
-int movingline_maxangle = 45;
-int movingline_maxspeed = 3;
-int movingline_frequency = 67-(NUMBER_OF_PANELS-3)*7;
-
-//MovingSquares parameters
-ArrayList<MovingSquare> movingSquares = new ArrayList<MovingSquare>();
-int movingsquare_j = 0;
-int movingsquare_maxsize = 4;
-int movingsquare_maxspeed = 3;
-int movingsquare_frequency = 40-4*NUMBER_OF_PANELS;
-
-//UpwardGlitchLines parameters
-int upwards_glitchlines_a;
-int upwards_glitchlines_b;
-int upwards_glitchlines_c;
-int upwards_glitchlines_interligne;
-int upwards_glitchlines_speed;
-int upwards_glitchlines_count;
-int upwards_glitchlines_glitch_x;
-int upwards_glitchlines_glitch_y;
-int upwards_glitchlines_freq;
-
-//DiagonalGlitchLines parameters
-int diagonal_glitchlines_a;
-int diagonal_glitchlines_b;
-int diagonal_glitchlines_c;
-int diagonal_glitchlines_strokeWidth;
-int diagonal_glitchlines_speed;
-int diagonal_glitchlines_count;
-
-//CompressedLines parameters
-int compressedlines_ratio;
-
-//PanelFill parameters
-ArrayList<PanelFillClass> panelFillList;
-boolean panelFillListInit = false;
-boolean panelfill_kill = false;
-int panelfill_j = 0;
-int panelfill_maxsize = 4;
-int panelfill_maxspeed = 3;
-int panelfill_frequency = 35;
-boolean panelfill_draw = false;
-
-//MixedLines parameters
-int mixedlines_horizontal1;
-int mixedlines_horizontal2;
-int mixedlines_horizontal3;
-int mixedlines_vertical1;
-int mixedlines_vertical2;
-int mixedlines_vertical3;
-int mixedlines_circlex;
-int mixedlines_speed;
-int mixedlines_strokeWeight;
-int mixedlines_ellipsewidth;
-
-//DoubleGradientTransition parameters
-int doublegradient_a = 0;
-int doublegradient_b = NUMBER_OF_PANELS*32;
-boolean doublegradient_direction = true;
-
-//CarreMarshall parameters
-int carreMarshall_a;
-int carreMarshall_largeurCarre;
-int carreMarshall_interligne;
-int carreMarshall_epaisseurLigne;
-int carreMarshall_vitesseLigne;
-int carreMarshall_compteur;
-int carreMarshall_coeffAgrandissement;
-
-//Fusee parameters
-int fusee_a;
-int fusee_epaisseurLigne;
-int fusee_vitesseLigne;
-int fusee_compteur;
-int[] fusee_tab1;
-int[] fusee_tab2;
-
-//Spots parameters
-int spots_tailleCone;
-
-//UpwardsGlitchMixedLines parameters
-int upwards_glitch_mixedlines_b;
-int upwards_glitch_mixedlines_c;
-int upwards_glitch_mixedlines_d;
-int upwards_glitch_mixedlines_e;
-int upwards_glitch_mixedlines_f;
-int upwards_glitch_mixedlines_g;
-int upwards_glitch_mixedlines_ac;
-int upwards_glitch_mixedlines_bc;
-int upwards_glitch_mixedlines_cc;
-int upwards_glitch_mixedlines_dc;
-int upwards_glitch_mixedlines_epaisseurLigne;
-int upwards_glitch_mixedlines_interligne;
-int upwards_glitch_mixedlines_speed;
-
-//Scope parameters
-float scope_arc_b_r = 0;
-float scope_arc_s_r = 0;
-float scope_ellipsewidth = 24;
- 
-float scope_rotationcounter = 0;
-int scope_freqcounter = 0;
-int scope_flg1 = 0;
-int scope_flg2 = 0;
-int scope_flg3 = 0;
- 
-int scope_color;
-int scope_g = 0;
-int scope_b = 0;
-boolean scope_decrease = false;
-
-
-//SquareWaveGenerator parameters
-int [] squarewave_button;
-int [] squarewave_timer;
-int squarewave_step = 0;
-int squarewave_tA = 0;
-int squarewave_tB = 0;
-int squarewave_tC = 0;
-boolean squarewave_alreadycalled = false;
-boolean squarewave_signalpulse = false; 
-int squarewave_signalframecounter = 0;
-
-//Tetris parameters
-final int CYAN = color(0,150,255);
-final int ORANGE = color(255,165,0);
-final int YELLOW = color(255,255,0);
-final int PURPLE = color(160,32,240);
-final int BLUE = color(0,0,255);
-final int RED = color(255,0,0);
-final int GREEN = color(0,255,0);
- 
-Grid board;
-Tetromino curr;
-Shape next;
-Shape[] shapes = new Shape[7];
-int timer = 8;
-int currTime = 0;
-int score = 0;
-int lines = 0;
-int level = 1;
-final int SPEED_DECREASE = 2;
-boolean game_over = false;
-boolean show_score = false;
-boolean init = false;
-
-//PixelLines parameters
-IntList pixellines_color1;
-IntList pixellines_color2;
-int pixellines_strokeWidth = 4;
-
-//Pong parameters
-boolean gameover= false, command_p1_right = false, command_p1_left = false, command_p2_right = false, command_p2_left = false;
-int topscore = 0;
-int topmatchcount = 0;
-int bottomscore = 0;
-int bottommatchcount = 0;
-float changespeed = 0;
-int randomarea = 10;
-int pong_rectwidth = 5;
-int pong_rectheight = 4;
-int pong_rectspacing = 8;
-Paddle bottom;
-Ball pongball;
-Paddle top;
-PFont font;
-boolean gamestart = false;
-float pong_sideFactor = 0;
-
-//Rorschach parameters
-int nBalls;
-int nSteps;
-float thresh;
-float vMax;
-float[][] balls;
- 
-int numBallShapes = 4;
-int movementMode = 3;
-boolean invertAlpha;
-boolean blackBackground;
-int backgroundColor;
-int ballColor = color(255,0,0);
-boolean randomColor;
-PImage ballImage;
-int radius;
-
-//Unfolding lines parameters
-float supposed_height = 1;
-
-//Superformula parameters
-int superformula_num = 60;
-int superformula_colorL=255,superformula_k = 0,superformula_j=100,superformula_i=200;
-float superformula_x,superformula_y,superformula_z;
-float superformula_r,superformula_th=0,superformula_step=.1f,superformula_epi=200;
-float superformula_m = 1,superformula_n1=-1,superformula_n2=0,superformula_n3=0;
-float superformula_b=1,superformula_a=1;
-int superformula_counter1=-2, superformula_counter2=0;
-
-//Growing Triangle parameters
-ArrayList trianglelist = new ArrayList();
-growingTriangle triangle1;
-
-//Moire parameters
-moire moireOne;
-moire moireTwo;
-
-//ResponsiveCircles parameters
-int responsiveCircles_x;
-int responsiveCircles_y;
-boolean responsiveCircles_forward = true;
-boolean responsiveCircles_alreadycalled = false;
-int[] colortheme = {
-  0xff00B9EE, 0xff009FE3, 0xff00497F,
-  0xff03326C, 0xff83D0F5, 0xff006F9E,
-  0xff004899, 0xff052453
-};
-
-//ParticlesExplode parameters
-ArrayList<ParticleExplode> arr;
-int particleColor;
-boolean particlesexplode_alreadyinitialised = false;
-
-//Starfield parameters
-StarPoint[] starfield_asteroids1 = new StarPoint[4];
-StarPoint[] starfield_asteroids2 = new StarPoint[6];
- 
-StarPoint[] starfield_satellite = new StarPoint[1]; //starfield_satellite
-StarPoint[] starfield_planet = new StarPoint[1]; //starfield_planet
-//StarPoint[] asteroids3 = new StarPoint[155]; //bg
-
-//ColorVertex parameters
-ArrayList colorvertex_pointarray;
-int colorvertex_distance =50;
-
-//ParticlesFlow parameters
-ImgProc imgProc = new ImgProc();
- 
-float particlesflow_noiseScale = 0.01f;
-float particlesflow_noiseZ = 0;
-int particlesflow_particlesDensity = 1;
-int particlesflow_particleMargin = 30; 
-ParticleFlow[] particlesflow_particles;
-int[] particlesflow_currFrame;
-int[] particlesflow_prevFrame;
-int[] particlesflow_tempFrame;
-
-//BezierFlowers
-int bezierflowers_leaf = 1;  //  Number of leaves
-int bezierflowers_col = 0;   //  Color
-int bezierflowers_deep = 0;  //  Color density
-final int bezierflowers_MAX_POINT = 2;   //  Number of control points for the Bezier lines
-ControlPoint[] bezierflowers_controlpoints = new ControlPoint[bezierflowers_MAX_POINT];  // Bezier control points
-int bezierflowers_timer = 0;  //  Timer
-
-//JointCircles parameters
-int jointcircles_time = 0;
-
-//TunnelRed and TunnelWhite parameters
-int tunnel_num = 20;
-int tunnel_counter = 0;
-int tunnel_color_counter;
-float[] tunnel_grises = new float[tunnel_num];
-
-//CosmoCurve parameters
-float cosmoscurve_r;
-float cosmoscurve_a = 50;
-float cosmoscurve_n = 0;
-float cosmoscurve_d = 2;
-  
-PVector cosmoscurve_point = new PVector(0,0);;
-PVector cosmoscurve_center;
-
-//PerlinColor parameters
-float colorperlin_LOOKER_RADIUS = 32.0f;
-float colorperlin_numX = 13;
-float colorperlin_numY = 13;
-float colorperlin_noiseCount = 1;
-AngleThing[][] colorperlin_myAngleThing = new AngleThing[(int)colorperlin_numX][(int)colorperlin_numY];
-
-//OppositeLinesNoBackground parameters
-float oppositeLinesNoBackground_x = 0;
-boolean oppositeLinesNoBackground_rightside = true;
-boolean oppositeLinesNoBackground_reinit = true;
-
-//OpeningLines parameters
-float openinglines_x = 0;
-
-//SingleSquareSpiral parameters
-int singleSquareSpiral_boxSize = 36;
-int singleSquareSpiral_windowSize = NUMBER_OF_PANELS*40;
-float singleSquareSpiral_tick = 1; 
-boolean singleSquareSpiral_altCol = true;
-boolean singleSquareSpiral_start = true; 
-
-//DualSquareSpiral parameters
-int dualSquareSpiral_boxSize = 40;
-int dualSquareSpiral_windowSize = 32*NUMBER_OF_PANELS;
-float dualSquareSpiral_tick = 1; 
-boolean dualSquareSpiral_altCol = true;
-boolean dualSquareSpiral_start = true; 
-
-//ComplexSpiral parameters
-int complexspiral_counter = 0;
-
-//BeatCircle parameters
-int beatcircle_counter = 0;
-float beatcircle_radius = 64;
-float beatcircles_linepos = 0;
-
-//Blue and RedDiagonalLines parameters
-float blueposx = 0;
-float redposx = 0;
-float blueposy = 0;
-float redposy = 0;
-
-//WhiteNoiseCrescendo parameters
-int whitenoisecrescendo_brightness = 20;
-
-//InwardsSpiral parameters
-int inwardsspiral_counter = 0;
-int inwardsspiral_size = 12;
-float inwardsspiral_speed = 0.15f;
-float inwardsspiral_ratio = inwardsspiral_speed*8;
-float inwardsspiral_radius = 50+(NUMBER_OF_PANELS-3)*15;
-
-//ExplodingCircle parameters
-int explodingcircle_counter = 0;
-int explodingcircle_speed = 8 + 2*(NUMBER_OF_PANELS-3);
-
-//Rotozoom parameters
-int rotozoom_w=256,rotozoom_a,rotozoom_b,rotozoom_c,rotozoom_d;
-
-//NewtonPendulum parameters
-WavePendulum newtonpendulum_p;
-float newtonpendulum_t = 0.0f;
-ArrayList newtonpendulum_pends;
-float[] newtonpendulum_lengths = new float[30];
-float newtonpendulum_g = 9.8f;
-
-//Pendulum parameters
-int pendulum_n = 200;
-LargeWheelPendulum wheelpendulum_p;
-float wheelpendulum_t = 0.0f;
-ArrayList wheelpendulum_pends;
-float[] wheelpendulum_lengths = new float[pendulum_n];
-float wheelpendulum_g = 9.8f;
-HypnoWheelPendulum hypnopendulum_p;
-float hypnopendulum_t = 0.0f;
-ArrayList hypnopendulum_pends;
-float[] hypnopendulum_lengths = new float[pendulum_n];
-float hypnopendulum_g = 9.8f;
-float hypnopendulum_fadein = 0;
-float hypnopendulum_fadeinSpeed = 0.05f;
-
-//Mugen parameters
-float mugen_xamp, mugen_yamp, mugen_x, mugen_y, mugen_px, mugen_py;
-
-//ArcWave parameters
-ArcWaveClass[] arcwave_arcs;
-float arcwave_ray;int arcwave_maxi;
-
-//OutwardSpiral parameters
-float outwardspiral_x,outwardspiral_y, outwardspiral_theta, outwardspiral_r, outwardspiral_c;
-
-//Columns parameters
-float columns_firsty = PApplet.parseInt(random(0,64));
-float columns_secondy = PApplet.parseInt(random(0,64));
-float columns_thirdy = PApplet.parseInt(random(0,64));
-int columns_firstheight1 = 16;
-int columns_secondheight1 = 16;
-int columns_thirdheight1 = 16;
-int columns_firstheight2, columns_secondheight2, columns_thirdheight2;
-int columns_offsetx = 8;
-int columns_offsety = 4;
-boolean columns_shift = false;
-
-//CircleContour parameters
-float circlecontour_amp2 = 24;
-float circlecontour_amp = 24;
-float circlecontour_phase = 1;
-int circlecontour_elements = 5;
-float circlecontour_turn = 1.0f;
-float circlecontour_lineweight = 0.23f;
-
-//ColorExplode parameters
-colorexplode_particle[] colorexplode_Z = new colorexplode_particle[100];
-float colorexplode_colour = random(1);
-float colorexplode_r;
-int colorexplode_intcounter = 0;
-boolean colorexplode_init = false;
-
-//ColorRain parameters
-boolean colorrain_init = false;
-colorrain_CellArray colorrain_cells;
-
-//WarpSpeed parameters
-int warpspeed_i,warpspeed_x,warpspeed_y,warpspeed_b;
-
-//BWTriangles parameters
-ParticleSystem bwtriangles_particles;
-int bwtriangles_nbrParticles = 5 + (NUMBER_OF_PANELS-2);
-int bwtriangles_vit = 2;
-float bwtriangles_boxDist = 2;
-
-//GlitchDiagonalLines parameters
-int glitchdiagonallines_num = 25;
-glitchdiagonallines_Particle[] glitchdiagonallines_particleArray = new glitchdiagonallines_Particle[glitchdiagonallines_num];
-
-//FlashingDotsBorder parameters
-int flashingdotsborder_num = 6;
-int flashingdotsborder_posx = PApplet.parseInt(random(0,24));
-int flashingdotsborder_posy = 0;
-int[] flashingdotsborder_x = new int[flashingdotsborder_num];
-int[] flashingdotsborder_y = new int[flashingdotsborder_num];
-
-//FallingCircles parameters
-FallingCircles fallingCircles;
-int fallingcircles_fade;
-boolean fallingCircles_init = false;
-
-//ExplodingParticles
-int nbExplodingParticles=1000;
-float explodingparticle_asp=0;
-ExplodingParticles[] explodingparticle = new ExplodingParticles[nbExplodingParticles];
-boolean ExplodingParticles_explodeflag = true;
-boolean explodingparticle_init = false;
-
-//RandomBWFlow
-int randomBWFlow_resolutionX = 8*NUMBER_OF_PANELS;
-int randomBWFlow_resolutionY = 16;
-PVector randomBWFlow_flow[][] = new PVector[randomBWFlow_resolutionX][randomBWFlow_resolutionY];
-float randomBWFlow_density[][] = new float[randomBWFlow_resolutionX][randomBWFlow_resolutionY];
-float randomBWFlow_wind[] = new float[randomBWFlow_resolutionY]; // horizontal bands
-int randomBWFlow_particleCount = randomBWFlow_resolutionX*randomBWFlow_resolutionY*3;
-RandomBWFlowParticle bwflowparticle[] = new RandomBWFlowParticle[randomBWFlow_particleCount];
-int currentRandomBWFlowParticle;
-int randomBWFlow_oldMouseX;
-int randomBWFlow_oldMouseY;
-int randomBWFlow_alpha = 255;
-float randomBWFlow_varSpeed = 0.03f;
-boolean randomBWFlow_initComplete = false;
-
-//Tesselate parameters
-int tesselate_palette[] = { 0xff3415B0, 0xffFFCF00,
-                    0xffFF2100, 0xff0F4DAB,
-                    0xffF80012, 0xff1DD300,
-                    0xffFFFFFF, 0xff999999};
-int tesselate_size_b;
-int tesselate_size_a;
-int tesselate_size_dir = 1;
-int tesselate_size_time_den = 120;
-int tesselate_size_c_pal = 1;
-int tesselate_size_point_x;
-float tesselate_cont = 0;
-final int tesselate_BIG   = 0;
-final int tesselate_SMALL = 1;
- 
-//DigitalHexParticles parameters
-DigitalHexParticleSystem digitalhexparticleSystem;
-
- 
-//RedArcTransition and BlueArcTransition parameters
-int redarctransition_topleftx;
-int redarctransition_toplefty;
-int redarctransition_toprightx;
-int redarctransition_toprighty;
-int redarctransition_x1;
-int redarctransition_y1;
-int redarctransition_x2;
-int redarctransition_y2;
-int redarctransition_x21;
-int redarctransition_y21;
-int redarctransition_x22;
-int redarctransition_y22;
-int redarctransition_bottomtopx;
-int redarctransition_bottomtopy;
-int redarctransition_bottomdownx;
-int redarctransition_bottomdowny;
-int redarctransition_increment = 4;
-
-//LightBlobs
-int lightblobs_numBlobs = 13;
-float lightblobs_scale = 1;
-lightblobs_Blob lightblobs_b[] = new lightblobs_Blob[lightblobs_numBlobs];
-PGraphics lightblobs_pg;
-int lightblobs_w,lightblobs_h;
-
-//RandomSmokeParticles
-int smokeparticles_count = 200;
-float smokeparticles_t = 0, smokeparticles_dt = 0.01f;
-float smokeparticles_spinSpeed = 75 * 0.01f/smokeparticles_dt;
-int smokeparticles_seed;
-
-//RedMetaBalls
-int redmetaballs_numBlobs = 3;
-redmetaballs_Blob redmetaballs_b[] = new redmetaballs_Blob[redmetaballs_numBlobs];
-PGraphics redmetaballs_pg;
-int redmetaballs_w,redmetaballs_h;
-
-//Butterfly
-float butterfly_t=0,butterfly_s,butterfly_p,butterfly_k,butterfly_l;
-float butterfly_x,butterfly_y,butterfly_x2,butterfly_y2,butterfly_x3,butterfly_y3,butterfly_x4,butterfly_y4;
-float butterfly_a1,butterfly_b1,butterfly_a2,butterfly_b2,butterfly_a3,butterfly_b3,butterfly_a4,butterfly_b4;
-float butterfly_formFactor = 0.15f;
-float butterfly_speedFactor = 0.02f;
-float butterfly_scale = 0.3f;
-
-//CirclePusher
-PVector[] circlepusher_loc;                      //Circles position
-float[] circlepusher_rad;                        //Circles radius
-int circlepusher_num = 18 + NUMBER_OF_PANELS*2;  //Number of circles
-float circlepusher_rate = 1.05f;                  //Circle radius magnification rate
-boolean circlepusher_alreadyGenerated = false;   //Boolean to go through Init routine
-boolean circlepusher_setAngleRotate;             //Switch between rotating and straight circles 
-
-//Shutter parameters
-int shutter_colorMode = 0;
-float shutter_angle = 0;
-final float shutter_distanceInit = NUMBER_OF_PANELS*32;
-final float shutter_distanceLimit = 0;
-final float shutter_speedIncrement = 1;
-final float shutter_angleIncrement = 0.01f;
-float shutter_distance = shutter_distanceInit;
-
-//OrbitingParticles parameters
-OrbitingParticle[] orbitingparticles_particlelist;
-int orbitingparticles_number = 20;
-float orbitingparticles_dispersion = 4;
-float orbitingparticles_speedmin = 0.1f;
-float orbitingparticles_speedmax = 0.3f;
-float orbitingparticles_globalx;
-float orbitingparticles_globaly;
-float orbitingparticles_pullback = 1.6f;
-boolean orbitingparticles_initialised = false;
-int orbitingparticles_state = 0;
-
-//FlowingLines (Vines) parameters
-final float flowing_lines_MAX_ANGLE = radians(50);
-final int flowing_lines_MARGIN = 12;
-final int flowing_lines_DISTANCE = 300;
-final int flowing_lines_FRAMES_PER_DISTANCE = 80;
-final int flowing_lines_NUM_POINTS = 75;
-FlowingLinePath flowing_lines_Path;
-FlowingLine flowing_lines_lines[];
-int flowing_lines_screen_x, flowing_lines_screen_y;
-boolean flowing_lines_init = false;
-
-//ArrowStyle parameters
-float arrowstyle_height;
-float arrowstyle_pos;
-float arrowstyle_increment = 1.5f + (NUMBER_OF_PANELS - 3);
-
-//SingleArrow parameters
-int singlearrow_strokeCap = 16;
-int singlearrow_maxarrownumber = 50;
-ArrayList<SingleArrow> singlearrow_arrowlist;
-boolean singlearrow_initialized = false;
-
-//Rotozoom parameters
-PImage rotozoom_img;
-float rotozoom_angle=0;
-float rotozoom_scalee=1;
-float rotozoom_dscalee=0.05f;
-
-//MilkTank parameters
-final int milktank_numberofparticles = 20;
-final int milktank_contractiontime = 25;
-int[][] milktank_pixi;
-float milktank_f;
-int milktank_contraction = 0;
-int milktank_w;
-int milktank_h;
-int milktank_regroupX;
-int milktank_regroupY;
-boolean milktank_m;
-milktank_blob[] milktank_blobs;
-
-//FireNoiseSquares parameters
-FireNoiseSquare[] squares;
-
-//Slasher parameters
-Slash[] slash;
-int slasher_nb = 6;
-int[] slasher_colors = {color(120,30,220), color(222, 31, 31), color(222, 184, 31)};
-boolean slasher_initialized = false;
-
-//NekoJiru parameters
-int nekojiru_eyearcparam1;
-int nekojiru_eyearcparam2;
-int nekojiru_eyesizeX;
-int nekojiru_eyesizeY;
-int nekojiru_eyedistance;
-int nekojiru_bulgesize;
-int nekojiru_bulgedistance;
-float nekojiru_posX = 0;
-float nekojiru_posY = 0;
-float nekojiru_blinky = 0;
-float nekojiru_blinkyMax = 0;
-float nekojiru_blinkyNasty = 0;
-float nekojiru_mx;
-float nekojiru_my;
-float nekojiru_bulge = 0;
-float nekojiru_leftdist;
-float nekojiru_rightdist;
-float nekojiru_fillr;
-float nekojiru_fillg;
-float nekojiru_fillb;
-boolean nekojiru_blink = false;
-boolean nekojiru_blinkNasty = false;
-boolean nekojiru_surprise = false;
-boolean nekojiru_angry = false;
-NekoJiruStateMachine nekojiru_machine;
-int nekojiru_currentState = 0;
-
-//LetterExplode parameters
-int particleletters_N = 180;
-float particleletters_repulsion = 0.05f;       // how much the particles repel each other
-float particleletters_contraction = 0.0002f;    // how much they are pulled towards the center
-float particleletters_damping = 0.80f;          // how much drag is applied to the particles
-float particleletters_drift = 0.25f;            // how strong the random forces are
-int particleletters_impulse = 50;              // number of frames until the particles reach the target
-int particleletters_activeTime = 20;           // number of frames until they become particleletters_idle again
-int particleletters_printTime = 30;           // number of frames between letters
- 
-boolean particleletters_idle = true;           // particleletters_idle => particles repel and drift around
-boolean particleletters_printing = false;
-String particleletters_buffer = "";
-String particleletters_wordToPrint = "XI";
-int particleletters_counter = 0;
-PGraphics particleletters_letter;
-PFont particleletters_font;
-LinkedList<LetterParticle> particleletters_parts = new LinkedList<LetterParticle>();
-
-//Thunderlines parameters
-float thunderline_maxperturbation = 0.15f;
-float thunderline_maxspeed = 8;
-ArrayList<ThunderLine> thunderline_list;
-int thunderline_density = 5;
-int thunderline_refreshrate = 10;    //0, no refresh, - 255, points disappear immediately
-int thunderline_persistance  = 12;
-boolean thunderline_init = false;
-boolean thunderline_setupcomplete = false;
-
-//Opening Whiteout parameters
-float openingWhiteout_cpt = 4;
-float openingWhiteout_verticalCpt = 0;
-float openingWhiteout_speed = 0.19f;
-float openingWhiteout_verticalSpeed = 0.35f;
-long openingWhiteout_lastInitTimestamp = System.nanoTime();
-final long TEN_SECONDS = 10000000000l;
-
-//DoubleFusee parameters
-int doublefusee_a;
-int doublefusee_epaisseurLigne;
-int doublefusee_vitesseLigne;
-int doublefusee_compteur;
-int[] doublefusee_tab1;
-int[] doublefusee_tab2;
-int[] doublefusee_tab3;
-int[] doublefusee_tab4;
-
-//DiscoStar parameters
-float discostar_colorwheel = 0;
-float discostar_colorinc = 0.5f;
-
-//WormHole parameters
-float wormhole_x = 0;
-float wormhole_y = 0;
-float wormhole_a = 0;
-float wormhole_b = 0;
-float wormhole_c_init = PI/16;
-float wormhole_c = wormhole_c_init;
-
-//Atoms parameters
-boolean atoms_initialised = false;
-ArrayList<Electron> atoms_electronlist;
-int atoms_orbitsize = 32;
-int atoms_electronsize = 8;
-int atoms_electrontail = 30;
-int atoms_beatprotomaxsize = 36;
-int atoms_beatprotominsize = 8;
-int atoms_numberofelectrons;
-float atoms_beatprotosize;
-boolean atoms_redprotocolor = true;
-
-//PerfectCircle parameters
-boolean perfect_circleinitialised = false;
-ArrayList<PerfectCircle> perfect_circleperfectcirclelist;
-int perfect_circleorbitsize = 32;
-int perfect_circleperfectcirclesize = 8;
-int perfect_circleperfectcircletail = 30;
-int perfect_circlebeatprotomaxsize = 36;
-int perfect_circlebeatprotominsize = 8;
-float perfect_circlebeatprotosize;
-boolean perfect_circleredprotocolor = true;
-
-//HyperSpeed parameters
-int hyperspeed_numberofstars = 64 + 15*(NUMBER_OF_PANELS - 3);
-int hyperspeed_blur = 25;
-int hyperspeed_maxspeed = 6;
-ArrayList<NagareBoshi> hyperspeed_nagarelist;
-boolean hyperspeed_init = false;
-
-//ColorWave parameters
-float waves_t = 0, waves_dt = 0.005f;
-float waves_ampsize = 0;
-int waves_numberofparticles = 400;
-int waves_maxcolorhue = 20;
-int waves_mincolorhue = 0;
-int waves_attenuation = 50;
-boolean waves_ampwait = false;
-boolean waves_init = false;
-ArrayList<ColorWave> waves_list;
-
-//ContinuousTriangles parameters
-float continoustriangles_leftposy = 0;
-float continoustriangles_centerposy = 0;
-float continoustriangles_rightposy = 0;
-float continoustriangles_leftspeed = 1.2f;
-float continoustriangles_centerspeed = 1.2f;
-float continoustriangles_rightspeed = 1.2f;
-int continoustriangles_red = color(255,0,0);
-int continoustriangles_white = color(255);
-int continoustriangles_black = color(0);
-boolean continoustriangles_drift = false;
-boolean continoustriangles_resync = true;
-boolean continoustriangles_invert = false;
-
-//Mandala parameters
-int mandala_numbranches = 3;
-int mandala_numstarlayers = 4;
-int mandala_numstars = 6;
-int mandala_numsquares = 6;
-float mandala_figuresize = 34;
-float mandala_barsize = 27;
-float mandala_angle = 0;
-float mandala_angle2 = 0;
-int mandala_color;
-int mandala_maxballsize = 48;
-int mandala_minballsize = 8;
-float mandala_ballsize;
-boolean mandala_switch;
-
-//Kaleido parameters
-int kaleido_rings = 10;
-int kaleido_t = 0;
-int kaleido_seed = 751;      //floor(random(1000))
-int kaleido_posX;
-
-//Flowers parameters
-ArrayList flowers_flowers;
-int flowers_sequencenumber = 0;
-
-//ElectricSpiral parameters
-int electricspiral_nbrPoints = 50;
-int electricspiral_cx,electricspiral_cy;
-int electricspiral_counter =0 ;
-int electricspiral_frameCtr = 0;
-int electricspiral_animationspeed = 30;
-long electricspiral_framecounter = 0;
-float electricspiral_crad;
-float electricspiral_cycleLength = 2*PI*electricspiral_nbrPoints;
-float electricspiral_speed = 2;
-ElectricSpiralDot[] electricspiral_dots = new ElectricSpiralDot[electricspiral_nbrPoints];
-
-//SmallSquares parameters
-int smallsquares_offset = 4;
-
-//FastSpiral parameters
-float fastspiral_x,fastspiral_y, fastspiral_theta, fastspiral_r, fastspiral_c;
-float fastspiral_transparency = 0;
-boolean fastspiral_kill = false;
-
-//WeirdSquare parameters
-int weirdsquare_step;
-float weirdsquare_bezierbase;
-int weirdsquare_offset;
-float weirdsquare_time = 0;
-float hueOffset = 0.90f;
-float weirdsquare_redbackground = 0;
-float weirdsquare_noiseSpeed = 0.0015f;
-
-//ProgressiveRed parameters
-float progressivered_color = 0;
-
-//SpotsMulticolor parameters
-int[] spotsmulticolor_colorselection = {color(0, 176, 250),color(89, 180, 116),color(71, 206, 205),color(255, 255, 255),color(38, 30, 157),color(255, 255, 255),color(123, 9, 254),color(63, 144, 86),color(255, 255, 255)};
-
-//Strobolinecolor parameters
-int[] strobolinecolor_colorselection;
-
-//DoubleFlowers parameters
-ArrayList doubleflower_flowers;
-ArrayList doubleflower_zOscillators;
-
-//3DAnimations parameters
-ProjectionViewer thirdDimension_viewer3d;
-int[] thirdDimension_colorlist3d = new int[2];
-int thirdDimension_pyramidfrequency = 35;
-int thirdDimension_jerkyEdgeFrequency = 3;
-int thirdDimension_counter = 0;
-int thirdDimension_nodeSelector = 0;
-boolean thirdDimension_noglitchcubeinit = false;
-boolean thirdDimension_jerkyinit = false;
-
-//BloodSki parameters
-int bloodSki_Co;
-int bloodSki_Xc;
-int bloodSki_Yc;
-int bloodSki_Wc;
-int bloodSki_Hc;
-int bloodSki_S;
-int bloodSki_N;
-int bloodSki_minRad;
-int bloodSki_maxRad;
-BloodSkiParticleManager bloodSki_particleManager;
-
-//Gloubiboulga parameters
-int gloubiboulga_thresh=30;
-int gloubiboulga_avoid_distance = 2;
-float gloubiboulga_avoid_strength = 0.6f;
-int gloubiboulga_cohere_distance = 15;
-float gloubiboulga_cohere_strength = 0.05f;
-int gloubiboulga_align_distance = 10;
-float gloubiboulga_align_strength = 0.02f;
-float gloubiboulga_maxvel = 1.8f;
-ArrayList gloubiboulga_swarm = new ArrayList(); 
-
-//RevolutionLine parameters
-RevolutionLine[] revolutionline_lines;
-
-//Rednoise parameters
-float rednoise_circlerad = 0;
-
-//TurningSingleLines parameters
-float turningsinglelines_init = 0;    //Defined during setup
-float turningsinglelines_increment = 10;
-float turningsinglelines_angle = 0;
-float turningsinglelines_angleincrement = 0.2f;
-ArrayList<SingleTurningLine> turningsinglelines_lines;
-
-//RandomAppearingLines parameters
-float randomappearinglines_speedx = 0;
-float randomappearinglines_speedy = 12;
-float randomappearinglines_currentangle = 0;
-int randomappearinglines_framechange = 9;
-int randomappearinglines_framecount = 0;
-int randomappearinglines_initx = 20;
-int randomappearinglines_inity = -40;
-int randomappearinglines_currentx = randomappearinglines_initx;
-int randomappearinglines_currenty = randomappearinglines_inity;
-int randomappearinglines_previousx = randomappearinglines_currentx;
-int randomappearinglines_previousy = randomappearinglines_currenty;
-
-//ImpulseRectangles parameters
-int impulserectangles_posx = 0;
-int impulserectangles_posy = 0;
-int impulserectangles_incrementx = 15;
-int impulserectangles_incrementy = 10;
-int impulserectangles_rectanglesize = 32;
-
-//Crescent parameters
-float crescent_distext;
-float crescent_distint;
-int crescent_number = 6;
-float crescent_emphasis = 0;
-float crescent_speed = 0.1f;
-float crescent_minstrokeweight = 4;
-float crescent_maxbonussize = 16;
-float crescent_fatfactor;
-float crescent_colorfactor = 10;
-
-//Clock parameters
-float clock_mainangle = 0;
-float clock_speed = 0.025f;
-int clock_numberofbranches = 4;
-boolean clock_rotate;
-float clock_subangle = 0;
-float clock_subspeed = 0.075f;
-
-//ColorBeat parameters
-float colorbeat_maxval;
-float colorbeat_value;
-float colorbeat_minvalue;
-float colorbeat_transitionpos;
-
-//InvertExplode parameters
-int invertexplode_numberoflines = 6;
-float invertexplode_maxcirclewidth;
-float invertexplode_circlewidth;
-float invertexplode_circlespeed = 8;
-float invertexplode_maxcirclehue = 90;
-float invertexplode_circlehue;
-float invertexplode_huespeed = 7;
-float invertexplode_pos;
-float invertexplode_linelength;
-float invertexplode_angle = 0;
-float invertexplode_anglespeed = 0.5f * (PI/invertexplode_numberoflines);
-
-//DarkSnakes and BrightSnakes parameters
-BrightSnake[] brightsnakes_snakes = new BrightSnake[0];
-DarkSnake[] darksnakes_snakes = new DarkSnake[0];
-
-
-//LightPainting parameters
-int lightpainting_particleCount = 64;
-int lightpainting_emissionPeriod = 2;                                      //The number of events that must occur before a spark is emitted.  Increasing this will improve performance as well as change the aesthetics.
-float lightpainting_lowBounce = 0.5f;                                       //The lowest ratio of vertical speed retained after a spark bounces.
-float lightpainting_highBounce = 0.8f;                                      //The highest ratio of vertical speed retained after a spark bounces.
-float lightpainting_spraySpread = 2.0f;                                     //The variation in velocity of newly-created lightpainting_sparks.
-float lightpainting_earthGravity = 1.0f / 16.0f;
-float lightpainting_moonGravity = lightpainting_earthGravity / 6.0f;
-float lightpainting_jupiterGravity = lightpainting_earthGravity * 2.5f;
-float lightpainting_gravity = lightpainting_earthGravity;                  //The amount of acceleration due to gravity.
-float lightpainting_tolerance = 0.5f;                                       //The amount of error allowed in model coordinate measurements.  Lowering this will let lightpainting_sparks have tiny bounces longer.
-float lightpainting_focalLength = 1000.0f;                                  //The focal length from the viewer to the screen in model coordinates.
-float lightpainting_interaction_distance = 4 * lightpainting_focalLength;  //The distance in model coordinates from the viewer to where new lightpainting_sparks are created.  Increasing this number will move the created sparks further away.
-LightPaintingCanvas3D lightpainting_canvas;                                //A custom 3D lightpainting_canvas used to draw the world.
-LightPaintingParticle lightpainting_sparks[] = new LightPaintingParticle[lightpainting_particleCount];//A collection of Particles that represent the spraying sparks. 
-int lightpainting_nextSpark = 0;                                           //The index of the LightPaintingParticle to use for the next spark created.
-int lightpainting_skipCount = 0;                                           //The number of drag events that have passed without emitting a spark.
-int lightpainting_numberofimpulses = 4;                                    //The number of sparks created by calling the animation
-boolean lightpainting_initok = false;                                      //Define if the animation was initialised
-long lastFrameDrawn = millis(); 
-float averageElapsedMillis = 20.0f;
-
-//ShiftPixels parameters
-int shiftpixels_slowspeed = 4;
-int shiftpixels_fastspeed = 8;
-int shiftpixels_speed = shiftpixels_slowspeed;
-
-//LightFusion parameters
-int lightfusion_xmin = -20;
-int lightfusion_xmax = 10;
-int lightfusion_ymin = -20;
-int lightfusion_ymax = 10;
-int lightfusion_xspan;
-int lightfusion_yspan;
-float lightfusion_X;
-float lightfusion_Y;
-float lightfusion_speedX;
-float lightfusion_speedY;
-float lightfusion_timeincrement = 0.4f;
-float lightfusion_time = 0;
-boolean lightfusion_moveUp;
-boolean lightfusion_moveRight;
-boolean lightfusion_column = true;
-boolean lightfusion_mousemoved = false;
-
-//RandomPaint parameters
-float randompaint_len = 0.4f;
-float randompaint_lastX,randompaint_lastY;
-float randompaint_startX;
-float randompaint_startY;
-int randompaint_t = 0;
-float randompaint_ang = random(360);
-int randompaint_pixelsize = 4;
-
-//RedWave parameters
-float redwave_xmin = 0;
-float redwave_xmax = 30;
-float redwave_ymin = 0;
-float redwave_ymax = 30;
-float redwave_timeIncrement = 0.1f;
-float redwave_dx, redwave_dy;
-float redwave_t = 0;
-int redwave_i = 0;
-float redwave_xspan;
-float redwave_yspan;
-
-//DiagonalColors parameters
-boolean diagonalcolor_init = false;
-DiagonalColor[] diagonalcolors = new DiagonalColor[90];
-
-//HypnoSpiralRed parameters
-float hypnospiralred_X;
-float hypnospiralred_Y;
-float hypnospiralred_xmin = -1;
-float hypnospiralred_xmax = 1;
-float hypnospiralred_ymin = -1;
-float hypnospiralred_ymax = 1;
-float hypnospiralred_timeIncrement = 0.04f;
-float hypnospiralred_timeIncrementFactor = 0.001f;
-float hypnospiralred_noiseScale = 0.01f;
-float hypnospiralred_noiseScale2 = 0.03f;
-float hypnospiralred_noiseMove = 2;
-float hypnospiralred_t = 0;
-float hypnospiralred_xspan;
-float hypnospiralred_yspan;
-
-
-//NightRoad parameters
-float nightroad_xmin = -1;
-float nightroad_xmax = 1;
-float nightroad_ymin = 0.5f;
-float nightroad_ymax = 0.04f;
-float nightroad_t = 0;
-float nightroad_xspan;
-float nightroad_yspan;
-float nightroad_timeIncrement = 0.2f;
-float nightroad_direction;
-float nightroad_Y;
-float nightroad_beatspeed = 6;
-int nightroad_frameCounter = 0;
-float nightroad_brightness;
-
-//HypnoFlashTriangle parameters
-int hypnotriangle_instancecounter = 0;
-boolean hypnotriangle_init = true;
-ArrayList<HypnoTriangle> hypnotriangle_list;
-
-//RotatingCut parameters
-float rotatingcut_angle = random(0, 2*PI);
-float rotatingcut_speed = 0.01f;
-
-//ArcRot parameters
-float arcRot_maxiPi = 5 * TWO_PI;
-float arcRot_maxPulseSize = 24;
-float arcRot_pulseSize = arcRot_maxPulseSize;
-float arcRot_pulseSpeed = 2;
-
-//EnergyGrid parameters
-int energytriangles_density = 4; 
-ArrayList<EnergyTriangle> EnergyTriangles = new ArrayList<EnergyTriangle>();
-float energytriangles_energy = 180; 
-boolean energytriangles_init = false;
-
-//ReverseTriangles parameters
-PGraphics reverseTriangles_red;
-PGraphics reverseTriangles_green;
-float reverseTriangles_sizeInit = 0.4f;
-float reverseTriangles_speed = 1.15f;
-float reverseTriangles_size;
-
-//TrigoShapes parameters
-int trigoshapes_chosenFunction = 0;
-float trigoshapes_particleAngle = 0;
-float trigoshapes_particleFormation = 0;
-float trigoshapes_radius;
-float trigoshapes_smallradius;
-TrigoShapeParticle[] trigoshapes_particles;
-TrigoShapeParticle[] trigoshapes_particles2;
-float trigoshapes_hue = 0;
-float trigoshapes_hueIncrement = 2;
-PImage trigoshapes_arrowImage;
-boolean trigoshapes_initComplete = false;
-
-//nonotak parameters
-int nonotak_1_color = 0;
-int nonotak_1_x = 0;
-int nonotak_2_x = 0;
-int nonotak_3_x = 0;
-int nonotak_4_y = 0;
-int nonotak_5_y = 0;
-boolean nonotak_5_up = false;
-
-//NonotakPanelFill parameters
-ArrayList<NonotakPanelFill> nonotakPanelFill_list = new ArrayList<NonotakPanelFill>();
-
-//NonotakWoosh parameters
-ArrayList<NonotakWoosh> nonotakWoosh_list = new ArrayList<NonotakWoosh>();
-
-//Patatap parameters
-boolean patatap_init = false;
-ArrayList<PatatapObject> patatapObjectList;
-int[] patatap_maxProgressTable = {10, 15, 30, 15, 40, 16, 20, 26, 45, 96/4, 35, 25, 30, 15, 40};
-boolean[] patatap_switcher = {false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false};
-int patatap_currentColorset = 1;
-int[] patatap_colorsetBackground  =   {color(46,167,209),  color(0,0,0)          };
-int[] patatap_colorsetFlash       =   {color(255,0,0),     color(255,255,255)    };
-int[] patatap_colorsetElement1    =   {color(239,30,54),   color(229,252,194)    };
-int[] patatap_colorsetElement2    =   {color(240,139,95),  color(157,224,173)    };
-int[] patatap_colorsetElement3    =   {color(241,216,142), color(69,173,168)     };
-int[] patatap_colorsetElement4    =   {color(126,210,182), color(84,121,128)     };
-
-//ParallelWorlds parameters
-ArrayList<ParallelWorldLine> parallelworlds_list;
-float parallelworlds_speed = 3;
-float parallelworlds_flashpower = 0;
-float parallelworlds_colorDecreaseSpeed = 255/13;
-boolean parallelworlds_init = false;
-boolean parallelworlds_reverse = false;
-
-//Fireflies parameters
-int fireflies_number = 50;
-int fireflies_edge;
-ArrayList<Firefly> fireflies_list;
-boolean fireflies_init = false;
-
-//MultiCrecy parameters
-int[] crecy_maxProgressList = {10,10,10,10,10,10,10,10,10,10,
-                               20,20,20,20,20,20,20,20,20,20,
-                               35,35,35,
-                               15,15,15,15,15,15,15,15,15,15,
-                               25,25,25,25,25,25,
-                               25,25,25,25,25,25};
-ArrayList<Crecy> crecy_list;
-int crecy_internalCounter = 0;
-int crecy_changeRate = 64;
-int crecy_red   = 0;
-int crecy_green = 255;
-int crecy_blue  = 0;
-boolean crecy_init = false;
-int crecy_colorcounter = 0;
-int crecy_previousDouble = 0;
-
-//Snake parameters
-ArrayList<SnakeObjective> snake_objectives;
-Snake snake_instance1;
-Snake snake_instance2;
-Snake snake_instance3;
-Snake snake_instance4;
-Snake snake_instance5;
-Snake snake_instance6;
-int snake_weight = 8;
-boolean snake_init = false;
-
-//SweepingBallsAndArrows parameters
-float sweeperBalls_randomAccel = 0.1f;
-ArrayList<SweeperBall> sweeperBalls_list;
-ArrayList<DoubleArrow> sweeperBalls_listarrow;
-int sweeperBalls_maxBallSize = 24;
-int sweeperBalls_minBallSize = 4;
-float sweeperBalls_initSpeed = 4;
-float sweeperBalls_initSpeedVar = 3;
-int sweeperBalls_nbOfBalls = 30;
-float sweeperBalls_arrowSpeed = 4;
-boolean sweeperBalls_arrowcolor = false;
-boolean sweeperBalls_init = false;
-
-//RotatingHalfCircle parameters
-float rotatingHalfCircle_x;
-float rotatingHalfCircle_transparency; 
-float rotatingHalfCircle_corner; 
-float rotatingHalfCircle_theta;
-float rotatingHalfCircle_size;
-int rotatingHalfCircle_num = 40;
-
-//PeriodicNoise parameters
-float periodicNoise_noiseSpeed = 0.02f;
-
-//Tumbler parameters
-float tumbler_r = 0;
-float tumbler_theta = 0;
-
-//DynamicAngleLines parameters
-float dynamicAngleLines_angle = 0;
-float dynamicAngleLines_angleSpeed = 0.02f;
-int dynamicAngleLines_maxLineWidth;
-int dynamicAngleLines_nbrLines = 15;
-boolean dynamicAngleLines_positiveInc = true;
-
-//FauveRandomFlash parameters
-int fauveRandomFlash_blueWhite = color(230,230,255);
-int fauveRandomFlash_red = color(255,0,0);
-int fauveRandomFlash_minEllipseSize = 58;
-int fauveRandomFlash_maxEllipseSize = 24;
-
-//BarWaves parameters
-int barWaves_colBlue1=0xff0B486B, barWaves_colBlue2=0xffCFF09E;
-int barWaves_colBlack=0xff000000, barWaves_colWhite=0xffFFFFFF;
-int barWaves_colRed1=0xff220000, barWaves_colRed2=0xffFF0000;
-int barWaves_columns;
-float barWaves_stepX, barWaves_theta, barWaves_ot, barWaves_fc, barWaves_time, barWaves_scal=1;
-float[] barWaves_offSets;
-float[] barWaves_offTheta;
-float barWaves_speed = 0.1f;
-boolean barWaves_init = false;
-
-//RedSun parameters
-int redSun_rs = PApplet.parseInt(random(1000));
-int redSun_num=50;
-float redSun_szS, redSun_szB, redSun_angle, redSun_theta;
-int redSun_internalCircleRadius = 0;
-int redSun_internalCircleLimitSize = 32;
-int redSun_circleSpeed = 4;
-
-//SlicedWave parameters
-int slicedWave_slices = 4;
-int slicedWave_pieces = 5;
-int slicedWave_num=slicedWave_slices*slicedWave_pieces;
-float[] slicedWave_r = new float[slicedWave_num];
-int slicedWave_c;
-float slicedWave_scal, slicedWave_theta, slicedWave_sw;
-boolean slicedWave_init = false;
-float slicedWave_angle = 0;
-float slicedWave_rotSpeed = 0.1f;
-int slicedWave_angleStock = 0;
-int slicedWave_white = color(255,255,255);
-int slicedWave_red = color(255,0,0);
-
-// UglyAudioAnimation parameters
-ArrayList<UglyImpulseKick> uglyImpulseKickList;
-ArrayList<UglyImpulseSnare> uglyImpulseSnareList;
-ArrayList<UglyImpulseCymbal> uglyImpulseCymbalList;
-ArrayList<UglyImpulseBass> uglyImpulseBassList;
-
-// HypnoAudio parameters
-int hypnoAudio_currentPoint = 0;
-float[] hypnoAudio_currentCoordinates = {-0.25f,-0.25f};
-float[][] hypnoAudio_coordinates = {{-0.25f,-0.25f}, {0.25f,-0.15f}, {0.25f,0.25f}, {-0.15f,0.25f}}; 
-float hypnoAudio_moveSpeed = 0.1f;
-int hypnoAudio_redImpact = 0;
-int hypnoAudio_colorAttenuation = 5;
-boolean hypnoAudio_listenToAudio = true;
-
-// Spider Web
-boolean spiderweb_audioReactive = false;
-boolean spiderweb_fade          = false;
-ArrayList<SpiderWebPoint> spiderWebPoints;
-int spiderweb_nbPoints    = 25;
-int spiderweb_maxFriends  = 4;    //Allow at most 4 points to be in contact
-final int SPIDERWEB_WHITE = 0;
-final int SPIDERWEB_RED   = 1;
-int spiderweb_color       = SPIDERWEB_WHITE;
-int spiderweb_fadecpt     = 0;
-int spiderweb_fadespeed   = 8;
-
-// Woublines
-ArrayList<WoubLine> woublines_list;
-boolean woublines_init  = false;
-boolean woublines_audio = false;
-float woublines_speed   = 2;
-
-// Signal Waveform
-final int signalWaveForm_offsetY = (PANEL_RESOLUTION_Y * DISPLAY_SCALING_FACTOR)/2 - DISPLAY_SCALING_FACTOR/2;
-
-// Simple Spiral
-float simplespiral_theta = 0;
-int simplespiral_num = 20;
-
-// TV Power off
-int tvpoweroff_progress = 0;
-int tvpoweroff_speed = 3;
-
-//White Spread
-int whitespread_progress = 0;
-int whitespread_speed = 4;
-
-//ScannerLine
-float scannerLine_progress = 0;
-float scannerLine_SlowSpeed = 1;
-float scannerLine_FastSpeed = 3;
-float scannerLine_SpeedVar = 0.0007f;
 ///////////////////////////////////////////////////////////////
 // AnimatedGifEncoder - Encode a GIF files with still frames //
 ///////////////////////////////////////////////////////////////
@@ -3560,6 +1919,1480 @@ class LZWEncoder {
   }
 }
 
+//////////////////////////////////////////////////////////////////////////////////////
+/////////Contains parameters specific to animations called in the main sketch/////////
+//////////////////////////////////////////////////////////////////////////////////////
+
+
+//Carglass parameters
+float carglass_progress = 0;
+float carglass_speed = 0.1f;
+float carglass_linelength;
+
+//initFlasher (intro) parameters
+int initFlasher_progress = 0;
+int initFlasher_firstFlashSpeed = 1;
+int initFlasher_startNoise = 220;
+int initFlasher_startNoise2 = 450;
+int initFlasher_startNoise3 = 550;
+int initFlasher_startNoise4 = 600;
+int initFlasher_startBlackout = 700;
+int initFlasher_startWhiteout = 1000;
+int initFlasher_startMegawhiteout = 1200;
+int initFlasher_startStrobo = 1320;
+float initFlasher_noiseBrightness = 0;
+int initFlasher_startJitter = 2000;
+float initFlasher_noiseSpeed_1 = 0.03f;
+float initFlasher_noiseSpeed_2 = 0.06f;
+float initFlasher_noiseSpeed_3 = 0.09f;
+float initFlasher_blackoutProbability = 0;
+float initFlasher_blackoutProbability_max = 0.4f;
+float initFlasher_blackoutProbability_speed = 0.001f;
+float initFlasher_whiteoutProbability = 0;
+float initFlasher_whiteoutProbability_max = 0.7f;
+float initFlasher_whiteoutProbability_speed = 0.001f;
+float initFlasher_flashProbability = 0;
+float initFlasher_flashProbability_max = 0.5f;
+float initFlasher_flashProbability_speed = 0.0025f;
+int initFlasher_pixelSize = 4;
+
+//Va et vient parameters
+float va_et_vient_progress = 0;
+float va_et_vient_speed_horizontal = 16;
+float va_et_vient_speed_vertical = 8;
+
+//Spiraluality parameters
+float spiraluality_i;
+int spiraluality_numCircles = 23;
+float spiraluality_1stdiameter = 300;
+float spiraluality_diameterDiff = 13;
+float spiraluality_xArticulation = 13;
+float spiraluality_yArticulation;
+float spiraluality_speed = 0.002f;
+
+//Shadows parameters
+float rand = random(1);
+
+//RedWhiteGlowingBalls parameters
+float redGlowingBalls_size = 20;
+float redGlowingBalls_noiseSpeed = 0.1f;
+
+
+//Bouncing Circle parameters
+int rad = 10;        // Width of the shape
+float xpos, ypos;    // Starting position of shape    
+float xspeed = 2.9f;  // Speed of the shape
+float yspeed = 2.9f;  // Speed of the shape
+int xdirection = 1;  // Left or Right
+int ydirection = 1;  // Top to Bottom
+
+//Rotating Circles parameters
+int background_color = 255;
+int circle_color = 0;
+int objNum = 20;
+float degrees = 360/5;
+float distance = 50;
+float angleOffset = 0;
+int positionX = NUMBER_OF_PANELS*32/2;
+int positionY = 64/2;
+int diameter = 30;
+
+//Waveform parameters
+float yoff = 0.0f;        // 2nd dimension of perlin noise
+float waveform_y_growing = 32.0f;
+
+//Worms parameters
+Worm[] worms;
+int numWorms = 4*NUMBER_OF_PANELS;
+boolean worms_init = false;
+PVector pulse;
+boolean pulsed;
+
+//Upwards Line parameters
+float line_height;
+
+//Wind particles parameters
+Particle[] particle ;
+int NUMPARTICLES = 15*NUMBER_OF_PANELS ;
+Wind wind ;
+
+//PanelFill parameters
+ArrayList<PanelFillLineClass> panelFillLinesList;
+boolean panelFillLinesListInit = false;
+boolean panelfilllines_kill = false;
+int panelfilllines_j = 0;
+int panelfilllines_maxsize = 4;
+int panelfilllines_maxspeed = 3;
+int panelfilllines_frequency = 35;
+boolean panelfilllines_draw = false;
+int panelfilllines_randtype = 0;
+
+//Symmetry parameters
+static int SHADES = 255 ;                // - Number of shades of gray that can be displayed
+static int CYCLESBEFORECHANGE = 3 ;     // - Number of times the featured pattern is drawn before cycling to the next pattern
+ 
+// The three patterns that can be displayed
+static public int CIRCLE_PATTERN = 0;
+static public int SPIKE_PATTERN = 1;
+static public int FLOWER_PATTERN = 2;
+static int NUM_PATTERNS = 3;
+static int NUM_MODES = 7;
+static int MODES[][] =
+  { {6, 3, 10, 20, 30},
+    {8, 100, 30, 20, 50}, 
+    {3, 3, 20, 20, 60},
+    {5, 3, 1, 60, 60},
+    {4, 6, 40, 2, 1},
+    {7, 250, 20, 8, 10},
+    {77, 1, 30, 10, 10 }
+  } ;
+  
+int framesToCycle = 90 ;   // Time to complete half a pattern (180 degrees) - 3 seconds
+// Variables that define the 'mode' being displayed
+int numSegments;          // number of reflections
+public int numRibbons;     // Number of ribbons drawn in each segment
+public float redChange, greenChange, blueChange ; // Speed at which each colour is cycled
+int redVal, greenVal, blueVal; // Holds the current colour of the line
+public Ribbon[] ribbons ; // An array to hold the ribbons
+int mode = 0;
+public float delta = 0;
+int frames = 0;
+int fadeFrames = 0;
+
+
+//Flashleft, center and right parameters
+int flash_sustain = 1;
+int drawextremeleft    = flash_sustain;
+int drawleft           = flash_sustain;
+int drawcenter         = flash_sustain;
+int drawright          = flash_sustain;
+int drawextremeright   = flash_sustain;
+int drawwide           = flash_sustain;
+
+//Rhombus parameters
+float rhombus_diaX = NUMBER_OF_PANELS*32/2;
+float rhombus_diaR = 30;
+float rhombus_diaS = 6;
+
+//KaleidoTriangle parameters
+float trianglepos;
+
+//Glitch parameters
+PImage redImg, greenImg, blueImg;
+float sincounter = 0;
+
+//Snow parameters
+Floco[] snowMatrix=new Floco[30*NUMBER_OF_PANELS];
+int snowflakecounter;
+int snowflakeSize=4;
+float snowflakemaxValue=0.5f;
+
+//MechanicLines parameters
+float mechaniclines_w = 30;
+float mechaniclines_h = 20;
+float mechaniclines_wspeed = 1;
+float mechaniclines_hspeed = 0.5f;
+
+//RedvsBlackvsWhite parameters
+ArrayList dots;
+float dots_row = 5;
+float redvsblackvswhite_incr;
+float redvsblackvswhite_start;
+float redvsblackvswhite_angle = 0;
+int redvsblackvswhite_i=0;
+int redvsblackvswhite_frameCount=0;
+boolean one_off = false;
+
+//RotatingSquare parameters
+float thetaStart;
+TriRot [] TriRotElem = new TriRot[1];
+boolean rotatingSquare_init = false;
+int rotatingSquare_strokeweight = 6;
+
+//MovingSine parameters
+int movingsine_howMany = 32*NUMBER_OF_PANELS;
+float movingsine_speed;
+ExLine [] SineElem = new ExLine[movingsine_howMany];
+
+//Smoke parameters
+float smoke_particles_movement = 0;
+
+//Sinefuckedup parameters
+int sine_fuckedup_counter = 0;
+float v = 0;
+float w = 0;
+
+//Manual/AutomaticCircle parameters
+ArrayList rings = new ArrayList();
+float howManyRings= 10;
+float dropcircle_x, dropcircle_y;
+float dropcircle_sz = 0;
+boolean dropcircle_kill = false;
+int dropcircle_j = 0;
+
+//Rain parameters
+int howManyRainDrops = 50;
+float[] raindrops_x = new float[howManyRainDrops];
+float[] raindrops_y = new float[howManyRainDrops];
+float[] raindrops_speed = new float[howManyRainDrops];
+
+
+//PulseStar parameters
+float pulsestar_R;
+float pulsestar_r;
+int pulsestar_N = 9;
+float pulsestar_OMEGA = 0.2f;
+float pulsestar_t;
+
+//MovingLines parameters
+ArrayList<MovingLine> movingLines = new ArrayList<MovingLine>();
+boolean movingline_kill = false;
+int movingline_j = 0;
+int movingline_maxangle = 45;
+int movingline_maxspeed = 3;
+int movingline_frequency = 67-(NUMBER_OF_PANELS-3)*7;
+
+//MovingSquares parameters
+ArrayList<MovingSquare> movingSquares = new ArrayList<MovingSquare>();
+int movingsquare_j = 0;
+int movingsquare_maxsize = 4;
+int movingsquare_maxspeed = 3;
+int movingsquare_frequency = 40-4*NUMBER_OF_PANELS;
+
+//UpwardGlitchLines parameters
+int upwards_glitchlines_a;
+int upwards_glitchlines_b;
+int upwards_glitchlines_c;
+int upwards_glitchlines_interligne;
+int upwards_glitchlines_speed;
+int upwards_glitchlines_count;
+int upwards_glitchlines_glitch_x;
+int upwards_glitchlines_glitch_y;
+int upwards_glitchlines_freq;
+
+//DiagonalGlitchLines parameters
+int diagonal_glitchlines_a;
+int diagonal_glitchlines_b;
+int diagonal_glitchlines_c;
+int diagonal_glitchlines_strokeWidth;
+int diagonal_glitchlines_speed;
+int diagonal_glitchlines_count;
+
+//CompressedLines parameters
+int compressedlines_ratio;
+
+//PanelFill parameters
+ArrayList<PanelFillClass> panelFillList;
+boolean panelFillListInit = false;
+boolean panelfill_kill = false;
+int panelfill_j = 0;
+int panelfill_maxsize = 4;
+int panelfill_maxspeed = 3;
+int panelfill_frequency = 35;
+boolean panelfill_draw = false;
+
+//MixedLines parameters
+int mixedlines_horizontal1;
+int mixedlines_horizontal2;
+int mixedlines_horizontal3;
+int mixedlines_vertical1;
+int mixedlines_vertical2;
+int mixedlines_vertical3;
+int mixedlines_circlex;
+int mixedlines_speed;
+int mixedlines_strokeWeight;
+int mixedlines_ellipsewidth;
+
+//DoubleGradientTransition parameters
+int doublegradient_a = 0;
+int doublegradient_b = NUMBER_OF_PANELS*32;
+boolean doublegradient_direction = true;
+
+//CarreMarshall parameters
+int carreMarshall_a;
+int carreMarshall_largeurCarre;
+int carreMarshall_interligne;
+int carreMarshall_epaisseurLigne;
+int carreMarshall_vitesseLigne;
+int carreMarshall_compteur;
+int carreMarshall_coeffAgrandissement;
+
+//Fusee parameters
+int fusee_a;
+int fusee_epaisseurLigne;
+int fusee_vitesseLigne;
+int fusee_compteur;
+int[] fusee_tab1;
+int[] fusee_tab2;
+
+//Spots parameters
+int spots_tailleCone;
+
+//UpwardsGlitchMixedLines parameters
+int upwards_glitch_mixedlines_b;
+int upwards_glitch_mixedlines_c;
+int upwards_glitch_mixedlines_d;
+int upwards_glitch_mixedlines_e;
+int upwards_glitch_mixedlines_f;
+int upwards_glitch_mixedlines_g;
+int upwards_glitch_mixedlines_ac;
+int upwards_glitch_mixedlines_bc;
+int upwards_glitch_mixedlines_cc;
+int upwards_glitch_mixedlines_dc;
+int upwards_glitch_mixedlines_epaisseurLigne;
+int upwards_glitch_mixedlines_interligne;
+int upwards_glitch_mixedlines_speed;
+
+//Scope parameters
+float scope_arc_b_r = 0;
+float scope_arc_s_r = 0;
+float scope_ellipsewidth = 24;
+ 
+float scope_rotationcounter = 0;
+int scope_freqcounter = 0;
+int scope_flg1 = 0;
+int scope_flg2 = 0;
+int scope_flg3 = 0;
+ 
+int scope_color;
+int scope_g = 0;
+int scope_b = 0;
+boolean scope_decrease = false;
+
+
+//SquareWaveGenerator parameters
+int [] squarewave_button;
+int [] squarewave_timer;
+int squarewave_step = 0;
+int squarewave_tA = 0;
+int squarewave_tB = 0;
+int squarewave_tC = 0;
+boolean squarewave_alreadycalled = false;
+boolean squarewave_signalpulse = false; 
+int squarewave_signalframecounter = 0;
+
+//Tetris parameters
+final int CYAN = color(0,150,255);
+final int ORANGE = color(255,165,0);
+final int YELLOW = color(255,255,0);
+final int PURPLE = color(160,32,240);
+final int BLUE = color(0,0,255);
+final int RED = color(255,0,0);
+final int GREEN = color(0,255,0);
+ 
+Grid board;
+Tetromino curr;
+Shape next;
+Shape[] shapes = new Shape[7];
+int timer = 8;
+int currTime = 0;
+int score = 0;
+int lines = 0;
+int level = 1;
+final int SPEED_DECREASE = 2;
+boolean game_over = false;
+boolean show_score = false;
+boolean init = false;
+
+//PixelLines parameters
+IntList pixellines_color1;
+IntList pixellines_color2;
+int pixellines_strokeWidth = 4;
+
+//Pong parameters
+boolean gameover= false, command_p1_right = false, command_p1_left = false, command_p2_right = false, command_p2_left = false;
+int topscore = 0;
+int topmatchcount = 0;
+int bottomscore = 0;
+int bottommatchcount = 0;
+float changespeed = 0;
+int randomarea = 10;
+int pong_rectwidth = 5;
+int pong_rectheight = 4;
+int pong_rectspacing = 8;
+Paddle bottom;
+Ball pongball;
+Paddle top;
+PFont font;
+boolean gamestart = false;
+float pong_sideFactor = 0;
+
+//Rorschach parameters
+int nBalls;
+int nSteps;
+float thresh;
+float vMax;
+float[][] balls;
+ 
+int numBallShapes = 4;
+int movementMode = 3;
+boolean invertAlpha;
+boolean blackBackground;
+int backgroundColor;
+int ballColor = color(255,0,0);
+boolean randomColor;
+PImage ballImage;
+int radius;
+
+//Unfolding lines parameters
+float supposed_height = 1;
+
+//Superformula parameters
+int superformula_num = 60;
+int superformula_colorL=255,superformula_k = 0,superformula_j=100,superformula_i=200;
+float superformula_x,superformula_y,superformula_z;
+float superformula_r,superformula_th=0,superformula_step=.1f,superformula_epi=200;
+float superformula_m = 1,superformula_n1=-1,superformula_n2=0,superformula_n3=0;
+float superformula_b=1,superformula_a=1;
+int superformula_counter1=-2, superformula_counter2=0;
+
+//Growing Triangle parameters
+ArrayList trianglelist = new ArrayList();
+growingTriangle triangle1;
+
+//Moire parameters
+moire moireOne;
+moire moireTwo;
+
+//ResponsiveCircles parameters
+int responsiveCircles_x;
+int responsiveCircles_y;
+boolean responsiveCircles_forward = true;
+boolean responsiveCircles_alreadycalled = false;
+int[] colortheme = {
+  0xff00B9EE, 0xff009FE3, 0xff00497F,
+  0xff03326C, 0xff83D0F5, 0xff006F9E,
+  0xff004899, 0xff052453
+};
+
+//ParticlesExplode parameters
+ArrayList<ParticleExplode> arr;
+int particleColor;
+boolean particlesexplode_alreadyinitialised = false;
+
+//Starfield parameters
+StarPoint[] starfield_asteroids1 = new StarPoint[4];
+StarPoint[] starfield_asteroids2 = new StarPoint[6];
+ 
+StarPoint[] starfield_satellite = new StarPoint[1]; //starfield_satellite
+StarPoint[] starfield_planet = new StarPoint[1]; //starfield_planet
+//StarPoint[] asteroids3 = new StarPoint[155]; //bg
+
+//ColorVertex parameters
+ArrayList colorvertex_pointarray;
+int colorvertex_distance =50;
+
+//ParticlesFlow parameters
+ImgProc imgProc = new ImgProc();
+ 
+float particlesflow_noiseScale = 0.01f;
+float particlesflow_noiseZ = 0;
+int particlesflow_particlesDensity = 1;
+int particlesflow_particleMargin = 30; 
+ParticleFlow[] particlesflow_particles;
+int[] particlesflow_currFrame;
+int[] particlesflow_prevFrame;
+int[] particlesflow_tempFrame;
+
+//BezierFlowers
+int bezierflowers_leaf = 1;  //  Number of leaves
+int bezierflowers_col = 0;   //  Color
+int bezierflowers_deep = 0;  //  Color density
+final int bezierflowers_MAX_POINT = 2;   //  Number of control points for the Bezier lines
+ControlPoint[] bezierflowers_controlpoints = new ControlPoint[bezierflowers_MAX_POINT];  // Bezier control points
+int bezierflowers_timer = 0;  //  Timer
+
+//JointCircles parameters
+int jointcircles_time = 0;
+
+//TunnelRed and TunnelWhite parameters
+int tunnel_num = 20;
+int tunnel_counter = 0;
+int tunnel_color_counter;
+float[] tunnel_grises = new float[tunnel_num];
+
+//CosmoCurve parameters
+float cosmoscurve_r;
+float cosmoscurve_a = 50;
+float cosmoscurve_n = 0;
+float cosmoscurve_d = 2;
+  
+PVector cosmoscurve_point = new PVector(0,0);;
+PVector cosmoscurve_center;
+
+//PerlinColor parameters
+float colorperlin_LOOKER_RADIUS = 32.0f;
+float colorperlin_numX = 13;
+float colorperlin_numY = 13;
+float colorperlin_noiseCount = 1;
+AngleThing[][] colorperlin_myAngleThing = new AngleThing[(int)colorperlin_numX][(int)colorperlin_numY];
+
+//OppositeLinesNoBackground parameters
+float oppositeLinesNoBackground_x = 0;
+boolean oppositeLinesNoBackground_rightside = true;
+boolean oppositeLinesNoBackground_reinit = true;
+
+//OpeningLines parameters
+float openinglines_x = 0;
+
+//SingleSquareSpiral parameters
+int singleSquareSpiral_boxSize = 36;
+int singleSquareSpiral_windowSize = NUMBER_OF_PANELS*40;
+float singleSquareSpiral_tick = 1; 
+boolean singleSquareSpiral_altCol = true;
+boolean singleSquareSpiral_start = true; 
+
+//DualSquareSpiral parameters
+int dualSquareSpiral_boxSize = 40;
+int dualSquareSpiral_windowSize = 32*NUMBER_OF_PANELS;
+float dualSquareSpiral_tick = 1; 
+boolean dualSquareSpiral_altCol = true;
+boolean dualSquareSpiral_start = true; 
+
+//ComplexSpiral parameters
+int complexspiral_counter = 0;
+
+//BeatCircle parameters
+int beatcircle_counter = 0;
+float beatcircle_radius = 64;
+float beatcircles_linepos = 0;
+
+//Blue and RedDiagonalLines parameters
+float blueposx = 0;
+float redposx = 0;
+float blueposy = 0;
+float redposy = 0;
+
+//WhiteNoiseCrescendo parameters
+int whitenoisecrescendo_brightness = 20;
+
+//InwardsSpiral parameters
+int inwardsspiral_counter = 0;
+int inwardsspiral_size = 12;
+float inwardsspiral_speed = 0.15f;
+float inwardsspiral_ratio = inwardsspiral_speed*8;
+float inwardsspiral_radius = 50+(NUMBER_OF_PANELS-3)*15;
+
+//ExplodingCircle parameters
+int explodingcircle_counter = 0;
+int explodingcircle_speed = 10 + 2*(NUMBER_OF_PANELS-3);
+
+//Rotozoom parameters
+int rotozoom_w=256,rotozoom_a,rotozoom_b,rotozoom_c,rotozoom_d;
+
+//NewtonPendulum parameters
+WavePendulum newtonpendulum_p;
+float newtonpendulum_t = 0.0f;
+ArrayList newtonpendulum_pends;
+float[] newtonpendulum_lengths = new float[30];
+float newtonpendulum_g = 9.8f;
+
+//Pendulum parameters
+int pendulum_n = 200;
+LargeWheelPendulum wheelpendulum_p;
+float wheelpendulum_t = 0.0f;
+ArrayList wheelpendulum_pends;
+float[] wheelpendulum_lengths = new float[pendulum_n];
+float wheelpendulum_g = 9.8f;
+HypnoWheelPendulum hypnopendulum_p;
+float hypnopendulum_t = 0.0f;
+ArrayList hypnopendulum_pends;
+float[] hypnopendulum_lengths = new float[pendulum_n];
+float hypnopendulum_g = 9.8f;
+float hypnopendulum_fadein = 0;
+float hypnopendulum_fadeinSpeed = 0.05f;
+
+//Mugen parameters
+float mugen_xamp, mugen_yamp, mugen_x, mugen_y, mugen_px, mugen_py;
+
+//ArcWave parameters
+ArcWaveClass[] arcwave_arcs;
+float arcwave_ray;int arcwave_maxi;
+
+//OutwardSpiral parameters
+float outwardspiral_x,outwardspiral_y, outwardspiral_theta, outwardspiral_r, outwardspiral_c;
+
+//Columns parameters
+float columns_firsty = PApplet.parseInt(random(0,64));
+float columns_secondy = PApplet.parseInt(random(0,64));
+float columns_thirdy = PApplet.parseInt(random(0,64));
+int columns_firstheight1 = 16;
+int columns_secondheight1 = 16;
+int columns_thirdheight1 = 16;
+int columns_firstheight2, columns_secondheight2, columns_thirdheight2;
+int columns_offsetx = 8;
+int columns_offsety = 4;
+boolean columns_shift = false;
+
+//CircleContour parameters
+float circlecontour_amp2 = 24;
+float circlecontour_amp = 24;
+float circlecontour_phase = 1;
+int circlecontour_elements = 5;
+float circlecontour_turn = 1.0f;
+float circlecontour_lineweight = 0.23f;
+
+//ColorExplode parameters
+colorexplode_particle[] colorexplode_Z = new colorexplode_particle[100];
+float colorexplode_colour = random(1);
+float colorexplode_r;
+int colorexplode_intcounter = 0;
+boolean colorexplode_init = false;
+
+//ColorRain parameters
+boolean colorrain_init = false;
+colorrain_CellArray colorrain_cells;
+
+//WarpSpeed parameters
+int warpspeed_i,warpspeed_x,warpspeed_y,warpspeed_b;
+
+//BWTriangles parameters
+ParticleSystem bwtriangles_particles;
+int bwtriangles_nbrParticles = 5 + (NUMBER_OF_PANELS-2);
+int bwtriangles_vit = 2;
+float bwtriangles_boxDist = 2;
+
+//GlitchDiagonalLines parameters
+int glitchdiagonallines_num = 25;
+glitchdiagonallines_Particle[] glitchdiagonallines_particleArray = new glitchdiagonallines_Particle[glitchdiagonallines_num];
+
+//FlashingDotsBorder parameters
+int flashingdotsborder_num = 6;
+int flashingdotsborder_posx = PApplet.parseInt(random(0,24));
+int flashingdotsborder_posy = 0;
+int[] flashingdotsborder_x = new int[flashingdotsborder_num];
+int[] flashingdotsborder_y = new int[flashingdotsborder_num];
+
+//FallingCircles parameters
+FallingCircles fallingCircles;
+int fallingcircles_fade;
+boolean fallingCircles_init = false;
+
+//ExplodingParticles
+int nbExplodingParticles=1000;
+float explodingparticle_asp=0;
+ExplodingParticles[] explodingparticle = new ExplodingParticles[nbExplodingParticles];
+boolean ExplodingParticles_explodeflag = true;
+boolean explodingparticle_init = false;
+
+//RandomBWFlow
+int randomBWFlow_resolutionX = 8*NUMBER_OF_PANELS;
+int randomBWFlow_resolutionY = 16;
+PVector randomBWFlow_flow[][] = new PVector[randomBWFlow_resolutionX][randomBWFlow_resolutionY];
+float randomBWFlow_density[][] = new float[randomBWFlow_resolutionX][randomBWFlow_resolutionY];
+float randomBWFlow_wind[] = new float[randomBWFlow_resolutionY]; // horizontal bands
+int randomBWFlow_particleCount = randomBWFlow_resolutionX*randomBWFlow_resolutionY*3;
+RandomBWFlowParticle bwflowparticle[] = new RandomBWFlowParticle[randomBWFlow_particleCount];
+int currentRandomBWFlowParticle;
+int randomBWFlow_oldMouseX;
+int randomBWFlow_oldMouseY;
+int randomBWFlow_alpha = 255;
+float randomBWFlow_varSpeed = 0.03f;
+boolean randomBWFlow_initComplete = false;
+
+//Tesselate parameters
+int tesselate_palette[] = { 0xff3415B0, 0xffFFCF00,
+                    0xffFF2100, 0xff0F4DAB,
+                    0xffF80012, 0xff1DD300,
+                    0xffFFFFFF, 0xff999999};
+int tesselate_size_b;
+int tesselate_size_a;
+int tesselate_size_dir = 1;
+int tesselate_size_time_den = 120;
+int tesselate_size_c_pal = 1;
+int tesselate_size_point_x;
+float tesselate_cont = 0;
+final int tesselate_BIG   = 0;
+final int tesselate_SMALL = 1;
+ 
+//DigitalHexParticles parameters
+DigitalHexParticleSystem digitalhexparticleSystem;
+
+ 
+//RedArcTransition and BlueArcTransition parameters
+int redarctransition_topleftx;
+int redarctransition_toplefty;
+int redarctransition_toprightx;
+int redarctransition_toprighty;
+int redarctransition_x1;
+int redarctransition_y1;
+int redarctransition_x2;
+int redarctransition_y2;
+int redarctransition_x21;
+int redarctransition_y21;
+int redarctransition_x22;
+int redarctransition_y22;
+int redarctransition_bottomtopx;
+int redarctransition_bottomtopy;
+int redarctransition_bottomdownx;
+int redarctransition_bottomdowny;
+int redarctransition_increment = 4;
+
+//LightBlobs
+int lightblobs_numBlobs = 13;
+float lightblobs_scale = 1;
+lightblobs_Blob lightblobs_b[] = new lightblobs_Blob[lightblobs_numBlobs];
+PGraphics lightblobs_pg;
+int lightblobs_w,lightblobs_h;
+
+//RandomSmokeParticles
+int smokeparticles_count = 200;
+float smokeparticles_t = 0, smokeparticles_dt = 0.01f;
+float smokeparticles_spinSpeed = 75 * 0.01f/smokeparticles_dt;
+int smokeparticles_seed;
+
+//RedMetaBalls
+int redmetaballs_numBlobs = 3;
+redmetaballs_Blob redmetaballs_b[] = new redmetaballs_Blob[redmetaballs_numBlobs];
+PGraphics redmetaballs_pg;
+int redmetaballs_w,redmetaballs_h;
+
+//Butterfly
+float butterfly_t=0,butterfly_s,butterfly_p,butterfly_k,butterfly_l;
+float butterfly_x,butterfly_y,butterfly_x2,butterfly_y2,butterfly_x3,butterfly_y3,butterfly_x4,butterfly_y4;
+float butterfly_a1,butterfly_b1,butterfly_a2,butterfly_b2,butterfly_a3,butterfly_b3,butterfly_a4,butterfly_b4;
+float butterfly_formFactor = 0.15f;
+float butterfly_speedFactor = 0.03f;
+float butterfly_scale = 0.3f;
+
+//CirclePusher
+PVector[] circlepusher_loc;                      //Circles position
+float[] circlepusher_rad;                        //Circles radius
+int circlepusher_num = 18 + NUMBER_OF_PANELS*2;  //Number of circles
+float circlepusher_rate = 1.05f;                  //Circle radius magnification rate
+boolean circlepusher_alreadyGenerated = false;   //Boolean to go through Init routine
+boolean circlepusher_setAngleRotate;             //Switch between rotating and straight circles 
+
+//Shutter parameters
+int shutter_colorMode = 0;
+float shutter_angle = 0;
+final float shutter_distanceInit = NUMBER_OF_PANELS*32;
+final float shutter_distanceLimit = 0;
+final float shutter_speedIncrement = 1;
+final float shutter_angleIncrement = 0.01f;
+float shutter_distance = shutter_distanceInit;
+
+//OrbitingParticles parameters
+OrbitingParticle[] orbitingparticles_particlelist;
+int orbitingparticles_number = 20;
+float orbitingparticles_dispersion = 4;
+float orbitingparticles_speedmin = 0.1f;
+float orbitingparticles_speedmax = 0.3f;
+float orbitingparticles_globalx;
+float orbitingparticles_globaly;
+float orbitingparticles_pullback = 1.6f;
+boolean orbitingparticles_initialised = false;
+int orbitingparticles_state = 0;
+
+//FlowingLines (Vines) parameters
+final float flowing_lines_MAX_ANGLE = radians(50);
+final int flowing_lines_MARGIN = 12;
+final int flowing_lines_DISTANCE = 300;
+final int flowing_lines_FRAMES_PER_DISTANCE = 80;
+final int flowing_lines_NUM_POINTS = 75;
+FlowingLinePath flowing_lines_Path;
+FlowingLine flowing_lines_lines[];
+int flowing_lines_screen_x, flowing_lines_screen_y;
+boolean flowing_lines_init = false;
+
+//ArrowStyle parameters
+float arrowstyle_height;
+float arrowstyle_pos;
+float arrowstyle_increment = 1.5f + (NUMBER_OF_PANELS - 3);
+
+//SingleArrow parameters
+int singlearrow_strokeCap = 16;
+int singlearrow_maxarrownumber = 50;
+ArrayList<SingleArrow> singlearrow_arrowlist;
+boolean singlearrow_initialized = false;
+
+//Rotozoom parameters
+PImage rotozoom_img;
+float rotozoom_angle=0;
+float rotozoom_scalee=1;
+float rotozoom_dscalee=0.05f;
+
+//MilkTank parameters
+final int milktank_numberofparticles = 20;
+final int milktank_contractiontime = 25;
+int[][] milktank_pixi;
+float milktank_f;
+int milktank_contraction = 0;
+int milktank_w;
+int milktank_h;
+int milktank_regroupX;
+int milktank_regroupY;
+boolean milktank_m;
+milktank_blob[] milktank_blobs;
+
+//FireNoiseSquares parameters
+FireNoiseSquare[] squares;
+
+//Slasher parameters
+Slash[] slash;
+int slasher_nb = 6;
+int[] slasher_colors = {color(120,30,220), color(222, 31, 31), color(222, 184, 31)};
+boolean slasher_initialized = false;
+
+//NekoJiru parameters
+int nekojiru_eyearcparam1;
+int nekojiru_eyearcparam2;
+int nekojiru_eyesizeX;
+int nekojiru_eyesizeY;
+int nekojiru_eyedistance;
+int nekojiru_bulgesize;
+int nekojiru_bulgedistance;
+float nekojiru_posX = 0;
+float nekojiru_posY = 0;
+float nekojiru_blinky = 0;
+float nekojiru_blinkyMax = 0;
+float nekojiru_blinkyNasty = 0;
+float nekojiru_mx;
+float nekojiru_my;
+float nekojiru_bulge = 0;
+float nekojiru_leftdist;
+float nekojiru_rightdist;
+float nekojiru_fillr;
+float nekojiru_fillg;
+float nekojiru_fillb;
+boolean nekojiru_blink = false;
+boolean nekojiru_blinkNasty = false;
+boolean nekojiru_surprise = false;
+boolean nekojiru_angry = false;
+NekoJiruStateMachine nekojiru_machine;
+int nekojiru_currentState = 0;
+
+//LetterExplode parameters
+int particleletters_N = 180;
+float particleletters_repulsion = 0.05f;       // how much the particles repel each other
+float particleletters_contraction = 0.0002f;    // how much they are pulled towards the center
+float particleletters_damping = 0.80f;          // how much drag is applied to the particles
+float particleletters_drift = 0.25f;            // how strong the random forces are
+int particleletters_impulse = 50;              // number of frames until the particles reach the target
+int particleletters_activeTime = 20;           // number of frames until they become particleletters_idle again
+int particleletters_printTime = 30;           // number of frames between letters
+ 
+boolean particleletters_idle = true;           // particleletters_idle => particles repel and drift around
+boolean particleletters_printing = false;
+String particleletters_buffer = "";
+String particleletters_wordToPrint = "XI";
+int particleletters_counter = 0;
+PGraphics particleletters_letter;
+PFont particleletters_font;
+LinkedList<LetterParticle> particleletters_parts = new LinkedList<LetterParticle>();
+
+//Thunderlines parameters
+float thunderline_maxperturbation = 0.15f;
+float thunderline_maxspeed = 8;
+ArrayList<ThunderLine> thunderline_list;
+int thunderline_density = 5;
+int thunderline_refreshrate = 10;    //0, no refresh, - 255, points disappear immediately
+int thunderline_persistance  = 12;
+boolean thunderline_init = false;
+boolean thunderline_setupcomplete = false;
+
+//Opening Whiteout parameters
+float openingWhiteout_cpt = 4;
+float openingWhiteout_verticalCpt = 0;
+float openingWhiteout_speed = 0.19f;
+float openingWhiteout_verticalSpeed = 0.35f;
+long openingWhiteout_lastInitTimestamp = System.nanoTime();
+final long TEN_SECONDS = 10000000000l;
+
+//DoubleFusee parameters
+int doublefusee_a;
+int doublefusee_epaisseurLigne;
+int doublefusee_vitesseLigne;
+int doublefusee_compteur;
+int[] doublefusee_tab1;
+int[] doublefusee_tab2;
+int[] doublefusee_tab3;
+int[] doublefusee_tab4;
+
+//DiscoStar parameters
+float discostar_colorwheel = 0;
+float discostar_colorinc = 0.5f;
+
+//WormHole parameters
+float wormhole_x = 0;
+float wormhole_y = 0;
+float wormhole_a = 0;
+float wormhole_b = 0;
+float wormhole_c_init = PI/16;
+float wormhole_c = wormhole_c_init;
+
+//Atoms parameters
+boolean atoms_initialised = false;
+ArrayList<Electron> atoms_electronlist;
+int atoms_orbitsize = 32;
+int atoms_electronsize = 8;
+int atoms_electrontail = 30;
+int atoms_beatprotomaxsize = 36;
+int atoms_beatprotominsize = 8;
+int atoms_numberofelectrons;
+float atoms_beatprotosize;
+boolean atoms_redprotocolor = true;
+
+//PerfectCircle parameters
+boolean perfect_circleinitialised = false;
+ArrayList<PerfectCircle> perfect_circleperfectcirclelist;
+int perfect_circleorbitsize = 32;
+int perfect_circleperfectcirclesize = 8;
+int perfect_circleperfectcircletail = 30;
+int perfect_circlebeatprotomaxsize = 36;
+int perfect_circlebeatprotominsize = 8;
+float perfect_circlebeatprotosize;
+boolean perfect_circleredprotocolor = true;
+
+//HyperSpeed parameters
+int hyperspeed_numberofstars = 64 + 15*(NUMBER_OF_PANELS - 3);
+int hyperspeed_blur = 25;
+int hyperspeed_maxspeed = 6;
+ArrayList<NagareBoshi> hyperspeed_nagarelist;
+boolean hyperspeed_init = false;
+
+//ColorWave parameters
+float waves_t = 0, waves_dt = 0.005f;
+float waves_ampsize = 0;
+int waves_numberofparticles = 400;
+int waves_maxcolorhue = 20;
+int waves_mincolorhue = 0;
+int waves_attenuation = 50;
+boolean waves_ampwait = false;
+boolean waves_init = false;
+ArrayList<ColorWave> waves_list;
+
+//ContinuousTriangles parameters
+float continoustriangles_leftposy = 0;
+float continoustriangles_centerposy = 0;
+float continoustriangles_rightposy = 0;
+float continoustriangles_leftspeed = 1.2f;
+float continoustriangles_centerspeed = 1.2f;
+float continoustriangles_rightspeed = 1.2f;
+int continoustriangles_red = color(255,0,0);
+int continoustriangles_white = color(255);
+int continoustriangles_black = color(0);
+boolean continoustriangles_drift = false;
+boolean continoustriangles_resync = true;
+boolean continoustriangles_invert = false;
+
+//Mandala parameters
+int mandala_numbranches = 3;
+int mandala_numstarlayers = 4;
+int mandala_numstars = 6;
+int mandala_numsquares = 6;
+float mandala_figuresize = 34;
+float mandala_barsize = 27;
+float mandala_angle = 0;
+float mandala_angle2 = 0;
+int mandala_color;
+int mandala_maxballsize = 48;
+int mandala_minballsize = 8;
+float mandala_ballsize;
+boolean mandala_switch;
+
+//Kaleido parameters
+int kaleido_rings = 10;
+int kaleido_t = 0;
+int kaleido_seed = 751;      //floor(random(1000))
+int kaleido_posX;
+
+//Flowers parameters
+ArrayList flowers_flowers;
+int flowers_sequencenumber = 0;
+
+//ElectricSpiral parameters
+int electricspiral_nbrPoints = 50;
+int electricspiral_cx,electricspiral_cy;
+int electricspiral_counter =0 ;
+int electricspiral_frameCtr = 0;
+int electricspiral_animationspeed = 30;
+long electricspiral_framecounter = 0;
+float electricspiral_crad;
+float electricspiral_cycleLength = 2*PI*electricspiral_nbrPoints;
+float electricspiral_speed = 2;
+ElectricSpiralDot[] electricspiral_dots = new ElectricSpiralDot[electricspiral_nbrPoints];
+
+//SmallSquares parameters
+int smallsquares_offset = 4;
+
+//FastSpiral parameters
+float fastspiral_x,fastspiral_y, fastspiral_theta, fastspiral_r, fastspiral_c;
+float fastspiral_transparency = 0;
+boolean fastspiral_kill = false;
+
+//WeirdSquare parameters
+int weirdsquare_step;
+float weirdsquare_bezierbase;
+int weirdsquare_offset;
+float weirdsquare_time = 0;
+float hueOffset = 0.90f;
+float weirdsquare_redbackground = 0;
+float weirdsquare_noiseSpeed = 0.0015f;
+
+//ProgressiveRed parameters
+float progressivered_color = 0;
+
+//SpotsMulticolor parameters
+int[] spotsmulticolor_colorselection = {color(0, 176, 250),color(89, 180, 116),color(71, 206, 205),color(255, 255, 255),color(38, 30, 157),color(255, 255, 255),color(123, 9, 254),color(63, 144, 86),color(255, 255, 255)};
+
+//Strobolinecolor parameters
+int[] strobolinecolor_colorselection;
+
+//DoubleFlowers parameters
+ArrayList doubleflower_flowers;
+ArrayList doubleflower_zOscillators;
+
+//3DAnimations parameters
+ProjectionViewer thirdDimension_viewer3d;
+int[] thirdDimension_colorlist3d = new int[2];
+int thirdDimension_pyramidfrequency = 35;
+int thirdDimension_jerkyEdgeFrequency = 3;
+int thirdDimension_counter = 0;
+int thirdDimension_nodeSelector = 0;
+boolean thirdDimension_noglitchcubeinit = false;
+boolean thirdDimension_jerkyinit = false;
+
+//BloodSki parameters
+int bloodSki_Co;
+int bloodSki_Xc;
+int bloodSki_Yc;
+int bloodSki_Wc;
+int bloodSki_Hc;
+int bloodSki_S;
+int bloodSki_N;
+int bloodSki_minRad;
+int bloodSki_maxRad;
+BloodSkiParticleManager bloodSki_particleManager;
+
+//Gloubiboulga parameters
+int gloubiboulga_thresh=30;
+int gloubiboulga_avoid_distance = 2;
+float gloubiboulga_avoid_strength = 0.6f;
+int gloubiboulga_cohere_distance = 15;
+float gloubiboulga_cohere_strength = 0.05f;
+int gloubiboulga_align_distance = 10;
+float gloubiboulga_align_strength = 0.02f;
+float gloubiboulga_maxvel = 1.8f;
+ArrayList gloubiboulga_swarm = new ArrayList(); 
+
+//RevolutionLine parameters
+RevolutionLine[] revolutionline_lines;
+
+//Rednoise parameters
+float rednoise_circlerad = 0;
+
+//TurningSingleLines parameters
+float turningsinglelines_init = 0;    //Defined during setup
+float turningsinglelines_increment = 10;
+float turningsinglelines_angle = 0;
+float turningsinglelines_angleincrement = 0.2f;
+ArrayList<SingleTurningLine> turningsinglelines_lines;
+
+//RandomAppearingLines parameters
+float randomappearinglines_speedx = 0;
+float randomappearinglines_speedy = 12;
+float randomappearinglines_currentangle = 0;
+int randomappearinglines_framechange = 9;
+int randomappearinglines_framecount = 0;
+int randomappearinglines_initx = 20;
+int randomappearinglines_inity = -40;
+int randomappearinglines_currentx = randomappearinglines_initx;
+int randomappearinglines_currenty = randomappearinglines_inity;
+int randomappearinglines_previousx = randomappearinglines_currentx;
+int randomappearinglines_previousy = randomappearinglines_currenty;
+
+//ImpulseRectangles parameters
+int impulserectangles_posx = 0;
+int impulserectangles_posy = 0;
+int impulserectangles_incrementx = 15;
+int impulserectangles_incrementy = 10;
+int impulserectangles_rectanglesize = 32;
+
+//Crescent parameters
+float crescent_distext;
+float crescent_distint;
+int crescent_number = 6;
+float crescent_emphasis = 0;
+float crescent_speed = 0.1f;
+float crescent_minstrokeweight = 4;
+float crescent_maxbonussize = 16;
+float crescent_fatfactor;
+float crescent_colorfactor = 10;
+
+//Clock parameters
+float clock_mainangle = 0;
+float clock_speed = 0.025f;
+int clock_numberofbranches = 4;
+boolean clock_rotate;
+float clock_subangle = 0;
+float clock_subspeed = 0.075f;
+
+//ColorBeat parameters
+float colorbeat_maxval;
+float colorbeat_value;
+float colorbeat_minvalue;
+float colorbeat_transitionpos;
+
+//InvertExplode parameters
+int invertexplode_numberoflines = 6;
+float invertexplode_maxcirclewidth;
+float invertexplode_circlewidth;
+float invertexplode_circlespeed = 8;
+float invertexplode_maxcirclehue = 90;
+float invertexplode_circlehue;
+float invertexplode_huespeed = 7;
+float invertexplode_pos;
+float invertexplode_linelength;
+float invertexplode_angle = 0;
+float invertexplode_anglespeed = 0.5f * (PI/invertexplode_numberoflines);
+
+//DarkSnakes and BrightSnakes parameters
+BrightSnake[] brightsnakes_snakes = new BrightSnake[0];
+DarkSnake[] darksnakes_snakes = new DarkSnake[0];
+
+
+//LightPainting parameters
+int lightpainting_particleCount = 64;
+int lightpainting_emissionPeriod = 2;                                      //The number of events that must occur before a spark is emitted.  Increasing this will improve performance as well as change the aesthetics.
+float lightpainting_lowBounce = 0.5f;                                       //The lowest ratio of vertical speed retained after a spark bounces.
+float lightpainting_highBounce = 0.8f;                                      //The highest ratio of vertical speed retained after a spark bounces.
+float lightpainting_spraySpread = 2.0f;                                     //The variation in velocity of newly-created lightpainting_sparks.
+float lightpainting_earthGravity = 1.0f / 16.0f;
+float lightpainting_moonGravity = lightpainting_earthGravity / 6.0f;
+float lightpainting_jupiterGravity = lightpainting_earthGravity * 2.5f;
+float lightpainting_gravity = lightpainting_earthGravity;                  //The amount of acceleration due to gravity.
+float lightpainting_tolerance = 0.5f;                                       //The amount of error allowed in model coordinate measurements.  Lowering this will let lightpainting_sparks have tiny bounces longer.
+float lightpainting_focalLength = 1000.0f;                                  //The focal length from the viewer to the screen in model coordinates.
+float lightpainting_interaction_distance = 4 * lightpainting_focalLength;  //The distance in model coordinates from the viewer to where new lightpainting_sparks are created.  Increasing this number will move the created sparks further away.
+LightPaintingCanvas3D lightpainting_canvas;                                //A custom 3D lightpainting_canvas used to draw the world.
+LightPaintingParticle lightpainting_sparks[] = new LightPaintingParticle[lightpainting_particleCount];//A collection of Particles that represent the spraying sparks. 
+int lightpainting_nextSpark = 0;                                           //The index of the LightPaintingParticle to use for the next spark created.
+int lightpainting_skipCount = 0;                                           //The number of drag events that have passed without emitting a spark.
+int lightpainting_numberofimpulses = 4;                                    //The number of sparks created by calling the animation
+boolean lightpainting_initok = false;                                      //Define if the animation was initialised
+long lastFrameDrawn = millis(); 
+float averageElapsedMillis = 20.0f;
+
+//ShiftPixels parameters
+int shiftpixels_slowspeed = 4;
+int shiftpixels_fastspeed = 8;
+int shiftpixels_speed = shiftpixels_slowspeed;
+
+//LightFusion parameters
+int lightfusion_xmin = -20;
+int lightfusion_xmax = 10;
+int lightfusion_ymin = -20;
+int lightfusion_ymax = 10;
+int lightfusion_xspan;
+int lightfusion_yspan;
+float lightfusion_X;
+float lightfusion_Y;
+float lightfusion_speedX;
+float lightfusion_speedY;
+float lightfusion_timeincrement = 0.4f;
+float lightfusion_time = 0;
+boolean lightfusion_moveUp;
+boolean lightfusion_moveRight;
+boolean lightfusion_column = true;
+boolean lightfusion_mousemoved = false;
+
+//RandomPaint parameters
+float randompaint_len = 0.4f;
+float randompaint_lastX,randompaint_lastY;
+float randompaint_startX;
+float randompaint_startY;
+int randompaint_t = 0;
+float randompaint_ang = random(360);
+int randompaint_pixelsize = 4;
+
+//RedWave parameters
+float redwave_xmin = 0;
+float redwave_xmax = 30;
+float redwave_ymin = 0;
+float redwave_ymax = 30;
+float redwave_timeIncrement = 0.1f;
+float redwave_dx, redwave_dy;
+float redwave_t = 0;
+int redwave_i = 0;
+float redwave_xspan;
+float redwave_yspan;
+
+//DiagonalColors parameters
+boolean diagonalcolor_init = false;
+DiagonalColor[] diagonalcolors = new DiagonalColor[90];
+
+//HypnoSpiralRed parameters
+float hypnospiralred_X;
+float hypnospiralred_Y;
+float hypnospiralred_xmin = -1;
+float hypnospiralred_xmax = 1;
+float hypnospiralred_ymin = -1;
+float hypnospiralred_ymax = 1;
+float hypnospiralred_timeIncrement = 0.04f;
+float hypnospiralred_timeIncrementFactor = 0.001f;
+float hypnospiralred_noiseScale = 0.01f;
+float hypnospiralred_noiseScale2 = 0.03f;
+float hypnospiralred_noiseMove = 2;
+float hypnospiralred_t = 0;
+float hypnospiralred_xspan;
+float hypnospiralred_yspan;
+
+
+//NightRoad parameters
+float nightroad_xmin = -1;
+float nightroad_xmax = 1;
+float nightroad_ymin = 0.5f;
+float nightroad_ymax = 0.04f;
+float nightroad_t = 0;
+float nightroad_xspan;
+float nightroad_yspan;
+float nightroad_timeIncrement = 0.2f;
+float nightroad_direction;
+float nightroad_Y;
+float nightroad_beatspeed = 6;
+int nightroad_frameCounter = 0;
+float nightroad_brightness;
+
+//HypnoFlashTriangle parameters
+int hypnotriangle_instancecounter = 0;
+boolean hypnotriangle_init = true;
+ArrayList<HypnoTriangle> hypnotriangle_list;
+
+//RotatingCut parameters
+float rotatingcut_angle = random(0, 2*PI);
+float rotatingcut_speed = 0.01f;
+
+//ArcRot parameters
+float arcRot_maxiPi = 5 * TWO_PI;
+float arcRot_maxPulseSize = 24;
+float arcRot_pulseSize = arcRot_maxPulseSize;
+float arcRot_pulseSpeed = 2;
+
+//EnergyGrid parameters
+int energytriangles_density = 4; 
+ArrayList<EnergyTriangle> EnergyTriangles = new ArrayList<EnergyTriangle>();
+float energytriangles_energy = 180; 
+boolean energytriangles_init = false;
+
+//ReverseTriangles parameters
+PGraphics reverseTriangles_red;
+PGraphics reverseTriangles_green;
+float reverseTriangles_sizeInit = 0.4f;
+float reverseTriangles_speed = 1.30f;
+float reverseTriangles_size;
+
+//TrigoShapes parameters
+int trigoshapes_chosenFunction = 0;
+float trigoshapes_particleAngle = 0;
+float trigoshapes_particleFormation = 0;
+float trigoshapes_radius;
+float trigoshapes_smallradius;
+TrigoShapeParticle[] trigoshapes_particles;
+TrigoShapeParticle[] trigoshapes_particles2;
+float trigoshapes_hue = 0;
+float trigoshapes_hueIncrement = 2;
+PImage trigoshapes_arrowImage;
+boolean trigoshapes_initComplete = false;
+
+//nonotak parameters
+int nonotak_1_color = 0;
+int nonotak_1_x = 0;
+int nonotak_2_x = 0;
+int nonotak_3_x = 0;
+int nonotak_4_y = 0;
+int nonotak_5_y = 0;
+boolean nonotak_5_up = false;
+
+//NonotakPanelFill parameters
+ArrayList<NonotakPanelFill> nonotakPanelFill_list = new ArrayList<NonotakPanelFill>();
+
+//NonotakWoosh parameters
+ArrayList<NonotakWoosh> nonotakWoosh_list = new ArrayList<NonotakWoosh>();
+
+//Patatap parameters
+boolean patatap_init = false;
+ArrayList<PatatapObject> patatapObjectList;
+int[] patatap_maxProgressTable = {10, 15, 30, 15, 40, 16, 20, 26, 45, 96/4, 35, 25, 30, 15, 40};
+boolean[] patatap_switcher = {false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false};
+int patatap_currentColorset = 1;
+int[] patatap_colorsetBackground  =   {color(46,167,209),  color(0,0,0)          };
+int[] patatap_colorsetFlash       =   {color(255,0,0),     color(255,255,255)    };
+int[] patatap_colorsetElement1    =   {color(239,30,54),   color(229,252,194)    };
+int[] patatap_colorsetElement2    =   {color(240,139,95),  color(157,224,173)    };
+int[] patatap_colorsetElement3    =   {color(241,216,142), color(69,173,168)     };
+int[] patatap_colorsetElement4    =   {color(126,210,182), color(84,121,128)     };
+
+//ParallelWorlds parameters
+ArrayList<ParallelWorldLine> parallelworlds_list;
+float parallelworlds_speed = 3;
+float parallelworlds_flashpower = 0;
+float parallelworlds_colorDecreaseSpeed = 255/13;
+boolean parallelworlds_init = false;
+boolean parallelworlds_reverse = false;
+
+//Fireflies parameters
+int fireflies_number = 50;
+int fireflies_edge;
+ArrayList<Firefly> fireflies_list;
+boolean fireflies_init = false;
+
+//MultiCrecy parameters
+int[] crecy_maxProgressList = {10,10,10,10,10,10,10,10,10,10,
+                               20,20,20,20,20,20,20,20,20,20,
+                               35,35,35,
+                               15,15,15,15,15,15,15,15,15,15,
+                               25,25,25,25,25,25,
+                               25,25,25,25,25,25};
+ArrayList<Crecy> crecy_list;
+int crecy_internalCounter = 0;
+int crecy_changeRate = 64;
+int crecy_red   = 0;
+int crecy_green = 255;
+int crecy_blue  = 0;
+boolean crecy_init = false;
+int crecy_colorcounter = 0;
+int crecy_previousDouble = 0;
+
+//Snake parameters
+ArrayList<SnakeObjective> snake_objectives;
+Snake snake_instance1;
+Snake snake_instance2;
+Snake snake_instance3;
+Snake snake_instance4;
+Snake snake_instance5;
+Snake snake_instance6;
+int snake_weight = 8;
+boolean snake_init = false;
+
+//SweepingBallsAndArrows parameters
+float sweeperBalls_randomAccel = 0.1f;
+ArrayList<SweeperBall> sweeperBalls_list;
+ArrayList<DoubleArrow> sweeperBalls_listarrow;
+int sweeperBalls_maxBallSize = 24;
+int sweeperBalls_minBallSize = 4;
+float sweeperBalls_initSpeed = 4;
+float sweeperBalls_initSpeedVar = 3;
+int sweeperBalls_nbOfBalls = 30;
+float sweeperBalls_arrowSpeed = 4;
+boolean sweeperBalls_arrowcolor = false;
+boolean sweeperBalls_init = false;
+
+//RotatingHalfCircle parameters
+float rotatingHalfCircle_x;
+float rotatingHalfCircle_transparency; 
+float rotatingHalfCircle_corner; 
+float rotatingHalfCircle_theta;
+float rotatingHalfCircle_size;
+int rotatingHalfCircle_num = 40;
+
+//PeriodicNoise parameters
+float periodicNoise_noiseSpeed = 0.02f;
+
+//Tumbler parameters
+float tumbler_r = 0;
+float tumbler_theta = 0;
+
+//DynamicAngleLines parameters
+float dynamicAngleLines_angle = 0;
+float dynamicAngleLines_angleSpeed = 0.02f;
+int dynamicAngleLines_maxLineWidth;
+int dynamicAngleLines_nbrLines = 15;
+boolean dynamicAngleLines_positiveInc = true;
+
+//FauveRandomFlash parameters
+int fauveRandomFlash_blueWhite = color(230,230,255);
+int fauveRandomFlash_red = color(255,0,0);
+int fauveRandomFlash_minEllipseSize = 58;
+int fauveRandomFlash_maxEllipseSize = 24;
+
+//BarWaves parameters
+int barWaves_colBlue1=0xff0B486B, barWaves_colBlue2=0xffCFF09E;
+int barWaves_colBlack=0xff000000, barWaves_colWhite=0xffFFFFFF;
+int barWaves_colRed1=0xff220000, barWaves_colRed2=0xffFF0000;
+int barWaves_columns;
+float barWaves_stepX, barWaves_theta, barWaves_ot, barWaves_fc, barWaves_time, barWaves_scal=1;
+float[] barWaves_offSets;
+float[] barWaves_offTheta;
+float barWaves_speed = 0.1f;
+boolean barWaves_init = false;
+
+//RedSun parameters
+int redSun_rs = PApplet.parseInt(random(1000));
+int redSun_num=50;
+float redSun_szS, redSun_szB, redSun_angle, redSun_theta;
+int redSun_internalCircleRadius = 0;
+int redSun_internalCircleLimitSize = 32;
+int redSun_circleSpeed = 4;
+
+//SlicedWave parameters
+int slicedWave_slices = 4;
+int slicedWave_pieces = 5;
+int slicedWave_num=slicedWave_slices*slicedWave_pieces;
+float[] slicedWave_r = new float[slicedWave_num];
+int slicedWave_c;
+float slicedWave_scal, slicedWave_theta, slicedWave_sw;
+boolean slicedWave_init = false;
+float slicedWave_angle = 0;
+float slicedWave_rotSpeed = 0.1f;
+int slicedWave_angleStock = 0;
+int slicedWave_white = color(255,255,255);
+int slicedWave_red = color(255,0,0);
+
+// UglyAudioAnimation parameters
+ArrayList<UglyImpulseKick> uglyImpulseKickList;
+ArrayList<UglyImpulseSnare> uglyImpulseSnareList;
+ArrayList<UglyImpulseCymbal> uglyImpulseCymbalList;
+ArrayList<UglyImpulseBass> uglyImpulseBassList;
+
+// HypnoAudio parameters
+int hypnoAudio_currentPoint = 0;
+float[] hypnoAudio_currentCoordinates = {-0.25f,-0.25f};
+float[][] hypnoAudio_coordinates = {{-0.25f,-0.25f}, {0.25f,-0.15f}, {0.25f,0.25f}, {-0.15f,0.25f}}; 
+float hypnoAudio_moveSpeed = 0.1f;
+int hypnoAudio_redImpact = 0;
+int hypnoAudio_colorAttenuation = 5;
+boolean hypnoAudio_listenToAudio = true;
+
+// Spider Web
+boolean spiderweb_audioReactive = false;
+boolean spiderweb_fade          = false;
+ArrayList<SpiderWebPoint> spiderWebPoints;
+int spiderweb_nbPoints    = 25;
+int spiderweb_maxFriends  = 4;    //Allow at most 4 points to be in contact
+final int SPIDERWEB_WHITE = 0;
+final int SPIDERWEB_RED   = 1;
+int spiderweb_color       = SPIDERWEB_WHITE;
+int spiderweb_fadecpt     = 0;
+int spiderweb_fadespeed   = 8;
+
+// Woublines
+ArrayList<WoubLine> woublines_list;
+boolean woublines_init  = false;
+boolean woublines_audio = false;
+float woublines_speed   = 4;
+
+// Signal Waveform
+final int signalWaveForm_offsetY = (PANEL_RESOLUTION_Y * DISPLAY_SCALING_FACTOR)/2 - DISPLAY_SCALING_FACTOR/2;
+
+// Simple Spiral
+float simplespiral_theta = 0;
+int simplespiral_num = 20;
+
+// TV Power off
+int tvpoweroff_progress = 0;
+int tvpoweroff_speed = 3;
+
+//White Spread
+int whitespread_progress = 0;
+int whitespread_speed = 8;
+
+//ScannerLine
+float scannerLine_progress = 0;
+float scannerLine_SlowSpeed = 2;
+float scannerLine_FastSpeed = 6;
+float scannerLine_SpeedVar = 0.0014f;
+
 /////////////////////////////////////////////////////////////////////////////////////
 /////////Contains functions specific to animations called in the main sketch/////////
 /////////////////////////////////////////////////////////////////////////////////////
@@ -3940,7 +3773,7 @@ public void draw_spiraluality() {
 //////////////////////////////////////////
 
 public void draw_shadows() {
-    rand+=.01f;
+    rand+=.013f;
     float n=noise(rand);
     
     background(255);
@@ -4019,10 +3852,12 @@ public void draw_va_et_vient_2() {
   strokeCap(SQUARE);
   for (int i=0;i<height/4;i++) {
     if (i%2 == 0) {
-      line(va_et_vient_progress,i*(height/4),va_et_vient_progress,(i+1)*(height/4));
+      line(va_et_vient_progress+4,i*(height/4),va_et_vient_progress+4,(i+1)*(height/4));
+      line(va_et_vient_progress-4,i*(height/4),va_et_vient_progress-4,(i+1)*(height/4));
     }
     else {
-      line(width - va_et_vient_progress,i*(height/4),width - va_et_vient_progress,(i+1)*(height/4));
+      line(width - va_et_vient_progress-4,i*(height/4),width - va_et_vient_progress-4,(i+1)*(height/4));
+      line(width - va_et_vient_progress+4,i*(height/4),width - va_et_vient_progress+4,(i+1)*(height/4));
     }
   }  
   popStyle();
@@ -4394,7 +4229,7 @@ class Wind {
 //////////////////////////////////////////
 
 public void draw_strobonormal() {
-  if (frameCount % 2 == 0)
+  if (frameCount % 4 == 0)
   {
     //fill(int(random(50,255)),int(random(50,255)),int(random(50,255)));
     fill(255);
@@ -6385,14 +6220,16 @@ public void draw_mixedlines(int position_horizontal_lines, int position_vertical
 //////////////////////////////////////////
 
 public void draw_stroboX() {
-  if (frameCount % 2 == 0)
+  if (frameCount % 4 == 0)
   {
+    stroke(255);
     line(0,0,width,height);
     line(0,height,width,0);
   }
   else
   {
     fill(0);
+    stroke(0);
     rect(0,0,width,height);
   }
 }
@@ -17615,7 +17452,7 @@ public void draw_nonotak_1() {
     strokeWeight(4);
     for (int i = 0; i<width/4; i++) {
       line((i*4*4 + nonotak_1_x) % width, 0, (i*4*4 + nonotak_1_x) % width, height);
-    } 
+    }
     
   }
   else {
@@ -20962,7 +20799,7 @@ public void draw_simplespiral(int r, int g, int b) {
     arc(0, 0, width*1.2f-i*10, width*1.2f-i*10, 0, PI);
   }
   popMatrix();
-  simplespiral_theta += PI/90;
+  simplespiral_theta += PI/80;
 }
 
 //////////////////////////////////////////
@@ -22201,42 +22038,60 @@ public void setDMXAnimationsAttributes() {
   DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 69,  "Symmetrical Convergent Pan - Wide Pan - Upright Opposite Tilt"   , new String[] { "MovingHead-SetDirection-All", "MovingHead-Convergent", "MovingHead-Symmetrical"       } );
   DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 70,  "Symmetrical Convergent Pan - Classic Pan - Upright Opposite Tilt", new String[] { "MovingHead-SetDirection-All", "MovingHead-Convergent", "MovingHead-Symmetrical"       } );
   DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 71,  "Symmetrical Convergent Pan - Narrow Pan - Upright Opposite Tilt" , new String[] { "MovingHead-SetDirection-All", "MovingHead-Convergent", "MovingHead-Symmetrical"       } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 72,  "Center Fixtures - Center Pan / Front Tilt"                       , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 73,  "Center Fixtures - Left Pan / Front Tilt"                         , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 74,  "Center Fixtures - Right Pan / Front Tilt"                        , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 75,  "Center Fixtures - Center Pan / High Tilt"                        , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 76,  "Center Fixtures - Left Pan / High Tilt"                          , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 77,  "Center Fixtures - Right Pan / High Tilt"                         , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 78,  "Center Fixtures - Center Pan / Upright Tilt"                     , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 79,  "Center Fixtures - Left Pan / Upright Tilt"                       , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 80,  "Center Fixtures - Right Pan / Upright Tilt"                      , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 81,  "Side Fixtures - Center Pan / Front Tilt"                         , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 82,  "Side Fixtures - Left Pan / Front Tilt"                           , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 83,  "Side Fixtures - Right Pan / Front Tilt"                          , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 84,  "Side Fixtures - Center Pan / High Tilt"                          , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 85,  "Side Fixtures - Left Pan / High Tilt"                            , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 86,  "Side Fixtures - Right Pan / High Tilt"                           , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 87,  "Side Fixtures - Center Pan / Upright Tilt"                       , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 88,  "Side Fixtures - Left Pan / Upright Tilt"                         , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 89,  "Side Fixtures - Right Pan / Upright Tilt"                        , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 90,  "Left Fixtures - Center Pan / Front Tilt"                         , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 91,  "Left Fixtures - Left Pan / Front Tilt"                           , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 92,  "Left Fixtures - Right Pan / Front Tilt"                          , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 93,  "Left Fixtures - Center Pan / High Tilt"                          , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 94,  "Left Fixtures - Left Pan / High Tilt"                            , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 95,  "Left Fixtures - Right Pan / High Tilt"                           , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 96,  "Left Fixtures - Center Pan / Upright Tilt"                       , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 97,  "Left Fixtures - Left Pan / Upright Tilt"                         , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 98,  "Left Fixtures - Right Pan / Upright Tilt"                        , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 99,  "Right Fixtures - Center Pan / Front Tilt"                        , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 100, "Right Fixtures - Left Pan / Front Tilt"                          , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 101, "Right Fixtures - Right Pan / Front Tilt"                         , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 102, "Right Fixtures - Center Pan / High Tilt"                         , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 103, "Right Fixtures - Left Pan / High Tilt"                           , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 104, "Right Fixtures - Right Pan / High Tilt"                          , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 105, "Right Fixtures - Center Pan / Upright Tilt"                      , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 106, "Right Fixtures - Left Pan / Upright Tilt"                        , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
-  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 107, "Right Fixtures - Right Pan / Upright Tilt"                       , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 72,  "Bottom Fixtures - Center Pan / Front Tilt"                       , new String[] { "MovingHead-SetDirection-Bottom", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 73,  "Bottom Fixtures - Left Pan / Front Tilt"                         , new String[] { "MovingHead-SetDirection-Bottom", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 74,  "Bottom Fixtures - Right Pan / Front Tilt"                        , new String[] { "MovingHead-SetDirection-Bottom", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 75,  "Bottom Fixtures - Center Pan / High Tilt"                        , new String[] { "MovingHead-SetDirection-Bottom", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 76,  "Bottom Fixtures - Left Pan / High Tilt"                          , new String[] { "MovingHead-SetDirection-Bottom", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 77,  "Bottom Fixtures - Right Pan / High Tilt"                         , new String[] { "MovingHead-SetDirection-Bottom", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 78,  "Bottom Fixtures - Center Pan / Upright Tilt"                     , new String[] { "MovingHead-SetDirection-Bottom", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 79,  "Bottom Fixtures - Left Pan / Upright Tilt"                       , new String[] { "MovingHead-SetDirection-Bottom", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 80,  "Bottom Fixtures - Right Pan / Upright Tilt"                      , new String[] { "MovingHead-SetDirection-Bottom", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 81,  "Center Fixtures - Center Pan / Front Tilt"                       , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 82,  "Center Fixtures - Left Pan / Front Tilt"                         , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 83,  "Center Fixtures - Right Pan / Front Tilt"                        , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 84,  "Center Fixtures - Center Pan / High Tilt"                        , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 85,  "Center Fixtures - Left Pan / High Tilt"                          , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 86,  "Center Fixtures - Right Pan / High Tilt"                         , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 87,  "Center Fixtures - Center Pan / Upright Tilt"                     , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 88,  "Center Fixtures - Left Pan / Upright Tilt"                       , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 89,  "Center Fixtures - Right Pan / Upright Tilt"                      , new String[] { "MovingHead-SetDirection-Center", "MovingHead-Uniform"                                 } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 90,  "Side Fixtures - Center Pan / Front Tilt"                         , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 91,  "Side Fixtures - Left Pan / Front Tilt"                           , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 92,  "Side Fixtures - Right Pan / Front Tilt"                          , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 93,  "Side Fixtures - Center Pan / High Tilt"                          , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 94,  "Side Fixtures - Left Pan / High Tilt"                            , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 95,  "Side Fixtures - Right Pan / High Tilt"                           , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 96,  "Side Fixtures - Center Pan / Upright Tilt"                       , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 97,  "Side Fixtures - Left Pan / Upright Tilt"                         , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 98,  "Side Fixtures - Right Pan / Upright Tilt"                        , new String[] { "MovingHead-SetDirection-Side", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 99,  "Left Fixtures - Center Pan / Front Tilt"                         , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 100, "Left Fixtures - Left Pan / Front Tilt"                           , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 101, "Left Fixtures - Right Pan / Front Tilt"                          , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 102, "Left Fixtures - Center Pan / High Tilt"                          , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 103, "Left Fixtures - Left Pan / High Tilt"                            , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 104, "Left Fixtures - Right Pan / High Tilt"                           , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 105, "Left Fixtures - Center Pan / Upright Tilt"                       , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 106, "Left Fixtures - Left Pan / Upright Tilt"                         , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 107, "Left Fixtures - Right Pan / Upright Tilt"                        , new String[] { "MovingHead-SetDirection-Left", "MovingHead-Uniform"                                   } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 108, "Right Fixtures - Center Pan / Front Tilt"                        , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 109, "Right Fixtures - Left Pan / Front Tilt"                          , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 110, "Right Fixtures - Right Pan / Front Tilt"                         , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 111, "Right Fixtures - Center Pan / High Tilt"                         , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 112, "Right Fixtures - Left Pan / High Tilt"                           , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 113, "Right Fixtures - Right Pan / High Tilt"                          , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 114, "Right Fixtures - Center Pan / Upright Tilt"                      , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 115, "Right Fixtures - Left Pan / Upright Tilt"                        , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 116, "Right Fixtures - Right Pan / Upright Tilt"                       , new String[] { "MovingHead-SetDirection-Right", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 117, "Top Fixtures - Center Pan / Front Tilt"                          , new String[] { "MovingHead-SetDirection-Top", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 118, "Top Fixtures - Left Pan / Front Tilt"                            , new String[] { "MovingHead-SetDirection-Top", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 119, "Top Fixtures - Right Pan / Front Tilt"                           , new String[] { "MovingHead-SetDirection-Top", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 120, "Top Fixtures - Center Pan / High Tilt"                           , new String[] { "MovingHead-SetDirection-Top", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 121, "Top Fixtures - Left Pan / High Tilt"                             , new String[] { "MovingHead-SetDirection-Top", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 122, "Top Fixtures - Right Pan / High Tilt"                            , new String[] { "MovingHead-SetDirection-Top", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 123, "Top Fixtures - Center Pan / Upright Tilt"                        , new String[] { "MovingHead-SetDirection-Top", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 124, "Top Fixtures - Left Pan / Upright Tilt"                          , new String[] { "MovingHead-SetDirection-Top", "MovingHead-Uniform"                                  } );
+  DMXMovingHead_MovementAttributes = registerAttribute(DMXMovingHead_MovementAttributes, 125, "Top Fixtures - Right Pan / Upright Tilt"                         , new String[] { "MovingHead-SetDirection-Top", "MovingHead-Uniform"                                  } );
 
 
   DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 1,  "All Fixtures - White"                                                   , new String[] { "MovingHead-SetColor-All", "MovingHead-White"                              } );
@@ -22249,124 +22104,170 @@ public void setDMXAnimationsAttributes() {
   DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 8,  "All Fixtures - Ultraviolet"                                             , new String[] { "MovingHead-SetColor-All", "MovingHead-Ultraviolet"                        } );
   DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 9,  "All Fixtures - Orange"                                                  , new String[] { "MovingHead-SetColor-All", "MovingHead-Orange"                             } );
   DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 10, "All Fixtures - CTO"                                                     , new String[] { "MovingHead-SetColor-All", "MovingHead-CTO"                                } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 11, "Center Fixtures - White"                                                , new String[] { "MovingHead-SetColor-Center", "MovingHead-White"                           } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 12, "Center Fixtures - Red"                                                  , new String[] { "MovingHead-SetColor-Center", "MovingHead-Red"                             } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 13, "Center Fixtures - Deep Red"                                             , new String[] { "MovingHead-SetColor-Center", "MovingHead-Deep Red"                        } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 14, "Center Fixtures - Blue"                                                 , new String[] { "MovingHead-SetColor-Center", "MovingHead-Blue"                            } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 15, "Center Fixtures - Deep Blue"                                            , new String[] { "MovingHead-SetColor-Center", "MovingHead-Deep Blue"                       } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 16, "Center Fixtures - Yellow"                                               , new String[] { "MovingHead-SetColor-Center", "MovingHead-Yellow"                          } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 17, "Center Fixtures - Green"                                                , new String[] { "MovingHead-SetColor-Center", "MovingHead-Green"                           } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 18, "Center Fixtures - Ultraviolet"                                          , new String[] { "MovingHead-SetColor-Center", "MovingHead-Ultraviolet"                     } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 19, "Center Fixtures - Orange"                                               , new String[] { "MovingHead-SetColor-Center", "MovingHead-Orange"                          } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 20, "Center Fixtures - CTO"                                                  , new String[] { "MovingHead-SetColor-Center", "MovingHead-CTO"                             } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 21, "Side Fixtures - White"                                                  , new String[] { "MovingHead-SetColor-Side", "MovingHead-White"                             } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 22, "Side Fixtures - Red"                                                    , new String[] { "MovingHead-SetColor-Side", "MovingHead-Red"                               } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 23, "Side Fixtures - Deep Red"                                               , new String[] { "MovingHead-SetColor-Side", "MovingHead-Deep Red"                          } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 24, "Side Fixtures - Blue"                                                   , new String[] { "MovingHead-SetColor-Side", "MovingHead-Blue"                              } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 25, "Side Fixtures - Deep Blue"                                              , new String[] { "MovingHead-SetColor-Side", "MovingHead-Deep Blue"                         } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 26, "Side Fixtures - Yellow"                                                 , new String[] { "MovingHead-SetColor-Side", "MovingHead-Yellow"                            } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 27, "Side Fixtures - Green"                                                  , new String[] { "MovingHead-SetColor-Side", "MovingHead-Green"                             } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 28, "Side Fixtures - Ultraviolet"                                            , new String[] { "MovingHead-SetColor-Side", "MovingHead-Ultraviolet"                       } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 29, "Side Fixtures - Orange"                                                 , new String[] { "MovingHead-SetColor-Side", "MovingHead-Orange"                            } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 30, "Side Fixtures - CTO"                                                    , new String[] { "MovingHead-SetColor-Side", "MovingHead-CTO"                               } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 31, "Left Fixtures - White"                                                  , new String[] { "MovingHead-SetColor-Left", "MovingHead-White"                             } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 32, "Left Fixtures - Red"                                                    , new String[] { "MovingHead-SetColor-Left", "MovingHead-Red"                               } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 33, "Left Fixtures - Deep Red"                                               , new String[] { "MovingHead-SetColor-Left", "MovingHead-Deep Red"                          } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 34, "Left Fixtures - Blue"                                                   , new String[] { "MovingHead-SetColor-Left", "MovingHead-Blue"                              } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 35, "Left Fixtures - Deep Blue"                                              , new String[] { "MovingHead-SetColor-Left", "MovingHead-Deep Blue"                         } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 36, "Left Fixtures - Yellow"                                                 , new String[] { "MovingHead-SetColor-Left", "MovingHead-Yellow"                            } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 37, "Left Fixtures - Green"                                                  , new String[] { "MovingHead-SetColor-Left", "MovingHead-Green"                             } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 38, "Left Fixtures - Ultraviolet"                                            , new String[] { "MovingHead-SetColor-Left", "MovingHead-Ultraviolet"                       } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 39, "Left Fixtures - Orange"                                                 , new String[] { "MovingHead-SetColor-Left", "MovingHead-Orange"                            } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 40, "Left Fixtures - CTO"                                                    , new String[] { "MovingHead-SetColor-Left", "MovingHead-CTO"                               } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 41, "Right Fixtures - White"                                                 , new String[] { "MovingHead-SetColor-Right", "MovingHead-White"                            } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 42, "Right Fixtures - Red"                                                   , new String[] { "MovingHead-SetColor-Right", "MovingHead-Red"                              } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 43, "Right Fixtures - Deep Red"                                              , new String[] { "MovingHead-SetColor-Right", "MovingHead-Deep Red"                         } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 44, "Right Fixtures - Blue"                                                  , new String[] { "MovingHead-SetColor-Right", "MovingHead-Blue"                             } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 45, "Right Fixtures - Deep Blue"                                             , new String[] { "MovingHead-SetColor-Right", "MovingHead-Deep Blue"                        } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 46, "Right Fixtures - Yellow"                                                , new String[] { "MovingHead-SetColor-Right", "MovingHead-Yellow"                           } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 47, "Right Fixtures - Green"                                                 , new String[] { "MovingHead-SetColor-Right", "MovingHead-Green"                            } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 48, "Right Fixtures - Ultraviolet"                                           , new String[] { "MovingHead-SetColor-Right", "MovingHead-Ultraviolet"                      } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 49, "Right Fixtures - Orange"                                                , new String[] { "MovingHead-SetColor-Right", "MovingHead-Orange"                           } );
-  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 50, "Right Fixtures - CTO"                                                   , new String[] { "MovingHead-SetColor-Right", "MovingHead-CTO"                              } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 11, "Bottom Fixtures - White"                                                , new String[] { "MovingHead-SetColor-Bottom", "MovingHead-White"                           } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 12, "Bottom Fixtures - Red"                                                  , new String[] { "MovingHead-SetColor-Bottom", "MovingHead-Red"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 13, "Bottom Fixtures - Deep Red"                                             , new String[] { "MovingHead-SetColor-Bottom", "MovingHead-Deep Red"                        } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 14, "Bottom Fixtures - Blue"                                                 , new String[] { "MovingHead-SetColor-Bottom", "MovingHead-Blue"                            } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 15, "Bottom Fixtures - Deep Blue"                                            , new String[] { "MovingHead-SetColor-Bottom", "MovingHead-Deep Blue"                       } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 16, "Bottom Fixtures - Yellow"                                               , new String[] { "MovingHead-SetColor-Bottom", "MovingHead-Yellow"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 17, "Bottom Fixtures - Green"                                                , new String[] { "MovingHead-SetColor-Bottom", "MovingHead-Green"                           } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 18, "Bottom Fixtures - Ultraviolet"                                          , new String[] { "MovingHead-SetColor-Bottom", "MovingHead-Ultraviolet"                     } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 19, "Bottom Fixtures - Orange"                                               , new String[] { "MovingHead-SetColor-Bottom", "MovingHead-Orange"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 20, "Bottom Fixtures - CTO"                                                  , new String[] { "MovingHead-SetColor-Bottom", "MovingHead-CTO"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 21, "Center Fixtures - White"                                                , new String[] { "MovingHead-SetColor-Center", "MovingHead-White"                           } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 22, "Center Fixtures - Red"                                                  , new String[] { "MovingHead-SetColor-Center", "MovingHead-Red"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 23, "Center Fixtures - Deep Red"                                             , new String[] { "MovingHead-SetColor-Center", "MovingHead-Deep Red"                        } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 24, "Center Fixtures - Blue"                                                 , new String[] { "MovingHead-SetColor-Center", "MovingHead-Blue"                            } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 25, "Center Fixtures - Deep Blue"                                            , new String[] { "MovingHead-SetColor-Center", "MovingHead-Deep Blue"                       } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 26, "Center Fixtures - Yellow"                                               , new String[] { "MovingHead-SetColor-Center", "MovingHead-Yellow"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 27, "Center Fixtures - Green"                                                , new String[] { "MovingHead-SetColor-Center", "MovingHead-Green"                           } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 28, "Center Fixtures - Ultraviolet"                                          , new String[] { "MovingHead-SetColor-Center", "MovingHead-Ultraviolet"                     } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 29, "Center Fixtures - Orange"                                               , new String[] { "MovingHead-SetColor-Center", "MovingHead-Orange"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 30, "Center Fixtures - CTO"                                                  , new String[] { "MovingHead-SetColor-Center", "MovingHead-CTO"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 31, "Side Fixtures - White"                                                  , new String[] { "MovingHead-SetColor-Side", "MovingHead-White"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 32, "Side Fixtures - Red"                                                    , new String[] { "MovingHead-SetColor-Side", "MovingHead-Red"                               } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 33, "Side Fixtures - Deep Red"                                               , new String[] { "MovingHead-SetColor-Side", "MovingHead-Deep Red"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 34, "Side Fixtures - Blue"                                                   , new String[] { "MovingHead-SetColor-Side", "MovingHead-Blue"                              } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 35, "Side Fixtures - Deep Blue"                                              , new String[] { "MovingHead-SetColor-Side", "MovingHead-Deep Blue"                         } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 36, "Side Fixtures - Yellow"                                                 , new String[] { "MovingHead-SetColor-Side", "MovingHead-Yellow"                            } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 37, "Side Fixtures - Green"                                                  , new String[] { "MovingHead-SetColor-Side", "MovingHead-Green"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 38, "Side Fixtures - Ultraviolet"                                            , new String[] { "MovingHead-SetColor-Side", "MovingHead-Ultraviolet"                       } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 39, "Side Fixtures - Orange"                                                 , new String[] { "MovingHead-SetColor-Side", "MovingHead-Orange"                            } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 40, "Side Fixtures - CTO"                                                    , new String[] { "MovingHead-SetColor-Side", "MovingHead-CTO"                               } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 41, "Left Fixtures - White"                                                  , new String[] { "MovingHead-SetColor-Left", "MovingHead-White"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 42, "Left Fixtures - Red"                                                    , new String[] { "MovingHead-SetColor-Left", "MovingHead-Red"                               } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 43, "Left Fixtures - Deep Red"                                               , new String[] { "MovingHead-SetColor-Left", "MovingHead-Deep Red"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 44, "Left Fixtures - Blue"                                                   , new String[] { "MovingHead-SetColor-Left", "MovingHead-Blue"                              } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 45, "Left Fixtures - Deep Blue"                                              , new String[] { "MovingHead-SetColor-Left", "MovingHead-Deep Blue"                         } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 46, "Left Fixtures - Yellow"                                                 , new String[] { "MovingHead-SetColor-Left", "MovingHead-Yellow"                            } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 47, "Left Fixtures - Green"                                                  , new String[] { "MovingHead-SetColor-Left", "MovingHead-Green"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 48, "Left Fixtures - Ultraviolet"                                            , new String[] { "MovingHead-SetColor-Left", "MovingHead-Ultraviolet"                       } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 49, "Left Fixtures - Orange"                                                 , new String[] { "MovingHead-SetColor-Left", "MovingHead-Orange"                            } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 50, "Left Fixtures - CTO"                                                    , new String[] { "MovingHead-SetColor-Left", "MovingHead-CTO"                               } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 51, "Right Fixtures - White"                                                 , new String[] { "MovingHead-SetColor-Right", "MovingHead-White"                            } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 52, "Right Fixtures - Red"                                                   , new String[] { "MovingHead-SetColor-Right", "MovingHead-Red"                              } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 53, "Right Fixtures - Deep Red"                                              , new String[] { "MovingHead-SetColor-Right", "MovingHead-Deep Red"                         } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 54, "Right Fixtures - Blue"                                                  , new String[] { "MovingHead-SetColor-Right", "MovingHead-Blue"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 55, "Right Fixtures - Deep Blue"                                             , new String[] { "MovingHead-SetColor-Right", "MovingHead-Deep Blue"                        } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 56, "Right Fixtures - Yellow"                                                , new String[] { "MovingHead-SetColor-Right", "MovingHead-Yellow"                           } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 57, "Right Fixtures - Green"                                                 , new String[] { "MovingHead-SetColor-Right", "MovingHead-Green"                            } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 58, "Right Fixtures - Ultraviolet"                                           , new String[] { "MovingHead-SetColor-Right", "MovingHead-Ultraviolet"                      } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 59, "Right Fixtures - Orange"                                                , new String[] { "MovingHead-SetColor-Right", "MovingHead-Orange"                           } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 60, "Right Fixtures - CTO"                                                   , new String[] { "MovingHead-SetColor-Right", "MovingHead-CTO"                              } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 61, "Top Fixtures - White"                                                   , new String[] { "MovingHead-SetColor-Top", "MovingHead-White"                              } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 62, "Top Fixtures - Red"                                                     , new String[] { "MovingHead-SetColor-Top", "MovingHead-Red"                                } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 63, "Top Fixtures - Deep Red"                                                , new String[] { "MovingHead-SetColor-Top", "MovingHead-Deep Red"                           } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 64, "Top Fixtures - Blue"                                                    , new String[] { "MovingHead-SetColor-Top", "MovingHead-Blue"                               } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 65, "Top Fixtures - Deep Blue"                                               , new String[] { "MovingHead-SetColor-Top", "MovingHead-Deep Blue"                          } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 66, "Top Fixtures - Yellow"                                                  , new String[] { "MovingHead-SetColor-Top", "MovingHead-Yellow"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 67, "Top Fixtures - Green"                                                   , new String[] { "MovingHead-SetColor-Top", "MovingHead-Green"                              } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 68, "Top Fixtures - Ultraviolet"                                             , new String[] { "MovingHead-SetColor-Top", "MovingHead-Ultraviolet"                        } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 69, "Top Fixtures - Orange"                                                  , new String[] { "MovingHead-SetColor-Top", "MovingHead-Orange"                             } );
+  DMXMovingHead_ColorAttributes = registerAttribute(DMXMovingHead_ColorAttributes, 70, "Top Fixtures - CTO"                                                     , new String[] { "MovingHead-SetColor-Top", "MovingHead-CTO"                                } );
                 
   DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 1,  "All Fixtures - No Sync"                                               , new String[] { "MovingHead-SetRhythm-All", "MovingHead-No Sync"                                } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 2,  "Center Fixtures - No Sync"                                            , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-No Sync"                             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 3,  "Side Fixtures - No Sync"                                              , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-No Sync"                               } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 4,  "Left Fixtures - No Sync"                                              , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-No Sync"                               } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 5,  "Right Fixtures - No Sync"                                             , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-No Sync"                              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 6,  "All Fixtures - Together 32nd Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-32nd"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 7,  "All Fixtures - Together 16th Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-16th"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 8,  "All Fixtures - Together 8th Sync"                                     , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-8th"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 9,  "All Fixtures - Together 4th Sync"                                     , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-4th"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 10, "All Fixtures - Together 2nd Sync"                                     , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-2nd"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 11, "All Fixtures - Together Bar Sync"                                     , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-Bar"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 12, "All Fixtures - Clockwise 32nd Sync"                                   , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-32nd"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 13, "All Fixtures - Clockwise 16th Sync"                                   , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-16th"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 14, "All Fixtures - Clockwise 8th Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-8th"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 15, "All Fixtures - Clockwise 4th Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-4th"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 16, "All Fixtures - Clockwise 2nd Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-2nd"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 17, "All Fixtures - Clockwise Bar Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-Bar"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 18, "All Fixtures - AntiClockwise 32nd Sync"                               , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-32nd"       } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 19, "All Fixtures - AntiClockwise 16th Sync"                               , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-16th"       } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 20, "All Fixtures - AntiClockwise 8th Sync"                                , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-8th"        } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 21, "All Fixtures - AntiClockwise 4th Sync"                                , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-4th"        } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 22, "All Fixtures - AntiClockwise 2nd Sync"                                , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-2nd"        } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 23, "All Fixtures - AntiClockwise Bar Sync"                                , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-Bar"        } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 24, "All Fixtures - Random 32nd Sync"                                      , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-32nd"              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 25, "All Fixtures - Random 16th Sync"                                      , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-16th"              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 26, "All Fixtures - Random 8th Sync"                                       , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-8th"               } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 27, "All Fixtures - Random 4th Sync"                                       , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-4th"               } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 28, "All Fixtures - Random 2nd Sync"                                       , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-2nd"               } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 29, "All Fixtures - Random Bar Sync"                                       , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-Bar"               } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 30, "Center Fixtures - Together 32nd Sync"                                 , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-32nd"         } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 31, "Center Fixtures - Together 16th Sync"                                 , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-16th"         } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 32, "Center Fixtures - Together 8th Sync"                                  , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-8th"          } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 33, "Center Fixtures - Together 4th Sync"                                  , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-4th"          } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 34, "Center Fixtures - Together 2nd Sync"                                  , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-2nd"          } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 35, "Center Fixtures - Together Bar Sync"                                  , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-Bar"          } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 36, "Center Fixtures - Random 32nd Sync"                                   , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-32nd"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 37, "Center Fixtures - Random 16th Sync"                                   , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-16th"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 38, "Center Fixtures - Random 8th Sync"                                    , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-8th"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 39, "Center Fixtures - Random 4th Sync"                                    , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-4th"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 40, "Center Fixtures - Random 2nd Sync"                                    , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-2nd"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 41, "Center Fixtures - Random Bar Sync"                                    , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-Bar"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 42, "Side Fixtures - Together 32nd Sync"                                   , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-32nd"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 43, "Side Fixtures - Together 16th Sync"                                   , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-16th"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 44, "Side Fixtures - Together 8th Sync"                                    , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-8th"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 45, "Side Fixtures - Together 4th Sync"                                    , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-4th"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 46, "Side Fixtures - Together 2nd Sync"                                    , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-2nd"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 47, "Side Fixtures - Together Bar Sync"                                    , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-Bar"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 48, "Side Fixtures - Random 32nd Sync"                                     , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-32nd"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 49, "Side Fixtures - Random 16th Sync"                                     , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-16th"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 50, "Side Fixtures - Random 8th Sync"                                      , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-8th"              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 51, "Side Fixtures - Random 4th Sync"                                      , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-4th"              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 52, "Side Fixtures - Random 2nd Sync"                                      , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-2nd"              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 53, "Side Fixtures - Random Bar Sync"                                      , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-Bar"              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 54, "Left Fixtures - Together 32nd Sync"                                   , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-32nd"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 55, "Left Fixtures - Together 16th Sync"                                   , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-16th"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 56, "Left Fixtures - Together 8th Sync"                                    , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-8th"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 57, "Left Fixtures - Together 4th Sync"                                    , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-4th"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 58, "Left Fixtures - Together 2nd Sync"                                    , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-2nd"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 59, "Left Fixtures - Together Bar Sync"                                    , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-Bar"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 60, "Left Fixtures - Random 32nd Sync"                                     , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-32nd"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 61, "Left Fixtures - Random 16th Sync"                                     , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-16th"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 62, "Left Fixtures - Random 8th Sync"                                      , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-8th"              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 63, "Left Fixtures - Random 4th Sync"                                      , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-4th"              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 64, "Left Fixtures - Random 2nd Sync"                                      , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-2nd"              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 65, "Left Fixtures - Random Bar Sync"                                      , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-Bar"              } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 66, "Right Fixtures - Together 32nd Sync"                                  , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-32nd"          } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 67, "Right Fixtures - Together 16th Sync"                                  , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-16th"          } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 68, "Right Fixtures - Together 8th Sync"                                   , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-8th"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 69, "Right Fixtures - Together 4th Sync"                                   , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-4th"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 70, "Right Fixtures - Together 2nd Sync"                                   , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-2nd"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 71, "Right Fixtures - Together Bar Sync"                                   , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-Bar"           } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 72, "Right Fixtures - Random 32nd Sync"                                    , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-32nd"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 73, "Right Fixtures - Random 16th Sync"                                    , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-16th"            } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 74, "Right Fixtures - Random 8th Sync"                                     , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-8th"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 75, "Right Fixtures - Random 4th Sync"                                     , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-4th"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 76, "Right Fixtures - Random 2nd Sync"                                     , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-2nd"             } );
-  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 77, "Right Fixtures - Random Bar Sync"                                     , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-Bar"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 2,  "Bottom Fixtures - No Sync"                                            , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-No Sync"                             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 3,  "Center Fixtures - No Sync"                                            , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-No Sync"                             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 4,  "Side Fixtures - No Sync"                                              , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-No Sync"                               } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 5,  "Left Fixtures - No Sync"                                              , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-No Sync"                               } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 6,  "Right Fixtures - No Sync"                                             , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-No Sync"                              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 7,  "Top Fixtures - No Sync"                                               , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-No Sync"                                } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 8,  "All Fixtures - Together 32nd Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-32nd"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 9,  "All Fixtures - Together 16th Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-16th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 10, "All Fixtures - Together 8th Sync"                                     , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-8th"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 11, "All Fixtures - Together 4th Sync"                                     , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-4th"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 12, "All Fixtures - Together 2nd Sync"                                     , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-2nd"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 13, "All Fixtures - Together Bar Sync"                                     , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Together", "MovingHead-Bar"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 14, "All Fixtures - Clockwise 32nd Sync"                                   , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-32nd"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 15, "All Fixtures - Clockwise 16th Sync"                                   , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-16th"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 16, "All Fixtures - Clockwise 8th Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-8th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 17, "All Fixtures - Clockwise 4th Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-4th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 18, "All Fixtures - Clockwise 2nd Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-2nd"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 19, "All Fixtures - Clockwise Bar Sync"                                    , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Clockwise", "MovingHead-Bar"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 20, "All Fixtures - AntiClockwise 32nd Sync"                               , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-32nd"       } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 21, "All Fixtures - AntiClockwise 16th Sync"                               , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-16th"       } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 22, "All Fixtures - AntiClockwise 8th Sync"                                , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-8th"        } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 23, "All Fixtures - AntiClockwise 4th Sync"                                , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-4th"        } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 24, "All Fixtures - AntiClockwise 2nd Sync"                                , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-2nd"        } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 25, "All Fixtures - AntiClockwise Bar Sync"                                , new String[] { "MovingHead-SetRhythm-All", "MovingHead-AntiClockwise", "MovingHead-Bar"        } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 26, "All Fixtures - Random 32nd Sync"                                      , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-32nd"              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 27, "All Fixtures - Random 16th Sync"                                      , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-16th"              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 28, "All Fixtures - Random 8th Sync"                                       , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-8th"               } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 29, "All Fixtures - Random 4th Sync"                                       , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-4th"               } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 30, "All Fixtures - Random 2nd Sync"                                       , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-2nd"               } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 31, "All Fixtures - Random Bar Sync"                                       , new String[] { "MovingHead-SetRhythm-All", "MovingHead-Random", "MovingHead-Bar"               } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 32, "Bottom Fixtures - Together 32nd Sync"                                 , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Together", "MovingHead-32nd"         } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 33, "Bottom Fixtures - Together 16th Sync"                                 , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Together", "MovingHead-16th"         } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 34, "Bottom Fixtures - Together 8th Sync"                                  , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Together", "MovingHead-8th"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 35, "Bottom Fixtures - Together 4th Sync"                                  , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Together", "MovingHead-4th"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 36, "Bottom Fixtures - Together 2nd Sync"                                  , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Together", "MovingHead-2nd"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 37, "Bottom Fixtures - Together Bar Sync"                                  , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Together", "MovingHead-Bar"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 38, "Bottom Fixtures - Random 32nd Sync"                                   , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Random", "MovingHead-32nd"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 39, "Bottom Fixtures - Random 16th Sync"                                   , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Random", "MovingHead-16th"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 40, "Bottom Fixtures - Random 8th Sync"                                    , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Random", "MovingHead-8th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 41, "Bottom Fixtures - Random 4th Sync"                                    , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Random", "MovingHead-4th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 42, "Bottom Fixtures - Random 2nd Sync"                                    , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Random", "MovingHead-2nd"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 43, "Bottom Fixtures - Random Bar Sync"                                    , new String[] { "MovingHead-SetRhythm-Bottom", "MovingHead-Random", "MovingHead-Bar"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 44, "Center Fixtures - Together 32nd Sync"                                 , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-32nd"         } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 45, "Center Fixtures - Together 16th Sync"                                 , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-16th"         } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 46, "Center Fixtures - Together 8th Sync"                                  , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-8th"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 47, "Center Fixtures - Together 4th Sync"                                  , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-4th"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 48, "Center Fixtures - Together 2nd Sync"                                  , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-2nd"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 49, "Center Fixtures - Together Bar Sync"                                  , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Together", "MovingHead-Bar"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 50, "Center Fixtures - Random 32nd Sync"                                   , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-32nd"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 51, "Center Fixtures - Random 16th Sync"                                   , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-16th"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 52, "Center Fixtures - Random 8th Sync"                                    , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-8th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 53, "Center Fixtures - Random 4th Sync"                                    , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-4th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 54, "Center Fixtures - Random 2nd Sync"                                    , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-2nd"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 55, "Center Fixtures - Random Bar Sync"                                    , new String[] { "MovingHead-SetRhythm-Center", "MovingHead-Random", "MovingHead-Bar"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 56, "Side Fixtures - Together 32nd Sync"                                   , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-32nd"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 57, "Side Fixtures - Together 16th Sync"                                   , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-16th"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 58, "Side Fixtures - Together 8th Sync"                                    , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-8th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 59, "Side Fixtures - Together 4th Sync"                                    , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-4th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 60, "Side Fixtures - Together 2nd Sync"                                    , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-2nd"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 61, "Side Fixtures - Together Bar Sync"                                    , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Together", "MovingHead-Bar"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 62, "Side Fixtures - Random 32nd Sync"                                     , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-32nd"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 63, "Side Fixtures - Random 16th Sync"                                     , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-16th"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 64, "Side Fixtures - Random 8th Sync"                                      , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-8th"              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 65, "Side Fixtures - Random 4th Sync"                                      , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-4th"              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 66, "Side Fixtures - Random 2nd Sync"                                      , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-2nd"              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 67, "Side Fixtures - Random Bar Sync"                                      , new String[] { "MovingHead-SetRhythm-Side", "MovingHead-Random", "MovingHead-Bar"              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 68, "Left Fixtures - Together 32nd Sync"                                   , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-32nd"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 69, "Left Fixtures - Together 16th Sync"                                   , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-16th"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 70, "Left Fixtures - Together 8th Sync"                                    , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-8th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 71, "Left Fixtures - Together 4th Sync"                                    , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-4th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 72, "Left Fixtures - Together 2nd Sync"                                    , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-2nd"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 73, "Left Fixtures - Together Bar Sync"                                    , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Together", "MovingHead-Bar"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 74, "Left Fixtures - Random 32nd Sync"                                     , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-32nd"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 75, "Left Fixtures - Random 16th Sync"                                     , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-16th"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 76, "Left Fixtures - Random 8th Sync"                                      , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-8th"              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 77, "Left Fixtures - Random 4th Sync"                                      , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-4th"              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 78, "Left Fixtures - Random 2nd Sync"                                      , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-2nd"              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 79, "Left Fixtures - Random Bar Sync"                                      , new String[] { "MovingHead-SetRhythm-Left", "MovingHead-Random", "MovingHead-Bar"              } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 80, "Right Fixtures - Together 32nd Sync"                                  , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-32nd"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 81, "Right Fixtures - Together 16th Sync"                                  , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-16th"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 82, "Right Fixtures - Together 8th Sync"                                   , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-8th"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 83, "Right Fixtures - Together 4th Sync"                                   , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-4th"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 84, "Right Fixtures - Together 2nd Sync"                                   , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-2nd"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 85, "Right Fixtures - Together Bar Sync"                                   , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Together", "MovingHead-Bar"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 86, "Right Fixtures - Random 32nd Sync"                                    , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-32nd"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 87, "Right Fixtures - Random 16th Sync"                                    , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-16th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 88, "Right Fixtures - Random 8th Sync"                                     , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-8th"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 89, "Right Fixtures - Random 4th Sync"                                     , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-4th"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 90, "Right Fixtures - Random 2nd Sync"                                     , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-2nd"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 91, "Right Fixtures - Random Bar Sync"                                     , new String[] { "MovingHead-SetRhythm-Right", "MovingHead-Random", "MovingHead-Bar"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 92, "Top Fixtures - Together 32nd Sync"                                    , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Together", "MovingHead-32nd"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 93, "Top Fixtures - Together 16th Sync"                                    , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Together", "MovingHead-16th"          } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 94, "Top Fixtures - Together 8th Sync"                                     , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Together", "MovingHead-8th"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 95, "Top Fixtures - Together 4th Sync"                                     , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Together", "MovingHead-4th"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 96, "Top Fixtures - Together 2nd Sync"                                     , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Together", "MovingHead-2nd"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 97, "Top Fixtures - Together Bar Sync"                                     , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Together", "MovingHead-Bar"           } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 98, "Top Fixtures - Random 32nd Sync"                                      , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Random", "MovingHead-32nd"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 99, "Top Fixtures - Random 16th Sync"                                      , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Random", "MovingHead-16th"            } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 100, "Top Fixtures - Random 8th Sync"                                      , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Random", "MovingHead-8th"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 101, "Top Fixtures - Random 4th Sync"                                      , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Random", "MovingHead-4th"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 102, "Top Fixtures - Random 2nd Sync"                                      , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Random", "MovingHead-2nd"             } );
+  DMXMovingHead_RhythmAttributes = registerAttribute(DMXMovingHead_RhythmAttributes, 103, "Top Fixtures - Random Bar Sync"                                      , new String[] { "MovingHead-SetRhythm-Top", "MovingHead-Random", "MovingHead-Bar"             } );
   
   
   DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 1,   "All Fixtures - Continuous Light"                             , new String[] {"MovingHead-SetLight-All", "MovingHead-Still"                                    } );
@@ -22383,206 +22284,419 @@ public void setDMXAnimationsAttributes() {
   DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 12,  "All Fixtures - Fast Anti Clockwise SineWave"                 , new String[] {"MovingHead-SetLight-All", "MovingHead-Sine"                                     } );
   DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 13,  "All Fixtures - Random Glitch"                                , new String[] {"MovingHead-SetLight-All", "MovingHead-Glitch"                                   } );
   DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 14,  "All Fixtures - Minimal Aperture Beam"                        , new String[] {"MovingHead-SetLight-All", "MovingHead-Tight"                                    } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 15,  "Center Fixtures - Continuous Light"                          , new String[] {"MovingHead-SetLight-Center", "MovingHead-Still"                                 } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 16,  "Center Fixtures - Slow Crescendo Light"                      , new String[] {"MovingHead-SetLight-Center", "MovingHead-Crescendo"                             } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 17,  "Center Fixtures - Fast Crescendo Light"                      , new String[] {"MovingHead-SetLight-Center", "MovingHead-Crescendo"                             } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 18,  "Center Fixtures - Single Short Flash"                        , new String[] {"MovingHead-SetLight-Center", "MovingHead-Flash"                                 } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 19,  "Center Fixtures - Single Long Flash"                         , new String[] {"MovingHead-SetLight-Center", "MovingHead-Flash"                                 } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 20,  "Center Fixtures - Slow Strobe"                               , new String[] {"MovingHead-SetLight-Center", "MovingHead-Strobe"                                } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 21,  "Center Fixtures - Medium Strobe"                             , new String[] {"MovingHead-SetLight-Center", "MovingHead-Strobe"                                } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 22,  "Center Fixtures - Fast Strobe"                               , new String[] {"MovingHead-SetLight-Center", "MovingHead-Strobe"                                } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 23,  "Center Fixtures - Slow Clockwise SineWave"                   , new String[] {"MovingHead-SetLight-Center", "MovingHead-Sine"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 24,  "Center Fixtures - Fast Clockwise SineWave"                   , new String[] {"MovingHead-SetLight-Center", "MovingHead-Sine"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 25,  "Center Fixtures - Slow Anti Clockwise SineWave"              , new String[] {"MovingHead-SetLight-Center", "MovingHead-Sine"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 26,  "Center Fixtures - Fast Anti Clockwise SineWave"              , new String[] {"MovingHead-SetLight-Center", "MovingHead-Sine"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 27,  "Center Fixtures - Random Glitch"                             , new String[] {"MovingHead-SetLight-Center", "MovingHead-Glitch"                                } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 28,  "Center Fixtures - Minimal Aperture Beam"                     , new String[] {"MovingHead-SetLight-Center", "MovingHead-Tight"                                 } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 29,  "Side Fixtures - Continuous Light"                            , new String[] {"MovingHead-SetLight-Side", "MovingHead-Still"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 30,  "Side Fixtures - Slow Crescendo Light"                        , new String[] {"MovingHead-SetLight-Side", "MovingHead-Crescendo"                               } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 31,  "Side Fixtures - Fast Crescendo Light"                        , new String[] {"MovingHead-SetLight-Side", "MovingHead-Crescendo"                               } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 32,  "Side Fixtures - Single Short Flash"                          , new String[] {"MovingHead-SetLight-Side", "MovingHead-Flash"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 33,  "Side Fixtures - Single Long Flash"                           , new String[] {"MovingHead-SetLight-Side", "MovingHead-Flash"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 34,  "Side Fixtures - Slow Strobe"                                 , new String[] {"MovingHead-SetLight-Side", "MovingHead-Strobe"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 35,  "Side Fixtures - Medium Strobe"                               , new String[] {"MovingHead-SetLight-Side", "MovingHead-Strobe"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 36,  "Side Fixtures - Fast Strobe"                                 , new String[] {"MovingHead-SetLight-Side", "MovingHead-Strobe"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 37,  "Side Fixtures - Slow Clockwise SineWave"                     , new String[] {"MovingHead-SetLight-Side", "MovingHead-Sine"                                    } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 38,  "Side Fixtures - Fast Clockwise SineWave"                     , new String[] {"MovingHead-SetLight-Side", "MovingHead-Sine"                                    } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 39,  "Side Fixtures - Slow Anti Clockwise SineWave"                , new String[] {"MovingHead-SetLight-Side", "MovingHead-Sine"                                    } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 40,  "Side Fixtures - Fast Anti Clockwise SineWave"                , new String[] {"MovingHead-SetLight-Side", "MovingHead-Sine"                                    } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 41,  "Side Fixtures - Random Glitch"                               , new String[] {"MovingHead-SetLight-Side", "MovingHead-Glitch"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 42,  "Side Fixtures - Minimal Aperture Beam"                       , new String[] {"MovingHead-SetLight-Side", "MovingHead-Tight"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 43,  "Left Fixtures - Continuous Light"                            , new String[] {"MovingHead-SetLight-Left", "MovingHead-Still"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 44,  "Left Fixtures - Slow Crescendo Light"                        , new String[] {"MovingHead-SetLight-Left", "MovingHead-Crescendo"                               } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 45,  "Left Fixtures - Fast Crescendo Light"                        , new String[] {"MovingHead-SetLight-Left", "MovingHead-Crescendo"                               } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 46,  "Left Fixtures - Single Short Flash"                          , new String[] {"MovingHead-SetLight-Left", "MovingHead-Flash"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 47,  "Left Fixtures - Single Long Flash"                           , new String[] {"MovingHead-SetLight-Left", "MovingHead-Flash"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 48,  "Left Fixtures - Slow Strobe"                                 , new String[] {"MovingHead-SetLight-Left", "MovingHead-Strobe"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 49,  "Left Fixtures - Medium Strobe"                               , new String[] {"MovingHead-SetLight-Left", "MovingHead-Strobe"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 50,  "Left Fixtures - Fast Strobe"                                 , new String[] {"MovingHead-SetLight-Left", "MovingHead-Strobe"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 51,  "Left Fixtures - Slow Clockwise SineWave"                     , new String[] {"MovingHead-SetLight-Left", "MovingHead-Sine"                                    } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 52,  "Left Fixtures - Fast Clockwise SineWave"                     , new String[] {"MovingHead-SetLight-Left", "MovingHead-Sine"                                    } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 53,  "Left Fixtures - Slow Anti Clockwise SineWave"                , new String[] {"MovingHead-SetLight-Left", "MovingHead-Sine"                                    } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 54,  "Left Fixtures - Fast Anti Clockwise SineWave"                , new String[] {"MovingHead-SetLight-Left", "MovingHead-Sine"                                    } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 55,  "Left Fixtures - Random Glitch"                               , new String[] {"MovingHead-SetLight-Left", "MovingHead-Glitch"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 56,  "Left Fixtures - Minimal Aperture Beam"                       , new String[] {"MovingHead-SetLight-Left", "MovingHead-Tight"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 57,  "Right Fixtures - Continuous Light"                           , new String[] {"MovingHead-SetLight-Right", "MovingHead-Still"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 58,  "Right Fixtures - Slow Crescendo Light"                       , new String[] {"MovingHead-SetLight-Right", "MovingHead-Crescendo"                              } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 59,  "Right Fixtures - Fast Crescendo Light"                       , new String[] {"MovingHead-SetLight-Right", "MovingHead-Crescendo"                              } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 60,  "Right Fixtures - Single Short Flash"                         , new String[] {"MovingHead-SetLight-Right", "MovingHead-Flash"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 61,  "Right Fixtures - Single Long Flash"                          , new String[] {"MovingHead-SetLight-Right", "MovingHead-Flash"                                  } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 62,  "Right Fixtures - Slow Strobe"                                , new String[] {"MovingHead-SetLight-Right", "MovingHead-Strobe"                                 } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 63,  "Right Fixtures - Medium Strobe"                              , new String[] {"MovingHead-SetLight-Right", "MovingHead-Strobe"                                 } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 64,  "Right Fixtures - Fast Strobe"                                , new String[] {"MovingHead-SetLight-Right", "MovingHead-Strobe"                                 } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 65,  "Right Fixtures - Slow Clockwise SineWave"                    , new String[] {"MovingHead-SetLight-Right", "MovingHead-Sine"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 66,  "Right Fixtures - Fast Clockwise SineWave"                    , new String[] {"MovingHead-SetLight-Right", "MovingHead-Sine"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 67,  "Right Fixtures - Slow Anti Clockwise SineWave"               , new String[] {"MovingHead-SetLight-Right", "MovingHead-Sine"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 68,  "Right Fixtures - Fast Anti Clockwise SineWave"               , new String[] {"MovingHead-SetLight-Right", "MovingHead-Sine"                                   } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 69,  "Right Fixtures - Random Glitch"                              , new String[] {"MovingHead-SetLight-Right", "MovingHead-Glitch"                                 } );
-  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 70,  "Right Fixtures - Minimal Aperture Beam"                      , new String[] {"MovingHead-SetLight-Right", "MovingHead-Tight"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 15,  "Bottom Fixtures - Continuous Light"                          , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Still"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 16,  "Bottom Fixtures - Slow Crescendo Light"                      , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Crescendo"                             } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 17,  "Bottom Fixtures - Fast Crescendo Light"                      , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Crescendo"                             } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 18,  "Bottom Fixtures - Single Short Flash"                        , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Flash"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 19,  "Bottom Fixtures - Single Long Flash"                         , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Flash"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 20,  "Bottom Fixtures - Slow Strobe"                               , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Strobe"                                } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 21,  "Bottom Fixtures - Medium Strobe"                             , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Strobe"                                } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 22,  "Bottom Fixtures - Fast Strobe"                               , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Strobe"                                } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 23,  "Bottom Fixtures - Slow Clockwise SineWave"                   , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Sine"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 24,  "Bottom Fixtures - Fast Clockwise SineWave"                   , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Sine"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 25,  "Bottom Fixtures - Slow Anti Clockwise SineWave"              , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Sine"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 26,  "Bottom Fixtures - Fast Anti Clockwise SineWave"              , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Sine"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 27,  "Bottom Fixtures - Random Glitch"                             , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Glitch"                                } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 28,  "Bottom Fixtures - Minimal Aperture Beam"                     , new String[] {"MovingHead-SetLight-Bottom", "MovingHead-Tight"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 29,  "Center Fixtures - Continuous Light"                          , new String[] {"MovingHead-SetLight-Center", "MovingHead-Still"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 30,  "Center Fixtures - Slow Crescendo Light"                      , new String[] {"MovingHead-SetLight-Center", "MovingHead-Crescendo"                             } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 31,  "Center Fixtures - Fast Crescendo Light"                      , new String[] {"MovingHead-SetLight-Center", "MovingHead-Crescendo"                             } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 32,  "Center Fixtures - Single Short Flash"                        , new String[] {"MovingHead-SetLight-Center", "MovingHead-Flash"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 33,  "Center Fixtures - Single Long Flash"                         , new String[] {"MovingHead-SetLight-Center", "MovingHead-Flash"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 34,  "Center Fixtures - Slow Strobe"                               , new String[] {"MovingHead-SetLight-Center", "MovingHead-Strobe"                                } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 35,  "Center Fixtures - Medium Strobe"                             , new String[] {"MovingHead-SetLight-Center", "MovingHead-Strobe"                                } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 36,  "Center Fixtures - Fast Strobe"                               , new String[] {"MovingHead-SetLight-Center", "MovingHead-Strobe"                                } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 37,  "Center Fixtures - Slow Clockwise SineWave"                   , new String[] {"MovingHead-SetLight-Center", "MovingHead-Sine"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 38,  "Center Fixtures - Fast Clockwise SineWave"                   , new String[] {"MovingHead-SetLight-Center", "MovingHead-Sine"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 39,  "Center Fixtures - Slow Anti Clockwise SineWave"              , new String[] {"MovingHead-SetLight-Center", "MovingHead-Sine"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 40,  "Center Fixtures - Fast Anti Clockwise SineWave"              , new String[] {"MovingHead-SetLight-Center", "MovingHead-Sine"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 41,  "Center Fixtures - Random Glitch"                             , new String[] {"MovingHead-SetLight-Center", "MovingHead-Glitch"                                } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 42,  "Center Fixtures - Minimal Aperture Beam"                     , new String[] {"MovingHead-SetLight-Center", "MovingHead-Tight"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 43,  "Side Fixtures - Continuous Light"                            , new String[] {"MovingHead-SetLight-Side", "MovingHead-Still"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 44,  "Side Fixtures - Slow Crescendo Light"                        , new String[] {"MovingHead-SetLight-Side", "MovingHead-Crescendo"                               } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 45,  "Side Fixtures - Fast Crescendo Light"                        , new String[] {"MovingHead-SetLight-Side", "MovingHead-Crescendo"                               } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 46,  "Side Fixtures - Single Short Flash"                          , new String[] {"MovingHead-SetLight-Side", "MovingHead-Flash"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 47,  "Side Fixtures - Single Long Flash"                           , new String[] {"MovingHead-SetLight-Side", "MovingHead-Flash"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 48,  "Side Fixtures - Slow Strobe"                                 , new String[] {"MovingHead-SetLight-Side", "MovingHead-Strobe"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 49,  "Side Fixtures - Medium Strobe"                               , new String[] {"MovingHead-SetLight-Side", "MovingHead-Strobe"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 50,  "Side Fixtures - Fast Strobe"                                 , new String[] {"MovingHead-SetLight-Side", "MovingHead-Strobe"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 51,  "Side Fixtures - Slow Clockwise SineWave"                     , new String[] {"MovingHead-SetLight-Side", "MovingHead-Sine"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 52,  "Side Fixtures - Fast Clockwise SineWave"                     , new String[] {"MovingHead-SetLight-Side", "MovingHead-Sine"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 53,  "Side Fixtures - Slow Anti Clockwise SineWave"                , new String[] {"MovingHead-SetLight-Side", "MovingHead-Sine"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 54,  "Side Fixtures - Fast Anti Clockwise SineWave"                , new String[] {"MovingHead-SetLight-Side", "MovingHead-Sine"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 55,  "Side Fixtures - Random Glitch"                               , new String[] {"MovingHead-SetLight-Side", "MovingHead-Glitch"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 56,  "Side Fixtures - Minimal Aperture Beam"                       , new String[] {"MovingHead-SetLight-Side", "MovingHead-Tight"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 57,  "Left Fixtures - Continuous Light"                            , new String[] {"MovingHead-SetLight-Left", "MovingHead-Still"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 58,  "Left Fixtures - Slow Crescendo Light"                        , new String[] {"MovingHead-SetLight-Left", "MovingHead-Crescendo"                               } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 59,  "Left Fixtures - Fast Crescendo Light"                        , new String[] {"MovingHead-SetLight-Left", "MovingHead-Crescendo"                               } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 60,  "Left Fixtures - Single Short Flash"                          , new String[] {"MovingHead-SetLight-Left", "MovingHead-Flash"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 61,  "Left Fixtures - Single Long Flash"                           , new String[] {"MovingHead-SetLight-Left", "MovingHead-Flash"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 62,  "Left Fixtures - Slow Strobe"                                 , new String[] {"MovingHead-SetLight-Left", "MovingHead-Strobe"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 63,  "Left Fixtures - Medium Strobe"                               , new String[] {"MovingHead-SetLight-Left", "MovingHead-Strobe"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 64,  "Left Fixtures - Fast Strobe"                                 , new String[] {"MovingHead-SetLight-Left", "MovingHead-Strobe"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 65,  "Left Fixtures - Slow Clockwise SineWave"                     , new String[] {"MovingHead-SetLight-Left", "MovingHead-Sine"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 66,  "Left Fixtures - Fast Clockwise SineWave"                     , new String[] {"MovingHead-SetLight-Left", "MovingHead-Sine"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 67,  "Left Fixtures - Slow Anti Clockwise SineWave"                , new String[] {"MovingHead-SetLight-Left", "MovingHead-Sine"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 68,  "Left Fixtures - Fast Anti Clockwise SineWave"                , new String[] {"MovingHead-SetLight-Left", "MovingHead-Sine"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 69,  "Left Fixtures - Random Glitch"                               , new String[] {"MovingHead-SetLight-Left", "MovingHead-Glitch"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 70,  "Left Fixtures - Minimal Aperture Beam"                       , new String[] {"MovingHead-SetLight-Left", "MovingHead-Tight"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 71,  "Right Fixtures - Continuous Light"                           , new String[] {"MovingHead-SetLight-Right", "MovingHead-Still"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 72,  "Right Fixtures - Slow Crescendo Light"                       , new String[] {"MovingHead-SetLight-Right", "MovingHead-Crescendo"                              } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 73,  "Right Fixtures - Fast Crescendo Light"                       , new String[] {"MovingHead-SetLight-Right", "MovingHead-Crescendo"                              } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 74,  "Right Fixtures - Single Short Flash"                         , new String[] {"MovingHead-SetLight-Right", "MovingHead-Flash"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 75,  "Right Fixtures - Single Long Flash"                          , new String[] {"MovingHead-SetLight-Right", "MovingHead-Flash"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 76,  "Right Fixtures - Slow Strobe"                                , new String[] {"MovingHead-SetLight-Right", "MovingHead-Strobe"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 77,  "Right Fixtures - Medium Strobe"                              , new String[] {"MovingHead-SetLight-Right", "MovingHead-Strobe"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 78,  "Right Fixtures - Fast Strobe"                                , new String[] {"MovingHead-SetLight-Right", "MovingHead-Strobe"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 79,  "Right Fixtures - Slow Clockwise SineWave"                    , new String[] {"MovingHead-SetLight-Right", "MovingHead-Sine"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 80,  "Right Fixtures - Fast Clockwise SineWave"                    , new String[] {"MovingHead-SetLight-Right", "MovingHead-Sine"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 81,  "Right Fixtures - Slow Anti Clockwise SineWave"               , new String[] {"MovingHead-SetLight-Right", "MovingHead-Sine"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 82,  "Right Fixtures - Fast Anti Clockwise SineWave"               , new String[] {"MovingHead-SetLight-Right", "MovingHead-Sine"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 83,  "Right Fixtures - Random Glitch"                              , new String[] {"MovingHead-SetLight-Right", "MovingHead-Glitch"                                 } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 84,  "Right Fixtures - Minimal Aperture Beam"                      , new String[] {"MovingHead-SetLight-Right", "MovingHead-Tight"                                  } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 85,  "Top Fixtures - Continuous Light"                             , new String[] {"MovingHead-SetLight-Top", "MovingHead-Still"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 86,  "Top Fixtures - Slow Crescendo Light"                         , new String[] {"MovingHead-SetLight-Top", "MovingHead-Crescendo"                                } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 87,  "Top Fixtures - Fast Crescendo Light"                         , new String[] {"MovingHead-SetLight-Top", "MovingHead-Crescendo"                                } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 88,  "Top Fixtures - Single Short Flash"                           , new String[] {"MovingHead-SetLight-Top", "MovingHead-Flash"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 89,  "Top Fixtures - Single Long Flash"                            , new String[] {"MovingHead-SetLight-Top", "MovingHead-Flash"                                    } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 90,  "Top Fixtures - Slow Strobe"                                  , new String[] {"MovingHead-SetLight-Top", "MovingHead-Strobe"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 91,  "Top Fixtures - Medium Strobe"                                , new String[] {"MovingHead-SetLight-Top", "MovingHead-Strobe"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 92,  "Top Fixtures - Fast Strobe"                                  , new String[] {"MovingHead-SetLight-Top", "MovingHead-Strobe"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 93,  "Top Fixtures - Slow Clockwise SineWave"                      , new String[] {"MovingHead-SetLight-Top", "MovingHead-Sine"                                     } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 94,  "Top Fixtures - Fast Clockwise SineWave"                      , new String[] {"MovingHead-SetLight-Top", "MovingHead-Sine"                                     } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 95,  "Top Fixtures - Slow Anti Clockwise SineWave"                 , new String[] {"MovingHead-SetLight-Top", "MovingHead-Sine"                                     } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 96,  "Top Fixtures - Fast Anti Clockwise SineWave"                 , new String[] {"MovingHead-SetLight-Top", "MovingHead-Sine"                                     } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 97,  "Top Fixtures - Random Glitch"                                , new String[] {"MovingHead-SetLight-Top", "MovingHead-Glitch"                                   } );
+  DMXMovingHead_LightStyleAttributes = registerAttribute(DMXMovingHead_LightStyleAttributes, 98,  "Top Fixtures - Minimal Aperture Beam"                        , new String[] {"MovingHead-SetLight-Top", "MovingHead-Tight"                                    } );
  
 
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 1,   "No Movement - All Fixtures - Blackout"                                              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Still"                                                                     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 2,   "No Movement - All Fixtures - Perform Current Light Style"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Still"                                                                     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 3,   "No Movement - Center Fixtures - Perform Current Light Style"                        , new String[] {"MovingHead-Anim-Center", "MovingHead-Anim-Still"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 4,   "No Movement - Side Fixtures - Perform Current Light Style"                          , new String[] {"MovingHead-Anim-Side", "MovingHead-Anim-Still"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 5,   "No Movement - Left Fixtures - Perform Current Light Style"                          , new String[] {"MovingHead-Anim-Left", "MovingHead-Anim-Still"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 6,   "No Movement - Right Fixtures - Perform Current Light Style"                         , new String[] {"MovingHead-Anim-Right", "MovingHead-Anim-Still"                                                                   } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 7,   "Fast Move - All Fixtures - Center Pan - Low Tilt"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 8,   "Fast Move - All Fixtures - Left Pan - Low Tilt"                                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 9,   "Fast Move - All Fixtures - Right Pan - Low Tilt"                                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 10,  "Fast Move - All Fixtures - Center Pan - Front Tilt"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 11,  "Fast Move - All Fixtures - Left Pan - Front Tilt"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 12,  "Fast Move - All Fixtures - Right Pan - Front Tilt"                                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 13,  "Fast Move - All Fixtures - Center Pan - High Tilt"                                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 14,  "Fast Move - All Fixtures - Left Pan - High Tilt"                                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 15,  "Fast Move - All Fixtures - Right Pan - High Tilt"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 16,  "Fast Move - All Fixtures - Center Pan - Upright Tilt"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 17,  "Fast Move - All Fixtures - Left Pan - Upright Tilt"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 18,  "Fast Move - All Fixtures - Right Pan - Upright Tilt"                                , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 19,  "Fast Move - All Fixtures - Center Pan - Back Tilt"                                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 20,  "Fast Move - All Fixtures - Left Pan - Back Tilt"                                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 21,  "Fast Move - All Fixtures - Right Pan - Back Tilt"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 22,  "Fast Move - All Fixtures - Wide Divergent Pan - Front Tilt"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 23,  "Fast Move - All Fixtures - Classic Divergent Pan - Front Tilt"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 24,  "Fast Move - All Fixtures - Wide Divergent Pan - High Tilt"                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 25,  "Fast Move - All Fixtures - Classic Divergent Pan - High Tilt"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 26,  "Fast Move - All Fixtures - Wide Convergent Pan - Front Tilt"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 27,  "Fast Move - All Fixtures - Classic Conergent Pan - Front Tilt"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 28,  "Fast Move - All Fixtures - Wide Convergent Pan - High Tilt"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 29,  "Fast Move - All Fixtures - Classic Convergent Pan - High Tilt"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 30,  "Fast Move - All Fixtures - Extreme Divergent Pan - Wide Neg Tilt"                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 31,  "Fast Move - All Fixtures - Extreme Divergent Pan - Narrow Neg Tilt"                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 32,  "Fast Move - All Fixtures - Extreme Divergent Pan - Wide Pos Tilt"                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 33,  "Fast Move - All Fixtures - Extreme Divergent Pan - Narrow Pos Tilt"                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 34,  "Continuous Sweep - Horizontal - Slow - Left To Right"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 35,  "Continuous Sweep - Horizontal - Regular - Left To Right"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 36,  "Continuous Sweep - Horizontal - Fast - Left To Right"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 37,  "Continuous Sweep - Horizontal - Slow - Right To Left"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 38,  "Continuous Sweep - Horizontal - Regular - Right To Left"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 39,  "Continuous Sweep - Horizontal - Fast - Right To Left"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 40,  "Single Sweep - Horizontal - Slow - Left To Right"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 41,  "Single Sweep - Horizontal - Regular - Left To Right"                                , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 42,  "Single Sweep - Horizontal - Fast - Left To Right"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 43,  "Single Sweep - Horizontal - Slow - Right To Left"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 44,  "Single Sweep - Horizontal - Regular - Right To Left"                                , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 45,  "Single Sweep - Horizontal - Fast - Right To Left"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 46,  "Continuous Sweep - Vertical - Slow - Left To Right"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 47,  "Continuous Sweep - Vertical - Regular - Left To Right"                              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 48,  "Continuous Sweep - Vertical - Fast - Left To Right"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 49,  "Continuous Sweep - Vertical - Slow - Right To Left"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 50,  "Continuous Sweep - Vertical - Regular - Right To Left"                              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 51,  "Continuous Sweep - Vertical - Fast - Right To Left"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 52,  "Single Sweep - Vertical - Slow - Left To Right"                                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 53,  "Single Sweep - Vertical - Regular - Left To Right"                                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"        } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 54,  "Single Sweep - Vertical - Fast - Left To Right"                                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 55,  "Single Sweep - Vertical - Slow - Right To Left"                                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 56,  "Single Sweep - Vertical - Regular - Right To Left"                                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"        } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 57,  "Single Sweep - Vertical - Fast - Right To Left"                                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 58,  "Continuous Sweep - Circular - Slow - Left To Right"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 59,  "Continuous Sweep - Circular - Regular - Left To Right"                              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 60,  "Continuous Sweep - Circular - Fast - Left To Right"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 61,  "Continuous Sweep - Circular - Slow - Right To Left"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 62,  "Continuous Sweep - Circular - Regular - Right To Left"                              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 63,  "Continuous Sweep - Circular - Fast - Right To Left"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 64,  "Single Sweep - Circular - Slow - Left To Right"                                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 65,  "Single Sweep - Circular - Regular - Left To Right"                                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"        } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 66,  "Single Sweep - Circular - Fast - Left To Right"                                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 67,  "Single Sweep - Circular - Slow - Right To Left"                                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 68,  "Single Sweep - Circular - Regular - Right To Left"                                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"        } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 69,  "Single Sweep - Circular - Fast - Right To Left"                                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 70,  "Continuous Sweep - Horizontal - Slow - Symmetrical Convergent"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 71,  "Continuous Sweep - Horizontal - Regular - Symmetrical Convergent"                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 72,  "Continuous Sweep - Horizontal - Fast - Symmetrical Convergent"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 73,  "Single Sweep - Horizontal - Slow - Symmetrical Convergent"                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 74,  "Single Sweep - Horizontal - Regular - Symmetrical Convergent"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 75,  "Single Sweep - Horizontal - Fast - Symmetrical Convergent"                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 76,  "Continuous Sweep - Horizontal - Slow - Symmetrical Divergent"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 77,  "Continuous Sweep - Horizontal - Regular - Symmetrical Divergent"                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"  } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 78,  "Continuous Sweep - Horizontal - Fast - Symmetrical Divergent"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 79,  "Single Sweep - Horizontal - Slow - Symmetrical Divergent"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 80,  "Single Sweep - Horizontal - Regular - Symmetrical Divergent"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 81,  "Single Sweep - Horizontal - Fast - Symmetrical Divergent"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 82,  "Single Move - Vertical - Parallel - Very Slow - Up Down"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-VerySlow"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 83,  "Single Move - Vertical - Parallel - Slow - Up Down"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Slow"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 84,  "Single Move - Vertical - Parallel - Regular - Up Down"                              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Regular"        } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 85,  "Single Move - Vertical - Parallel - Fast - Up Down"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Fast"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 86,  "Single Move - Vertical - Parallel - Very Slow - Down Up"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-VerySlow"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 87,  "Single Move - Vertical - Parallel - Slow - Down Up"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Slow"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 88,  "Single Move - Vertical - Parallel - Regular - Down Up"                              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Regular"        } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 89,  "Single Move - Vertical - Parallel - Fast - Down Up"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Fast"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 90,  "Single Move - Vertical - Parallel - Very Slow - Opposite Up Down"                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-VerySlow"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 91,  "Single Move - Vertical - Parallel - Slow - Opposite Up Down"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Slow"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 92,  "Single Move - Vertical - Parallel - Regular - Opposite Up Down"                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Regular"        } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 93,  "Single Move - Vertical - Parallel - Fast - Opposite Up Down"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Fast"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 94,  "Single Move - Vertical - Parallel - Very Slow - Opposite Down Up"                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-VerySlow"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 95,  "Single Move - Vertical - Parallel - Slow - Opposite Down Up"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Slow"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 96,  "Single Move - Vertical - Parallel - Regular - Opposite Down Up"                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Regular"        } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 97,  "Single Move - Vertical - Parallel - Fast - Opposite Down Up"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Fast"           } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 98,  "Single Move - Vertical - Divergent - Very Slow - Up Down"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-VerySlow"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 99,  "Single Move - Vertical - Divergent - Slow - Up Down"                                , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Slow"          } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 100, "Single Move - Vertical - Divergent - Regular - Up Down"                             , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Regular"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 101, "Single Move - Vertical - Divergent - Fast - Up Down"                                , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Fast"          } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 102, "Single Move - Vertical - Divergent - Very Slow - Down Up"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-VerySlow"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 103, "Single Move - Vertical - Divergent - Slow - Down Up"                                , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Slow"          } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 104, "Single Move - Vertical - Divergent - Regular - Down Up"                             , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Regular"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 105, "Single Move - Vertical - Divergent - Fast - Down Up"                                , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Fast"          } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 106, "Single Move - Vertical - Divergent - Very Slow - Opposite Up Down"                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-VerySlow"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 107, "Single Move - Vertical - Divergent - Slow - Opposite Up Down"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Slow"          } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 108, "Single Move - Vertical - Divergent - Regular - Opposite Up Down"                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Regular"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 109, "Single Move - Vertical - Divergent - Fast - Opposite Up Down"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Fast"          } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 110, "Single Move - Vertical - Divergent - Very Slow - Opposite Down Up"                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-VerySlow"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 111, "Single Move - Vertical - Divergent - Slow - Opposite Down Up"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Slow"          } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 112, "Single Move - Vertical - Divergent - Regular - Opposite Down Up"                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Regular"       } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 113, "Single Move - Vertical - Divergent - Fast - Opposite Down Up"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Fast"          } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 114, "Single Move - Vertical - Convergent - Very Slow - Up Down"                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-VerySlow"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 115, "Single Move - Vertical - Convergent - Slow - Up Down"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Slow"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 116, "Single Move - Vertical - Convergent - Regular - Up Down"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Regular"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 117, "Single Move - Vertical - Convergent - Fast - Up Down"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Fast"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 118, "Single Move - Vertical - Convergent - Very Slow - Down Up"                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-VerySlow"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 119, "Single Move - Vertical - Convergent - Slow - Down Up"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Slow"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 120, "Single Move - Vertical - Convergent - Regular - Down Up"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Regular"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 121, "Single Move - Vertical - Convergent - Fast - Down Up"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Fast"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 122, "Single Move - Vertical - Convergent - Very Slow - Opposite Up Down"                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-VerySlow"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 123, "Single Move - Vertical - Convergent - Slow - Opposite Up Down"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Slow"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 124, "Single Move - Vertical - Convergent - Regular - Opposite Up Down"                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Regular"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 125, "Single Move - Vertical - Convergent - Fast - Opposite Up Down"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Fast"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 126, "Single Move - Vertical - Convergent - Very Slow - Opposite Down Up"                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-VerySlow"     } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 127, "Single Move - Vertical - Convergent - Slow - Opposite Down Up"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Slow"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 128, "Single Move - Vertical - Convergent - Regular - Opposite Down Up"                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Regular"      } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 129, "Single Move - Vertical - Convergent - Fast - Opposite Down Up"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Fast"         } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 130, "Random Direction - Noise - Weak - Slow"                                             , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 131, "Random Direction - Noise - Weak - Regular"                                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 132, "Random Direction - Noise - Weak - Fast"                                             , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 133, "Random Direction - Noise - Regular - Slow"                                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 134, "Random Direction - Noise - Regular - Regular"                                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 135, "Random Direction - Noise - Regular - Fast"                                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 136, "Random Direction - Noise - Strong - Slow"                                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 137, "Random Direction - Noise - Strong - Regular"                                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 138, "Random Direction - Noise - Strong - Fast"                                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 139, "All Fixtures - Smooth Beat Sync Random Direction - Very Slow"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 140, "All Fixtures - Smooth Beat Sync Random Direction - Slow"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 141, "All Fixtures - Smooth Beat Sync Random Direction - Regular"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
-  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 142, "All Fixtures - Smooth Beat Sync Random Direction - Fast"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 1,   "No Movement - All Fixtures - Blackout"                                              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Still"                                                                        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 2,   "No Movement - All Fixtures - Perform Current Light Style"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Still"                                                                        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 3,   "No Movement - Bottom Fixtures - Perform Current Light Style"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Still"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 4,   "No Movement - Center Fixtures - Perform Current Light Style"                        , new String[] {"MovingHead-Anim-Center", "MovingHead-Anim-Still"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 5,   "No Movement - Side Fixtures - Perform Current Light Style"                          , new String[] {"MovingHead-Anim-Side", "MovingHead-Anim-Still"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 6,   "No Movement - Left Fixtures - Perform Current Light Style"                          , new String[] {"MovingHead-Anim-Left", "MovingHead-Anim-Still"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 7,   "No Movement - Right Fixtures - Perform Current Light Style"                         , new String[] {"MovingHead-Anim-Right", "MovingHead-Anim-Still"                                                                      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 8,   "No Movement - Top Fixtures - Perform Current Light Style"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Still"                                                                        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 9,   "Fast Move - All Fixtures - Center Pan - Low Tilt"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 10,  "Fast Move - All Fixtures - Left Pan - Low Tilt"                                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 11,  "Fast Move - All Fixtures - Right Pan - Low Tilt"                                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 12,  "Fast Move - All Fixtures - Center Pan - Front Tilt"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 13,  "Fast Move - All Fixtures - Left Pan - Front Tilt"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 14,  "Fast Move - All Fixtures - Right Pan - Front Tilt"                                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 15,  "Fast Move - All Fixtures - Center Pan - High Tilt"                                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 16,  "Fast Move - All Fixtures - Left Pan - High Tilt"                                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 17,  "Fast Move - All Fixtures - Right Pan - High Tilt"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 18,  "Fast Move - All Fixtures - Center Pan - Upright Tilt"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 19,  "Fast Move - All Fixtures - Left Pan - Upright Tilt"                                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 20,  "Fast Move - All Fixtures - Right Pan - Upright Tilt"                                , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 21,  "Fast Move - All Fixtures - Center Pan - Back Tilt"                                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 22,  "Fast Move - All Fixtures - Left Pan - Back Tilt"                                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 23,  "Fast Move - All Fixtures - Right Pan - Back Tilt"                                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 24,  "Fast Move - All Fixtures - Wide Divergent Pan - Front Tilt"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 25,  "Fast Move - All Fixtures - Classic Divergent Pan - Front Tilt"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 26,  "Fast Move - All Fixtures - Wide Divergent Pan - High Tilt"                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 27,  "Fast Move - All Fixtures - Classic Divergent Pan - High Tilt"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 28,  "Fast Move - All Fixtures - Wide Convergent Pan - Front Tilt"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 29,  "Fast Move - All Fixtures - Classic Conergent Pan - Front Tilt"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 30,  "Fast Move - All Fixtures - Wide Convergent Pan - High Tilt"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 31,  "Fast Move - All Fixtures - Classic Convergent Pan - High Tilt"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 32,  "Fast Move - All Fixtures - Extreme Divergent Pan - Wide Neg Tilt"                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 33,  "Fast Move - All Fixtures - Extreme Divergent Pan - Narrow Neg Tilt"                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 34,  "Fast Move - All Fixtures - Extreme Divergent Pan - Wide Pos Tilt"                   , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 35,  "Fast Move - All Fixtures - Extreme Divergent Pan - Narrow Pos Tilt"                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 36,  "Fast Move - Bottom Fixtures - Center Pan - Low Tilt"                                , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 37,  "Fast Move - Bottom Fixtures - Left Pan - Low Tilt"                                  , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 38,  "Fast Move - Bottom Fixtures - Right Pan - Low Tilt"                                 , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 39,  "Fast Move - Bottom Fixtures - Center Pan - Front Tilt"                              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 40,  "Fast Move - Bottom Fixtures - Left Pan - Front Tilt"                                , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 41,  "Fast Move - Bottom Fixtures - Right Pan - Front Tilt"                               , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 42,  "Fast Move - Bottom Fixtures - Center Pan - High Tilt"                               , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 43,  "Fast Move - Bottom Fixtures - Left Pan - High Tilt"                                 , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 44,  "Fast Move - Bottom Fixtures - Right Pan - High Tilt"                                , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 45,  "Fast Move - Bottom Fixtures - Center Pan - Upright Tilt"                            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 46,  "Fast Move - Bottom Fixtures - Left Pan - Upright Tilt"                              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 47,  "Fast Move - Bottom Fixtures - Right Pan - Upright Tilt"                             , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 48,  "Fast Move - Bottom Fixtures - Center Pan - Back Tilt"                               , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 49,  "Fast Move - Bottom Fixtures - Left Pan - Back Tilt"                                 , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 50,  "Fast Move - Bottom Fixtures - Right Pan - Back Tilt"                                , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 51,  "Fast Move - Bottom Fixtures - Wide Divergent Pan - Front Tilt"                      , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 52,  "Fast Move - Bottom Fixtures - Classic Divergent Pan - Front Tilt"                   , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 53,  "Fast Move - Bottom Fixtures - Wide Divergent Pan - High Tilt"                       , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 54,  "Fast Move - Bottom Fixtures - Classic Divergent Pan - High Tilt"                    , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 55,  "Fast Move - Bottom Fixtures - Wide Convergent Pan - Front Tilt"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 56,  "Fast Move - Bottom Fixtures - Classic Conergent Pan - Front Tilt"                   , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 57,  "Fast Move - Bottom Fixtures - Wide Convergent Pan - High Tilt"                      , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 58,  "Fast Move - Bottom Fixtures - Classic Convergent Pan - High Tilt"                   , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 59,  "Fast Move - Bottom Fixtures - Extreme Divergent Pan - Wide Neg Tilt"                , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 60,  "Fast Move - Bottom Fixtures - Extreme Divergent Pan - Narrow Neg Tilt"              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 61,  "Fast Move - Bottom Fixtures - Extreme Divergent Pan - Wide Pos Tilt"                , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 62,  "Fast Move - Bottom Fixtures - Extreme Divergent Pan - Narrow Pos Tilt"              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-FastMove"                                                                  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 63,  "Fast Move - Top Fixtures - Center Pan - Low Tilt"                                   , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 64,  "Fast Move - Top Fixtures - Left Pan - Low Tilt"                                     , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 65,  "Fast Move - Top Fixtures - Right Pan - Low Tilt"                                    , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 66,  "Fast Move - Top Fixtures - Center Pan - Front Tilt"                                 , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 67,  "Fast Move - Top Fixtures - Left Pan - Front Tilt"                                   , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 68,  "Fast Move - Top Fixtures - Right Pan - Front Tilt"                                  , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 69,  "Fast Move - Top Fixtures - Center Pan - High Tilt"                                  , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 70,  "Fast Move - Top Fixtures - Left Pan - High Tilt"                                    , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 71,  "Fast Move - Top Fixtures - Right Pan - High Tilt"                                   , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 72,  "Fast Move - Top Fixtures - Center Pan - Upright Tilt"                               , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 73,  "Fast Move - Top Fixtures - Left Pan - Upright Tilt"                                 , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 74,  "Fast Move - Top Fixtures - Right Pan - Upright Tilt"                                , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 75,  "Fast Move - Top Fixtures - Center Pan - Back Tilt"                                  , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 76,  "Fast Move - Top Fixtures - Left Pan - Back Tilt"                                    , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 77,  "Fast Move - Top Fixtures - Right Pan - Back Tilt"                                   , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 78,  "Fast Move - Top Fixtures - Wide Divergent Pan - Front Tilt"                         , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 79,  "Fast Move - Top Fixtures - Classic Divergent Pan - Front Tilt"                      , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 80,  "Fast Move - Top Fixtures - Wide Divergent Pan - High Tilt"                          , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 81,  "Fast Move - Top Fixtures - Classic Divergent Pan - High Tilt"                       , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 82,  "Fast Move - Top Fixtures - Wide Convergent Pan - Front Tilt"                        , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 83,  "Fast Move - Top Fixtures - Classic Conergent Pan - Front Tilt"                      , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 84,  "Fast Move - Top Fixtures - Wide Convergent Pan - High Tilt"                         , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 85,  "Fast Move - Top Fixtures - Classic Convergent Pan - High Tilt"                      , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 86,  "Fast Move - Top Fixtures - Extreme Divergent Pan - Wide Neg Tilt"                   , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 87,  "Fast Move - Top Fixtures - Extreme Divergent Pan - Narrow Neg Tilt"                 , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 88,  "Fast Move - Top Fixtures - Extreme Divergent Pan - Wide Pos Tilt"                   , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 89,  "Fast Move - Top Fixtures - Extreme Divergent Pan - Narrow Pos Tilt"                 , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-FastMove"                                                                     } );
+  
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 90,  "Continuous Sweep - All - Horizontal - Slow - Left To Right"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 91,  "Continuous Sweep - All - Horizontal - Regular - Left To Right"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 92,  "Continuous Sweep - All - Horizontal - Fast - Left To Right"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 93,  "Continuous Sweep - All - Horizontal - Slow - Right To Left"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 94,  "Continuous Sweep - All - Horizontal - Regular - Right To Left"                      , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 95,  "Continuous Sweep - All - Horizontal - Fast - Right To Left"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 96,  "Single Sweep - All - Horizontal - Slow - Left To Right"                             , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 97,  "Single Sweep - All - Horizontal - Regular - Left To Right"                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 98,  "Single Sweep - All - Horizontal - Fast - Left To Right"                             , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 99,  "Single Sweep - All - Horizontal - Slow - Right To Left"                             , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 100, "Single Sweep - All - Horizontal - Regular - Right To Left"                          , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 101, "Single Sweep - All - Horizontal - Fast - Right To Left"                             , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 102, "Continuous Sweep - All - Vertical - Slow - Left To Right"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 103, "Continuous Sweep - All - Vertical - Regular - Left To Right"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 104, "Continuous Sweep - All - Vertical - Fast - Left To Right"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 105, "Continuous Sweep - All - Vertical - Slow - Right To Left"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 106, "Continuous Sweep - All - Vertical - Regular - Right To Left"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 107, "Continuous Sweep - All - Vertical - Fast - Right To Left"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 108, "Single Sweep - All - Vertical - Slow - Left To Right"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 109, "Single Sweep - All - Vertical - Regular - Left To Right"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 110, "Single Sweep - All - Vertical - Fast - Left To Right"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 111, "Single Sweep - All - Vertical - Slow - Right To Left"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 112, "Single Sweep - All - Vertical - Regular - Right To Left"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 113, "Single Sweep - All - Vertical - Fast - Right To Left"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 114, "Continuous Sweep - All - Circular - Slow - Left To Right"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 115, "Continuous Sweep - All - Circular - Regular - Left To Right"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 116, "Continuous Sweep - All - Circular - Fast - Left To Right"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 117, "Continuous Sweep - All - Circular - Slow - Right To Left"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 118, "Continuous Sweep - All - Circular - Regular - Right To Left"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 119, "Continuous Sweep - All - Circular - Fast - Right To Left"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 120, "Single Sweep - All - Circular - Slow - Left To Right"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 121, "Single Sweep - All - Circular - Regular - Left To Right"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 122, "Single Sweep - All - Circular - Fast - Left To Right"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 123, "Single Sweep - All - Circular - Slow - Right To Left"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 124, "Single Sweep - All - Circular - Regular - Right To Left"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 125, "Single Sweep - All - Circular - Fast - Right To Left"                               , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 126, "Continuous Sweep - All - Horizontal - Slow - Symmetrical Convergent"                , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 127, "Continuous Sweep - All - Horizontal - Regular - Symmetrical Convergent"             , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 128, "Continuous Sweep - All - Horizontal - Fast - Symmetrical Convergent"                , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 129, "Single Sweep - All - Horizontal - Slow - Symmetrical Convergent"                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 130, "Single Sweep - All - Horizontal - Regular - Symmetrical Convergent"                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 131, "Single Sweep - All - Horizontal - Fast - Symmetrical Convergent"                    , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 132, "Continuous Sweep - All - Horizontal - Slow - Symmetrical Divergent"                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 133, "Continuous Sweep - All - Horizontal - Regular - Symmetrical Divergent"              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 134, "Continuous Sweep - All - Horizontal - Fast - Symmetrical Divergent"                 , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 135, "Single Sweep - All - Horizontal - Slow - Symmetrical Divergent"                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 136, "Single Sweep - All - Horizontal - Regular - Symmetrical Divergent"                  , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 137, "Single Sweep - All - Horizontal - Fast - Symmetrical Divergent"                     , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"            } );
+  
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 138,  "Continuous Sweep - Bottom - Horizontal - Slow - Left To Right"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 139,  "Continuous Sweep - Bottom - Horizontal - Regular - Left To Right"                  , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 140,  "Continuous Sweep - Bottom - Horizontal - Fast - Left To Right"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 141,  "Continuous Sweep - Bottom - Horizontal - Slow - Right To Left"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 142,  "Continuous Sweep - Bottom - Horizontal - Regular - Right To Left"                  , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 143,  "Continuous Sweep - Bottom - Horizontal - Fast - Right To Left"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 144,  "Single Sweep - Bottom - Horizontal - Slow - Left To Right"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 145,  "Single Sweep - Bottom - Horizontal - Regular - Left To Right"                      , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 146,  "Single Sweep - Bottom - Horizontal - Fast - Left To Right"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 147,  "Single Sweep - Bottom - Horizontal - Slow - Right To Left"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 148, "Single Sweep - Bottom - Horizontal - Regular - Right To Left"                       , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 149, "Single Sweep - Bottom - Horizontal - Fast - Right To Left"                          , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 150, "Continuous Sweep - Bottom - Vertical - Slow - Left To Right"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 151, "Continuous Sweep - Bottom - Vertical - Regular - Left To Right"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 152, "Continuous Sweep - Bottom - Vertical - Fast - Left To Right"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 153, "Continuous Sweep - Bottom - Vertical - Slow - Right To Left"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 154, "Continuous Sweep - Bottom - Vertical - Regular - Right To Left"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 155, "Continuous Sweep - Bottom - Vertical - Fast - Right To Left"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 156, "Single Sweep - Bottom - Vertical - Slow - Left To Right"                            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 157, "Single Sweep - Bottom - Vertical - Regular - Left To Right"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 158, "Single Sweep - Bottom - Vertical - Fast - Left To Right"                            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 159, "Single Sweep - Bottom - Vertical - Slow - Right To Left"                            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 160, "Single Sweep - Bottom - Vertical - Regular - Right To Left"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 161, "Single Sweep - Bottom - Vertical - Fast - Right To Left"                            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 162, "Continuous Sweep - Bottom - Circular - Slow - Left To Right"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 163, "Continuous Sweep - Bottom - Circular - Regular - Left To Right"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 164, "Continuous Sweep - Bottom - Circular - Fast - Left To Right"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 165, "Continuous Sweep - Bottom - Circular - Slow - Right To Left"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 166, "Continuous Sweep - Bottom - Circular - Regular - Right To Left"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 167, "Continuous Sweep - Bottom - Circular - Fast - Right To Left"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 168, "Single Sweep - Bottom - Circular - Slow - Left To Right"                            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 169, "Single Sweep - Bottom - Circular - Regular - Left To Right"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 170, "Single Sweep - Bottom - Circular - Fast - Left To Right"                            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 171, "Single Sweep - Bottom - Circular - Slow - Right To Left"                            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 172, "Single Sweep - Bottom - Circular - Regular - Right To Left"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 173, "Single Sweep - Bottom - Circular - Fast - Right To Left"                            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 174, "Continuous Sweep - Bottom - Horizontal - Slow - Symmetrical Convergent"             , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 175, "Continuous Sweep - Bottom - Horizontal - Regular - Symmetrical Convergent"          , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 176, "Continuous Sweep - Bottom - Horizontal - Fast - Symmetrical Convergent"             , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 177, "Single Sweep - Bottom - Horizontal - Slow - Symmetrical Convergent"                 , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 178, "Single Sweep - Bottom - Horizontal - Regular - Symmetrical Convergent"              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 179, "Single Sweep - Bottom - Horizontal - Fast - Symmetrical Convergent"                 , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 180, "Continuous Sweep - Bottom - Horizontal - Slow - Symmetrical Divergent"              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 181, "Continuous Sweep - Bottom - Horizontal - Regular - Symmetrical Divergent"           , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"  } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 182, "Continuous Sweep - Bottom - Horizontal - Fast - Symmetrical Divergent"              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 183, "Single Sweep - Bottom - Horizontal - Slow - Symmetrical Divergent"                  , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 184, "Single Sweep - Bottom - Horizontal - Regular - Symmetrical Divergent"               , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 185, "Single Sweep - Bottom - Horizontal - Fast - Symmetrical Divergent"                  , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"         } );
+  
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 186,  "Continuous Sweep - Top - Horizontal - Slow - Left To Right"                        , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 187,  "Continuous Sweep - Top - Horizontal - Regular - Left To Right"                     , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 188,  "Continuous Sweep - Top - Horizontal - Fast - Left To Right"                        , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 189,  "Continuous Sweep - Top - Horizontal - Slow - Right To Left"                        , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 190,  "Continuous Sweep - Top - Horizontal - Regular - Right To Left"                     , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 191,  "Continuous Sweep - Top - Horizontal - Fast - Right To Left"                        , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 192,  "Single Sweep - Top - Horizontal - Slow - Left To Right"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 193,  "Single Sweep - Top - Horizontal - Regular - Left To Right"                         , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 194,  "Single Sweep - Top - Horizontal - Fast - Left To Right"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 195,  "Single Sweep - Top - Horizontal - Slow - Right To Left"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 196, "Single Sweep - Top - Horizontal - Regular - Right To Left"                          , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 197, "Single Sweep - Top - Horizontal - Fast - Right To Left"                             , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 198, "Continuous Sweep - Top - Vertical - Slow - Left To Right"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 199, "Continuous Sweep - Top - Vertical - Regular - Left To Right"                        , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 200, "Continuous Sweep - Top - Vertical - Fast - Left To Right"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 201, "Continuous Sweep - Top - Vertical - Slow - Right To Left"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 202, "Continuous Sweep - Top - Vertical - Regular - Right To Left"                        , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 203, "Continuous Sweep - Top - Vertical - Fast - Right To Left"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 204, "Single Sweep - Top - Vertical - Slow - Left To Right"                               , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 205, "Single Sweep - Top - Vertical - Regular - Left To Right"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 206, "Single Sweep - Top - Vertical - Fast - Left To Right"                               , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 207, "Single Sweep - Top - Vertical - Slow - Right To Left"                               , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Slow"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 208, "Single Sweep - Top - Vertical - Regular - Right To Left"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Regular"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 209, "Single Sweep - Top - Vertical - Fast - Right To Left"                               , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Vertical", "MovingHead-Anim-Fast"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 210, "Continuous Sweep - Top - Circular - Slow - Left To Right"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 211, "Continuous Sweep - Top - Circular - Regular - Left To Right"                        , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 212, "Continuous Sweep - Top - Circular - Fast - Left To Right"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 213, "Continuous Sweep - Top - Circular - Slow - Right To Left"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 214, "Continuous Sweep - Top - Circular - Regular - Right To Left"                        , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 215, "Continuous Sweep - Top - Circular - Fast - Right To Left"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 216, "Single Sweep - Top - Circular - Slow - Left To Right"                               , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 217, "Single Sweep - Top - Circular - Regular - Left To Right"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 218, "Single Sweep - Top - Circular - Fast - Left To Right"                               , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 219, "Single Sweep - Top - Circular - Slow - Right To Left"                               , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Slow"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 220, "Single Sweep - Top - Circular - Regular - Right To Left"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Regular"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 221, "Single Sweep - Top - Circular - Fast - Right To Left"                               , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Circular", "MovingHead-Anim-Fast"              } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 222, "Continuous Sweep - Top - Horizontal - Slow - Symmetrical Convergent"                , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 223, "Continuous Sweep - Top - Horizontal - Regular - Symmetrical Convergent"             , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 224, "Continuous Sweep - Top - Horizontal - Fast - Symmetrical Convergent"                , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 225, "Single Sweep - Top - Horizontal - Slow - Symmetrical Convergent"                    , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 226, "Single Sweep - Top - Horizontal - Regular - Symmetrical Convergent"                 , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 227, "Single Sweep - Top - Horizontal - Fast - Symmetrical Convergent"                    , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 228, "Continuous Sweep - Top - Horizontal - Slow - Symmetrical Divergent"                 , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 229, "Continuous Sweep - Top - Horizontal - Regular - Symmetrical Divergent"              , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 230, "Continuous Sweep - Top - Horizontal - Fast - Symmetrical Divergent"                 , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-ContinuousSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 231, "Single Sweep - Top - Horizontal - Slow - Symmetrical Divergent"                     , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Slow"            } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 232, "Single Sweep - Top - Horizontal - Regular - Symmetrical Divergent"                  , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Regular"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 233, "Single Sweep - Top - Horizontal - Fast - Symmetrical Divergent"                     , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Horizontal", "MovingHead-Anim-Fast"            } );
+  
+
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 234, "Single Move - Bottom - Vertical - Parallel - Very Slow - Up Down"                   , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-VerySlow"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 235, "Single Move - Bottom - Vertical - Parallel - Slow - Up Down"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Slow"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 236, "Single Move - Bottom - Vertical - Parallel - Regular - Up Down"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Regular"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 237, "Single Move - Bottom - Vertical - Parallel - Fast - Up Down"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Fast"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 238, "Single Move - Bottom - Vertical - Parallel - Very Slow - Down Up"                   , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-VerySlow"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 239, "Single Move - Bottom - Vertical - Parallel - Slow - Down Up"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Slow"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 240, "Single Move - Bottom - Vertical - Parallel - Regular - Down Up"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Regular"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 241, "Single Move - Bottom - Vertical - Parallel - Fast - Down Up"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Fast"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 242, "Single Move - Bottom - Vertical - Parallel - Very Slow - Opposite Up Down"          , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-VerySlow"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 243, "Single Move - Bottom - Vertical - Parallel - Slow - Opposite Up Down"               , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Slow"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 244, "Single Move - Bottom - Vertical - Parallel - Regular - Opposite Up Down"            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Regular"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 245, "Single Move - Bottom - Vertical - Parallel - Fast - Opposite Up Down"               , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Fast"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 246, "Single Move - Bottom - Vertical - Parallel - Very Slow - Opposite Down Up"          , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-VerySlow"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 247, "Single Move - Bottom - Vertical - Parallel - Slow - Opposite Down Up"               , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Slow"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 248, "Single Move - Bottom - Vertical - Parallel - Regular - Opposite Down Up"            , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Regular"        } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 249, "Single Move - Bottom - Vertical - Parallel - Fast - Opposite Down Up"               , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Parallel", "MovingHead-Anim-Fast"           } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 250, "Single Move - Bottom - Vertical - Divergent - Very Slow - Up Down"                  , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-VerySlow"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 251, "Single Move - Bottom - Vertical - Divergent - Slow - Up Down"                       , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 252, "Single Move - Bottom - Vertical - Divergent - Regular - Up Down"                    , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 253, "Single Move - Bottom - Vertical - Divergent - Fast - Up Down"                       , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 254, "Single Move - Bottom - Vertical - Divergent - Very Slow - Down Up"                  , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-VerySlow"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 255, "Single Move - Bottom - Vertical - Divergent - Slow - Down Up"                       , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 256, "Single Move - Bottom - Vertical - Divergent - Regular - Down Up"                    , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 257, "Single Move - Bottom - Vertical - Divergent - Fast - Down Up"                       , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 258, "Single Move - Bottom - Vertical - Divergent - Very Slow - Opposite Up Down"         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-VerySlow"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 259, "Single Move - Bottom - Vertical - Divergent - Slow - Opposite Up Down"              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 260, "Single Move - Bottom - Vertical - Divergent - Regular - Opposite Up Down"           , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 261, "Single Move - Bottom - Vertical - Divergent - Fast - Opposite Up Down"              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 262, "Single Move - Bottom - Vertical - Divergent - Very Slow - Opposite Down Up"         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-VerySlow"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 263, "Single Move - Bottom - Vertical - Divergent - Slow - Opposite Down Up"              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Slow"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 264, "Single Move - Bottom - Vertical - Divergent - Regular - Opposite Down Up"           , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Regular"       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 265, "Single Move - Bottom - Vertical - Divergent - Fast - Opposite Down Up"              , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Divergent", "MovingHead-Anim-Fast"          } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 266, "Single Move - Bottom - Vertical - Convergent - Very Slow - Up Down"                 , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-VerySlow"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 267, "Single Move - Bottom - Vertical - Convergent - Slow - Up Down"                      , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Slow"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 268, "Single Move - Bottom - Vertical - Convergent - Regular - Up Down"                   , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Regular"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 269, "Single Move - Bottom - Vertical - Convergent - Fast - Up Down"                      , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Fast"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 270, "Single Move - Bottom - Vertical - Convergent - Very Slow - Down Up"                 , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-VerySlow"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 271, "Single Move - Bottom - Vertical - Convergent - Slow - Down Up"                      , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Slow"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 272, "Single Move - Bottom - Vertical - Convergent - Regular - Down Up"                   , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Regular"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 273, "Single Move - Bottom - Vertical - Convergent - Fast - Down Up"                      , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Fast"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 274, "Single Move - Bottom - Vertical - Convergent - Very Slow - Opposite Up Down"        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-VerySlow"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 275, "Single Move - Bottom - Vertical - Convergent - Slow - Opposite Up Down"             , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Slow"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 276, "Single Move - Bottom - Vertical - Convergent - Regular - Opposite Up Down"          , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Regular"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 277, "Single Move - Bottom - Vertical - Convergent - Fast - Opposite Up Down"             , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Fast"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 278, "Single Move - Bottom - Vertical - Convergent - Very Slow - Opposite Down Up"        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-VerySlow"     } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 279, "Single Move - Bottom - Vertical - Convergent - Slow - Opposite Down Up"             , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Slow"         } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 280, "Single Move - Bottom - Vertical - Convergent - Regular - Opposite Down Up"          , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Regular"      } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 281, "Single Move - Bottom - Vertical - Convergent - Fast - Opposite Down Up"             , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-SingleSweep", "MovingHead-Anim-Convergent", "MovingHead-Anim-Fast"         } );
+
+
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 282, "Random Direction - All Fixtures - Noise - Weak - Slow"                              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 283, "Random Direction - All Fixtures - Noise - Weak - Regular"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 284, "Random Direction - All Fixtures - Noise - Weak - Fast"                              , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 285, "Random Direction - All Fixtures - Noise - Regular - Slow"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 286, "Random Direction - All Fixtures - Noise - Regular - Regular"                        , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 287, "Random Direction - All Fixtures - Noise - Regular - Fast"                           , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 288, "Random Direction - All Fixtures - Noise - Strong - Slow"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 289, "Random Direction - All Fixtures - Noise - Strong - Regular"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 290, "Random Direction - All Fixtures - Noise - Strong - Fast"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 291, "Random Direction - Bottom Fixtures - Noise - Weak - Slow"                           , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 292, "Random Direction - Bottom Fixtures - Noise - Weak - Regular"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 293, "Random Direction - Bottom Fixtures - Noise - Weak - Fast"                           , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 294, "Random Direction - Bottom Fixtures - Noise - Regular - Slow"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 295, "Random Direction - Bottom Fixtures - Noise - Regular - Regular"                     , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 296, "Random Direction - Bottom Fixtures - Noise - Regular - Fast"                        , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 297, "Random Direction - Bottom Fixtures - Noise - Strong - Slow"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 298, "Random Direction - Bottom Fixtures - Noise - Strong - Regular"                      , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 299, "Random Direction - Bottom Fixtures - Noise - Strong - Fast"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 300, "Random Direction - Top Fixtures - Noise - Weak - Slow"                              , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 301, "Random Direction - Top Fixtures - Noise - Weak - Regular"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 302, "Random Direction - Top Fixtures - Noise - Weak - Fast"                              , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 303, "Random Direction - Top Fixtures - Noise - Regular - Slow"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 304, "Random Direction - Top Fixtures - Noise - Regular - Regular"                        , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 305, "Random Direction - Top Fixtures - Noise - Regular - Fast"                           , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 306, "Random Direction - Top Fixtures - Noise - Strong - Slow"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 307, "Random Direction - Top Fixtures - Noise - Strong - Regular"                         , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 308, "Random Direction - Top Fixtures - Noise - Strong - Fast"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 309, "All Fixtures - Smooth Beat Sync Random Direction - Very Slow"                       , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 310, "All Fixtures - Smooth Beat Sync Random Direction - Slow"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 311, "All Fixtures - Smooth Beat Sync Random Direction - Regular"                         , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 312, "All Fixtures - Smooth Beat Sync Random Direction - Fast"                            , new String[] {"MovingHead-Anim-All", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 313, "Bottom Fixtures - Smooth Beat Sync Random Direction - Very Slow"                    , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 314, "Bottom Fixtures - Smooth Beat Sync Random Direction - Slow"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 315, "Bottom Fixtures - Smooth Beat Sync Random Direction - Regular"                      , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 316, "Bottom Fixtures - Smooth Beat Sync Random Direction - Fast"                         , new String[] {"MovingHead-Anim-Bottom", "MovingHead-Anim-Random"                                                                    } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 317, "Top Fixtures - Smooth Beat Sync Random Direction - Very Slow"                       , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 318, "Top Fixtures - Smooth Beat Sync Random Direction - Slow"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 319, "Top Fixtures - Smooth Beat Sync Random Direction - Regular"                         , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
+  DMXMovingHead_AnimationAttributes = registerAttribute(DMXMovingHead_AnimationAttributes, 320, "Top Fixtures - Smooth Beat Sync Random Direction - Fast"                            , new String[] {"MovingHead-Anim-Top", "MovingHead-Anim-Random"                                                                       } );
 
 
   /////////////////////////////////////////////////////////////////////////
@@ -24907,10 +25021,16 @@ public String getStringFromDMXAnimationNumber_movingHead_Animation(int animNbr) 
   String temp = "Undefined";
   if (animNbr <= 127) {                                                                   
     temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1) + "  |  " + str(animNbr);
-  }                                                                                              
+  }
   else if (animNbr <= 254) {
     temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2) + "  |  " + str(animNbr - 127);
-  }                                                                                              
+  }
+  else if (animNbr <= 381) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3) + "  |  " + str(animNbr - 381);
+  }
+  else if (animNbr <= 508) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_4) + "  |  " + str(animNbr - 508);
+  }
 
   return temp;
 }
@@ -28898,12 +29018,13 @@ public void dmxInit_registerDefaultMovingHeads() {
     DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 1*24));
     DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 2*24));
     DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 3*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 4, 10 + 4*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 5, 10 + 5*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 6, 10 + 6*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 7, 10 + 7*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 8, 10 + 7*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 9, 10 + 7*24));
+    
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 4*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 5*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 6*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 4, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 5, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
     
   }
   catch (UndefinedFixtureException e) {
@@ -28918,10 +29039,10 @@ public void dmxInit_registerDefaultPars() {
   DMXList_Pars            = new ArrayList<DMX_PAR>();
 
   try {
-    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 4*24 + 0*3));
-    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  1, 10 + 4*24 + 1*3));
-    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 2, 10 + 4*24 + 2*3 + 0*4));
-    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 3, 10 + 4*24 + 2*3 + 1*4));
+    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 8*24 + 0*3));
+    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  1, 10 + 8*24 + 1*3));
+    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 2, 10 + 8*24 + 2*3 + 0*4));
+    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 3, 10 + 8*24 + 2*3 + 1*4));
   }
   catch (UndefinedFixtureException e) {
     println("Undefined Fixture");
@@ -28944,8 +29065,6 @@ public void dmx_buildFixtureSublists_movingHead() {
   DMXList_MovingHeads_center     = new ArrayList<DMX_MovingHead>();
   DMXList_MovingHeads_right      = new ArrayList<DMX_MovingHead>();
   DMXList_MovingHeads_left       = new ArrayList<DMX_MovingHead>();
-
-  int nbMovingHeads = DMXList_MovingHeads.size();
   
   // First, discriminate between the fixtures on the floor or not
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
@@ -28956,6 +29075,8 @@ public void dmx_buildFixtureSublists_movingHead() {
       DMXList_MovingHeads_top.add(movingHead); 
     }
   }
+
+  int nbMovingHeads = DMXList_MovingHeads_bottom.size();
 
   // Then, parse all the moving heads on the floor
   // Consider that about one third of the fixtures go in the "center" group
@@ -29377,45 +29498,67 @@ public void setupDMXAnimation_movingHead_initDirection() {
     case 70:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightOppositeTilt();                 break;
     case 71:  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightOppositeTilt();                  break;
 
-    case 72:  dmxAnim_movingHead_prepareDirection_centerDev_CenterPan_FrontTilt();                                           break;
-    case 73:  dmxAnim_movingHead_prepareDirection_centerDev_LeftPan_FrontTilt();                                             break;
-    case 74:  dmxAnim_movingHead_prepareDirection_centerDev_RightPan_FrontTilt();                                            break;
-    case 75:  dmxAnim_movingHead_prepareDirection_centerDev_CenterPan_HighTilt();                                            break;
-    case 76:  dmxAnim_movingHead_prepareDirection_centerDev_LeftPan_HighTilt();                                              break;
-    case 77:  dmxAnim_movingHead_prepareDirection_centerDev_RightPan_HighTilt();                                             break;
-    case 78:  dmxAnim_movingHead_prepareDirection_centerDev_CenterPan_UprightTilt();                                         break;
-    case 79:  dmxAnim_movingHead_prepareDirection_centerDev_LeftPan_UprightTilt();                                           break;
-    case 80:  dmxAnim_movingHead_prepareDirection_centerDev_RightPan_UprightTilt();                                          break;
 
-    case 81:  dmxAnim_movingHead_prepareDirection_sideDev_CenterPan_FrontTilt();                                           break;
-    case 82:  dmxAnim_movingHead_prepareDirection_sideDev_LeftPan_FrontTilt();                                             break;
-    case 83:  dmxAnim_movingHead_prepareDirection_sideDev_RightPan_FrontTilt();                                            break;
-    case 84:  dmxAnim_movingHead_prepareDirection_sideDev_CenterPan_HighTilt();                                            break;
-    case 85:  dmxAnim_movingHead_prepareDirection_sideDev_LeftPan_HighTilt();                                              break;
-    case 86:  dmxAnim_movingHead_prepareDirection_sideDev_RightPan_HighTilt();                                             break;
-    case 87:  dmxAnim_movingHead_prepareDirection_sideDev_CenterPan_UprightTilt();                                         break;
-    case 88:  dmxAnim_movingHead_prepareDirection_sideDev_LeftPan_UprightTilt();                                           break;
-    case 89:  dmxAnim_movingHead_prepareDirection_sideDev_RightPan_UprightTilt();                                          break;
+    case 72:  dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_FrontTilt();                                           break;
+    case 73:  dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_FrontTilt();                                             break;
+    case 74:  dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_FrontTilt();                                            break;
+    case 75:  dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_HighTilt();                                            break;
+    case 76:  dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_HighTilt();                                              break;
+    case 77:  dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_HighTilt();                                             break;
+    case 78:  dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_UprightTilt();                                         break;
+    case 79:  dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_UprightTilt();                                           break;
+    case 80:  dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_UprightTilt();                                          break;
 
-    case 90:  dmxAnim_movingHead_prepareDirection_leftDev_CenterPan_FrontTilt();                                           break;
-    case 91:  dmxAnim_movingHead_prepareDirection_leftDev_LeftPan_FrontTilt();                                             break;
-    case 92:  dmxAnim_movingHead_prepareDirection_leftDev_RightPan_FrontTilt();                                            break;
-    case 93:  dmxAnim_movingHead_prepareDirection_leftDev_CenterPan_HighTilt();                                            break;
-    case 94:  dmxAnim_movingHead_prepareDirection_leftDev_LeftPan_HighTilt();                                              break;
-    case 95:  dmxAnim_movingHead_prepareDirection_leftDev_RightPan_HighTilt();                                             break;
-    case 96:  dmxAnim_movingHead_prepareDirection_leftDev_CenterPan_UprightTilt();                                         break;
-    case 97:  dmxAnim_movingHead_prepareDirection_leftDev_LeftPan_UprightTilt();                                           break;
-    case 98:  dmxAnim_movingHead_prepareDirection_leftDev_RightPan_UprightTilt();                                          break;
+    case 81:  dmxAnim_movingHead_prepareDirection_centerDev_CenterPan_FrontTilt();                                           break;
+    case 82:  dmxAnim_movingHead_prepareDirection_centerDev_LeftPan_FrontTilt();                                             break;
+    case 83:  dmxAnim_movingHead_prepareDirection_centerDev_RightPan_FrontTilt();                                            break;
+    case 84:  dmxAnim_movingHead_prepareDirection_centerDev_CenterPan_HighTilt();                                            break;
+    case 85:  dmxAnim_movingHead_prepareDirection_centerDev_LeftPan_HighTilt();                                              break;
+    case 86:  dmxAnim_movingHead_prepareDirection_centerDev_RightPan_HighTilt();                                             break;
+    case 87:  dmxAnim_movingHead_prepareDirection_centerDev_CenterPan_UprightTilt();                                         break;
+    case 88:  dmxAnim_movingHead_prepareDirection_centerDev_LeftPan_UprightTilt();                                           break;
+    case 89:  dmxAnim_movingHead_prepareDirection_centerDev_RightPan_UprightTilt();                                          break;
 
-    case 99:  dmxAnim_movingHead_prepareDirection_rightDev_CenterPan_FrontTilt();                                           break;
-    case 100: dmxAnim_movingHead_prepareDirection_rightDev_LeftPan_FrontTilt();                                             break;
-    case 101: dmxAnim_movingHead_prepareDirection_rightDev_RightPan_FrontTilt();                                            break;
-    case 102: dmxAnim_movingHead_prepareDirection_rightDev_CenterPan_HighTilt();                                            break;
-    case 103: dmxAnim_movingHead_prepareDirection_rightDev_LeftPan_HighTilt();                                              break;
-    case 104: dmxAnim_movingHead_prepareDirection_rightDev_RightPan_HighTilt();                                             break;
-    case 105: dmxAnim_movingHead_prepareDirection_rightDev_CenterPan_UprightTilt();                                         break;
-    case 106: dmxAnim_movingHead_prepareDirection_rightDev_LeftPan_UprightTilt();                                           break;
-    case 107: dmxAnim_movingHead_prepareDirection_rightDev_RightPan_UprightTilt();                                          break;
+    case 90:  dmxAnim_movingHead_prepareDirection_sideDev_CenterPan_FrontTilt();                                             break;
+    case 91:  dmxAnim_movingHead_prepareDirection_sideDev_LeftPan_FrontTilt();                                               break;
+    case 92:  dmxAnim_movingHead_prepareDirection_sideDev_RightPan_FrontTilt();                                              break;
+    case 93:  dmxAnim_movingHead_prepareDirection_sideDev_CenterPan_HighTilt();                                              break;
+    case 94:  dmxAnim_movingHead_prepareDirection_sideDev_LeftPan_HighTilt();                                                break;
+    case 95:  dmxAnim_movingHead_prepareDirection_sideDev_RightPan_HighTilt();                                               break;
+    case 96:  dmxAnim_movingHead_prepareDirection_sideDev_CenterPan_UprightTilt();                                           break;
+    case 97:  dmxAnim_movingHead_prepareDirection_sideDev_LeftPan_UprightTilt();                                             break;
+    case 98:  dmxAnim_movingHead_prepareDirection_sideDev_RightPan_UprightTilt();                                            break;
+
+    case 99:  dmxAnim_movingHead_prepareDirection_leftDev_CenterPan_FrontTilt();                                             break;
+    case 100: dmxAnim_movingHead_prepareDirection_leftDev_LeftPan_FrontTilt();                                               break;
+    case 101: dmxAnim_movingHead_prepareDirection_leftDev_RightPan_FrontTilt();                                              break;
+    case 102: dmxAnim_movingHead_prepareDirection_leftDev_CenterPan_HighTilt();                                              break;
+    case 103: dmxAnim_movingHead_prepareDirection_leftDev_LeftPan_HighTilt();                                                break;
+    case 104: dmxAnim_movingHead_prepareDirection_leftDev_RightPan_HighTilt();                                               break;
+    case 105: dmxAnim_movingHead_prepareDirection_leftDev_CenterPan_UprightTilt();                                           break;
+    case 106: dmxAnim_movingHead_prepareDirection_leftDev_LeftPan_UprightTilt();                                             break;
+    case 107: dmxAnim_movingHead_prepareDirection_leftDev_RightPan_UprightTilt();                                            break;
+
+    case 108: dmxAnim_movingHead_prepareDirection_rightDev_CenterPan_FrontTilt();                                            break;
+    case 109: dmxAnim_movingHead_prepareDirection_rightDev_LeftPan_FrontTilt();                                              break;
+    case 110: dmxAnim_movingHead_prepareDirection_rightDev_RightPan_FrontTilt();                                             break;
+    case 111: dmxAnim_movingHead_prepareDirection_rightDev_CenterPan_HighTilt();                                             break;
+    case 112: dmxAnim_movingHead_prepareDirection_rightDev_LeftPan_HighTilt();                                               break;
+    case 113: dmxAnim_movingHead_prepareDirection_rightDev_RightPan_HighTilt();                                              break;
+    case 114: dmxAnim_movingHead_prepareDirection_rightDev_CenterPan_UprightTilt();                                          break;
+    case 115: dmxAnim_movingHead_prepareDirection_rightDev_LeftPan_UprightTilt();                                            break;
+    case 116: dmxAnim_movingHead_prepareDirection_rightDev_RightPan_UprightTilt();                                           break;
+
+    case 117:  dmxAnim_movingHead_prepareDirection_topDev_CenterPan_FrontTilt();                                             break;
+    case 118:  dmxAnim_movingHead_prepareDirection_topDev_LeftPan_FrontTilt();                                               break;
+    case 119:  dmxAnim_movingHead_prepareDirection_topDev_RightPan_FrontTilt();                                              break;
+    case 120:  dmxAnim_movingHead_prepareDirection_topDev_CenterPan_HighTilt();                                              break;
+    case 121:  dmxAnim_movingHead_prepareDirection_topDev_LeftPan_HighTilt();                                                break;
+    case 122:  dmxAnim_movingHead_prepareDirection_topDev_RightPan_HighTilt();                                               break;
+    case 123:  dmxAnim_movingHead_prepareDirection_topDev_CenterPan_UprightTilt();                                           break;
+    case 124:  dmxAnim_movingHead_prepareDirection_topDev_LeftPan_UprightTilt();                                             break;
+    case 125:  dmxAnim_movingHead_prepareDirection_topDev_RightPan_UprightTilt();                                            break;
+
 
     default: break;
   }
@@ -29436,49 +29579,71 @@ public void setupDMXAnimation_movingHead_setColor() {
     case 9:   dmxAnim_movingHead_setColorForCompositeAnimations_allDev_orange();                                        break;
     case 10:  dmxAnim_movingHead_setColorForCompositeAnimations_allDev_CTO();                                           break;
 
-    case 11:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_white();                                      break;
-    case 12:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_red();                                        break;
-    case 13:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepRed();                                    break;
-    case 14:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_blue();                                       break;
-    case 15:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepBlue();                                   break;
-    case 16:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_yellow();                                     break;
-    case 17:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_green();                                      break;
-    case 18:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_ultraviolet();                                break;
-    case 19:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_orange();                                     break;
-    case 20:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_CTO();                                        break;
+    case 11:  dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_white();                                      break;
+    case 12:  dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_red();                                        break;
+    case 13:  dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_deepRed();                                    break;
+    case 14:  dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_blue();                                       break;
+    case 15:  dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_deepBlue();                                   break;
+    case 16:  dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_yellow();                                     break;
+    case 17:  dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_green();                                      break;
+    case 18:  dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_ultraviolet();                                break;
+    case 19:  dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_orange();                                     break;
+    case 20:  dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_CTO();                                        break;
 
-    case 21:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_white();                                        break;
-    case 22:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_red();                                          break;
-    case 23:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepRed();                                      break;
-    case 24:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_blue();                                         break;
-    case 25:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepBlue();                                     break;
-    case 26:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_yellow();                                       break;
-    case 27:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_green();                                        break;
-    case 28:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_ultraviolet();                                  break;
-    case 29:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_orange();                                       break;
-    case 30:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_CTO();                                          break;
+    case 21:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_white();                                      break;
+    case 22:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_red();                                        break;
+    case 23:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepRed();                                    break;
+    case 24:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_blue();                                       break;
+    case 25:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_deepBlue();                                   break;
+    case 26:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_yellow();                                     break;
+    case 27:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_green();                                      break;
+    case 28:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_ultraviolet();                                break;
+    case 29:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_orange();                                     break;
+    case 30:  dmxAnim_movingHead_setColorForCompositeAnimations_centerDev_CTO();                                        break;
 
-    case 31:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_white();                                        break;
-    case 32:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_red();                                          break;
-    case 33:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepRed();                                      break;
-    case 34:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_blue();                                         break;
-    case 35:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepBlue();                                     break;
-    case 36:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_yellow();                                       break;
-    case 37:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_green();                                        break;
-    case 38:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_ultraviolet();                                  break;
-    case 39:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_orange();                                       break;
-    case 40:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_CTO();                                          break;
+    case 31:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_white();                                        break;
+    case 32:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_red();                                          break;
+    case 33:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepRed();                                      break;
+    case 34:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_blue();                                         break;
+    case 35:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_deepBlue();                                     break;
+    case 36:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_yellow();                                       break;
+    case 37:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_green();                                        break;
+    case 38:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_ultraviolet();                                  break;
+    case 39:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_orange();                                       break;
+    case 40:  dmxAnim_movingHead_setColorForCompositeAnimations_sideDev_CTO();                                          break;
 
-    case 41:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_white();                                       break;
-    case 42:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_red();                                         break;
-    case 43:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepRed();                                     break;
-    case 44:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_blue();                                        break;
-    case 45:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepBlue();                                    break;
-    case 46:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_yellow();                                      break;
-    case 47:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_green();                                       break;
-    case 48:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_ultraviolet();                                 break;
-    case 49:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_orange();                                      break;
-    case 50:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_CTO();                                         break;
+    case 41:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_white();                                        break;
+    case 42:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_red();                                          break;
+    case 43:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepRed();                                      break;
+    case 44:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_blue();                                         break;
+    case 45:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_deepBlue();                                     break;
+    case 46:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_yellow();                                       break;
+    case 47:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_green();                                        break;
+    case 48:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_ultraviolet();                                  break;
+    case 49:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_orange();                                       break;
+    case 50:  dmxAnim_movingHead_setColorForCompositeAnimations_leftDev_CTO();                                          break;
+
+    case 51:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_white();                                       break;
+    case 52:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_red();                                         break;
+    case 53:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepRed();                                     break;
+    case 54:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_blue();                                        break;
+    case 55:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_deepBlue();                                    break;
+    case 56:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_yellow();                                      break;
+    case 57:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_green();                                       break;
+    case 58:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_ultraviolet();                                 break;
+    case 59:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_orange();                                      break;
+    case 60:  dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_CTO();                                         break;
+
+    case 61:  dmxAnim_movingHead_setColorForCompositeAnimations_topDev_white();                                         break;
+    case 62:  dmxAnim_movingHead_setColorForCompositeAnimations_topDev_red();                                           break;
+    case 63:  dmxAnim_movingHead_setColorForCompositeAnimations_topDev_deepRed();                                       break;
+    case 64:  dmxAnim_movingHead_setColorForCompositeAnimations_topDev_blue();                                          break;
+    case 65:  dmxAnim_movingHead_setColorForCompositeAnimations_topDev_deepBlue();                                      break;
+    case 66:  dmxAnim_movingHead_setColorForCompositeAnimations_topDev_yellow();                                        break;
+    case 67:  dmxAnim_movingHead_setColorForCompositeAnimations_topDev_green();                                         break;
+    case 68:  dmxAnim_movingHead_setColorForCompositeAnimations_topDev_ultraviolet();                                   break;
+    case 69:  dmxAnim_movingHead_setColorForCompositeAnimations_topDev_orange();                                        break;
+    case 70:  dmxAnim_movingHead_setColorForCompositeAnimations_topDev_CTO();                                           break;
 
 
     default: break;
@@ -29488,94 +29653,125 @@ public void setupDMXAnimation_movingHead_setColor() {
 public void setupDMXAnimation_movingHead_setRhythm() {
   switch(dmxAnimationNumber_movingHead_setRhythm) {
     case 1:   dmxAnim_movingHead_setLightRhythm_allDev_noSync();                                                        break;      // 1 - Reset the rhythm of all devices
-    case 2:   dmxAnim_movingHead_setLightRhythm_centerDev_noSync();                                                     break;
-    case 3:   dmxAnim_movingHead_setLightRhythm_sideDev_noSync();                                                       break;
-    case 4:   dmxAnim_movingHead_setLightRhythm_leftDev_noSync();                                                       break;
-    case 5:   dmxAnim_movingHead_setLightRhythm_rightDev_noSync();                                                      break;
+    case 2:   dmxAnim_movingHead_setLightRhythm_bottomDev_noSync();                                                     break;
+    case 3:   dmxAnim_movingHead_setLightRhythm_centerDev_noSync();                                                     break;
+    case 4:   dmxAnim_movingHead_setLightRhythm_sideDev_noSync();                                                       break;
+    case 5:   dmxAnim_movingHead_setLightRhythm_leftDev_noSync();                                                       break;
+    case 6:   dmxAnim_movingHead_setLightRhythm_rightDev_noSync();                                                      break;
+    case 7:   dmxAnim_movingHead_setLightRhythm_topDev_noSync();                                                        break;
 
-    case 6:   dmxAnim_movingHead_setLightRhythm_allDev_together_32ndSync();                                             break;
-    case 7:   dmxAnim_movingHead_setLightRhythm_allDev_together_16thSync();                                             break;
-    case 8:   dmxAnim_movingHead_setLightRhythm_allDev_together_8thSync();                                              break;
-    case 9:   dmxAnim_movingHead_setLightRhythm_allDev_together_4thSync();                                              break;
-    case 10:  dmxAnim_movingHead_setLightRhythm_allDev_together_2ndSync();                                              break;
-    case 11:  dmxAnim_movingHead_setLightRhythm_allDev_together_barSync();                                              break;
+    case 8:   dmxAnim_movingHead_setLightRhythm_allDev_together_32ndSync();                                             break;
+    case 9:   dmxAnim_movingHead_setLightRhythm_allDev_together_16thSync();                                             break;
+    case 10:  dmxAnim_movingHead_setLightRhythm_allDev_together_8thSync();                                              break;
+    case 11:  dmxAnim_movingHead_setLightRhythm_allDev_together_4thSync();                                              break;
+    case 12:  dmxAnim_movingHead_setLightRhythm_allDev_together_2ndSync();                                              break;
+    case 13:  dmxAnim_movingHead_setLightRhythm_allDev_together_barSync();                                              break;
 
-    case 12:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_32ndSync();                                            break;
-    case 13:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_16thSync();                                            break;
-    case 14:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_8thSync();                                             break;
-    case 15:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_4thSync();                                             break;
-    case 16:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_2ndSync();                                             break;
-    case 17:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_barSync();                                             break;
+    case 14:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_32ndSync();                                            break;
+    case 15:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_16thSync();                                            break;
+    case 16:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_8thSync();                                             break;
+    case 17:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_4thSync();                                             break;
+    case 18:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_2ndSync();                                             break;
+    case 19:  dmxAnim_movingHead_setLightRhythm_allDev_clockwise_barSync();                                             break;
 
-    case 18:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_32ndSync();                                        break;
-    case 19:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_16thSync();                                        break;
-    case 20:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_8thSync();                                         break;
-    case 21:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_4thSync();                                         break;
-    case 22:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_2ndSync();                                         break;
-    case 23:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_barSync();                                         break;
+    case 20:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_32ndSync();                                        break;
+    case 21:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_16thSync();                                        break;
+    case 22:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_8thSync();                                         break;
+    case 23:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_4thSync();                                         break;
+    case 24:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_2ndSync();                                         break;
+    case 25:  dmxAnim_movingHead_setLightRhythm_allDev_antiClockwise_barSync();                                         break;
 
-    case 24:  dmxAnim_movingHead_setLightRhythm_allDev_random_32ndSync();                                               break;
-    case 25:  dmxAnim_movingHead_setLightRhythm_allDev_random_16thSync();                                               break;
-    case 26:  dmxAnim_movingHead_setLightRhythm_allDev_random_8thSync();                                                break;
-    case 27:  dmxAnim_movingHead_setLightRhythm_allDev_random_4thSync();                                                break;
-    case 28:  dmxAnim_movingHead_setLightRhythm_allDev_random_2ndSync();                                                break;
-    case 29:  dmxAnim_movingHead_setLightRhythm_allDev_random_barSync();                                                break;
+    case 26:  dmxAnim_movingHead_setLightRhythm_allDev_random_32ndSync();                                               break;
+    case 27:  dmxAnim_movingHead_setLightRhythm_allDev_random_16thSync();                                               break;
+    case 28:  dmxAnim_movingHead_setLightRhythm_allDev_random_8thSync();                                                break;
+    case 29:  dmxAnim_movingHead_setLightRhythm_allDev_random_4thSync();                                                break;
+    case 30:  dmxAnim_movingHead_setLightRhythm_allDev_random_2ndSync();                                                break;
+    case 31:  dmxAnim_movingHead_setLightRhythm_allDev_random_barSync();                                                break;
+
+    case 32:  dmxAnim_movingHead_setLightRhythm_bottomDev_together_32ndSync();                                          break;
+    case 33:  dmxAnim_movingHead_setLightRhythm_bottomDev_together_16thSync();                                          break;
+    case 34:  dmxAnim_movingHead_setLightRhythm_bottomDev_together_8thSync();                                           break;
+    case 35:  dmxAnim_movingHead_setLightRhythm_bottomDev_together_4thSync();                                           break;
+    case 36:  dmxAnim_movingHead_setLightRhythm_bottomDev_together_2ndSync();                                           break;
+    case 37:  dmxAnim_movingHead_setLightRhythm_bottomDev_together_barSync();                                           break;
+
+    case 38:  dmxAnim_movingHead_setLightRhythm_bottomDev_random_32ndSync();                                            break;
+    case 39:  dmxAnim_movingHead_setLightRhythm_bottomDev_random_16thSync();                                            break;
+    case 40:  dmxAnim_movingHead_setLightRhythm_bottomDev_random_8thSync();                                             break;
+    case 41:  dmxAnim_movingHead_setLightRhythm_bottomDev_random_4thSync();                                             break;
+    case 42:  dmxAnim_movingHead_setLightRhythm_bottomDev_random_2ndSync();                                             break;
+    case 43:  dmxAnim_movingHead_setLightRhythm_bottomDev_random_barSync();                                             break;
     
-    case 30:  dmxAnim_movingHead_setLightRhythm_centerDev_together_32ndSync();                                          break;
-    case 31:  dmxAnim_movingHead_setLightRhythm_centerDev_together_16thSync();                                          break;
-    case 32:  dmxAnim_movingHead_setLightRhythm_centerDev_together_8thSync();                                           break;
-    case 33:  dmxAnim_movingHead_setLightRhythm_centerDev_together_4thSync();                                           break;
-    case 34:  dmxAnim_movingHead_setLightRhythm_centerDev_together_2ndSync();                                           break;
-    case 35:  dmxAnim_movingHead_setLightRhythm_centerDev_together_barSync();                                           break;
+    case 44:  dmxAnim_movingHead_setLightRhythm_centerDev_together_32ndSync();                                          break;
+    case 45:  dmxAnim_movingHead_setLightRhythm_centerDev_together_16thSync();                                          break;
+    case 46:  dmxAnim_movingHead_setLightRhythm_centerDev_together_8thSync();                                           break;
+    case 47:  dmxAnim_movingHead_setLightRhythm_centerDev_together_4thSync();                                           break;
+    case 48:  dmxAnim_movingHead_setLightRhythm_centerDev_together_2ndSync();                                           break;
+    case 49:  dmxAnim_movingHead_setLightRhythm_centerDev_together_barSync();                                           break;
 
-    case 36:  dmxAnim_movingHead_setLightRhythm_centerDev_random_32ndSync();                                            break;
-    case 37:  dmxAnim_movingHead_setLightRhythm_centerDev_random_16thSync();                                            break;
-    case 38:  dmxAnim_movingHead_setLightRhythm_centerDev_random_8thSync();                                             break;
-    case 39:  dmxAnim_movingHead_setLightRhythm_centerDev_random_4thSync();                                             break;
-    case 40:  dmxAnim_movingHead_setLightRhythm_centerDev_random_2ndSync();                                             break;
-    case 41:  dmxAnim_movingHead_setLightRhythm_centerDev_random_barSync();                                             break;
+    case 50:  dmxAnim_movingHead_setLightRhythm_centerDev_random_32ndSync();                                            break;
+    case 51:  dmxAnim_movingHead_setLightRhythm_centerDev_random_16thSync();                                            break;
+    case 52:  dmxAnim_movingHead_setLightRhythm_centerDev_random_8thSync();                                             break;
+    case 53:  dmxAnim_movingHead_setLightRhythm_centerDev_random_4thSync();                                             break;
+    case 54:  dmxAnim_movingHead_setLightRhythm_centerDev_random_2ndSync();                                             break;
+    case 55:  dmxAnim_movingHead_setLightRhythm_centerDev_random_barSync();                                             break;
 
-    case 42:  dmxAnim_movingHead_setLightRhythm_sideDev_together_32ndSync();                                            break;
-    case 43:  dmxAnim_movingHead_setLightRhythm_sideDev_together_16thSync();                                            break;
-    case 44:  dmxAnim_movingHead_setLightRhythm_sideDev_together_8thSync();                                             break;
-    case 45:  dmxAnim_movingHead_setLightRhythm_sideDev_together_4thSync();                                             break;
-    case 46:  dmxAnim_movingHead_setLightRhythm_sideDev_together_2ndSync();                                             break;
-    case 47:  dmxAnim_movingHead_setLightRhythm_sideDev_together_barSync();                                             break;
+    case 56:  dmxAnim_movingHead_setLightRhythm_sideDev_together_32ndSync();                                            break;
+    case 57:  dmxAnim_movingHead_setLightRhythm_sideDev_together_16thSync();                                            break;
+    case 58:  dmxAnim_movingHead_setLightRhythm_sideDev_together_8thSync();                                             break;
+    case 59:  dmxAnim_movingHead_setLightRhythm_sideDev_together_4thSync();                                             break;
+    case 60:  dmxAnim_movingHead_setLightRhythm_sideDev_together_2ndSync();                                             break;
+    case 61:  dmxAnim_movingHead_setLightRhythm_sideDev_together_barSync();                                             break;
 
-    case 48:  dmxAnim_movingHead_setLightRhythm_sideDev_random_32ndSync();                                              break;
-    case 49:  dmxAnim_movingHead_setLightRhythm_sideDev_random_16thSync();                                              break;
-    case 50:  dmxAnim_movingHead_setLightRhythm_sideDev_random_8thSync();                                               break;
-    case 51:  dmxAnim_movingHead_setLightRhythm_sideDev_random_4thSync();                                               break;
-    case 52:  dmxAnim_movingHead_setLightRhythm_sideDev_random_2ndSync();                                               break;
-    case 53:  dmxAnim_movingHead_setLightRhythm_sideDev_random_barSync();                                               break;
+    case 62:  dmxAnim_movingHead_setLightRhythm_sideDev_random_32ndSync();                                              break;
+    case 63:  dmxAnim_movingHead_setLightRhythm_sideDev_random_16thSync();                                              break;
+    case 64:  dmxAnim_movingHead_setLightRhythm_sideDev_random_8thSync();                                               break;
+    case 65:  dmxAnim_movingHead_setLightRhythm_sideDev_random_4thSync();                                               break;
+    case 66:  dmxAnim_movingHead_setLightRhythm_sideDev_random_2ndSync();                                               break;
+    case 67:  dmxAnim_movingHead_setLightRhythm_sideDev_random_barSync();                                               break;
 
-    case 54:  dmxAnim_movingHead_setLightRhythm_leftDev_together_32ndSync();                                            break;
-    case 55:  dmxAnim_movingHead_setLightRhythm_leftDev_together_16thSync();                                            break;
-    case 56:  dmxAnim_movingHead_setLightRhythm_leftDev_together_8thSync();                                             break;
-    case 57:  dmxAnim_movingHead_setLightRhythm_leftDev_together_4thSync();                                             break;
-    case 58:  dmxAnim_movingHead_setLightRhythm_leftDev_together_2ndSync();                                             break;
-    case 59:  dmxAnim_movingHead_setLightRhythm_leftDev_together_barSync();                                             break;    
+    case 68:  dmxAnim_movingHead_setLightRhythm_leftDev_together_32ndSync();                                            break;
+    case 69:  dmxAnim_movingHead_setLightRhythm_leftDev_together_16thSync();                                            break;
+    case 70:  dmxAnim_movingHead_setLightRhythm_leftDev_together_8thSync();                                             break;
+    case 71:  dmxAnim_movingHead_setLightRhythm_leftDev_together_4thSync();                                             break;
+    case 72:  dmxAnim_movingHead_setLightRhythm_leftDev_together_2ndSync();                                             break;
+    case 73:  dmxAnim_movingHead_setLightRhythm_leftDev_together_barSync();                                             break;    
  
-    case 60:  dmxAnim_movingHead_setLightRhythm_leftDev_random_32ndSync();                                              break;
-    case 61:  dmxAnim_movingHead_setLightRhythm_leftDev_random_16thSync();                                              break;
-    case 62:  dmxAnim_movingHead_setLightRhythm_leftDev_random_8thSync();                                               break;
-    case 63:  dmxAnim_movingHead_setLightRhythm_leftDev_random_4thSync();                                               break;
-    case 64:  dmxAnim_movingHead_setLightRhythm_leftDev_random_2ndSync();                                               break;
-    case 65:  dmxAnim_movingHead_setLightRhythm_leftDev_random_barSync();                                               break;
+    case 74:  dmxAnim_movingHead_setLightRhythm_leftDev_random_32ndSync();                                              break;
+    case 75:  dmxAnim_movingHead_setLightRhythm_leftDev_random_16thSync();                                              break;
+    case 76:  dmxAnim_movingHead_setLightRhythm_leftDev_random_8thSync();                                               break;
+    case 77:  dmxAnim_movingHead_setLightRhythm_leftDev_random_4thSync();                                               break;
+    case 78:  dmxAnim_movingHead_setLightRhythm_leftDev_random_2ndSync();                                               break;
+    case 79:  dmxAnim_movingHead_setLightRhythm_leftDev_random_barSync();                                               break;
 
-    case 66:  dmxAnim_movingHead_setLightRhythm_rightDev_together_32ndSync();                                           break;
-    case 67:  dmxAnim_movingHead_setLightRhythm_rightDev_together_16thSync();                                           break;
-    case 68:  dmxAnim_movingHead_setLightRhythm_rightDev_together_8thSync();                                            break;
-    case 69:  dmxAnim_movingHead_setLightRhythm_rightDev_together_4thSync();                                            break;
-    case 70:  dmxAnim_movingHead_setLightRhythm_rightDev_together_2ndSync();                                            break;
-    case 71:  dmxAnim_movingHead_setLightRhythm_rightDev_together_barSync();                                            break;
+    case 80:  dmxAnim_movingHead_setLightRhythm_rightDev_together_32ndSync();                                           break;
+    case 81:  dmxAnim_movingHead_setLightRhythm_rightDev_together_16thSync();                                           break;
+    case 82:  dmxAnim_movingHead_setLightRhythm_rightDev_together_8thSync();                                            break;
+    case 83:  dmxAnim_movingHead_setLightRhythm_rightDev_together_4thSync();                                            break;
+    case 84:  dmxAnim_movingHead_setLightRhythm_rightDev_together_2ndSync();                                            break;
+    case 85:  dmxAnim_movingHead_setLightRhythm_rightDev_together_barSync();                                            break;
 
-    case 72:  dmxAnim_movingHead_setLightRhythm_rightDev_random_32ndSync();                                             break;
-    case 73:  dmxAnim_movingHead_setLightRhythm_rightDev_random_16thSync();                                             break;
-    case 74:  dmxAnim_movingHead_setLightRhythm_rightDev_random_8thSync();                                              break;
-    case 75:  dmxAnim_movingHead_setLightRhythm_rightDev_random_4thSync();                                              break;
-    case 76:  dmxAnim_movingHead_setLightRhythm_rightDev_random_2ndSync();                                              break;
-    case 77:  dmxAnim_movingHead_setLightRhythm_rightDev_random_barSync();                                              break;
+    case 86:  dmxAnim_movingHead_setLightRhythm_rightDev_random_32ndSync();                                             break;
+    case 87:  dmxAnim_movingHead_setLightRhythm_rightDev_random_16thSync();                                             break;
+    case 88:  dmxAnim_movingHead_setLightRhythm_rightDev_random_8thSync();                                              break;
+    case 89:  dmxAnim_movingHead_setLightRhythm_rightDev_random_4thSync();                                              break;
+    case 90:  dmxAnim_movingHead_setLightRhythm_rightDev_random_2ndSync();                                              break;
+    case 91:  dmxAnim_movingHead_setLightRhythm_rightDev_random_barSync();                                              break;
+
+    case 92:  dmxAnim_movingHead_setLightRhythm_topDev_together_32ndSync();                                             break;
+    case 93:  dmxAnim_movingHead_setLightRhythm_topDev_together_16thSync();                                             break;
+    case 94:  dmxAnim_movingHead_setLightRhythm_topDev_together_8thSync();                                              break;
+    case 95:  dmxAnim_movingHead_setLightRhythm_topDev_together_4thSync();                                              break;
+    case 96:  dmxAnim_movingHead_setLightRhythm_topDev_together_2ndSync();                                              break;
+    case 97:  dmxAnim_movingHead_setLightRhythm_topDev_together_barSync();                                              break;
+
+    case 98:  dmxAnim_movingHead_setLightRhythm_topDev_random_32ndSync();                                               break;
+    case 99:  dmxAnim_movingHead_setLightRhythm_topDev_random_16thSync();                                               break;
+    case 100: dmxAnim_movingHead_setLightRhythm_topDev_random_8thSync();                                                break;
+    case 101: dmxAnim_movingHead_setLightRhythm_topDev_random_4thSync();                                                break;
+    case 102: dmxAnim_movingHead_setLightRhythm_topDev_random_2ndSync();                                                break;
+    case 103: dmxAnim_movingHead_setLightRhythm_topDev_random_barSync();                                                break;
+
     default: break;
   }  
 }
@@ -29597,65 +29793,95 @@ public void setupDMXAnimation_movingHead_setLightStyle() {
     case 13: dmxAnim_movingHead_setLightStyle_allDev_randomGlitch();                                                    break;
     case 14: dmxAnim_movingHead_setLightStyle_allDev_minimalApertureBeam();                                             break;
 
-    case 15: dmxAnim_movingHead_setLightStyle_centerDev_continuousLight();                                              break;
-    case 16: dmxAnim_movingHead_setLightStyle_centerDev_slowCrescendoLight();                                           break;
-    case 17: dmxAnim_movingHead_setLightStyle_centerDev_fastCrescendoLight();                                           break;
-    case 18: dmxAnim_movingHead_setLightStyle_centerDev_singleShortFlash();                                             break;
-    case 19: dmxAnim_movingHead_setLightStyle_centerDev_singleLongFlash();                                              break;
-    case 20: dmxAnim_movingHead_setLightStyle_centerDev_slowStrobe();                                                   break;
-    case 21: dmxAnim_movingHead_setLightStyle_centerDev_mediumStrobe();                                                 break;
-    case 22: dmxAnim_movingHead_setLightStyle_centerDev_fastStrobe();                                                   break;
-    case 23: dmxAnim_movingHead_setLightStyle_centerDev_slowClockwiseSineWave();                                        break;
-    case 24: dmxAnim_movingHead_setLightStyle_centerDev_fastClockwiseSineWave();                                        break;
-    case 25: dmxAnim_movingHead_setLightStyle_centerDev_slowAntiClockwiseSineWave();                                    break;
-    case 26: dmxAnim_movingHead_setLightStyle_centerDev_fastAntiClockwiseSineWave();                                    break;
-    case 27: dmxAnim_movingHead_setLightStyle_centerDev_randomGlitch();                                                 break;
-    case 28: dmxAnim_movingHead_setLightStyle_centerDev_minimalApertureBeam();                                          break;
+    case 15: dmxAnim_movingHead_setLightStyle_bottomDev_continuousLight();                                              break;
+    case 16: dmxAnim_movingHead_setLightStyle_bottomDev_slowCrescendoLight();                                           break;
+    case 17: dmxAnim_movingHead_setLightStyle_bottomDev_fastCrescendoLight();                                           break;
+    case 18: dmxAnim_movingHead_setLightStyle_bottomDev_singleShortFlash();                                             break;
+    case 19: dmxAnim_movingHead_setLightStyle_bottomDev_singleLongFlash();                                              break;
+    case 20: dmxAnim_movingHead_setLightStyle_bottomDev_slowStrobe();                                                   break;
+    case 21: dmxAnim_movingHead_setLightStyle_bottomDev_mediumStrobe();                                                 break;
+    case 22: dmxAnim_movingHead_setLightStyle_bottomDev_fastStrobe();                                                   break;
+    case 23: dmxAnim_movingHead_setLightStyle_bottomDev_slowClockwiseSineWave();                                        break;
+    case 24: dmxAnim_movingHead_setLightStyle_bottomDev_fastClockwiseSineWave();                                        break;
+    case 25: dmxAnim_movingHead_setLightStyle_bottomDev_slowAntiClockwiseSineWave();                                    break;
+    case 26: dmxAnim_movingHead_setLightStyle_bottomDev_fastAntiClockwiseSineWave();                                    break;
+    case 27: dmxAnim_movingHead_setLightStyle_bottomDev_randomGlitch();                                                 break;
+    case 28: dmxAnim_movingHead_setLightStyle_bottomDev_minimalApertureBeam();                                          break;
 
-    case 29: dmxAnim_movingHead_setLightStyle_sideDev_continuousLight();                                                break;
-    case 30: dmxAnim_movingHead_setLightStyle_sideDev_slowCrescendoLight();                                             break;
-    case 31: dmxAnim_movingHead_setLightStyle_sideDev_fastCrescendoLight();                                             break;
-    case 32: dmxAnim_movingHead_setLightStyle_sideDev_singleShortFlash();                                               break;
-    case 33: dmxAnim_movingHead_setLightStyle_sideDev_singleLongFlash();                                                break;
-    case 34: dmxAnim_movingHead_setLightStyle_sideDev_slowStrobe();                                                     break;
-    case 35: dmxAnim_movingHead_setLightStyle_sideDev_mediumStrobe();                                                   break;
-    case 36: dmxAnim_movingHead_setLightStyle_sideDev_fastStrobe();                                                     break;
-    case 37: dmxAnim_movingHead_setLightStyle_sideDev_slowClockwiseSineWave();                                          break;
-    case 38: dmxAnim_movingHead_setLightStyle_sideDev_fastClockwiseSineWave();                                          break;
-    case 39: dmxAnim_movingHead_setLightStyle_sideDev_slowAntiClockwiseSineWave();                                      break;
-    case 40: dmxAnim_movingHead_setLightStyle_sideDev_fastAntiClockwiseSineWave();                                      break;
-    case 41: dmxAnim_movingHead_setLightStyle_sideDev_randomGlitch();                                                   break;
-    case 42: dmxAnim_movingHead_setLightStyle_sideDev_minimalApertureBeam();                                            break;
+    case 29: dmxAnim_movingHead_setLightStyle_centerDev_continuousLight();                                              break;
+    case 30: dmxAnim_movingHead_setLightStyle_centerDev_slowCrescendoLight();                                           break;
+    case 31: dmxAnim_movingHead_setLightStyle_centerDev_fastCrescendoLight();                                           break;
+    case 32: dmxAnim_movingHead_setLightStyle_centerDev_singleShortFlash();                                             break;
+    case 33: dmxAnim_movingHead_setLightStyle_centerDev_singleLongFlash();                                              break;
+    case 34: dmxAnim_movingHead_setLightStyle_centerDev_slowStrobe();                                                   break;
+    case 35: dmxAnim_movingHead_setLightStyle_centerDev_mediumStrobe();                                                 break;
+    case 36: dmxAnim_movingHead_setLightStyle_centerDev_fastStrobe();                                                   break;
+    case 37: dmxAnim_movingHead_setLightStyle_centerDev_slowClockwiseSineWave();                                        break;
+    case 38: dmxAnim_movingHead_setLightStyle_centerDev_fastClockwiseSineWave();                                        break;
+    case 39: dmxAnim_movingHead_setLightStyle_centerDev_slowAntiClockwiseSineWave();                                    break;
+    case 40: dmxAnim_movingHead_setLightStyle_centerDev_fastAntiClockwiseSineWave();                                    break;
+    case 41: dmxAnim_movingHead_setLightStyle_centerDev_randomGlitch();                                                 break;
+    case 42: dmxAnim_movingHead_setLightStyle_centerDev_minimalApertureBeam();                                          break;
+
+    case 43: dmxAnim_movingHead_setLightStyle_sideDev_continuousLight();                                                break;
+    case 44: dmxAnim_movingHead_setLightStyle_sideDev_slowCrescendoLight();                                             break;
+    case 45: dmxAnim_movingHead_setLightStyle_sideDev_fastCrescendoLight();                                             break;
+    case 46: dmxAnim_movingHead_setLightStyle_sideDev_singleShortFlash();                                               break;
+    case 47: dmxAnim_movingHead_setLightStyle_sideDev_singleLongFlash();                                                break;
+    case 48: dmxAnim_movingHead_setLightStyle_sideDev_slowStrobe();                                                     break;
+    case 49: dmxAnim_movingHead_setLightStyle_sideDev_mediumStrobe();                                                   break;
+    case 50: dmxAnim_movingHead_setLightStyle_sideDev_fastStrobe();                                                     break;
+    case 51: dmxAnim_movingHead_setLightStyle_sideDev_slowClockwiseSineWave();                                          break;
+    case 52: dmxAnim_movingHead_setLightStyle_sideDev_fastClockwiseSineWave();                                          break;
+    case 53: dmxAnim_movingHead_setLightStyle_sideDev_slowAntiClockwiseSineWave();                                      break;
+    case 54: dmxAnim_movingHead_setLightStyle_sideDev_fastAntiClockwiseSineWave();                                      break;
+    case 55: dmxAnim_movingHead_setLightStyle_sideDev_randomGlitch();                                                   break;
+    case 56: dmxAnim_movingHead_setLightStyle_sideDev_minimalApertureBeam();                                            break;
     
-    case 43: dmxAnim_movingHead_setLightStyle_leftDev_continuousLight();                                                break;
-    case 44: dmxAnim_movingHead_setLightStyle_leftDev_slowCrescendoLight();                                             break;
-    case 45: dmxAnim_movingHead_setLightStyle_leftDev_fastCrescendoLight();                                             break;
-    case 46: dmxAnim_movingHead_setLightStyle_leftDev_singleShortFlash();                                               break;
-    case 47: dmxAnim_movingHead_setLightStyle_leftDev_singleLongFlash();                                                break;
-    case 48: dmxAnim_movingHead_setLightStyle_leftDev_slowStrobe();                                                     break;
-    case 49: dmxAnim_movingHead_setLightStyle_leftDev_mediumStrobe();                                                   break;
-    case 50: dmxAnim_movingHead_setLightStyle_leftDev_fastStrobe();                                                     break;
-    case 51: dmxAnim_movingHead_setLightStyle_leftDev_slowClockwiseSineWave();                                          break;
-    case 52: dmxAnim_movingHead_setLightStyle_leftDev_fastClockwiseSineWave();                                          break;
-    case 53: dmxAnim_movingHead_setLightStyle_leftDev_slowAntiClockwiseSineWave();                                      break;
-    case 54: dmxAnim_movingHead_setLightStyle_leftDev_fastAntiClockwiseSineWave();                                      break;
-    case 55: dmxAnim_movingHead_setLightStyle_leftDev_randomGlitch();                                                   break;
-    case 56: dmxAnim_movingHead_setLightStyle_leftDev_minimalApertureBeam();                                            break;
+    case 57: dmxAnim_movingHead_setLightStyle_leftDev_continuousLight();                                                break;
+    case 58: dmxAnim_movingHead_setLightStyle_leftDev_slowCrescendoLight();                                             break;
+    case 59: dmxAnim_movingHead_setLightStyle_leftDev_fastCrescendoLight();                                             break;
+    case 60: dmxAnim_movingHead_setLightStyle_leftDev_singleShortFlash();                                               break;
+    case 61: dmxAnim_movingHead_setLightStyle_leftDev_singleLongFlash();                                                break;
+    case 62: dmxAnim_movingHead_setLightStyle_leftDev_slowStrobe();                                                     break;
+    case 63: dmxAnim_movingHead_setLightStyle_leftDev_mediumStrobe();                                                   break;
+    case 64: dmxAnim_movingHead_setLightStyle_leftDev_fastStrobe();                                                     break;
+    case 65: dmxAnim_movingHead_setLightStyle_leftDev_slowClockwiseSineWave();                                          break;
+    case 66: dmxAnim_movingHead_setLightStyle_leftDev_fastClockwiseSineWave();                                          break;
+    case 67: dmxAnim_movingHead_setLightStyle_leftDev_slowAntiClockwiseSineWave();                                      break;
+    case 68: dmxAnim_movingHead_setLightStyle_leftDev_fastAntiClockwiseSineWave();                                      break;
+    case 69: dmxAnim_movingHead_setLightStyle_leftDev_randomGlitch();                                                   break;
+    case 70: dmxAnim_movingHead_setLightStyle_leftDev_minimalApertureBeam();                                            break;
     
-    case 57: dmxAnim_movingHead_setLightStyle_rightDev_continuousLight();                                               break;
-    case 58: dmxAnim_movingHead_setLightStyle_rightDev_slowCrescendoLight();                                            break;
-    case 59: dmxAnim_movingHead_setLightStyle_rightDev_fastCrescendoLight();                                            break;
-    case 60: dmxAnim_movingHead_setLightStyle_rightDev_singleShortFlash();                                              break;
-    case 61: dmxAnim_movingHead_setLightStyle_rightDev_singleLongFlash();                                               break;
-    case 62: dmxAnim_movingHead_setLightStyle_rightDev_slowStrobe();                                                    break;
-    case 63: dmxAnim_movingHead_setLightStyle_rightDev_mediumStrobe();                                                  break;
-    case 64: dmxAnim_movingHead_setLightStyle_rightDev_fastStrobe();                                                    break;
-    case 65: dmxAnim_movingHead_setLightStyle_rightDev_slowClockwiseSineWave();                                         break;
-    case 66: dmxAnim_movingHead_setLightStyle_rightDev_fastClockwiseSineWave();                                         break;
-    case 67: dmxAnim_movingHead_setLightStyle_rightDev_slowAntiClockwiseSineWave();                                     break;
-    case 68: dmxAnim_movingHead_setLightStyle_rightDev_fastAntiClockwiseSineWave();                                     break;
-    case 69: dmxAnim_movingHead_setLightStyle_rightDev_randomGlitch();                                                  break;
-    case 70: dmxAnim_movingHead_setLightStyle_rightDev_minimalApertureBeam();                                           break;
+    case 71: dmxAnim_movingHead_setLightStyle_rightDev_continuousLight();                                               break;
+    case 72: dmxAnim_movingHead_setLightStyle_rightDev_slowCrescendoLight();                                            break;
+    case 73: dmxAnim_movingHead_setLightStyle_rightDev_fastCrescendoLight();                                            break;
+    case 74: dmxAnim_movingHead_setLightStyle_rightDev_singleShortFlash();                                              break;
+    case 75: dmxAnim_movingHead_setLightStyle_rightDev_singleLongFlash();                                               break;
+    case 76: dmxAnim_movingHead_setLightStyle_rightDev_slowStrobe();                                                    break;
+    case 77: dmxAnim_movingHead_setLightStyle_rightDev_mediumStrobe();                                                  break;
+    case 78: dmxAnim_movingHead_setLightStyle_rightDev_fastStrobe();                                                    break;
+    case 79: dmxAnim_movingHead_setLightStyle_rightDev_slowClockwiseSineWave();                                         break;
+    case 80: dmxAnim_movingHead_setLightStyle_rightDev_fastClockwiseSineWave();                                         break;
+    case 81: dmxAnim_movingHead_setLightStyle_rightDev_slowAntiClockwiseSineWave();                                     break;
+    case 82: dmxAnim_movingHead_setLightStyle_rightDev_fastAntiClockwiseSineWave();                                     break;
+    case 83: dmxAnim_movingHead_setLightStyle_rightDev_randomGlitch();                                                  break;
+    case 84: dmxAnim_movingHead_setLightStyle_rightDev_minimalApertureBeam();                                           break;
+    
+    case 85: dmxAnim_movingHead_setLightStyle_topDev_continuousLight();                                                 break;
+    case 86: dmxAnim_movingHead_setLightStyle_topDev_slowCrescendoLight();                                              break;
+    case 87: dmxAnim_movingHead_setLightStyle_topDev_fastCrescendoLight();                                              break;
+    case 88: dmxAnim_movingHead_setLightStyle_topDev_singleShortFlash();                                                break;
+    case 89: dmxAnim_movingHead_setLightStyle_topDev_singleLongFlash();                                                 break;
+    case 90: dmxAnim_movingHead_setLightStyle_topDev_slowStrobe();                                                      break;
+    case 91: dmxAnim_movingHead_setLightStyle_topDev_mediumStrobe();                                                    break;
+    case 92: dmxAnim_movingHead_setLightStyle_topDev_fastStrobe();                                                      break;
+    case 93: dmxAnim_movingHead_setLightStyle_topDev_slowClockwiseSineWave();                                           break;
+    case 94: dmxAnim_movingHead_setLightStyle_topDev_fastClockwiseSineWave();                                           break;
+    case 95: dmxAnim_movingHead_setLightStyle_topDev_slowAntiClockwiseSineWave();                                       break;
+    case 96: dmxAnim_movingHead_setLightStyle_topDev_fastAntiClockwiseSineWave();                                       break;
+    case 97: dmxAnim_movingHead_setLightStyle_topDev_randomGlitch();                                                    break;
+    case 98: dmxAnim_movingHead_setLightStyle_topDev_minimalApertureBeam();                                             break;
 
     default: break;
   }
@@ -29670,164 +29896,358 @@ public void playDMXAnimation_movingHead() {
     // Simple commands for the various possible lightings and colors, without changing the direction of the projector
 
     case 2:   dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();                                 break;
-    case 3:   dmxAnim_movingHead_noMovement_centerDev_performCurrentLightStyle();                              break;
-    case 4:   dmxAnim_movingHead_noMovement_sideDev_performCurrentLightStyle();                                break;
-    case 5:   dmxAnim_movingHead_noMovement_leftDev_performCurrentLightStyle();                                break;
-    case 6:   dmxAnim_movingHead_noMovement_rightDev_performCurrentLightStyle();                               break;
-
-    //////////////////////////////////////////////////////////// 
-
-    case 7:  dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_LowTilt();                                   break;
-    case 8:  dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_LowTilt();                                     break;
-    case 9:  dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_LowTilt();                                    break;
-    case 10:  dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_FrontTilt();                                 break;
-    case 11: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_FrontTilt();                                   break;
-    case 12: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_FrontTilt();                                  break;
-    case 13: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_HighTilt();                                  break;
-    case 14: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_HighTilt();                                    break;
-    case 15: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_HighTilt();                                   break;
-    case 16: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_UprightTilt();                               break;
-    case 17: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_UprightTilt();                                 break;
-    case 18: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_UprightTilt();                                break;
-    case 19: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_BackTilt();                                  break;
-    case 20: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_BackTilt();                                    break;
-    case 21: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_BackTilt();                                   break;
-    case 22: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_FrontTilt();                          break;
-    case 23: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_FrontTilt();                       break;
-    case 24: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_HighTilt();                           break;
-    case 25: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_HighTilt();                        break;
-    case 26: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_FrontTilt();                         break;
-    case 27: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_FrontTilt();                      break;
-    case 28: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_HighTilt();                          break;
-    case 29: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_HighTilt();                       break;
-    case 30: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WideNegTilt();                     break;
-    case 31: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowNegTilt();                   break;
-    case 32: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WidePosTilt();                     break;
-    case 33: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTilt();                   break;
-
-    ////////////////////////////////////
-
-    case 34: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_LeftToRight();                  break;
-    case 35: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_LeftToRight();               break;
-    case 36: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_LeftToRight();                  break;
-    case 37: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_RightToLeft();                  break;
-    case 38: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_RightToLeft();               break;
-    case 39: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_RightToLeft();                  break;
-    case 40: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_LeftToRight();                      break;
-    case 41: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_LeftToRight();                   break;
-    case 42: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_LeftToRight();                      break;
-    case 43: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_RightToLeft();                      break;
-    case 44: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_RightToLeft();                   break;
-    case 45: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_RightToLeft();                      break;
-
-    case 46: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_LeftToRight();                    break;
-    case 47: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_LeftToRight();                 break;
-    case 48: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_LeftToRight();                    break;
-    case 49: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_RightToLeft();                    break;
-    case 50: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_RightToLeft();                 break;
-    case 51: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_RightToLeft();                    break;
-    case 52: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_LeftToRight();                        break;
-    case 53: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_LeftToRight();                     break;
-    case 54: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_LeftToRight();                        break;
-    case 55: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_RightToLeft();                        break;
-    case 56: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_RightToLeft();                     break;
-    case 57: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_RightToLeft();                        break;
-
-    case 58: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_LeftToRight();                    break;
-    case 59: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Regular_LeftToRight();                 break;
-    case 60: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Fast_LeftToRight();                    break;
-    case 61: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_RightToLeft();                    break;
-    case 62: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Regular_RightToLeft();                 break;
-    case 63: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Fast_RightToLeft();                    break;
-    case 64: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Slow_LeftToRight();                        break;
-    case 65: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Regular_LeftToRight();                     break;
-    case 66: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_LeftToRight();                        break;
-    case 67: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Slow_RightToLeft();                        break;
-    case 68: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Regular_RightToLeft();                     break;
-    case 69: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_RightToLeft();                        break;
-
-    case 70: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent();        break;
-    case 71: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalConvergent();     break;
-    case 72: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalConvergent();        break;
-    case 73: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalConvergent();            break;
-    case 74: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalConvergent();         break;
-    case 75: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalConvergent();            break;
-
-    case 76: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalDivergent();         break;
-    case 77: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalDivergent();      break;
-    case 78: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalDivergent();         break;
-    case 79: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalDivergent();             break;
-    case 80: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalDivergent();          break;
-    case 81: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalDivergent();             break;
-
-    ////////////////////////////////////
-
-    case 82: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_VerySlow();                 break;
-    case 83: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Slow();                     break;
-    case 84: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Regular();                  break;
-    case 85: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Fast();                     break;
-    case 86: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_VerySlow();                 break;
-    case 87: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Slow();                     break;
-    case 88: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Regular();                  break;
-    case 89: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Fast();                     break;
-    case 90: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow();         break;
-    case 91: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Slow();             break;
-    case 92: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Regular();          break;
-    case 93: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Fast();             break;
-    case 94: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow();         break;
-    case 95: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Slow();             break;
-    case 96: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Regular();          break;
-    case 97: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Fast();             break;
-
-    case 98: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_VerySlow();                break;
-    case 99: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Slow();                    break;
-    case 100: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Regular();                 break;
-    case 101: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Fast();                   break;
-    case 102: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_VerySlow();               break;
-    case 103: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Slow();                   break;
-    case 104: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Regular();                break;
-    case 105: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Fast();                   break;
-    case 106: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow();       break;
-    case 107: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Slow();           break;
-    case 108: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Regular();        break;
-    case 109: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Fast();           break;
-    case 110: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow();       break;
-    case 111: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Slow();           break;
-    case 112: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Regular();        break;
-    case 113: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Fast();           break;
-
-    case 114: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_VerySlow();              break;
-    case 115: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Slow();                  break;
-    case 116: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Regular();               break;
-    case 117: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Fast();                  break;
-    case 118: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_VerySlow();              break;
-    case 119: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Slow();                  break;
-    case 120: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Regular();               break;
-    case 121: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Fast();                  break;
-    case 122: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow();      break;
-    case 123: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Slow();          break;
-    case 124: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Regular();       break;
-    case 125: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Fast();          break;
-    case 126: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow();      break;
-    case 127: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Slow();          break;
-    case 128: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Regular();       break;
-    case 129: dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Fast();          break;
+    case 3:   dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();                              break;
+    case 4:   dmxAnim_movingHead_noMovement_centerDev_performCurrentLightStyle();                              break;
+    case 5:   dmxAnim_movingHead_noMovement_sideDev_performCurrentLightStyle();                                break;
+    case 6:   dmxAnim_movingHead_noMovement_leftDev_performCurrentLightStyle();                                break;
+    case 7:   dmxAnim_movingHead_noMovement_rightDev_performCurrentLightStyle();                               break;
+    case 8:   dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();                                 break;
 
 
-    case 130: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_slow();                              break;
-    case 131: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_regular();                           break;
-    case 132: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_fast();                              break;
-    case 133: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_slow();                           break;
-    case 134: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_regular();                        break;
-    case 135: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_fast();                           break;
-    case 136: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_slow();                            break;
-    case 137: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_regular();                         break;
-    case 138: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_fast();                            break;
+    case 9:  dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_LowTilt();                                   break;
+    case 10: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_LowTilt();                                     break;
+    case 11: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_LowTilt();                                    break;
+    case 12: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_FrontTilt();                                 break;
+    case 13: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_FrontTilt();                                   break;
+    case 14: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_FrontTilt();                                  break;
+    case 15: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_HighTilt();                                  break;
+    case 16: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_HighTilt();                                    break;
+    case 17: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_HighTilt();                                   break;
+    case 18: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_UprightTilt();                               break;
+    case 19: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_UprightTilt();                                 break;
+    case 20: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_UprightTilt();                                break;
+    case 21: dmxAnim_movingHead_lightOn_fastMove_allDev_CenterPan_BackTilt();                                  break;
+    case 22: dmxAnim_movingHead_lightOn_fastMove_allDev_LeftPan_BackTilt();                                    break;
+    case 23: dmxAnim_movingHead_lightOn_fastMove_allDev_RightPan_BackTilt();                                   break;
+    case 24: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_FrontTilt();                          break;
+    case 25: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_FrontTilt();                       break;
+    case 26: dmxAnim_movingHead_lightOn_fastMove_allDev_WideDivergentPan_HighTilt();                           break;
+    case 27: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicDivergentPan_HighTilt();                        break;
+    case 28: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_FrontTilt();                         break;
+    case 29: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_FrontTilt();                      break;
+    case 30: dmxAnim_movingHead_lightOn_fastMove_allDev_WideConvergentPan_HighTilt();                          break;
+    case 31: dmxAnim_movingHead_lightOn_fastMove_allDev_ClassicConvergentPan_HighTilt();                       break;
+    case 32: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WideNegTilt();                     break;
+    case 33: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowNegTilt();                   break;
+    case 34: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_WidePosTilt();                     break;
+    case 35: dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_NarrowPosTilt();                   break;
 
-    case 139: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_verySlow();                   break;
-    case 140: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_slow();                       break;
-    case 141: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_regular();                    break;
-    case 142: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_fast();                       break;
+    case 36: dmxAnim_movingHead_lightOn_fastMove_bottomDev_CenterPan_LowTilt();                                break;
+    case 37: dmxAnim_movingHead_lightOn_fastMove_bottomDev_LeftPan_LowTilt();                                  break;
+    case 38: dmxAnim_movingHead_lightOn_fastMove_bottomDev_RightPan_LowTilt();                                 break;
+    case 39: dmxAnim_movingHead_lightOn_fastMove_bottomDev_CenterPan_FrontTilt();                              break;
+    case 40: dmxAnim_movingHead_lightOn_fastMove_bottomDev_LeftPan_FrontTilt();                                break;
+    case 41: dmxAnim_movingHead_lightOn_fastMove_bottomDev_RightPan_FrontTilt();                               break;
+    case 42: dmxAnim_movingHead_lightOn_fastMove_bottomDev_CenterPan_HighTilt();                               break;
+    case 43: dmxAnim_movingHead_lightOn_fastMove_bottomDev_LeftPan_HighTilt();                                 break;
+    case 44: dmxAnim_movingHead_lightOn_fastMove_bottomDev_RightPan_HighTilt();                                break;
+    case 45: dmxAnim_movingHead_lightOn_fastMove_bottomDev_CenterPan_UprightTilt();                            break;
+    case 46: dmxAnim_movingHead_lightOn_fastMove_bottomDev_LeftPan_UprightTilt();                              break;
+    case 47: dmxAnim_movingHead_lightOn_fastMove_bottomDev_RightPan_UprightTilt();                             break;
+    case 48: dmxAnim_movingHead_lightOn_fastMove_bottomDev_CenterPan_BackTilt();                               break;
+    case 49: dmxAnim_movingHead_lightOn_fastMove_bottomDev_LeftPan_BackTilt();                                 break;
+    case 50: dmxAnim_movingHead_lightOn_fastMove_bottomDev_RightPan_BackTilt();                                break;
+    case 51: dmxAnim_movingHead_lightOn_fastMove_bottomDev_WideDivergentPan_FrontTilt();                       break;
+    case 52: dmxAnim_movingHead_lightOn_fastMove_bottomDev_ClassicDivergentPan_FrontTilt();                    break;
+    case 53: dmxAnim_movingHead_lightOn_fastMove_bottomDev_WideDivergentPan_HighTilt();                        break;
+    case 54: dmxAnim_movingHead_lightOn_fastMove_bottomDev_ClassicDivergentPan_HighTilt();                     break;
+    case 55: dmxAnim_movingHead_lightOn_fastMove_bottomDev_WideConvergentPan_FrontTilt();                      break;
+    case 56: dmxAnim_movingHead_lightOn_fastMove_bottomDev_ClassicConvergentPan_FrontTilt();                   break;
+    case 57: dmxAnim_movingHead_lightOn_fastMove_bottomDev_WideConvergentPan_HighTilt();                       break;
+    case 58: dmxAnim_movingHead_lightOn_fastMove_bottomDev_ClassicConvergentPan_HighTilt();                    break;
+    case 59: dmxAnim_movingHead_lightOn_fastMove_bottomDev_ExtremeDivergentPan_WideNegTilt();                  break;
+    case 60: dmxAnim_movingHead_lightOn_fastMove_bottomDev_ExtremeDivergentPan_NarrowNegTilt();                break;
+    case 61: dmxAnim_movingHead_lightOn_fastMove_bottomDev_ExtremeDivergentPan_WidePosTilt();                  break;
+    case 62: dmxAnim_movingHead_lightOn_fastMove_bottomDev_ExtremeDivergentPan_NarrowPosTilt();                break;
+
+    case 63: dmxAnim_movingHead_lightOn_fastMove_topDev_CenterPan_LowTilt();                                   break;
+    case 64: dmxAnim_movingHead_lightOn_fastMove_topDev_LeftPan_LowTilt();                                     break;
+    case 65: dmxAnim_movingHead_lightOn_fastMove_topDev_RightPan_LowTilt();                                    break;
+    case 66: dmxAnim_movingHead_lightOn_fastMove_topDev_CenterPan_FrontTilt();                                 break;
+    case 67: dmxAnim_movingHead_lightOn_fastMove_topDev_LeftPan_FrontTilt();                                   break;
+    case 68: dmxAnim_movingHead_lightOn_fastMove_topDev_RightPan_FrontTilt();                                  break;
+    case 69: dmxAnim_movingHead_lightOn_fastMove_topDev_CenterPan_HighTilt();                                  break;
+    case 70: dmxAnim_movingHead_lightOn_fastMove_topDev_LeftPan_HighTilt();                                    break;
+    case 71: dmxAnim_movingHead_lightOn_fastMove_topDev_RightPan_HighTilt();                                   break;
+    case 72: dmxAnim_movingHead_lightOn_fastMove_topDev_CenterPan_UprightTilt();                               break;
+    case 73: dmxAnim_movingHead_lightOn_fastMove_topDev_LeftPan_UprightTilt();                                 break;
+    case 74: dmxAnim_movingHead_lightOn_fastMove_topDev_RightPan_UprightTilt();                                break;
+    case 75: dmxAnim_movingHead_lightOn_fastMove_topDev_CenterPan_BackTilt();                                  break;
+    case 76: dmxAnim_movingHead_lightOn_fastMove_topDev_LeftPan_BackTilt();                                    break;
+    case 77: dmxAnim_movingHead_lightOn_fastMove_topDev_RightPan_BackTilt();                                   break;
+    case 78: dmxAnim_movingHead_lightOn_fastMove_topDev_WideDivergentPan_FrontTilt();                          break;
+    case 79: dmxAnim_movingHead_lightOn_fastMove_topDev_ClassicDivergentPan_FrontTilt();                       break;
+    case 80: dmxAnim_movingHead_lightOn_fastMove_topDev_WideDivergentPan_HighTilt();                           break;
+    case 81: dmxAnim_movingHead_lightOn_fastMove_topDev_ClassicDivergentPan_HighTilt();                        break;
+    case 82: dmxAnim_movingHead_lightOn_fastMove_topDev_WideConvergentPan_FrontTilt();                         break;
+    case 83: dmxAnim_movingHead_lightOn_fastMove_topDev_ClassicConvergentPan_FrontTilt();                      break;
+    case 84: dmxAnim_movingHead_lightOn_fastMove_topDev_WideConvergentPan_HighTilt();                          break;
+    case 85: dmxAnim_movingHead_lightOn_fastMove_topDev_ClassicConvergentPan_HighTilt();                       break;
+    case 86: dmxAnim_movingHead_lightOn_fastMove_topDev_ExtremeDivergentPan_WideNegTilt();                     break;
+    case 87: dmxAnim_movingHead_lightOn_fastMove_topDev_ExtremeDivergentPan_NarrowNegTilt();                   break;
+    case 88: dmxAnim_movingHead_lightOn_fastMove_topDev_ExtremeDivergentPan_WidePosTilt();                     break;
+    case 89: dmxAnim_movingHead_lightOn_fastMove_topDev_ExtremeDivergentPan_NarrowPosTilt();                   break;
+
+
+    case 90: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_LeftToRight();                  break;
+    case 91: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_LeftToRight();               break;
+    case 92: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_LeftToRight();                  break;
+    case 93: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_RightToLeft();                  break;
+    case 94: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_RightToLeft();               break;
+    case 95: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_RightToLeft();                  break;
+    case 96: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_LeftToRight();                      break;
+    case 97: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_LeftToRight();                   break;
+    case 98: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_LeftToRight();                      break;
+    case 99: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_RightToLeft();                      break;
+    case 100: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_RightToLeft();                  break;
+    case 101: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_RightToLeft();                     break;
+
+    case 102: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_LeftToRight();                   break;
+    case 103: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_LeftToRight();                break;
+    case 104: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_LeftToRight();                   break;
+    case 105: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_RightToLeft();                   break;
+    case 106: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_RightToLeft();                break;
+    case 107: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_RightToLeft();                   break;
+    case 108: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_LeftToRight();                       break;
+    case 109: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_LeftToRight();                    break;
+    case 110: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_LeftToRight();                       break;
+    case 111: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_RightToLeft();                       break;
+    case 112: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_RightToLeft();                    break;
+    case 113: dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_RightToLeft();                       break;
+
+    case 114: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_LeftToRight();                   break;
+    case 115: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Regular_LeftToRight();                break;
+    case 116: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Fast_LeftToRight();                   break;
+    case 117: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_RightToLeft();                   break;
+    case 118: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Regular_RightToLeft();                break;
+    case 119: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Fast_RightToLeft();                   break;
+    case 120: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Slow_LeftToRight();                       break;
+    case 121: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Regular_LeftToRight();                    break;
+    case 122: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_LeftToRight();                       break;
+    case 123: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Slow_RightToLeft();                       break;
+    case 124: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Regular_RightToLeft();                    break;
+    case 125: dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_RightToLeft();                       break;
+
+    case 126: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent();       break;
+    case 127: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalConvergent();    break;
+    case 128: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalConvergent();       break;
+    case 129: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalConvergent();           break;
+    case 130: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalConvergent();        break;
+    case 131: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalConvergent();           break;
+
+    case 132: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalDivergent();        break;
+    case 133: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalDivergent();     break;
+    case 134: dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalDivergent();        break;
+    case 135: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalDivergent();            break;
+    case 136: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalDivergent();         break;
+    case 137: dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalDivergent();            break;
+
+
+    case 138: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Slow_LeftToRight();              break;
+    case 139: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Regular_LeftToRight();           break;
+    case 140: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Fast_LeftToRight();              break;
+    case 141: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Slow_RightToLeft();              break;
+    case 142: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Regular_RightToLeft();           break;
+    case 143: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Fast_RightToLeft();              break;
+    case 144: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Slow_LeftToRight();                  break;
+    case 145: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Regular_LeftToRight();               break;
+    case 146: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Fast_LeftToRight();                  break;
+    case 147: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Slow_RightToLeft();                  break;
+    case 148: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Regular_RightToLeft();               break;
+    case 149: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Fast_RightToLeft();                  break;
+
+    case 150: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Slow_LeftToRight();                break;
+    case 151: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Regular_LeftToRight();             break;
+    case 152: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Fast_LeftToRight();                break;
+    case 153: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Slow_RightToLeft();                break;
+    case 154: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Regular_RightToLeft();             break;
+    case 155: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Fast_RightToLeft();                break;
+    case 156: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Slow_LeftToRight();                    break;
+    case 157: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Regular_LeftToRight();                 break;
+    case 158: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Fast_LeftToRight();                    break;
+    case 159: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Slow_RightToLeft();                    break;
+    case 160: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Regular_RightToLeft();                 break;
+    case 161: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Fast_RightToLeft();                    break;
+
+    case 162: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Slow_LeftToRight();                break;
+    case 163: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Regular_LeftToRight();             break;
+    case 164: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Fast_LeftToRight();                break;
+    case 165: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Slow_RightToLeft();                break;
+    case 166: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Regular_RightToLeft();             break;
+    case 167: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Fast_RightToLeft();                break;
+    case 168: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Slow_LeftToRight();                    break;
+    case 169: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Regular_LeftToRight();                 break;
+    case 170: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Fast_LeftToRight();                    break;
+    case 171: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Slow_RightToLeft();                    break;
+    case 172: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Regular_RightToLeft();                 break;
+    case 173: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Fast_RightToLeft();                    break;
+
+    case 174: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent();    break;
+    case 175: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Regular_SymmetricalConvergent(); break;
+    case 176: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Fast_SymmetricalConvergent();    break;
+    case 177: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Slow_SymmetricalConvergent();        break;
+    case 178: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Regular_SymmetricalConvergent();     break;
+    case 179: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Fast_SymmetricalConvergent();        break;
+
+    case 180: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Slow_SymmetricalDivergent();     break;
+    case 181: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Regular_SymmetricalDivergent();  break;
+    case 182: dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Fast_SymmetricalDivergent();     break;
+    case 183: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Slow_SymmetricalDivergent();         break;
+    case 184: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Regular_SymmetricalDivergent();      break;
+    case 185: dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Fast_SymmetricalDivergent();         break;
+
+
+    case 186: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Slow_LeftToRight();                 break;
+    case 187: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Regular_LeftToRight();              break;
+    case 188: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Fast_LeftToRight();                 break;
+    case 189: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Slow_RightToLeft();                 break;
+    case 190: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Regular_RightToLeft();              break;
+    case 191: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Fast_RightToLeft();                 break;
+    case 192: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Slow_LeftToRight();                     break;
+    case 193: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Regular_LeftToRight();                  break;
+    case 194: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Fast_LeftToRight();                     break;
+    case 195: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Slow_RightToLeft();                     break;
+    case 196: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Regular_RightToLeft();                  break;
+    case 197: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Fast_RightToLeft();                     break;
+
+    case 198: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Slow_LeftToRight();                   break;
+    case 199: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Regular_LeftToRight();                break;
+    case 200: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Fast_LeftToRight();                   break;
+    case 201: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Slow_RightToLeft();                   break;
+    case 202: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Regular_RightToLeft();                break;
+    case 203: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Fast_RightToLeft();                   break;
+    case 204: dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Slow_LeftToRight();                       break;
+    case 205: dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Regular_LeftToRight();                    break;
+    case 206: dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Fast_LeftToRight();                       break;
+    case 207: dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Slow_RightToLeft();                       break;
+    case 208: dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Regular_RightToLeft();                    break;
+    case 209: dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Fast_RightToLeft();                       break;
+
+    case 210: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Slow_LeftToRight();                   break;
+    case 211: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Regular_LeftToRight();                break;
+    case 212: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Fast_LeftToRight();                   break;
+    case 213: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Slow_RightToLeft();                   break;
+    case 214: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Regular_RightToLeft();                break;
+    case 215: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Fast_RightToLeft();                   break;
+    case 216: dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Slow_LeftToRight();                       break;
+    case 217: dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Regular_LeftToRight();                    break;
+    case 218: dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Fast_LeftToRight();                       break;
+    case 219: dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Slow_RightToLeft();                       break;
+    case 220: dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Regular_RightToLeft();                    break;
+    case 221: dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Fast_RightToLeft();                       break;
+
+    case 222: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent();       break;
+    case 223: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Regular_SymmetricalConvergent();    break;
+    case 224: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Fast_SymmetricalConvergent();       break;
+    case 225: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Slow_SymmetricalConvergent();           break;
+    case 226: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Regular_SymmetricalConvergent();        break;
+    case 227: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Fast_SymmetricalConvergent();           break;
+
+    case 228: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Slow_SymmetricalDivergent();        break;
+    case 229: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Regular_SymmetricalDivergent();     break;
+    case 230: dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Fast_SymmetricalDivergent();        break;
+    case 231: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Slow_SymmetricalDivergent();            break;
+    case 232: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Regular_SymmetricalDivergent();         break;
+    case 233: dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Fast_SymmetricalDivergent();            break;
+
+    
+
+    case 234: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_UpDown_VerySlow();             break;
+    case 235: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_UpDown_Slow();                 break;
+    case 236: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_UpDown_Regular();              break;
+    case 237: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_UpDown_Fast();                 break;
+    case 238: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_DownUp_VerySlow();             break;
+    case 239: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_DownUp_Slow();                 break;
+    case 240: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_DownUp_Regular();              break;
+    case 241: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_DownUp_Fast();                 break;
+    case 242: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow();     break;
+    case 243: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeUpDown_Slow();         break;
+    case 244: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeUpDown_Regular();      break;
+    case 245: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeUpDown_Fast();         break;
+    case 246: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow();     break;
+    case 247: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeDownUp_Slow();         break;
+    case 248: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeDownUp_Regular();      break;
+    case 249: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeDownUp_Fast();         break;
+
+    case 250: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_UpDown_VerySlow();            break;
+    case 251: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_UpDown_Slow();                break;
+    case 252: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_UpDown_Regular();             break;
+    case 253: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_UpDown_Fast();                break;
+    case 254: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_DownUp_VerySlow();            break;
+    case 255: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_DownUp_Slow();                break;
+    case 256: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_DownUp_Regular();             break;
+    case 257: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_DownUp_Fast();                break;
+    case 258: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow();    break;
+    case 259: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeUpDown_Slow();        break;
+    case 260: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeUpDown_Regular();     break;
+    case 261: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeUpDown_Fast();        break;
+    case 262: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow();    break;
+    case 263: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeDownUp_Slow();        break;
+    case 264: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeDownUp_Regular();     break;
+    case 265: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeDownUp_Fast();        break;
+
+    case 266: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_UpDown_VerySlow();           break;
+    case 267: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_UpDown_Slow();               break;
+    case 268: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_UpDown_Regular();            break;
+    case 269: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_UpDown_Fast();               break;
+    case 270: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_DownUp_VerySlow();           break;
+    case 271: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_DownUp_Slow();               break;
+    case 272: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_DownUp_Regular();            break;
+    case 273: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_DownUp_Fast();               break;
+    case 274: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow();   break;
+    case 275: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeUpDown_Slow();       break;
+    case 276: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeUpDown_Regular();    break;
+    case 277: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeUpDown_Fast();       break;
+    case 278: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow();   break;
+    case 279: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeDownUp_Slow();       break;
+    case 280: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeDownUp_Regular();    break;
+    case 281: dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeDownUp_Fast();       break;
+
+
+    case 282: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_slow();                              break;
+    case 283: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_regular();                           break;
+    case 284: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_fast();                              break;
+    case 285: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_slow();                           break;
+    case 286: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_regular();                        break;
+    case 287: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_fast();                           break;
+    case 288: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_slow();                            break;
+    case 289: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_regular();                         break;
+    case 290: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_fast();                            break;
+
+    case 291: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_weak_slow();                           break;
+    case 292: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_weak_regular();                        break;
+    case 293: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_weak_fast();                           break;
+    case 294: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_regular_slow();                        break;
+    case 295: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_regular_regular();                     break;
+    case 296: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_regular_fast();                        break;
+    case 297: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_strong_slow();                         break;
+    case 298: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_strong_regular();                      break;
+    case 299: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_strong_fast();                         break;
+
+    case 300: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_weak_slow();                              break;
+    case 301: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_weak_regular();                           break;
+    case 302: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_weak_fast();                              break;
+    case 303: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_regular_slow();                           break;
+    case 304: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_regular_regular();                        break;
+    case 305: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_regular_fast();                           break;
+    case 306: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_strong_slow();                            break;
+    case 307: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_strong_regular();                         break;
+    case 308: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_strong_fast();                            break;
+
+    case 309: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_verySlow();                   break;
+    case 310: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_slow();                       break;
+    case 311: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_regular();                    break;
+    case 312: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_fast();                       break;
+
+    case 313: dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_verySlow();                break;
+    case 314: dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_slow();                    break;
+    case 315: dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_regular();                 break;
+    case 316: dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_fast();                    break;
+
+    case 317: dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_verySlow();                   break;
+    case 318: dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_slow();                       break;
+    case 319: dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_regular();                    break;
+    case 320: dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_fast();                       break;
 
 
 
@@ -29878,115 +30298,247 @@ public void playDMXAnimation_movingHead() {
 public void setupDMXAnimation_movingHeadAnimation() {
   switch(dmxAnimationNumber_movingHead_setAnimation) {
 
-    case 34: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 35: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 36: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 37: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 38: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 39: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 40: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 41: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 42: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 43: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 44: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 45: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 46: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 47: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 48: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 49: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 50: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 51: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 52: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 53: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 54: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 55: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 56: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 57: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 58: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 59: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 60: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 61: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 62: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 63: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 64: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 65: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 66: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 67: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 68: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 69: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 70: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 71: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 72: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 73: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 74: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 75: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 76: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 77: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 78: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 79: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 80: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 81: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 82: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 83: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 84: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 85: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 86: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 87: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 88: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 89: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 90: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 91: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 92: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 93: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 94: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 95: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 96: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 97: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 98: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 99: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
-    case 100: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 101: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 102: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 103: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 104: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 105: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 106: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 107: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 108: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 109: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 110: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 111: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 112: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 113: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 114: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 115: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 116: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 117: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 118: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 119: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 120: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 121: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 122: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 123: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 124: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 125: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 126: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 127: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 128: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 129: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                   break;
-    case 130: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 131: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 132: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 133: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 134: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 135: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 136: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 137: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 138: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
-    case 139: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                  break;
-    case 140: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                  break;
-    case 141: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                  break;
-    case 142: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                  break;
+    case 90:  dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 91:  dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 92:  dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 93:  dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 94:  dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 95:  dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 96:  dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 97:  dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 98:  dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 99:  dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 100: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 101: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 102: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 103: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 104: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 105: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 106: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 107: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 108: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 109: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 110: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 111: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 112: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 113: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 114: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 115: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 116: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 117: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 118: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 119: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 120: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 121: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 122: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 123: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 124: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 125: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 126: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 127: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 128: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 129: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 130: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 131: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 132: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 133: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 134: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 135: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 136: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 137: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+
+
+    case 138: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 139: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 140: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 141: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 142: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 143: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 144: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 145: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 146: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 147: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 148: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 149: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 150: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 151: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 152: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 153: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 154: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 155: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 156: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 157: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 158: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 159: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 160: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 161: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 162: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 163: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 164: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 165: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 166: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 167: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 168: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 169: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 170: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 171: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 172: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 173: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 174: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 175: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 176: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 177: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 178: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 179: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 180: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 181: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 182: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 183: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 184: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 185: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+
+
+    case 186: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 187: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 188: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 189: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 190: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 191: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 192: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 193: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 194: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 195: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 196: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 197: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 198: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 199: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 200: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 201: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 202: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 203: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 204: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 205: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 206: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 207: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 208: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 209: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 210: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 211: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 212: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 213: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 214: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 215: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 216: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 217: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 218: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 219: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 220: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 221: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 222: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 223: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 224: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 225: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 226: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 227: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 228: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 229: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 230: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 231: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 232: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+    case 233: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_setupReinit_allDevices(); dmxAnim_movingHead_reinitLightStyleCpt_allDevices();       break;
+
+
+
+    case 234: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 235: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 236: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 237: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 238: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 239: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 240: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 241: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 242: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 243: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 244: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 245: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 246: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 247: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 248: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 249: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 250: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 251: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 252: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 253: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 254: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 255: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 256: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 257: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 258: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 259: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 260: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 261: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 262: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 263: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 264: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 265: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 266: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 267: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 268: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 269: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 270: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 271: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 272: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 273: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 274: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 275: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 276: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 277: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 278: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 279: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 280: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 281: dmxAnim_movingHead_globalAnimCpt = 0; dmxAnim_movingHead_reinitLightStyleCpt_allDevices();                                                    break;
+    case 282: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 283: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 284: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 285: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 286: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 287: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 288: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 289: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 290: dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+
+    case 291: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();        break;
+    case 292: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();        break;
+    case 293: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();        break;
+    case 294: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();        break;
+    case 295: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();        break;
+    case 296: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();        break;
+    case 297: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();        break;
+    case 298: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();        break;
+    case 299: dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();        break;
+
+    case 300: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 301: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 302: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 303: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 304: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 305: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 306: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 307: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+    case 308: dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_setup();                dmxAnim_movingHead_reinitLightStyleCpt_allDevices();           break;
+
+    case 309: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                   break;
+    case 310: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                   break;
+    case 311: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                   break;
+    case 312: dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();                                                                   break;
+    case 313: dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_setup();                                                                break;
+    case 314: dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_setup();                                                                break;
+    case 315: dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_setup();                                                                break;
+    case 316: dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_setup();                                                                break;
+    case 317: dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_setup();                                                                   break;
+    case 318: dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_setup();                                                                   break;
+    case 319: dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_setup();                                                                   break;
+    case 320: dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_setup();                                                                   break;
 
     default:  dmxAnim_movingHead_reinitLightStyleCpt_allDevices(); break;
   }
@@ -31355,6 +31907,10 @@ class DMX_MovingHead {
     return PApplet.parseInt( map(dmxVal[chIndex_shutter], shutter_strobe_minSpeed, shutter_strobe_maxSpeed, 0.0f, 255.0f) );
   }
 
+  public boolean isFloorFixture() {
+    return floorFixture;
+  }
+
 
   ////////////////////////////////////////////////////////////////////////////////
   // ANIMATION FUNCTIONS
@@ -31648,6 +32204,127 @@ public void dmxAnim_movingHead_prepareDirection_RightPan_BackTilt() {
   }
 }
 
+////////////////////////////////////////////////////////////
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_LowTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_LowTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_LowTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_FrontTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_FrontTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_FrontTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_HighTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_HighTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_HighTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_UprightTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_UprightTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_UprightTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_BackTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_BackTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_BackTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
+  }
+}
 
 ////////////////////////////////////////////////////////////
 
@@ -31949,142 +32626,408 @@ public void dmxAnim_movingHead_prepareDirection_rightDev_RightPan_UprightTilt() 
   }
 }
 
+
+////////////////////////////////////////////////////////////
+
+public void dmxAnim_movingHead_prepareDirection_topDev_CenterPan_LowTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_LeftPan_LowTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_RightPan_LowTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_low_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_CenterPan_FrontTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_LeftPan_FrontTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_RightPan_FrontTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_CenterPan_HighTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_LeftPan_HighTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_RightPan_HighTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_high_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_CenterPan_UprightTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_LeftPan_UprightTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_RightPan_UprightTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_upright_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_CenterPan_BackTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_center_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_LeftPan_BackTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_left_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
+  }
+}
+
+public void dmxAnim_movingHead_prepareDirection_topDev_RightPan_BackTilt() {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setSpeed_maxSpeed();
+    movingHead.setPan(movingHead.dmxVal_specificVal_pan_right_perCent);
+    movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_back_perCent);
+  }
+}
+
 ////////////////////////////////////////////////////////////
 
 // openingWidthAngle_perCent: % of the angle between "front" and "full sideways"
 // tiltValue_perCent: % of the angle between "max low" and "upright"
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(float openingWidthAngle_perCent, float tiltValue_perCent) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(openingWidthAngle_perCent, tiltValue_perCent, DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(openingWidthAngle_perCent, tiltValue_perCent, DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(float openingWidthAngle_perCent, float tiltValue_perCent, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setSpeed_maxSpeed();
     float panHalfWidth = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
-    float pan_perCent  = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, panHalfWidth, 100 - panHalfWidth);
+    float pan_perCent  = map(movingHead.getDeviceID(), 0, dmxList_movingHead_subset.size()-1, panHalfWidth, 100 - panHalfWidth);
     float tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_low_perCent, movingHead.dmxVal_specificVal_tilt_upright_perCent);
     movingHead.setPan(pan_perCent);
     movingHead.setTilt(tilt_perCent);
   }
 }
 
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 0, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 0, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 0, dmxList_movingHead_subset);
+}
+
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 100, dmxList_movingHead_subset);
+}
+
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowTilt(DMXList_MovingHeads_top);
 }
 
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontTilt(DMXList_MovingHeads_top);
 }
 
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighTilt(DMXList_MovingHeads_top);
 }
 
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(80, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(60, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(30, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightTilt(DMXList_MovingHeads_top);
 }
 
 
+////////////////////////////////////////////////////
+
+
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(float openingWidthAngle_perCent, float tiltValue_perCent) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(openingWidthAngle_perCent, tiltValue_perCent, DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(openingWidthAngle_perCent, tiltValue_perCent, DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(float openingWidthAngle_perCent, float tiltValue_perCent, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setSpeed_maxSpeed();
     float panHalfWidth = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
-    float pan_perCent  = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, 100 - panHalfWidth, panHalfWidth);
+    float pan_perCent  = map(movingHead.getDeviceID(), 0, dmxList_movingHead_subset.size()-1, 100 - panHalfWidth, panHalfWidth);
     float tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_low_perCent, movingHead.dmxVal_specificVal_tilt_upright_perCent);
     movingHead.setPan(pan_perCent);
     movingHead.setTilt(tilt_perCent);
   }
 }
 
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 0, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 0, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 0, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 100, dmxList_movingHead_subset);
+}
+
+
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(80, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(60, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(30, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightTilt(DMXList_MovingHeads_top);
 }
 
 
 ////////////////////////////////////////////////////////////
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(float openingTiltAngle_perCent) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(openingTiltAngle_perCent, DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(openingTiltAngle_perCent, DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(float openingTiltAngle_perCent, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setSpeed_maxSpeed();
 
     float pan_perCent = movingHead.dmxVal_specificVal_pan_center_perCent;
-    if (DMXList_MovingHeads.size() % 2 == 0) {
-      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
+    if (dmxList_movingHead_subset.size() % 2 == 0) {
+      if (movingHead.getDeviceID() < dmxList_movingHead_subset.size()/2) {
         pan_perCent = movingHead.dmxVal_specificVal_pan_left_perCent;
       }
       else {
@@ -32092,10 +33035,10 @@ public void dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentT
       }
     }
     else {
-      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
+      if (movingHead.getDeviceID() < dmxList_movingHead_subset.size()/2) {
         pan_perCent = movingHead.dmxVal_specificVal_pan_left_perCent;
       }
-      else if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
+      else if (movingHead.getDeviceID() < dmxList_movingHead_subset.size()/2) {
         pan_perCent = movingHead.dmxVal_specificVal_pan_left_perCent;
       }
       else {
@@ -32103,7 +33046,7 @@ public void dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentT
       }
     }
     float minTiltAngle = map(openingTiltAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_upright_perCent, movingHead.dmxVal_specificVal_tilt_front_perCent);
-    float tilt_perCent = movingHead.dmxVal_specificVal_tilt_upright_perCent - (movingHead.dmxVal_specificVal_tilt_upright_perCent - minTiltAngle) * abs( movingHead.getDeviceID()-0.5f*(DMXList_MovingHeads.size()-1) ) / (0.5f*(DMXList_MovingHeads.size()-1));
+    float tilt_perCent = movingHead.dmxVal_specificVal_tilt_upright_perCent - (movingHead.dmxVal_specificVal_tilt_upright_perCent - minTiltAngle) * abs( movingHead.getDeviceID()-0.5f*(dmxList_movingHead_subset.size()-1) ) / (0.5f*(dmxList_movingHead_subset.size()-1));
 
     movingHead.setPan(pan_perCent);
     movingHead.setTilt(tilt_perCent);
@@ -32112,59 +33055,109 @@ public void dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentT
 
 // openingTiltAngle_perCent corresponds to the angle between the front position (upright + 90\u00b0) and the upright position
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(float openingWidthAngle_perCent, float openingTiltAngle_perCent) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(openingWidthAngle_perCent, openingTiltAngle_perCent, DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(openingWidthAngle_perCent, openingTiltAngle_perCent, DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(float openingWidthAngle_perCent, float openingTiltAngle_perCent, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setSpeed_maxSpeed();
     float panHalfWidth   = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
-    float pan_perCent    = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, panHalfWidth, 100 - panHalfWidth);
+    float pan_perCent    = map(movingHead.getDeviceID(), 0, dmxList_movingHead_subset.size()-1, panHalfWidth, 100 - panHalfWidth);
 
     float minTiltAngle = map(openingTiltAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_upright_perCent, movingHead.dmxVal_specificVal_tilt_front_perCent);
-    float tilt_perCent = movingHead.dmxVal_specificVal_tilt_upright_perCent - (movingHead.dmxVal_specificVal_tilt_upright_perCent - minTiltAngle) * abs( movingHead.getDeviceID()-0.5f*(DMXList_MovingHeads.size()-1) ) / (0.5f*(DMXList_MovingHeads.size()-1));
+    float tilt_perCent = movingHead.dmxVal_specificVal_tilt_upright_perCent - (movingHead.dmxVal_specificVal_tilt_upright_perCent - minTiltAngle) * abs( movingHead.getDeviceID()-0.5f*(dmxList_movingHead_subset.size()-1) ) / (0.5f*(dmxList_movingHead_subset.size()-1));
 
     movingHead.setPan(pan_perCent);
     movingHead.setTilt(tilt_perCent);
   }
 }
 
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WideNegTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowNegTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(60, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WideNegTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0f, 100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowNegTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0f, 60, dmxList_movingHead_subset);
+}
+
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WidePosTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(-100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(-60, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WidePosTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0f, -100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowPosTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0f, -60, dmxList_movingHead_subset);
+}
+
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WideNegTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WideNegTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WideNegTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowNegTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(60);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowNegTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowNegTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WideNegTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0f, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WideNegTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WideNegTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowNegTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0f, 60);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowNegTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowNegTilt(DMXList_MovingHeads_top);
 }
 
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WidePosTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(-100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WidePosTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WidePosTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalExtremePan_DivergentTilt(-60);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WidePosTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0f, -100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WidePosTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_WidePosTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowPosTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt(100.0f, -60);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowPosTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_WidePan_NarrowPosTilt(DMXList_MovingHeads_top);
 }
 
 
-
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(float openingWidthAngle_perCent, float tiltValue_perCent) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(openingWidthAngle_perCent, tiltValue_perCent, DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(openingWidthAngle_perCent, tiltValue_perCent, DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(float openingWidthAngle_perCent, float tiltValue_perCent, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setSpeed_maxSpeed();
     float panHalfWidth = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
-    float pan_perCent  = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, panHalfWidth, 100 - panHalfWidth);
+    float pan_perCent  = map(movingHead.getDeviceID(), 0, dmxList_movingHead_subset.size()-1, panHalfWidth, 100 - panHalfWidth);
     float tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_low_perCent, movingHead.dmxVal_specificVal_tilt_upright_perCent);
     if (movingHead.getDeviceID() % 2 == 0) {
       tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_upright_perCent, movingHead.dmxVal_specificVal_tilt_low_perCent);
@@ -32174,63 +33167,131 @@ public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_Opposite
   }
 }
 
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 0, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 0, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 0, dmxList_movingHead_subset);
+}
+
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 100, dmxList_movingHead_subset);
+}
+
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_LowOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_LowOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_LowOppositeTilt(DMXList_MovingHeads_top);
 }
 
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_FrontOppositeTilt(DMXList_MovingHeads_top);
 }
 
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_HighOppositeTilt(DMXList_MovingHeads_top);
 }
 
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(80, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_UprightOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(60, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_UprightOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(30, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_NarrowPan_UprightOppositeTilt(DMXList_MovingHeads_top);
 }
 
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(float openingWidthAngle_perCent, float tiltValue_perCent) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(openingWidthAngle_perCent, tiltValue_perCent, DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(openingWidthAngle_perCent, tiltValue_perCent, DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(float openingWidthAngle_perCent, float tiltValue_perCent, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setSpeed_maxSpeed();
     float panHalfWidth = map(openingWidthAngle_perCent, 0, 100, movingHead.dmxVal_specificVal_pan_center_perCent, movingHead.dmxVal_specificVal_pan_left_perCent);
-    float pan_perCent  = map(movingHead.getDeviceID(), 0, DMXList_MovingHeads.size()-1, 100 - panHalfWidth, panHalfWidth);
+    float pan_perCent  = map(movingHead.getDeviceID(), 0, dmxList_movingHead_subset.size()-1, 100 - panHalfWidth, panHalfWidth);
     float tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_low_perCent, movingHead.dmxVal_specificVal_tilt_upright_perCent);
     if (movingHead.getDeviceID() % 2 == 0) {
       tilt_perCent = map(tiltValue_perCent, 0, 100, movingHead.dmxVal_specificVal_tilt_upright_perCent, movingHead.dmxVal_specificVal_tilt_low_perCent);
@@ -32240,56 +33301,114 @@ public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_Opposit
   }
 }
 
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 0, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 0, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 0, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 100 - 100*90.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 100 - 100*45.0f/135.0f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 100, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightOppositeTilt(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 100, dmxList_movingHead_subset);
+}
+
+
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_LowOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_LowOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 0);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_LowOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 100 - 100*90.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_FrontOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 100 - 100*45.0f/135.0f);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_HighOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(80, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_UprightOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(60, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_UprightOppositeTilt(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightOppositeTilt() {
-  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_OppositeTilt(30, 100);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightOppositeTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_NarrowPan_UprightOppositeTilt(DMXList_MovingHeads_top);
 }
-
-
-
 
 
 ////////////////////////////////////////////////////////////
@@ -32325,6 +33444,18 @@ public void dmxAnim_movingHead_setColor_rightDev(int colorCode) {
   }
 }
 
+public void dmxAnim_movingHead_setColor_bottomDev(int colorCode) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setColor(colorCode);
+  }
+}
+
+public void dmxAnim_movingHead_setColor_topDev(int colorCode) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
+    movingHead.setColor(colorCode);
+  }
+}
+
 ////////////////////////////////////////////////////////////
 // Perform the current light style
 
@@ -32336,6 +33467,10 @@ public void dmxAnim_movingHead_noMovement_performCurrentLightStyle(ArrayList<DMX
 
 public void dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle() {
   dmxAnim_movingHead_noMovement_performCurrentLightStyle(DMXList_MovingHeads);
+}
+
+public void dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle() {
+  dmxAnim_movingHead_noMovement_performCurrentLightStyle(DMXList_MovingHeads_bottom);
 }
 
 public void dmxAnim_movingHead_noMovement_centerDev_performCurrentLightStyle() {
@@ -32354,10 +33489,20 @@ public void dmxAnim_movingHead_noMovement_rightDev_performCurrentLightStyle() {
   dmxAnim_movingHead_noMovement_performCurrentLightStyle(DMXList_MovingHeads_right);
 }
 
+public void dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle() {
+  dmxAnim_movingHead_noMovement_performCurrentLightStyle(DMXList_MovingHeads_top);
+}
+
 ////////////////////////////////////////////////////////////
 
 public void dmxAnim_movingHead_noMovement_allDev_performStandbyBlackout() {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    movingHead.performLight_blackout();
+  }
+}
+
+public void dmxAnim_movingHead_noMovement_performStandbyBlackout(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.performLight_blackout();
   }
 }
@@ -32579,6 +33724,90 @@ public void dmxAnim_movingHead_setColorForCompositeAnimations_rightDev_CTO() {
   dmxAnim_movingHead_setColor_rightDev(DMX_MOVINGHEAD_COLORWHEEL_CTO);
 }
 
+// -> Bottom devices
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_white() {
+  dmxAnim_movingHead_setColor_bottomDev(DMX_MOVINGHEAD_COLORWHEEL_WHITE);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_red() {
+  dmxAnim_movingHead_setColor_bottomDev(DMX_MOVINGHEAD_COLORWHEEL_RED);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_deepRed() {
+  dmxAnim_movingHead_setColor_bottomDev(DMX_MOVINGHEAD_COLORWHEEL_DEEP_RED);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_blue() {
+  dmxAnim_movingHead_setColor_bottomDev(DMX_MOVINGHEAD_COLORWHEEL_BLUE);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_deepBlue() {
+  dmxAnim_movingHead_setColor_bottomDev(DMX_MOVINGHEAD_COLORWHEEL_DEEP_BLUE);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_yellow() {
+  dmxAnim_movingHead_setColor_bottomDev(DMX_MOVINGHEAD_COLORWHEEL_YELLOW);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_green() {
+  dmxAnim_movingHead_setColor_bottomDev(DMX_MOVINGHEAD_COLORWHEEL_GREEN);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_ultraviolet() {
+  dmxAnim_movingHead_setColor_bottomDev(DMX_MOVINGHEAD_COLORWHEEL_ULTRAVIOLET);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_orange() {
+  dmxAnim_movingHead_setColor_bottomDev(DMX_MOVINGHEAD_COLORWHEEL_ORANGE);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_bottomDev_CTO() {
+  dmxAnim_movingHead_setColor_bottomDev(DMX_MOVINGHEAD_COLORWHEEL_CTO);
+}
+
+// -> Top devices
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_topDev_white() {
+  dmxAnim_movingHead_setColor_topDev(DMX_MOVINGHEAD_COLORWHEEL_WHITE);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_topDev_red() {
+  dmxAnim_movingHead_setColor_topDev(DMX_MOVINGHEAD_COLORWHEEL_RED);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_topDev_deepRed() {
+  dmxAnim_movingHead_setColor_topDev(DMX_MOVINGHEAD_COLORWHEEL_DEEP_RED);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_topDev_blue() {
+  dmxAnim_movingHead_setColor_topDev(DMX_MOVINGHEAD_COLORWHEEL_BLUE);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_topDev_deepBlue() {
+  dmxAnim_movingHead_setColor_topDev(DMX_MOVINGHEAD_COLORWHEEL_DEEP_BLUE);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_topDev_yellow() {
+  dmxAnim_movingHead_setColor_topDev(DMX_MOVINGHEAD_COLORWHEEL_YELLOW);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_topDev_green() {
+  dmxAnim_movingHead_setColor_topDev(DMX_MOVINGHEAD_COLORWHEEL_GREEN);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_topDev_ultraviolet() {
+  dmxAnim_movingHead_setColor_topDev(DMX_MOVINGHEAD_COLORWHEEL_ULTRAVIOLET);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_topDev_orange() {
+  dmxAnim_movingHead_setColor_topDev(DMX_MOVINGHEAD_COLORWHEEL_ORANGE);
+}
+
+public void dmxAnim_movingHead_setColorForCompositeAnimations_topDev_CTO() {
+  dmxAnim_movingHead_setColor_topDev(DMX_MOVINGHEAD_COLORWHEEL_CTO);
+}
+
 
 // Set the rhythm pattern for the lights
 
@@ -32607,6 +33836,14 @@ public void dmxAnim_movingHead_setLightRhythm_leftDev_noSync() {
 
 public void dmxAnim_movingHead_setLightRhythm_rightDev_noSync() {
   dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_right, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_NOSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_noSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_NOSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_noSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_NOSYNC);
 }
 
 public void dmxAnim_movingHead_setLightRhythm_allDev_clockwise_32ndSync() {
@@ -32897,6 +34134,101 @@ public void dmxAnim_movingHead_setLightRhythm_rightDev_together_barSync() {
   dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_right, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_BARSYNC);
 }
 
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_random_32ndSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_32NDSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_random_16thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_16THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_random_8thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_8THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_random_4thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_4THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_random_2ndSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_2NDSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_random_barSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_BARSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_together_32ndSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_32NDSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_together_16thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_16THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_together_8thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_8THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_together_4thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_4THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_together_2ndSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_2NDSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_bottomDev_together_barSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_bottom, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_BARSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_random_32ndSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_32NDSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_random_16thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_16THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_random_8thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_8THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_random_4thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_4THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_random_2ndSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_2NDSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_random_barSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_BARSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_together_32ndSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_32NDSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_together_16thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_16THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_together_8thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_8THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_together_4thSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_4THSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_together_2ndSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_2NDSYNC);
+}
+
+public void dmxAnim_movingHead_setLightRhythm_topDev_together_barSync() {
+  dmxAnim_movingHead_setLightRhythm(DMXList_MovingHeads_top, DMXANIM_MOVINGHEAD_LIGHTRHYTHM_TOGETHER_BARSYNC);
+}
 
 
 // Set the light style for the animations
@@ -32927,6 +34259,18 @@ public void dmxAnim_movingHead_setLightStyle_leftDev_specificLightStyle(int styl
 
 public void dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(int style) {
   for (DMX_MovingHead movingHead: DMXList_MovingHeads_right) {
+    movingHead.setCurrentLightStyle(style);
+  }
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(int style) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    movingHead.setCurrentLightStyle(style);
+  }
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(int style) {
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_top) {
     movingHead.setCurrentLightStyle(style);
   }
 }
@@ -33220,7 +34564,121 @@ public void dmxAnim_movingHead_setLightStyle_rightDev_minimalApertureBeam() {
   dmxAnim_movingHead_setLightStyle_rightDev_specificLightStyle(DMXANIM_MOVINGHEAD_MIN_APERTURE_BEAM); 
 }
 
+//////
 
+public void dmxAnim_movingHead_setLightStyle_bottomDev_continuousLight() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_CONTINUOUS_LIGHT);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_slowCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_SLOW_CRESCENDO);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_fastCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_FAST_CRESCENDO);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_singleShortFlash() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_SINGLE_SHORT_FLASH);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_singleLongFlash() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_SINGLE_LONG_FLASH);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_slowStrobe() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_SLOW_STROBE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_mediumStrobe() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_MEDIUM_STROBE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_fastStrobe() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_FAST_STROBE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_slowClockwiseSineWave() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_SLOW_SINE_WAVE_CLOCKWISE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_fastClockwiseSineWave() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_FAST_SINE_WAVE_CLOCKWISE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_slowAntiClockwiseSineWave() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_SLOW_SINE_WAVE_ANTICLOCKWISE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_fastAntiClockwiseSineWave() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_FAST_SINE_WAVE_ANTICLOCKWISE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_randomGlitch() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_RANDOM_GLITCH);
+}
+
+public void dmxAnim_movingHead_setLightStyle_bottomDev_minimalApertureBeam() {
+  dmxAnim_movingHead_setLightStyle_bottomDev_specificLightStyle(DMXANIM_MOVINGHEAD_MIN_APERTURE_BEAM); 
+}
+
+//////
+
+public void dmxAnim_movingHead_setLightStyle_topDev_continuousLight() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_CONTINUOUS_LIGHT);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_slowCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_SLOW_CRESCENDO);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_fastCrescendoLight() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_FAST_CRESCENDO);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_singleShortFlash() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_SINGLE_SHORT_FLASH);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_singleLongFlash() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_SINGLE_LONG_FLASH);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_slowStrobe() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_SLOW_STROBE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_mediumStrobe() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_MEDIUM_STROBE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_fastStrobe() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_FAST_STROBE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_slowClockwiseSineWave() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_SLOW_SINE_WAVE_CLOCKWISE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_fastClockwiseSineWave() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_FAST_SINE_WAVE_CLOCKWISE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_slowAntiClockwiseSineWave() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_SLOW_SINE_WAVE_ANTICLOCKWISE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_fastAntiClockwiseSineWave() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_FAST_SINE_WAVE_ANTICLOCKWISE);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_randomGlitch() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_RANDOM_GLITCH);
+}
+
+public void dmxAnim_movingHead_setLightStyle_topDev_minimalApertureBeam() {
+  dmxAnim_movingHead_setLightStyle_topDev_specificLightStyle(DMXANIM_MOVINGHEAD_MIN_APERTURE_BEAM); 
+}
 
 
 
@@ -33366,70 +34824,355 @@ public void dmxAnim_movingHead_lightOn_fastMove_allDev_ExtremeDivergentPan_Narro
 }
 
 
+//////////////////////////////////////////
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_CenterPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_LowTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_LeftPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_LowTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_RightPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_LowTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_CenterPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_LeftPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_RightPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_CenterPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_HighTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_LeftPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_HighTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_RightPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_HighTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_CenterPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_UprightTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_LeftPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_UprightTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_RightPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_UprightTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_CenterPan_BackTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_CenterPan_BackTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_LeftPan_BackTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_LeftPan_BackTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_RightPan_BackTilt() {
+  dmxAnim_movingHead_prepareDirection_bottomDev_RightPan_BackTilt();
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+//////////////////////////////////////////
+
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_WideDivergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_ClassicDivergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_WideDivergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_ClassicDivergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_WideConvergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_ClassicConvergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_WideConvergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_ClassicConvergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_ExtremeDivergentPan_WideNegTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WideNegTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_ExtremeDivergentPan_NarrowNegTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowNegTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_ExtremeDivergentPan_WidePosTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WidePosTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_bottomDev_ExtremeDivergentPan_NarrowPosTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_noMovement_bottomDev_performCurrentLightStyle();
+}
+
+
+//////////////////////////////////////////
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_CenterPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_CenterPan_LowTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_LeftPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_LeftPan_LowTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_RightPan_LowTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_RightPan_LowTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_CenterPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_CenterPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_LeftPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_LeftPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_RightPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_RightPan_FrontTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_CenterPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_CenterPan_HighTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_LeftPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_LeftPan_HighTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_RightPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_RightPan_HighTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_CenterPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_CenterPan_UprightTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_LeftPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_LeftPan_UprightTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_RightPan_UprightTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_RightPan_UprightTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_CenterPan_BackTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_CenterPan_BackTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_LeftPan_BackTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_LeftPan_BackTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_RightPan_BackTilt() {
+  dmxAnim_movingHead_prepareDirection_topDev_RightPan_BackTilt();
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+//////////////////////////////////////////
+
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_WideDivergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_FrontTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_ClassicDivergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_FrontTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_WideDivergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_WidePan_HighTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_ClassicDivergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_ClassicPan_HighTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_WideConvergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_FrontTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_ClassicConvergentPan_FrontTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_FrontTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_WideConvergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_WidePan_HighTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_ClassicConvergentPan_HighTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan_ClassicPan_HighTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_ExtremeDivergentPan_WideNegTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WideNegTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_ExtremeDivergentPan_NarrowNegTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowNegTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_ExtremeDivergentPan_WidePosTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_WidePosTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+public void dmxAnim_movingHead_lightOn_fastMove_topDev_ExtremeDivergentPan_NarrowPosTilt() {
+  dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_DivergentTilt_ExtremePan_NarrowPosTilt(DMXList_MovingHeads_top);
+  dmxAnim_movingHead_noMovement_topDev_performCurrentLightStyle();
+}
+
+
 ////////////////////////////////////////////////////////////////////////
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_LeftToRight() {
-  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.125f, true, offset, false);
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.125f, true, offset, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_LeftToRight() {
-  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.25f, true, offset, false);
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.25f, true, offset, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_LeftToRight() {
-  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.5f, true, offset, false);
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.5f, true, offset, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.125f, false, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.125f, false, offset, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.25f, false, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.25f, false, offset, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.5f , false, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.5f , false, offset, false, dmxList_movingHead_subset);
 }
 
 
 
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_LeftToRight() {
-  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.125f, true, offset, true);
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.125f, true, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_LeftToRight() {
-  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.25f, true, offset, true);
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.25f, true, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_LeftToRight() {
-  float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.5f, true, offset, true);
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.5f, true, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.125f, false, offset, true);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.125f, false, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.25f, false, offset, true);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.25f, false, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(0.5f , false, offset, true);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.5f , false, offset, true, dmxList_movingHead_subset);
 }
+
 
 // Each moving head has an equal phase difference - the furthest moving heads have a PI phase difference
 // The "performCurrentLightStyle" is only called during the first half of the movement: while the head
@@ -33441,19 +35184,19 @@ public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_RightT
 // t4  2*PI/3  PI/3    0       PI/3
 // t5  PI/3    0       PI/3    2*PI/3
 // t6  0       PI/3    2*PI/3  PI
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(float factor, boolean leftToRight, float offset, boolean oneShot) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(float factor, boolean leftToRight, float offset, boolean oneShot, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setSpeed_maxSpeed();
     // The initial value must calculated so that in the case of a leftToRight movement, the device the furthest to the right is ready to flash (ie. pan=1, panDiff>0)
     float pan     = 0;
     float panDiff = 0;
     if (leftToRight) {
-      pan     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-      panDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      pan     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
+      panDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
     }
     else {
-      pan     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-      panDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      pan     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
+      panDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
     }
 
     movingHead.setPan(map(pan,0,1, movingHead.dmxVal_specificVal_pan_left_perCent, movingHead.dmxVal_specificVal_pan_right_perCent));
@@ -33496,85 +35239,241 @@ public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal(float f
   dmxAnim_movingHead_globalAnimCpt += stepSize;
 }
 
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_RightToLeft(DMXList_MovingHeads_top);
+}
+
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_RightToLeft(DMXList_MovingHeads_top);
+}
+
+
+
 /////////////////////////////////
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_LeftToRight() {
-  //float offset = -(PI*(DMXList_MovingHeads.size()-1)/DMXList_MovingHeads.size() + PI/2);
+public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.125f, true, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.125f, true, offset, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_LeftToRight() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.25f, true, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.25f, true, offset, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_LeftToRight() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.5f, true, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.5f, true, offset, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.125f, false, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.125f, false, offset, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.25f, false, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.25f, false, offset, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.5f , false, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.5f , false, offset, false, dmxList_movingHead_subset);
 }
 
 
-
-
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_LeftToRight() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.125f, true, offset, true);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.125f, true, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_LeftToRight() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.25f, true, offset, true);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.25f, true, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_LeftToRight() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.5f, true, offset, true);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.5f, true, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.125f, false, offset, true);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.125f, false, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.25f, false, offset, true);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.25f, false, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_RightToLeft() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(0.5f , false, offset, true);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.5f , false, offset, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(float factor, boolean leftToRight, float offset, boolean oneShot) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical(float factor, boolean leftToRight, float offset, boolean oneShot, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setSpeed_maxSpeed();
     // The initial value must calculated so that in the case of a leftToRight movement, the device the furthest to the right is ready to flash (ie. pan=1, panDiff>0)
     float tilt     = 0;
     float tiltDiff = 0;
     if (leftToRight) {
-      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
+      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
     }
     else {
-      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
+      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
     }
 
     movingHead.setTilt(map(tilt,0,1, movingHead.dmxVal_specificVal_tilt_front_perCent, movingHead.dmxVal_specificVal_tilt_back_perCent));
@@ -33620,82 +35519,243 @@ public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical(float fac
 
 ///////////////////////////
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_LeftToRight() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.125f, true, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.125f, true, offset, false, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.25f, true, offset, false, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.5f, true, offset, false, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.125f, false, offset, false, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.25f, false, offset, false, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.5f , false, offset, false, dmxList_movingHead_subset);
+}
+
+
+
+
+public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.125f, true, offset, true, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.25f, true, offset, true, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = 0;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.5f, true, offset, true, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.125f, false, offset, true, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.25f, false, offset, true, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset = PI/2;
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.5f , false, offset, true, dmxList_movingHead_subset);
+}
+
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_LeftToRight(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Regular_LeftToRight() {
-  float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.25f, true, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_LeftToRight(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Fast_LeftToRight() {
-  float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.5f, true, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_LeftToRight(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Slow_RightToLeft() {
-  float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.125f, false, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_RightToLeft(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Regular_RightToLeft() {
-  float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.25f, false, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_RightToLeft(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular_Fast_RightToLeft() {
-  float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.5f , false, offset, false);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_RightToLeft(DMXList_MovingHeads_top);
 }
-
-
 
 
 public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Slow_LeftToRight() {
-  float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.125f, true, offset, true);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_LeftToRight(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Regular_LeftToRight() {
-  float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.25f, true, offset, true);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_LeftToRight(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_LeftToRight() {
-  float offset = 0;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.5f, true, offset, true);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_LeftToRight(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Slow_RightToLeft() {
-  float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.125f, false, offset, true);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_RightToLeft(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Regular_RightToLeft() {
-  float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.25f, false, offset, true);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_RightToLeft(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Circular_Fast_RightToLeft() {
-  float offset = PI/2;
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(0.5f , false, offset, true);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_RightToLeft(DMXList_MovingHeads_top);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(float factor, boolean leftToRight, float offset, boolean oneShot) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Circular_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Circular_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Circular_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_RightToLeft(DMXList_MovingHeads_top);
+}
+
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Circular_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_continuousSweep_Circular(float factor, boolean leftToRight, float offset, boolean oneShot, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setSpeed_maxSpeed();
     // The initial value must calculated so that in the case of a leftToRight movement, the device the furthest to the right is ready to flash (ie. pan=1, panDiff>0)
     float tilt     = 0;
     float tiltDiff = 0;
     if (leftToRight) {
-      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
+      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
     }
     else {
-      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      tilt     = 0.5f+0.5f*sin(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
+      tiltDiff = cos(offset + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
     }
 
     movingHead.setTilt(map(tilt,0,1, movingHead.dmxVal_specificVal_tilt_front_perCent, movingHead.dmxVal_specificVal_tilt_back_perCent));
@@ -33738,97 +35798,259 @@ public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Circular(float fac
   dmxAnim_movingHead_globalAnimCpt += stepSize;
 }
 
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Vertical_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_RightToLeft(DMXList_MovingHeads_top);
+}
+
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Vertical_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_RightToLeft(DMXList_MovingHeads_top);
+}
+
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Vertical_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_LeftToRight(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Vertical_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_RightToLeft(DMXList_MovingHeads_bottom);
+}
+
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Vertical_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_RightToLeft(DMXList_MovingHeads_top);
+}
+
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Slow_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Regular_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Fast_LeftToRight() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_LeftToRight(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Slow_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Regular_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_RightToLeft(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Fast_RightToLeft() {
+  dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_RightToLeft(DMXList_MovingHeads_top);
+}
+
 /////////////////////////////////////
 
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent() {
-  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
-  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.125f, true, offset1, offset2, false);
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
+  float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.125f, true, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalConvergent() {
-  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
-  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.25f, true, offset1, offset2, false);
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
+  float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.25f, true, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalConvergent() {
-  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
-  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.5f, true, offset1, offset2, false);
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
+  float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.5f, true, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalDivergent() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
-  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.125f, false, offset1, offset2, false);
+  float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.125f, false, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalDivergent() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
-  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.25f, false, offset1, offset2, false);
+  float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.25f, false, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalDivergent() {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
-  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.5f, false, offset1, offset2, false);
+  float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.5f, false, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalConvergent() {
-  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
-  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.125f, true, offset1, offset2, true);
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
+  float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.125f, true, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalConvergent() {
-  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
-  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.25f, true, offset1, offset2, true);
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
+  float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.25f, true, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalConvergent() {
-  float offset1 = -PI/2 - PI*((DMXList_MovingHeads.size()/2 - 1))/DMXList_MovingHeads.size();
-  float offset2 = PI/2 + PI*ceil((DMXList_MovingHeads.size()/2))/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.5f, true, offset1, offset2, true);
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
+  float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.5f, true, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalDivergent() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
-  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.125f, false, offset1, offset2, true);
+  float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.125f, false, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalDivergent() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
-  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.25f, false, offset1, offset2, true);
+  float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.25f, false, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalDivergent() {
+public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
-  float offset2 = -PI/2 - PI*(DMXList_MovingHeads.size() - 1)/DMXList_MovingHeads.size();
-  dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(0.5f, false, offset1, offset2, true);
+  float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.5f, false, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
 
-public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetrical(float factor, boolean convergent, float offset1, float offset2, boolean oneShot) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(float factor, boolean convergent, float offset1, float offset2, boolean oneShot, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setSpeed_maxSpeed();
     // The initial value must calculated so that in the case of a leftToRight movement, the device the furthest to the right is ready to flash (ie. pan=1, panDiff>0)
     float pan     = 0;
     float panDiff = 0;
     if (convergent) {
-      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
-        pan     = 0.5f+0.5f*sin(offset1 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-        panDiff = cos(offset1 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      if (movingHead.getDeviceID() < dmxList_movingHead_subset.size()/2) {
+        pan     = 0.5f+0.5f*sin(offset1 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
+        panDiff = cos(offset1 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
       }
-      else if (movingHead.getDeviceID() >= ceil((DMXList_MovingHeads.size()/2))) {
-        pan     = 0.5f+0.5f*sin(offset2 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-        panDiff = cos(offset2 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      else if (movingHead.getDeviceID() >= ceil((dmxList_movingHead_subset.size()/2))) {
+        pan     = 0.5f+0.5f*sin(offset2 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
+        panDiff = cos(offset2 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
       }
       else {
         // Center device in the case of an odd number of projectors
@@ -33837,13 +36059,13 @@ public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetr
       }
     }
     else {  // Divergent
-      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {
-        pan     = 0.5f+0.5f*sin(offset1 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-        panDiff = cos(offset1 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      if (movingHead.getDeviceID() < dmxList_movingHead_subset.size()/2) {
+        pan     = 0.5f+0.5f*sin(offset1 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
+        panDiff = cos(offset1 + dmxAnim_movingHead_globalAnimCpt - PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
       }
-      else if (movingHead.getDeviceID() >= ceil((DMXList_MovingHeads.size()/2))) {
-        pan     = 0.5f+0.5f*sin(offset2 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
-        panDiff = cos(offset2 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/DMXList_MovingHeads.size());
+      else if (movingHead.getDeviceID() >= ceil((dmxList_movingHead_subset.size()/2))) {
+        pan     = 0.5f+0.5f*sin(offset2 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
+        panDiff = cos(offset2 + dmxAnim_movingHead_globalAnimCpt + PI*movingHead.getDeviceID()/dmxList_movingHead_subset.size());
       }
       else {
         // Center device in the case of an odd number of projectors
@@ -33856,7 +36078,7 @@ public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetr
     movingHead.setTilt(movingHead.dmxVal_specificVal_tilt_front_perCent);
     
     if (convergent) {
-      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {    // Left devices
+      if (movingHead.getDeviceID() < dmxList_movingHead_subset.size()/2) {    // Left devices
         if (panDiff > 0) {
           if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
             movingHead.performLight_currentStyle();
@@ -33873,7 +36095,7 @@ public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetr
           }
         }
       }
-      else if (movingHead.getDeviceID() >= ceil((DMXList_MovingHeads.size()/2))) {    // Right devices
+      else if (movingHead.getDeviceID() >= ceil((dmxList_movingHead_subset.size()/2))) {    // Right devices
         if (panDiff > 0) {
           movingHead.performLight_blackout();
           movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
@@ -33896,7 +36118,7 @@ public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetr
 
     else {
       
-      if (movingHead.getDeviceID() < DMXList_MovingHeads.size()/2) {    // Left devices
+      if (movingHead.getDeviceID() < dmxList_movingHead_subset.size()/2) {    // Left devices
         if (panDiff < 0) {
           if (oneShot == false || (oneShot == true && !(movingHead.animCpt2 == 1 && movingHead.animCpt3 == 1))) {
             movingHead.performLight_currentStyle();
@@ -33913,7 +36135,7 @@ public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetr
           }
         }
       }
-      else if (movingHead.getDeviceID() >= ceil((DMXList_MovingHeads.size()/2))) {    // Right devices
+      else if (movingHead.getDeviceID() >= ceil((dmxList_movingHead_subset.size()/2))) {    // Right devices
         if (panDiff < 0) {
           movingHead.performLight_blackout();
           movingHead.animCpt3 = 1;    //Set the "was turned off once" flag
@@ -33941,46 +36163,204 @@ public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Symmetr
 }
 
 
-/////////////////////////////////////////////
-
-public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical() {
- dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 60, 0.125f);
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalConvergent(DMXList_MovingHeads_top);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(boolean upDown, boolean opposite, int angleWidth, float factor) {
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Slow_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Regular_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_continuousSweep_Horizontal_Fast_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Slow_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Regular_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_allDev_singleSweep_Horizontal_Fast_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Regular_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Fast_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Slow_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Regular_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_continuousSweep_Horizontal_Fast_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+}
+
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Slow_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Regular_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Fast_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalConvergent(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Slow_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Regular_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleSweep_Horizontal_Fast_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalDivergent(DMXList_MovingHeads_bottom);
+}
+
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Slow_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Regular_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Fast_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Slow_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Regular_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_continuousSweep_Horizontal_Fast_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Slow_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Regular_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Fast_SymmetricalConvergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalConvergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Slow_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Regular_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Fast_SymmetricalDivergent() {
+  dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalDivergent(DMXList_MovingHeads_top);
+}
+
+/////////////////////////////////////////////
+
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical(boolean upDown, boolean opposite, int angleWidth, float factor, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   if (opposite == false) {
     if (upDown) {
       if (angleWidth < 0) {
-        dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(-angleWidth, max(100 - dmxAnim_movingHead_globalAnimCpt, 0));
+        dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(-angleWidth, max(100 - dmxAnim_movingHead_globalAnimCpt, 0), dmxList_movingHead_subset);
       }
       else {
-        dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(angleWidth, max(100 - dmxAnim_movingHead_globalAnimCpt, 0));
+        dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(angleWidth, max(100 - dmxAnim_movingHead_globalAnimCpt, 0), dmxList_movingHead_subset);
       }
       
     }
     else {
       if (angleWidth < 0) {
-        dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(-angleWidth, min(dmxAnim_movingHead_globalAnimCpt, 100));
+        dmxAnim_movingHead_prepareDirection_SymmetricalConvergentPan(-angleWidth, min(dmxAnim_movingHead_globalAnimCpt, 100), dmxList_movingHead_subset);
       }
       else {
-        dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(angleWidth, min(dmxAnim_movingHead_globalAnimCpt, 100));
+        dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan(angleWidth, min(dmxAnim_movingHead_globalAnimCpt, 100), dmxList_movingHead_subset);
       }
     }
   }
   else {
     if (upDown) {
-      dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(angleWidth, max(100 - dmxAnim_movingHead_globalAnimCpt, 0));
+      dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(angleWidth, max(100 - dmxAnim_movingHead_globalAnimCpt, 0), dmxList_movingHead_subset);
     }
     else {
-      dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(angleWidth, min(dmxAnim_movingHead_globalAnimCpt, 100));
+      dmxAnim_movingHead_prepareDirection_SymmetricalDivergentPan_OppositeTilt(angleWidth, min(dmxAnim_movingHead_globalAnimCpt, 100), dmxList_movingHead_subset);
     }
   }
   
   if (dmxAnim_movingHead_globalAnimCpt < 100) {
-    dmxAnim_movingHead_noMovement_allDev_performCurrentLightStyle();
+    dmxAnim_movingHead_noMovement_performCurrentLightStyle(dmxList_movingHead_subset);
   }
   else {
-    dmxAnim_movingHead_noMovement_allDev_performStandbyBlackout();
+    dmxAnim_movingHead_noMovement_performStandbyBlackout(dmxList_movingHead_subset);
   }
 
   float stepSize = factor * 100 / (frameRate*60.0f/automaticSequencer.currentBPM);
@@ -33988,205 +36368,836 @@ public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(boolean upDown
 }
 
 
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, 1, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, 1, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, 1, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, 1, dmxList_movingHead_subset);
+}
+
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, 1, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, 1, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, 1, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, 1, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, 1, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, 1, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, 1, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, 0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, 0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, 0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, 1, dmxList_movingHead_subset);
+}
+
+
+
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 0, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 0, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 0, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_UpDown_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 0, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 0, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 0, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 0, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_DownUp_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 0, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 0, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 0, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 0, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeUpDown_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 0, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 0, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 0, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 0, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Parallel_OppositeDownUp_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 0, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Fast(DMXList_MovingHeads_top);
 }
 
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 60, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 60, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 60, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_UpDown_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, 60, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 60, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 60, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 60, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_DownUp_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, 60, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 60, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 60, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 60, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeUpDown_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, 60, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 60, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 60, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 60, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Divergent_OppositeDownUp_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, 60, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, -60, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, -60, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, -60, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_UpDown_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, false, -60, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, -60, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, -60, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, -60, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_DownUp_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, false, -60, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, -60, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, -60, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, -60, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeUpDown_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(true, true, -60, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, -60, 0.125f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Slow() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, -60, 0.25f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Regular() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, -60, 0.5f);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical_Convergent_OppositeDownUp_Fast() {
-  dmxAnim_movingHead_lightOn_allDev_singleMove_Vertical(false, true, -60, 1);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Fast(DMXList_MovingHeads_top);
+}
+
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_UpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_UpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_UpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_UpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_DownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_DownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_DownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_DownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeUpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeUpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeUpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeDownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeDownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Parallel_OppositeDownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Fast(DMXList_MovingHeads_bottom);
+}
+
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_UpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_UpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_UpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_UpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_DownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_DownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_DownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_DownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeUpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeUpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeUpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeDownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeDownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Divergent_OppositeDownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_UpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_UpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_UpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_UpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_DownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_DownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_DownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_DownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeUpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeUpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeUpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeDownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeDownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_singleMove_Vertical_Convergent_OppositeDownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Fast(DMXList_MovingHeads_bottom);
 }
 
 
 
 
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_UpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_UpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_UpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_UpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_DownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_DownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_DownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_DownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_OppositeUpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_OppositeUpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_OppositeUpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_OppositeDownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_OppositeDownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Parallel_OppositeDownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Fast(DMXList_MovingHeads_top);
+}
+
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_UpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_UpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_UpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_UpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_DownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_DownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_DownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_DownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_OppositeUpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_OppositeUpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_OppositeUpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_OppositeDownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_OppositeDownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Divergent_OppositeDownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_UpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_UpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_UpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_UpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_DownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_DownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_DownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_DownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_OppositeUpDown_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_OppositeUpDown_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_OppositeUpDown_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_OppositeDownUp_Slow() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_OppositeDownUp_Regular() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_singleMove_Vertical_Convergent_OppositeDownUp_Fast() {
+  dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Fast(DMXList_MovingHeads_top);
+}
+
+
 /////////////////////////////////////////////
-public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(float speed, float intensity) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection(float speed, float intensity, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     // movingHead.setPan(constrain(movingHead.animCpt2 + intensity*(noise((movingHead.animCpt2+frameCount)*speed) - 0.5), 0, 100));
     // movingHead.setTilt(constrain(movingHead.animCpt3 + intensity*(noise((movingHead.animCpt3+frameCount)*speed) - 0.5), 0, 100));
     movingHead.setPan(constrain(movingHead.animCpt2 + intensity*(noise((frameCount)*speed) - 0.5f), 0, 100));
@@ -34196,73 +37207,258 @@ public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(float speed, 
 }
 
 
-public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup() {
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection_setup(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   dmxAnim_movingHead_globalAnimCpt = 0;
   noiseDetail(3,0.5f);
 
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.animCpt2 = PApplet.parseInt(random(movingHead.dmxVal_specificVal_pan_left_perCent,movingHead.dmxVal_specificVal_pan_right_perCent));
     movingHead.animCpt3 = PApplet.parseInt(random(movingHead.dmxVal_specificVal_tilt_front_perCent,movingHead.dmxVal_specificVal_tilt_upright_perCent));
   }
 }
 
+public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_setup() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_setup(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_setup(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_setup() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_setup(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_setup() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_setup(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection(0.05f,15,dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection(0.1f,15,dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection(0.2f,15,dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection(0.05f,30,dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection(0.1f,30,dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection(0.2f,30,dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection(0.05f,50,dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection(0.1f,50,dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection(0.2f,50,dmxList_movingHead_subset);
+}
+
 public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_slow() {
-  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.05f,15);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_regular() {
-  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.1f,15);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_weak_fast() {
-  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.2f,15);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_slow() {
-  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.05f,30);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_regular() {
-  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.1f,30);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_regular_fast() {
-  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.2f,30);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_fast(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_slow() {
-  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.05f,50);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_regular() {
-  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.1f,50);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection_strong_fast() {
-  dmxAnim_movingHead_lightOn_allDev_randomNoiseDirection(0.2f,50);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_fast(DMXList_MovingHeads_top);
 }
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_weak_slow() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_weak_regular() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_weak_fast() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_regular_slow() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_regular_regular() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_regular_fast() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_strong_slow() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_strong_regular() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomNoiseDirection_strong_fast() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_fast(DMXList_MovingHeads_bottom);
+}
+
+
+public void dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_weak_slow() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_weak_regular() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_weak_fast() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_weak_fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_regular_slow() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_regular_regular() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_regular_fast() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_regular_fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_strong_slow() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_strong_regular() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomNoiseDirection_strong_fast() {
+  dmxAnim_movingHead_lightOn_randomNoiseDirection_strong_fast(DMXList_MovingHeads_top);
+}
+
+
 
 
 /////////////////////////////////////////////////
 
+public void dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_verySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync(0.125f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync(0.25f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync(0.5f, dmxList_movingHead_subset);
+}
+
+public void dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync(1, dmxList_movingHead_subset);
+}
+
 public void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_verySlow() {
-  dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(0.125f);
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_verySlow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_verySlow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_slow() {
-  dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(0.25f);
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_slow(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_slow(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_regular() {
-  dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(0.5f);
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_regular(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_regular(DMXList_MovingHeads_top);
 }
 
 public void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_fast() {
-  dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(1);
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_fast(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_fast(DMXList_MovingHeads_top);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(float factor) {
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+public void dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_verySlow() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_verySlow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_slow() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_slow(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_regular() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_regular(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_fast() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_fast(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_verySlow() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_verySlow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_slow() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_slow(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_regular() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_regular(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_fast() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_fast(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync(float factor, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     movingHead.setPan(map(dmxAnim_movingHead_globalAnimCpt, 0, 1, movingHead.animCpt2, movingHead.animCpt4));
     movingHead.setTilt(map(dmxAnim_movingHead_globalAnimCpt, 0, 1, movingHead.animCpt3, movingHead.animCpt5));
     movingHead.performLight_currentStyle();
@@ -34270,19 +37466,32 @@ public void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync(f
   float stepSize = factor * 1 / (frameRate*60.0f/automaticSequencer.currentBPM);
   dmxAnim_movingHead_globalAnimCpt += stepSize;
   if (dmxAnim_movingHead_globalAnimCpt > 1) {
-    dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup();
+    dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_setup(dmxList_movingHead_subset);
   }
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup() {
+public void dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_setup(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   dmxAnim_movingHead_globalAnimCpt = 0; 
   dmxAnim_movingHead_reinitLightStyleCpt_allDevices();
-  dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setNewObjective();
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_setNewObjective(dmxList_movingHead_subset);
 }
 
-public void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setNewObjective() {
+public void dmxAnim_movingHead_lightOn_allDev_randomStraightDirection_beatSync_setup() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_setup(DMXList_MovingHeads_bottom);
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_setup(DMXList_MovingHeads_top);
+}
 
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+public void dmxAnim_movingHead_lightOn_bottomDev_randomStraightDirection_beatSync_setup() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_setup(DMXList_MovingHeads_bottom);
+}
+
+public void dmxAnim_movingHead_lightOn_topDev_randomStraightDirection_beatSync_setup() {
+  dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_setup(DMXList_MovingHeads_top);
+}
+
+public void dmxAnim_movingHead_lightOn_randomStraightDirection_beatSync_setNewObjective(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
+
+  for (DMX_MovingHead movingHead: dmxList_movingHead_subset) {
     // If coming from another animation, the "old pan/tilt objectives" variables will be invalid (not in the expected range)
     // Set these variables to the current pan
     int oldPanObjective  = 0;
@@ -38276,57 +41485,65 @@ final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_LEFT          = 1;
 final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_RIGHT         = 2;
 final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_SIDE          = 3;
 final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_CENTER        = 4;
-final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_UNIFORM       = 5;
-final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_DIVERGENT     = 6;
-final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_CONVERGENT    = 7;
-final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_SYMMETRICAL   = 8;
-final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_SUN           = 9;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_BOTTOM        = 5;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_TOP           = 6;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_UNIFORM       = 7;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_DIVERGENT     = 8;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_CONVERGENT    = 9;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_SYMMETRICAL   = 10;
+final int GUI_ATTR_DMX_MOVINGHEAD_MOVE_SUN           = 11;
 
 final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_ALL          = 0;
 final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_LEFT         = 1;
 final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_RIGHT        = 2;
 final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_SIDE         = 3;
 final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_CENTER       = 4;
-final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_WHITE        = 5;
-final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_RED          = 6;
-final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_DEEPRED      = 7;
-final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_BLUE         = 8;
-final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_DEEPBLUE     = 9;
-final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_YELLOW       = 10;
-final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_GREEN        = 11;
-final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_ULTRAVIOLET  = 12;
-final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_ORANGE       = 13;
-final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_CTO          = 14;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_BOTTOM       = 5;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_TOP          = 6;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_WHITE        = 7;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_RED          = 8;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_DEEPRED      = 9;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_BLUE         = 10;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_DEEPBLUE     = 11;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_YELLOW       = 12;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_GREEN        = 13;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_ULTRAVIOLET  = 14;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_ORANGE       = 15;
+final int GUI_ATTR_DMX_MOVINGHEAD_COLOR_CTO          = 16;
 
 final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_ALL         = 0;
 final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_LEFT        = 1;
 final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_RIGHT       = 2;
 final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_SIDE        = 3;
 final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_CENTER      = 4;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_NOSYNC      = 5;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_TOGETHER    = 6;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_CLOCK       = 7;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_ANTICLOCK   = 8;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_RANDOM      = 9;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_32ND        = 10;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_16TH        = 11;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_8TH         = 12;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_4TH         = 13;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_2ND         = 14;
-final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_BAR         = 15;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_BOTTOM      = 5;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_TOP         = 6;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_NOSYNC      = 7;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_TOGETHER    = 8;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_CLOCK       = 9;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_ANTICLOCK   = 10;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_RANDOM      = 11;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_32ND        = 12;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_16TH        = 13;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_8TH         = 14;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_4TH         = 15;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_2ND         = 16;
+final int GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_BAR         = 17;
 
 final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_ALL          = 0;
 final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_LEFT         = 1;
 final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_RIGHT        = 2;
 final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_SIDE         = 3;
 final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_CENTER       = 4;
-final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_STILL        = 5;
-final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_CRESCENDO    = 6;
-final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_FLASH        = 7;
-final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_STROBE       = 8;
-final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_SINE         = 9;
-final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_GLITCH       = 10;
-final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_TIGHT        = 11;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_BOTTOM       = 5;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_TOP          = 6;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_STILL        = 7;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_CRESCENDO    = 8;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_FLASH        = 9;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_STROBE       = 10;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_SINE         = 11;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_GLITCH       = 12;
+final int GUI_ATTR_DMX_MOVINGHEAD_LIGHT_TIGHT        = 13;
 
 
 final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_ALL           = 0;
@@ -38334,19 +41551,21 @@ final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_LEFT          = 1;
 final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_RIGHT         = 2;
 final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_SIDE          = 3;
 final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_CENTER        = 4;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_STILL         = 5;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_FASTMOVE      = 6;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_CONTSWEEP     = 7;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_SINGSWEEP     = 8;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_RANDOM        = 9;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_PARALLEL      = 10;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_DIVERGENT     = 11;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_CONVERGENT    = 12;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_HORIZONTAL    = 13;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_VERTICAL      = 14;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_SLOW          = 15;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_REGULAR       = 16;
-final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_FAST          = 17;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_BOTTOM        = 5;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_TOP           = 6;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_STILL         = 7;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_FASTMOVE      = 8;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_CONTSWEEP     = 9;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_SINGSWEEP     = 10;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_RANDOM        = 11;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_PARALLEL      = 12;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_DIVERGENT     = 13;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_CONVERGENT    = 14;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_HORIZONTAL    = 15;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_VERTICAL      = 16;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_SLOW          = 17;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_REGULAR       = 18;
+final int GUI_ATTR_DMX_MOVINGHEAD_ANIM_FAST          = 19;
 
 final int GUI_ATTR_DMX_PAR_LIGHT_ALL                 = 0;
 final int GUI_ATTR_DMX_PAR_LIGHT_LEFT                = 1;
@@ -38708,20 +41927,21 @@ public class ControlFrame extends PApplet {
        ;
     
 
-    int offsetY_2 = nbrOfPanelsTextFieldPosY + 5*spacingRow + 5*textfieldHeight; 
-    for (int i=0; i<NUMBER_OF_PANELS; i++) {
-      cp5.addTextfield("LED Panel Microcontroller " + i)
-         .setPosition(accordionWidth - bigTextfieldWidth - leftOffset,offsetY_2)
-         .setSize(bigTextfieldWidth,textfieldHeight)
-         .setValue(devicesToParse[i].substring(5, devicesToParse[i].length()))
-         .setCaptionLabel("LED Panel Microcontroller " + (i+1) + ":    ")
-         .setAutoClear(false)
-         .setFont(minimlFont)
-         .moveTo(hardwareInfo)
-         .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
-         ;
-      offsetY_2 += spacingRow + textfieldHeight;
-    }
+       // TBIL
+    // int offsetY_2 = nbrOfPanelsTextFieldPosY + 5*spacingRow + 5*textfieldHeight; 
+    // for (int i=0; i<NUMBER_OF_PANELS; i++) {
+    //   cp5.addTextfield("LED Panel Microcontroller " + i)
+    //      .setPosition(accordionWidth - bigTextfieldWidth - leftOffset,offsetY_2)
+    //      .setSize(bigTextfieldWidth,textfieldHeight)
+    //      .setValue(chosenMicrocontrollers.get(i).substring(5, chosenMicrocontrollers.get(i).length()))
+    //      .setCaptionLabel("LED Panel Microcontroller " + (i+1) + ":    ")
+    //      .setAutoClear(false)
+    //      .setFont(minimlFont)
+    //      .moveTo(hardwareInfo)
+    //      .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
+    //      ;
+    //   offsetY_2 += spacingRow + textfieldHeight;
+    // }
     
     
     int offsetY = DMXTextLabelPosY;
@@ -39815,7 +43035,7 @@ public class ControlFrame extends PApplet {
     DMXMovingHeadAnimations_Movement_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Prepare Direction")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
-                                                                .setItemsPerRow(5)
+                                                                .setItemsPerRow(6)
                                                                 .setSpacingColumn(spacingColumn + 15)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
@@ -39826,18 +43046,20 @@ public class ControlFrame extends PApplet {
                                                                 .addItem("RIGHT",        2)
                                                                 .addItem("SIDE",         3)
                                                                 .addItem("CENTER",       4)
-                                                                .addItem("UNIFORM",      5)
-                                                                .addItem("DIVERGENT",    6)
-                                                                .addItem("CONVERGENT",   7)
-                                                                .addItem("SYMMETRICAL",  8)
-                                                                .addItem("SUN",          9)
+                                                                .addItem("BOTTOM",       5)
+                                                                .addItem("TOP",          6)
+                                                                .addItem("UNIFORM",      7)
+                                                                .addItem("DIVERGENT",    8)
+                                                                .addItem("CONVERGENT",   9)
+                                                                .addItem("SYMMETRICAL", 10)
+                                                                .addItem("SUN",         11)
                                                                 .setGroup(DMXAnimations_Movement_animListGroup)
                                                                 ;
 
     DMXMovingHeadAnimations_Color_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Color")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
-                                                                .setItemsPerRow(8)
+                                                                .setItemsPerRow(9)
                                                                 .setSpacingColumn(spacingColumn)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
@@ -39848,23 +43070,25 @@ public class ControlFrame extends PApplet {
                                                                 .addItem("RIGHT ",         2)
                                                                 .addItem("SIDE ",          3)
                                                                 .addItem("CENTER ",        4)
-                                                                .addItem("WHITE ",         5)
-                                                                .addItem("RED ",           6)
-                                                                .addItem("DEEPRED ",       7)
-                                                                .addItem("BLUE ",          8)
-                                                                .addItem("DEEPBLUE ",      9)
-                                                                .addItem("YELLOW ",        10)
-                                                                .addItem("GREEN ",         11)
-                                                                .addItem("ULTRAVIOLET ",   12)
-                                                                .addItem("ORANGE ",        13)
-                                                                .addItem("CTO ",           14)
+                                                                .addItem("BOTTOM ",        5)
+                                                                .addItem("TOP ",           6)
+                                                                .addItem("WHITE ",         7)
+                                                                .addItem("RED ",           8)
+                                                                .addItem("DEEPRED ",       9)
+                                                                .addItem("BLUE ",          10)
+                                                                .addItem("DEEPBLUE ",      11)
+                                                                .addItem("YELLOW ",        12)
+                                                                .addItem("GREEN ",         13)
+                                                                .addItem("ULTRAVIOLET ",   14)
+                                                                .addItem("ORANGE ",        15)
+                                                                .addItem("CTO ",           16)
                                                                 .setGroup(DMXAnimations_Color_animListGroup)
                                                                 ;
     
     DMXMovingHeadAnimations_Rhythm_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Rhythm")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
-                                                                .setItemsPerRow(8)
+                                                                .setItemsPerRow(9)
                                                                 .setSpacingColumn(spacingColumn-15)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
@@ -39874,25 +43098,27 @@ public class ControlFrame extends PApplet {
                                                                 .addItem("LEFT  ",          1)
                                                                 .addItem("RIGHT  ",         2)
                                                                 .addItem("SIDE  ",          3)
-                                                                .addItem("CENTER  ",        4)                                                                
-                                                                .addItem("NOSYNC",          5)                                                                
-                                                                .addItem("TOGETHER",        6)
-                                                                .addItem("CLOCK",           7)
-                                                                .addItem("ANTICLOCK",       8)
-                                                                .addItem("RANDOm",          9)
-                                                                .addItem("32ND  ",          10)
-                                                                .addItem("16TH  ",          11)
-                                                                .addItem("8TH  ",           12)
-                                                                .addItem("4TH  ",           13)
-                                                                .addItem("2ND  ",           14)
-                                                                .addItem("BAR  ",           15)
+                                                                .addItem("CENTER  ",        4)
+                                                                .addItem("BOTTOM  ",        5)
+                                                                .addItem("TOP  ",           6)
+                                                                .addItem("NOSYNC",          7)                                                                
+                                                                .addItem("TOGETHER",        8)
+                                                                .addItem("CLOCK",           9)
+                                                                .addItem("ANTICLOCK",       10)
+                                                                .addItem("RANDOm",          11)
+                                                                .addItem("32ND  ",          12)
+                                                                .addItem("16TH  ",          13)
+                                                                .addItem("8TH  ",           14)
+                                                                .addItem("4TH  ",           15)
+                                                                .addItem("2ND  ",           16)
+                                                                .addItem("BAR  ",           17)
                                                                 .setGroup(DMXAnimations_Rhythm_animListGroup)
                                                                 ;
 
     DMXMovingHeadAnimations_LightStyle_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Light Style")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
-                                                                .setItemsPerRow(6)
+                                                                .setItemsPerRow(7)
                                                                 .setSpacingColumn(spacingColumn)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
@@ -39903,13 +43129,15 @@ public class ControlFrame extends PApplet {
                                                                 .addItem("RIGHt",        2)
                                                                 .addItem("SIDe",         3)
                                                                 .addItem("CENTEr",       4)
-                                                                .addItem("STILl",        5)
-                                                                .addItem("CRESCENDo",    6)
-                                                                .addItem("FLASh",        7)
-                                                                .addItem("STROBe",       8)
-                                                                .addItem("SINe",         9)
-                                                                .addItem("GLITCh",       10)
-                                                                .addItem("TIGHt",        11)
+                                                                .addItem("BOTTOm",       5)
+                                                                .addItem("TOp",          6)
+                                                                .addItem("STILl",        7)
+                                                                .addItem("CRESCENDo",    8)
+                                                                .addItem("FLASh",        9)
+                                                                .addItem("STROBe",       10)
+                                                                .addItem("SINe",         11)
+                                                                .addItem("GLITCh",       12)
+                                                                .addItem("TIGHt",        13)
                                                                 .setGroup(DMXAnimations_LightStyle_animListGroup)
                                                                 ;
 
@@ -39918,8 +43146,8 @@ public class ControlFrame extends PApplet {
     DMXMovingHeadAnimations_Animations_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Perform Animations")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
-                                                                .setItemsPerRow(6)
-                                                                .setSpacingColumn(spacingColumn)
+                                                                .setItemsPerRow(7)
+                                                                .setSpacingColumn(spacingColumn-2)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
                                                                 .setColorActive(color(160,0,0))
@@ -39929,19 +43157,21 @@ public class ControlFrame extends PApplet {
                                                                 .addItem("RIGht",        2)
                                                                 .addItem("SIde",         3)
                                                                 .addItem("CENTer",       4)
-                                                                .addItem("STIll",        5)
-                                                                .addItem("FASTMOve",     6)
-                                                                .addItem("CONTSWEep",    7)
-                                                                .addItem("SINGSWEep",    8)
-                                                                .addItem("RANDom",       9)
-                                                                .addItem("PARALLel",     10)
-                                                                .addItem("DIVERGEnt",    11)
-                                                                .addItem("CONVERGEnt",   12)
-                                                                .addItem("HORIZONTal",   13)
-                                                                .addItem("VERTICal",     14)
-                                                                .addItem("SLow",         15)
-                                                                .addItem("REGULar",      16)
-                                                                .addItem("FAst",         17)
+                                                                .addItem("BOTTom",       5)
+                                                                .addItem("Top",          6)
+                                                                .addItem("STIll",        7)
+                                                                .addItem("FASTMOve",     8)
+                                                                .addItem("CONTSWEep",    9)
+                                                                .addItem("SINGSWEep",    10)
+                                                                .addItem("RANDom",       11)
+                                                                .addItem("PARALLel",     12)
+                                                                .addItem("DIVERGEnt",    13)
+                                                                .addItem("CONVERGEnt",   14)
+                                                                .addItem("HORIZONTal",   15)
+                                                                .addItem("VERTICal",     16)
+                                                                .addItem("SLow",         17)
+                                                                .addItem("REGULar",      18)
+                                                                .addItem("FAst",         19)
                                                                 .setGroup(DMXAnimations_Animations_animListGroup)
                                                                 ;
 
@@ -40975,10 +44205,11 @@ public class ControlFrame extends PApplet {
         debug_without_panels = true;
       }
       else if (theEvent.getName().contains("LED Panel Microcontroller ")) {
-        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
-        devicesToParse[devNumber] = "/dev/" + cp5.getController(theEvent.getName()).getStringValue();
-        resetExpectedTextLabel.setVisible(true);
-        createConfigFile();
+        // TBIL
+        // int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
+        // chosenMicrocontrollers.set(devNumber, "/dev/" + cp5.getController(theEvent.getName()).getStringValue());
+        // resetExpectedTextLabel.setVisible(true);
+        // createConfigFile();
       }
       else if (theEvent.getName() == "DMX Microcontroller") {
         DMX_MICROCONTROLLER_NAME = "/dev/" + cp5.getController("DMX Microcontroller").getStringValue();
@@ -41937,6 +45168,8 @@ public String[] createDMXAnimationListFilter_MovingHead_Movement(float[] checkBo
         case GUI_ATTR_DMX_MOVINGHEAD_MOVE_RIGHT      : temp.append("MovingHead-SetDirection-Right");break;
         case GUI_ATTR_DMX_MOVINGHEAD_MOVE_SIDE       : temp.append("MovingHead-SetDirection-Side");break;
         case GUI_ATTR_DMX_MOVINGHEAD_MOVE_CENTER     : temp.append("MovingHead-SetDirection-Center");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_BOTTOM     : temp.append("MovingHead-SetDirection-Bottom");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_MOVE_TOP        : temp.append("MovingHead-SetDirection-Top");break;
         case GUI_ATTR_DMX_MOVINGHEAD_MOVE_UNIFORM    : temp.append("MovingHead-Uniform");break;
         case GUI_ATTR_DMX_MOVINGHEAD_MOVE_DIVERGENT  : temp.append("MovingHead-Divergent");break;
         case GUI_ATTR_DMX_MOVINGHEAD_MOVE_CONVERGENT : temp.append("MovingHead-Convergent");break;
@@ -41964,6 +45197,8 @@ public String[] createDMXAnimationListFilter_MovingHead_Light(float[] checkBoxAr
         case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_RIGHT     : temp.append("MovingHead-SetLight-Right");break;
         case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_SIDE      : temp.append("MovingHead-SetLight-Side");break;
         case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_CENTER    : temp.append("MovingHead-SetLight-Center");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_BOTTOM    : temp.append("MovingHead-SetLight-Bottom");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_TOP       : temp.append("MovingHead-SetLight-Top");break;
         case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_STILL     : temp.append("MovingHead-Still");break;
         case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_CRESCENDO : temp.append("MovingHead-Crescendo");break;
         case GUI_ATTR_DMX_MOVINGHEAD_LIGHT_FLASH     : temp.append("MovingHead-Flash");break;
@@ -41994,6 +45229,8 @@ public String[] createDMXAnimationListFilter_MovingHead_Color(float[] checkBoxAr
         case GUI_ATTR_DMX_MOVINGHEAD_COLOR_RIGHT      : temp.append("MovingHead-SetColor-Right");break;
         case GUI_ATTR_DMX_MOVINGHEAD_COLOR_SIDE       : temp.append("MovingHead-SetColor-Side");break;
         case GUI_ATTR_DMX_MOVINGHEAD_COLOR_CENTER     : temp.append("MovingHead-SetColor-Center");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_BOTTOM     : temp.append("MovingHead-SetColor-Bottom");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_COLOR_TOP        : temp.append("MovingHead-SetColor-Top");break;
         case GUI_ATTR_DMX_MOVINGHEAD_COLOR_WHITE      : temp.append("MovingHead-White");break;
         case GUI_ATTR_DMX_MOVINGHEAD_COLOR_RED        : temp.append("MovingHead-Red");break;
         case GUI_ATTR_DMX_MOVINGHEAD_COLOR_DEEPRED    : temp.append("MovingHead-Deep Red");break;
@@ -42022,10 +45259,12 @@ public String[] createDMXAnimationListFilter_MovingHead_Rhythm(float[] checkBoxA
     if (checkBoxArrayvalue[i] == 1.0f) {
       switch(i) {
         case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_ALL      : temp.append("MovingHead-SetRhythm-All");break;
-        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_LEFT     : temp.append("MovingHead-SetRhythm-Center");break;
-        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_RIGHT    : temp.append("MovingHead-SetRhythm-Side");break;
-        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_SIDE     : temp.append("MovingHead-SetRhythm-Left");break;
-        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_CENTER   : temp.append("MovingHead-SetRhythm-Right");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_LEFT     : temp.append("MovingHead-SetRhythm-Ledf");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_RIGHT    : temp.append("MovingHead-SetRhythm-Right");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_SIDE     : temp.append("MovingHead-SetRhythm-Side");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_CENTER   : temp.append("MovingHead-SetRhythm-Center");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_BOTTOM   : temp.append("MovingHead-SetRhythm-Bottom");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_TOP      : temp.append("MovingHead-SetRhythm-Top");break;
         case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_NOSYNC   : temp.append("MovingHead-No Sync");break;
         case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_TOGETHER : temp.append("MovingHead-Together");break;
         case GUI_ATTR_DMX_MOVINGHEAD_RHYTHM_CLOCK    : temp.append("MovingHead-Clockwise");break;
@@ -42057,10 +45296,12 @@ public String[] createDMXAnimationListFilter_MovingHead_Animation(float[] checkB
       switch(i) {
 
         case GUI_ATTR_DMX_MOVINGHEAD_ANIM_ALL           : temp.append("MovingHead-Anim-All");break;
-        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_LEFT          : temp.append("MovingHead-Anim-Center");break;
-        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_RIGHT         : temp.append("MovingHead-Anim-Side");break;
-        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_SIDE          : temp.append("MovingHead-Anim-Left");break;
-        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_CENTER        : temp.append("MovingHead-Anim-Right");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_LEFT          : temp.append("MovingHead-Anim-Left");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_RIGHT         : temp.append("MovingHead-Anim-Right");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_SIDE          : temp.append("MovingHead-Anim-Side");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_CENTER        : temp.append("MovingHead-Anim-Center");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_BOTTOM        : temp.append("MovingHead-Anim-Bottom");break;
+        case GUI_ATTR_DMX_MOVINGHEAD_ANIM_TOP           : temp.append("MovingHead-Anim-Top");break;
         case GUI_ATTR_DMX_MOVINGHEAD_ANIM_STILL         : temp.append("MovingHead-Anim-Still");break;
         case GUI_ATTR_DMX_MOVINGHEAD_ANIM_FASTMOVE      : temp.append("MovingHead-Anim-FastMove");break;
         case GUI_ATTR_DMX_MOVINGHEAD_ANIM_CONTSWEEP     : temp.append("MovingHead-Anim-ContinuousSweep");break;
@@ -42993,17 +46234,19 @@ int PITCH_KNOB_WHITENOISE      = 7;
 final int PITCH_SET_AUTOMODE_OFF                          = 90;
 final int PITCH_SET_AUTOMODE_ON                           = 91;
 
-final int PITCH_LOAD_ANIMATION_BANK1_TEMP                 = 96;
-final int PITCH_LOAD_ANIMATION_BANK2_TEMP                 = 97;
-final int PITCH_LOAD_ANIMATION_BANK3_TEMP                 = 98;
-final int PITCH_LOAD_ANIMATION_BANK4_TEMP                 = 99;
+final int PITCH_LOAD_ANIMATION_BANK1_TEMP                 = 92;
+final int PITCH_LOAD_ANIMATION_BANK2_TEMP                 = 93;
+final int PITCH_LOAD_ANIMATION_BANK3_TEMP                 = 94;
+final int PITCH_LOAD_ANIMATION_BANK4_TEMP                 = 95;
 
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION  = 100;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR       = 101;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM      = 102;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE = 103;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1 = 104;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2 = 105;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION  = 98;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR       = 99;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM      = 100;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE = 101;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1 = 102;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2 = 103;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3 = 104;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_4 = 105;
 final int PITCH_DMX_ANIMATION_STROBE                      = 106;
 final int PITCH_DMX_ANIMATION_PAR_SET_COLOR               = 107;
 final int PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE         = 108;
@@ -43154,38 +46397,40 @@ public void noteOn(int channel, int pitch, int velocity, long timestamp, String 
 public void processMidiInfo_semiAutoMode(int pitch, int velocity) {
   switch (pitch) {
     //Standard mode, MIDI incoming from Ableton
-    case PITCH_SET_AUTOMODE_OFF:                            setAutomaticModeOff();break;                                             //F#5   - Disable the automatic mode
-    case PITCH_SET_AUTOMODE_ON:                             setAutomaticModeOn();break;                                              //G5    - Enable the automatic mode
+    case PITCH_SET_AUTOMODE_OFF:                            setAutomaticModeOff();break;                                             // Disable the automatic mode
+    case PITCH_SET_AUTOMODE_ON:                             setAutomaticModeOn();break;                                              // Enable the automatic mode
     
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(velocity); break;              //E7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(velocity); break;                   //F7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM:        loadDMXAnimation_movingHead_setRhythm(velocity); break;                  //F#7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(velocity); break;              //G7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   loadDMXAnimation_movingHead_setAnimation1(velocity); break;              //G#7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   loadDMXAnimation_movingHead_setAnimation2(velocity); break;              //A7
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(velocity); break;              // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(velocity); break;                   // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM:        loadDMXAnimation_movingHead_setRhythm(velocity); break;                  // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(velocity); break;              // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   loadDMXAnimation_movingHead_setAnimation1(velocity); break;              // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   loadDMXAnimation_movingHead_setAnimation2(velocity); break;              // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3:   loadDMXAnimation_movingHead_setAnimation3(velocity); break;              // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_4:   loadDMXAnimation_movingHead_setAnimation4(velocity); break;              // 
     
-    case PITCH_DMX_ANIMATION_STROBE:                        loadDMXAnimation_strobe(velocity); break;                                //A#7   - Load an animation using DMX devices - Strobe bank
+    case PITCH_DMX_ANIMATION_STROBE:                        loadDMXAnimation_strobe(velocity); break;                                // Load an animation using DMX devices - Strobe bank
     
-    case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 loadDMXAnimation_par_setColor(velocity);break;                           //B7
-    case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           loadDMXAnimation_par_setLightStyle(velocity);break;                      //C8
-    case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             loadDMXAnimation_par_setAnimation(velocity);break;                       //C#8
+    case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 loadDMXAnimation_par_setColor(velocity);break;                           // 
+    case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           loadDMXAnimation_par_setLightStyle(velocity);break;                      // 
+    case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             loadDMXAnimation_par_setAnimation(velocity);break;                       // 
 
-    case PITCH_ENABLE_MAN_INPUT:                            enableManualInput();break;                                               //D8
-    case PITCH_DISABLE_MAN_INPUT:                           disableManualInput();break;                                              //D#8
-    case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(velocity);break;                              //A#8   - Load an animation for the custom devices
-    case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(velocity);break;                              //B8
-    case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(velocity);break;                              //C9
-    case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(velocity);break;                                //C#9
-    case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   loadTempAnimation1(velocity);break;                                      //C7    - Load a temporary animation using the LED panels
-    case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   loadTempAnimation2(velocity);break;                                      //C#7
-    case PITCH_LOAD_ANIMATION_BANK3_TEMP:                   loadTempAnimation3(velocity);break;                                      //D7
-    case PITCH_LOAD_ANIMATION_BANK4_TEMP:                   loadTempAnimation4(velocity);break;                                      //D#7
-    case PITCH_LOAD_ANIMATION_BANK1:                        loadAnimation1(velocity);break;                                          //D#9   - Load an animation using the LED panels
-    case PITCH_LOAD_ANIMATION_BANK2:                        loadAnimation2(velocity);break;                                          //E9
-    case PITCH_LOAD_ANIMATION_BANK3:                        loadAnimation3(velocity);break;                                          //F9
-    case PITCH_LOAD_ANIMATION_BANK4:                        loadAnimation4(velocity);break;                                          //D9
-    case PITCH_LOAD_IMAGE_BANK1:                            loadImage1(velocity);break;                                              //F#9
-    case PITCH_CHANGE_OUTPUTMAPPING:                        activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
+    case PITCH_ENABLE_MAN_INPUT:                            enableManualInput();break;                                               // 
+    case PITCH_DISABLE_MAN_INPUT:                           disableManualInput();break;                                              // 
+    case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(velocity);break;                              // Load an animation for the custom devices
+    case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(velocity);break;                              // 
+    case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(velocity);break;                              // 
+    case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(velocity);break;                                // 
+    case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   loadTempAnimation1(velocity);break;                                      // Load a temporary animation using the LED panels
+    case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   loadTempAnimation2(velocity);break;                                      // 
+    case PITCH_LOAD_ANIMATION_BANK3_TEMP:                   loadTempAnimation3(velocity);break;                                      // 
+    case PITCH_LOAD_ANIMATION_BANK4_TEMP:                   loadTempAnimation4(velocity);break;                                      // 
+    case PITCH_LOAD_ANIMATION_BANK1:                        loadAnimation1(velocity);break;                                          // Load an animation using the LED panels
+    case PITCH_LOAD_ANIMATION_BANK2:                        loadAnimation2(velocity);break;                                          // 
+    case PITCH_LOAD_ANIMATION_BANK3:                        loadAnimation3(velocity);break;                                          // 
+    case PITCH_LOAD_ANIMATION_BANK4:                        loadAnimation4(velocity);break;                                          // 
+    case PITCH_LOAD_IMAGE_BANK1:                            loadImage1(velocity);break;                                              // 
+    case PITCH_CHANGE_OUTPUTMAPPING:                        activateKeyboardLEDPanelMapping();break;                                 // Activate the remapping procedure
     default: break;
   }
 }
@@ -43564,6 +46809,14 @@ public void loadDMXAnimation_movingHead_setAnimation2(int velocity) {
   loadDMXAnimation_movingHead_setAnimation(velocity + 127);
 }
 
+public void loadDMXAnimation_movingHead_setAnimation3(int velocity) {
+  loadDMXAnimation_movingHead_setAnimation(velocity + 254);
+}
+
+public void loadDMXAnimation_movingHead_setAnimation4(int velocity) {
+  loadDMXAnimation_movingHead_setAnimation(velocity + 381);
+}
+
 
 public void loadDMXAnimation_movingHead_setAnimation(int dmxAnimNumber) {
   //When such a command is received, and while the note continues, the DMX control is up to Strobot
@@ -43808,6 +47061,8 @@ public void noteOff(int channel, int pitch, int velocity, long timestamp, String
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_4:   unloadDMXAnimation_movingHead(); break;
 
         case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 break;
         case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           break;
@@ -44858,47 +48113,51 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
     //The panel device will actually output
     public int mappingPanel;
     
-    public Tpm2(int panelnumber) {
-            super(TPM2, 8);
+    public Tpm2(int panelnumber, String serialPortName) {
+      super(TPM2, 8);
 
-            int baud = COM_BAUD_RATE;
-            this.snakeCabling = false;
-            this.panelNumber = panelnumber;
-            
-            //HINT: on windows you need to (for example) use COM1, com1 will not work! (case sensitive)
-            //String serialPort = OutputHelper.getSerialPortName(ph.getTpm2Device().toUpperCase());
-            serialPort = getSerialPortName(TEENSY_SERIAL_PORT_LIST_5[panelnumber]);      //Initialize it to a possible value
-            if (NUMBER_OF_PANELS == 3) {
-              serialPort = getSerialPortName(TEENSY_SERIAL_PORT_LIST_3[panelnumber]);
-            }
-            else if (NUMBER_OF_PANELS == 5) {
-              serialPort = getSerialPortName(TEENSY_SERIAL_PORT_LIST_5[panelnumber]);
-            }
-            //outputLog.println("--------DEBUG ! Checking serialPort : " + serialPort); 
-            this.initialized = false;
-            try {
-                    tpm2 = new Tpm2Serial(serialPort, PANEL_RESOLUTION_X*PANEL_RESOLUTION_Y, baud);
-                    this.initialized = true;
-                    outputLog.println("Initialized TPM2 serial device v" + VERSION + " , target port: " + serialPort + ", Resolution: " + PANEL_RESOLUTION_X + "/" + PANEL_RESOLUTION_Y);
-                    
-            } catch (NoSerialPortFoundException e) {
-                    outputLog.println("Error !!! Failed to initialize serial port! " + e);
-            }
+      int baud = COM_BAUD_RATE;
+      this.snakeCabling = false;
+      this.panelNumber = panelnumber;
+      
+      //HINT: on windows you need to (for example) use COM1, com1 will not work! (case sensitive)
+      //String serialPort = OutputHelper.getSerialPortName(ph.getTpm2Device().toUpperCase());
+      println(panelnumber + ": Let's try this: " + serialPortName);
+
+      if (serialPortName.equals("")) {          // Debug case: the device is just a placeholder
+        println(panelnumber + ": Nothing");
+        this.initialized = false;
+      }
+      else {                                    // Real case: the serial port name is properly defined
+        println(panelnumber + ": Might be ok");
+        this.initialized = false;
+        try {
+          tpm2 = new Tpm2Serial(serialPortName, PANEL_RESOLUTION_X*PANEL_RESOLUTION_Y, baud);
+          this.initialized = true;
+          outputLog.println("Initialized TPM2 serial device v" + VERSION + " , target port: " + serialPortName + ", Resolution: " + PANEL_RESOLUTION_X + "/" + PANEL_RESOLUTION_Y);
+        } 
+        catch (NoSerialPortFoundException e) {
+          outputLog.println("Error !!! Failed to initialize serial port! " + e);
+        }        
+        
+        serialPort = getSerialPortName(serialPortName);      //Initialize it to the requested value, but double check just in case
+      }
+      
     }
     
 
     //Non Javadoc update
     //Send data to the TPM2 device
-    public void update() {                
-      if (initialized) {                                        
+    public void update() {
+      if (initialized) {
         byte[] rgbBuffer = convertBufferTo24bit(getTransformedBuffer(), colorFormat);
         //outputLog.println(rgbBuffer);
         if (rgbBuffer.length < 511) {
             //small frame, fit in one packed
             //this will always be the case with our 128 LED panels : a single packet can fit 512 bytes, amounting to 170 LED.
-            tpm2.sendFrame(createImagePayload(0,1,rgbBuffer));                                
+            tpm2.sendFrame(createImagePayload(0,1,rgbBuffer));
         } else {
-            //need to splitup buffers                                
+            //need to splitup buffers
             int bytesToSend = rgbBuffer.length;
             int currentUniverse = 0;
             int totalUniverse = (int)((bytesToSend/510f))+1;
@@ -45015,11 +48274,326 @@ public class NullDevice extends Output {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// Output Helper Class - Contains some common helper methods used by the output devices //
+// Output Config - Declaration of the usually used ucons, and their automatic detection //
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
-//import processing.serial.Serial;
+
+final static int PANEL_RESOLUTION_X = 8;        //Resolution for each individual panel - width
+final static int PANEL_RESOLUTION_Y = 16;       //Resolution for each individual panel - height 
+final static String LED_COLOR_FORMAT = "RGB";   //LED color arrangement
+
+
+//Define the serial ports for the microcontrollers
+//String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
+//All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
+String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
+String CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/tty.usbserial-A961L7NJ";
+
+String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
+String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem479061", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem707701", "/dev/tty.usbmodem814421"}; // 707701 to add
+
+Hashtable RF_TX_Teensy_List;                // The following hashtables contain the different microcontrollers used by Strobot
+Hashtable Panel_Main_Teensy_List;           // Either the RF ones - used by default -, the main panel LED controllers, when there is a direct connection to the
+Hashtable Panel_Backup_Teensy_List;         // panel, or the backup ones - which are usually disconnected, but which may be reconnected should any hazard fry the main Teensys
+Hashtable RF_RX_Teensy_List;                // This last one only exists for reference purpose - it is not used per se, but might as well know what are the RX Teensys
+
+// All the microcontrollers used by Strobot are recognized as usb devices - either usbmodem, or usbserial, and as such the following string can matched against their name
+final static String MICROCONTROLLER_NAME_PATTERN = "/dev/tty.usb";
+
+
+//String[] devicesToParse;
+ArrayList<String> chosenMicrocontrollers;
+
+//Define the Gamma value to be used for the panels - recommended for WS2801 modules : gamma_25
+final String panelGamma = "gamma_25";
+
+//Mapping for an individual LED Panel - if the LEDs are cabled the following way, follow the example to create the mapping
+//    8 7 6
+//    3 4 5     ->    {6,7,8,3,4,5,0,1,2}
+//    2 1 0
+final int[] MANUAL_MAPPING = {127, 126, 125, 124, 123, 122, 121, 120,
+                              112, 113, 114, 115, 116, 117, 118, 119,
+                              111, 110, 109, 108, 107, 106, 105, 104,
+                               96,  97,  98,  99, 100, 101, 102, 103,
+                               95,  94,  93,  92,  91,  90,  89,  88,
+                               80,  81,  82,  83,  84,  85,  86,  87,
+                               79,  78,  77,  76,  75,  74,  73,  72,
+                               64,  65,  66,  67,  68,  69,  70,  71,
+                               63,  62,  61,  60,  59,  58,  57,  56,
+                               48,  49,  50,  51,  52,  53,  54,  55,
+                               47,  46,  45,  44,  43,  42,  41,  40,
+                               32,  33,  34,  35,  36,  37,  38,  39,
+                               31,  30,  29,  28,  27,  26,  25,  24,
+                               16,  17,  18,  19,  20,  21,  22,  23,
+                               15,  14,  13,  12,  11,  10,   9,   8,
+                                0,   1,   2,   3,   4,   5,   6,   7};
+
+
+//Used to change on the fly the panel order (LED remapping), using MIDI commands
+int[] screen_order_configuration = new int [NUMBER_OF_PANELS];
+
+public void detectPanelOutputs() {
+
+  // Define the controllers used by Strobot
+  RF_TX_Teensy_List        = new Hashtable();
+  RF_RX_Teensy_List        = new Hashtable();
+  Panel_Main_Teensy_List   = new Hashtable();
+  Panel_Backup_Teensy_List = new Hashtable();
+
+  // Map the controller to the hardware device ID - this ID is hard-coded inside the Teensy firmware
+  // This is useful to make the link between the RF TX microcontroller and its physical panel RX counterpart
+  RF_TX_Teensy_List.put(0, "/dev/tty.usbmodem1845651");
+  RF_TX_Teensy_List.put(1, "/dev/tty.usbmodem812721");
+  RF_TX_Teensy_List.put(2, "/dev/tty.usbmodem1846011");
+  RF_TX_Teensy_List.put(3, "/dev/tty.usbmodem1870121");
+  RF_TX_Teensy_List.put(4, "/dev/tty.usbmodem1847751");
+
+  Panel_Main_Teensy_List.put(0, "/dev/tty.usbmodem1870061");
+  Panel_Main_Teensy_List.put(1, "/dev/tty.usbmodem1870171");
+  Panel_Main_Teensy_List.put(2, "/dev/tty.usbmodem1869771");
+  Panel_Main_Teensy_List.put(3, "/dev/tty.usbmodem1848511");
+  Panel_Main_Teensy_List.put(4, "/dev/tty.usbmodem1870671");
+  
+  Panel_Backup_Teensy_List.put(0, "/dev/tty.usbmodem707701");
+  Panel_Backup_Teensy_List.put(1, "/dev/tty.usbmodem479061");
+  Panel_Backup_Teensy_List.put(2, "/dev/tty.usbmodem479101");
+  Panel_Backup_Teensy_List.put(3, "/dev/tty.usbmodem113361");
+  Panel_Backup_Teensy_List.put(4, "/dev/tty.usbmodem814421");
+
+  RF_RX_Teensy_List.put(0, "/dev/tty.usbmodem1845881");
+  RF_RX_Teensy_List.put(1, "/dev/tty.usbmodem1845891");
+  RF_RX_Teensy_List.put(2, "/dev/tty.usbmodem1847801");
+  RF_RX_Teensy_List.put(3, "/dev/tty.usbmodem1847011");
+  RF_RX_Teensy_List.put(4, "/dev/tty.usbmodem1845951");
+
+
+  // First, check all the connected microcontrollers, create a list containing all the devices
+  // All the microcontrollers used by Strobot have one thing in common
+  ArrayList<String> availableMicrocontrollers = new ArrayList<String>();
+      
+  try {
+    String devicePath = "/dev/";
+    File dir = new File(devicePath);
+    String[] children = dir.list();
+    for (String child : children) {
+      if ((devicePath + child).contains(MICROCONTROLLER_NAME_PATTERN)) {
+        availableMicrocontrollers.add(devicePath + child);
+      }
+    }
+  }
+  catch (Exception e) {
+    outputLog.println("Exception while trying to check the /dev/ folder, in order to map the available microcontrollers : " + e);
+  }
+
+
+  // Now let's decide which microcontrollers will actually be used as output devices
+  // The priority is put on the main USB connection, the backup USB comes second, and the RF comes last
+  chosenMicrocontrollers = new ArrayList<String>();  
+  int nbPairs = RF_TX_Teensy_List.size();   //Might not exist
+  outputLog.println("--- Choosing the microcontrollers to use as output devices ----");
+
+  for (int devID = 0; devID<nbPairs; devID++) {
+
+    try {
+      String main_controller   = (String) Panel_Main_Teensy_List.get(devID);
+      String backup_controller = (String) Panel_Backup_Teensy_List.get(devID);
+      String rf_tx_controller  = (String) RF_TX_Teensy_List.get(devID);
+      String rf_rx_controller  = (String) RF_RX_Teensy_List.get(devID);
+
+      if (availableMicrocontrollers.contains(main_controller)) {
+        chosenMicrocontrollers.add(main_controller);
+        outputLog.println("Device ID " + devID + " - Main USB microcontroller, direct connection to the panel: " + main_controller);
+      }
+      else if (availableMicrocontrollers.contains(backup_controller)) {
+        chosenMicrocontrollers.add(backup_controller);
+        outputLog.println("Device ID " + devID + " - Backup USB microcontroller, direct connection to the panel: " + backup_controller);
+      }
+      else if (availableMicrocontrollers.contains(rf_tx_controller)) {
+        chosenMicrocontrollers.add(rf_tx_controller);
+        outputLog.println("Device ID " + devID + " - RF TX microcontroller, wireless connection to the panel: " + rf_tx_controller);
+      }
+      else if (availableMicrocontrollers.contains(rf_rx_controller)) {
+        outputLog.println("Device ID " + devID + " - Error: detected a RF RX microcontroller, if you want to send wireless, use a TX microcontroller (or if it is indeed a TX controller, check the HW definitions inside Strobot): " + rf_tx_controller);
+      }
+      else {
+        outputLog.println("Device ID " + devID + " - Error: could not detect an appropriate microcontroller for this communication ID");
+      }
+
+    }
+    catch (Exception e) {
+      outputLog.println("Error while trying to parse the available microcontrollers (probably a key error, check that all the devices are correctly declared along with their device index) : " + e);
+    }
+  }
+
+
+
+  if (chosenMicrocontrollers.size() == 0) {
+    outputLog.println("--- Found no microcontroller which can be used as an output device (as defined in the configuration) ---");
+  }
+  // else if (chosenMicrocontrollers.size() == 3) {
+  //   NUMBER_OF_PANELS = 3;
+  //   outputLog.println("--- Found 3 microcontrollers usable as output - entering 3-panel mode ---");
+  // }
+  // else if (chosenMicrocontrollers.size() == 5) {
+  //   NUMBER_OF_PANELS = 5;
+  //   outputLog.println("--- Found 5 microcontrollers usable as output - using the regular 5 panel mode ---");
+  // }
+    else {
+      outputLog.println("--- Found " + chosenMicrocontrollers.size() + " microcontrollers usable as an output device ---");
+    }
+
+
+  // A voir ce qu'on fait avec ca - utilisable du cote de la conf
+  // if (NUMBER_OF_PANELS == 3) {
+  //   TEENSY_SERIAL_PORT_LIST_3 = devicesToParse;
+  // }
+  // else if (NUMBER_OF_PANELS == 5) {
+  //   TEENSY_SERIAL_PORT_LIST_5 = devicesToParse;
+  // }
+  
+  
+  // Finally, initialize the actual output objects with the associated output device
+  // Create as many objects as what would be ideal, and define the associated serial port if possible
+  outputDevices = new Tpm2[Panel_Main_Teensy_List.size()];
+  for (int i=0; i<Panel_Main_Teensy_List.size(); i++) {
+
+    String serialPort = "";
+    if (i<chosenMicrocontrollers.size()) {
+      serialPort = chosenMicrocontrollers.get(i);
+    }
+    println("------------------------------");
+    println(serialPort);
+    outputDevices[i] = new Tpm2(i, serialPort);
+  }
+
+
+
+  // devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
+  // if (NUMBER_OF_PANELS == 3) {
+  //   devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
+  // }
+  // else if (NUMBER_OF_PANELS == 5) {
+  //   devicesToParse = TEENSY_SERIAL_PORT_LIST_5;
+  // }
+  // IntList nonstaticDeviceArrayNumber = new IntList();  
+  // ArrayList<String> candidateDevices = new ArrayList<String>();
+  // registeredDevices = new ArrayList<String>();
+  // if (DMX_MICROCONTROLLER_NAME.equals("NONSTATIC") == false) {
+  //   registeredDevices.add(DMX_MICROCONTROLLER_NAME);
+  // }
+  // for (int i = 0; i < devicesToParse.length; i++) {
+  //   if (devicesToParse[i].equals("NONSTATIC") == false) {
+  //     registeredDevices.add(devicesToParse[i]);
+  //   }
+  //   else {
+  //     nonstaticDeviceArrayNumber.append(i);
+  //   }
+  // }
+  // if (nonstaticDeviceArrayNumber.size() == 0) {
+  //   outputLog.println("All USB serial devices are defined statically, no guesswork is needed"); 
+  // }
+  // else {
+  //   outputLog.println(nonstaticDeviceArrayNumber.size() + " non static USB serial device configured, trying to guess the mystery Teensy...");
+  // }
+  
+  // //Find out which microcontrollers of the configuration list are defined as non-static
+  // for (int i = 0; i < devicesToParse.length; i++) {
+  //   if (devicesToParse[i].equals("NONSTATIC") == true) {
+  //     nonstaticDeviceArrayNumber.append(i);
+  //   }
+  // }  
+  
+  // boolean nameExceptionFound = false;
+  // if (nonstaticDeviceArrayNumber.size() >= 1) {
+  //   String rootName = "/dev/tty.usbmodem";
+  //   for (int i =0; i < nonstaticDeviceArrayNumber.size();i++) {
+  //     for (String portName: Serial.list()) {
+
+  //       if (portName.contains(rootName) == true) {
+  //         for (String registeredDevice: registeredDevices) {
+
+  //           if (registeredDevice.contains(portName.substring(5, portName.length())) == false || portName.equals("/dev/tty.usbmodem1")) {
+  //             boolean newCandidate = true;
+  //             for (int j = 0; j<candidateDevices.size();j++) {
+  //               for (String registered: registeredDevices) {
+  //                 if (portName.contains(registered) || registered.contains(portName)) {
+  //                   newCandidate = false;
+  //                 }
+  //                 if (portName.equals("/dev/tty.usbmodem1")) {
+  //                   newCandidate = true;
+  //                 }
+  //               }
+  //               if (candidateDevices.get(j).equals(portName)) {
+  //                 newCandidate = false;
+  //               }
+  //             }
+  //             if (newCandidate) {
+  //               if (portName.equals("/dev/tty.usbmodem1")) {
+  //                 if (nameExceptionFound == false) {
+  //                   outputLog.println("--- Found possible candidate for the non static device : " + portName);
+  //                   candidateDevices.add(portName);
+  //                   nameExceptionFound = true;
+  //                 }
+  //               }
+  //               else { 
+  //                 outputLog.println("--- Found possible candidate for the non static device : " + portName);
+  //                 candidateDevices.add(portName);
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+  // for (int i = 0; i<candidateDevices.size();i++) {
+  //   registeredDevices.add(candidateDevices.get(i));
+  // }
+  // for (int i = 0; i<candidateDevices.size();i++) {
+  //   devicesToParse[nonstaticDeviceArrayNumber.get(i)] = candidateDevices.get(i);
+  // }
+  
+
+  
+  // for (int i = 0; i<devicesToParse.length;i++) {
+  //   if (devicesToParse[i].contains("NONSTATIC")) {
+  //       outputLog.println("!!!!! -------------------------------------- !!!!!");
+  //       outputLog.println("!!!!! Error - Among the serial devices registered by the OS, couldn't find a possible candidate for non static device number " + i + ", the corresponding panel will not be initialised");
+  //       outputLog.println("!!!!! For information, the only available serial devices are :");
+  //       for (String portName: Serial.list()) { 
+  //           outputLog.println("!!!!! --- " + portName);
+  //       }
+  //       outputLog.println("!!!!! -------------------------------------- !!!!!");
+  //   }
+  // }
+  
+  // if (NUMBER_OF_PANELS == 3) {
+  //   TEENSY_SERIAL_PORT_LIST_3 = devicesToParse;
+  // }
+  // else if (NUMBER_OF_PANELS == 5) {
+  //   TEENSY_SERIAL_PORT_LIST_5 = devicesToParse;
+  // }
+  
+  
+  // //Initialize the output objects
+  // outputDevices = new Tpm2[NUMBER_OF_PANELS];
+  // for (int i=0; i<NUMBER_OF_PANELS; i++) {
+  //   outputDevices[i] = new Tpm2(i);
+  // }
+  
+  //Map the output objects to their respective panel
+  for (int i=0; i<outputDevices.length; i++) {
+    outputDevices[i].panelNumber = screen_order_configuration[i];
+    outputLog.println("Microcontroller init - device " + outputDevices[i].serialPort + " is affected to output #" + outputDevices[i].panelNumber);
+  }
+
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////
+// Output Helper Class - Contains some common helper methods used by the output devices //
+//////////////////////////////////////////////////////////////////////////////////////////
+
 
 //Cannot name the regular RGB as RGB : Processing already uses a global variable called RGB
 String Regular_RGB = "RGB";
@@ -45789,7 +49363,9 @@ int   gui_ledTubePositionY = 30;
 int   gui_rackLightPositionY = 160;
 int   gui_rackLightSpacing = 5;
 
-int   gui_movingHeadsPositionY = 310;
+int   gui_bottomMovingHeadsPositionY = 310;
+int   gui_topMovingHeadsPositionY    = 100;
+int   gui_movingHeadSpacing          = 50;
 int   gui_parsPositionY = 320;
 int   gui_parSpacing    = 40;
 
@@ -45884,7 +49460,7 @@ public void draw_simulator(int x, int y) {
   drawSimuBackStroboscope(gui_simulatorWidth/2 + 10, gui_frontStrobePositionY);
 
   //Moving heads
-  drawMovingHeads(gui_simulatorWidth, gui_movingHeadsPositionY);
+  drawMovingHeads(gui_simulatorWidth);
 
   //PAR
   drawPars(gui_simulatorWidth, gui_parsPositionY);
@@ -46163,28 +49739,46 @@ public void simu_drawAtomicStroboFX_spikes(int simuSpeed, int simuBrightness) {
 ////////////////////////////////////////////////
 // Moving Heads
 
-public void drawMovingHeads(int simulatorWidth, int positionY) {
+public void drawMovingHeads(int simulatorWidth) {
+  drawMovingHeads(simulatorWidth, gui_bottomMovingHeadsPositionY, DMXList_MovingHeads_bottom, true);
+  drawMovingHeads(simulatorWidth, gui_topMovingHeadsPositionY, DMXList_MovingHeads_top, false);
+}
+
+public void drawMovingHeads(int simulatorWidth, int positionY, ArrayList<DMX_MovingHead> dmxList_movingHead_subset, boolean linearDisplay) {
   
-  if (DMXList_MovingHeads.size() > 0) {
-    int nbMovingHeads = DMXList_MovingHeads.size();
+  if (dmxList_movingHead_subset.size() > 0) {
+    int nbMovingHeads = dmxList_movingHead_subset.size();
     int centerX = simulatorWidth/2;
     int maxWidth = (80 - 6*nbMovingHeads) * nbMovingHeads;
 
     for (int i = 0; i<nbMovingHeads; i++) {
 
-      DMX_MovingHead movingHead = DMXList_MovingHeads.get(i);
+      DMX_MovingHead movingHead = dmxList_movingHead_subset.get(i);
       auxControlFrame.pushMatrix();
       int posX;
-      if (nbMovingHeads%2 == 0) {
-        //posX = centerX-maxWidth/2+(i+1)*maxWidth/(nbMovingHeads+1);
-        posX = centerX -  PApplet.parseInt((5.0f/3.0f) * (maxWidth/2-(i+1)*maxWidth/(nbMovingHeads+1)));        
+      int posY;
+      if (linearDisplay) {
+        posY = positionY;
+        if (nbMovingHeads%2 == 0) {
+          //posX = centerX-maxWidth/2+(i+1)*maxWidth/(nbMovingHeads+1);
+          posX = centerX -  PApplet.parseInt((5.0f/3.0f) * (maxWidth/2-(i+1)*maxWidth/(nbMovingHeads+1)));        
+        }
+        else {
+          posX = centerX - ((nbMovingHeads/2) - i)*maxWidth/nbMovingHeads;
+        }
       }
       else {
-        posX = centerX - ((nbMovingHeads/2) - i)*maxWidth/nbMovingHeads;
-        
+        if (i<nbMovingHeads/2) {
+          posX = centerX - (simulatorWidth-50)/2;
+          posY = positionY + i*gui_movingHeadSpacing;
+        }
+        else {
+          posX = centerX + (simulatorWidth-50)/2;
+          posY = positionY + (nbMovingHeads-1-i)*gui_movingHeadSpacing;
+        }
       }
       
-      auxControlFrame.translate(posX + 10,positionY);
+      auxControlFrame.translate(posX + 10,posY);
 
       //External circle
       auxControlFrame.fill(0);
@@ -48449,7 +52043,7 @@ public void specificActions() {
         
       case 63:          //Nonotak 4
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         background(0);
         stroke(255);
@@ -48459,7 +52053,7 @@ public void specificActions() {
       
       case 64:          //Nonotak 5
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         background(0);
         strokeWeight(8);
@@ -48530,25 +52124,25 @@ public void specificActions() {
 
       case 70:    //NonotakWoosh 1
 
-        frameRate(60);
+        frameRate(50);
         nonotakWoosh_list.add(new NonotakWoosh(0));
         break;
       
       case 71:    //NonotakWoosh 2
 
-        frameRate(60);
+        frameRate(50);
         nonotakWoosh_list.add(new NonotakWoosh(1));
         break;
       
       case 72:    //NonotakWoosh 3
 
-        frameRate(60);
+        frameRate(50);
         nonotakWoosh_list.add(new NonotakWoosh(2));
         break;
       
       case 73:    //NonotakWoosh 4
 
-        frameRate(60);
+        frameRate(50);
         nonotakWoosh_list.add(new NonotakWoosh(3));
         break;
       
@@ -49057,14 +52651,14 @@ public void specificActions() {
       
       case 111:    //Va et vient - 1
       
-        frameRate(100);
+        frameRate(50);
         va_et_vient_progress = 0;
         strokeWeight(8);
         break;
       
       case 112:    //Va et vient - 2
       
-        frameRate(100);
+        frameRate(50);
         va_et_vient_progress = 0;
         strokeWeight(8);
         break;
@@ -49372,7 +52966,7 @@ public void specificActions() {
 
       case 143:    //OrbitingParticles
 
-        frameRate(60);
+        frameRate(50);
         background(0);
         strokeWeight(8);
         stroke(255);
@@ -49695,7 +53289,7 @@ public void specificActions() {
       case 174:    //ExplodingCircleLeft
 
         background(0);
-        frameRate(60);
+        frameRate(50);
         stroke(255); 
         noFill();
         strokeWeight(28);
@@ -49705,7 +53299,7 @@ public void specificActions() {
       case 175:    //ExplodingCircleRight
 
         background(0);
-        frameRate(60);
+        frameRate(50);
         stroke(255,0,0); 
         noFill();
         strokeWeight(28);
@@ -49857,7 +53451,7 @@ public void specificActions() {
         background(0);
         strokeCap(ROUND);
         strokeWeight(1);
-        frameRate(60);
+        frameRate(50);
         mandala_ballsize = mandala_maxballsize;
         break;
       
@@ -49868,7 +53462,7 @@ public void specificActions() {
         background(0);
         strokeCap(ROUND);
         strokeWeight(1);
-        frameRate(60);
+        frameRate(50);
         //mandala_ballsize = mandala_maxballsize;
         mandala_switch = !mandala_switch;
         break;
@@ -49894,7 +53488,7 @@ public void specificActions() {
 
       case 192:    //Crescent
 
-        frameRate(60);
+        frameRate(50);
         colorMode(HSB); 
         strokeWeight(12);
         crescent_distext = width/2;
@@ -49904,7 +53498,7 @@ public void specificActions() {
       
       case 193:    //Trigo Shapes
 
-        frameRate(60);
+        frameRate(50);
         noStroke();
         colorMode(HSB);
         if (trigoshapes_initComplete == false) {
@@ -50160,7 +53754,7 @@ public void specificActions() {
       
       case 214:    //Shadows
       
-        frameRate(60);
+        frameRate(50);
         noStroke();
         break;
       
@@ -50280,7 +53874,7 @@ public void specificActions() {
 
       case 228:    //HyperSpeed
 
-        frameRate(60);
+        frameRate(50);
         stroke(255);
         strokeWeight(4);
         strokeCap(ROUND);
@@ -50364,7 +53958,7 @@ public void specificActions() {
       
       case 235:    //ThunderLinesInit
 
-        frameRate(60);
+        frameRate(50);
         stroke(255); 
         noFill();
         strokeWeight(4);
@@ -50379,7 +53973,7 @@ public void specificActions() {
       
       case 236:    //ThunderLines - More lines
 
-        frameRate(60);
+        frameRate(50);
         stroke(255); 
         noFill();
         strokeWeight(4);
@@ -50412,7 +54006,7 @@ public void specificActions() {
       
       case 238:    //DarkSnakes
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         stroke(0, 0, 0, 10);
         smooth();
@@ -50423,7 +54017,7 @@ public void specificActions() {
       
       case 239:    //BrightSnakes
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         stroke(255, 40);
         smooth();
@@ -50469,7 +54063,7 @@ public void specificActions() {
 
         noStroke();
         background(255);
-        frameRate(60);
+        frameRate(50);
         lightfusion_xspan = lightfusion_xmax - lightfusion_xmin;
         lightfusion_yspan = lightfusion_ymax - lightfusion_ymin;
         lightfusion_X = width/6;
@@ -50496,7 +54090,7 @@ public void specificActions() {
       case 244:    //ColorVertex
 
         smooth();
-        frameRate(60);
+        frameRate(50);
         colorvertex_pointarray = new ArrayList();
         for (int j=0;j<30;j++) {
           colorvertex_pointarray.add(new colorvertex_Dots(new PVector(random(-64, 64), random(-50, 50))));
@@ -50506,7 +54100,7 @@ public void specificActions() {
       case 245:    //Gloubiboulga
 
         colorMode(HSB);
-        frameRate(60);
+        frameRate(50);
         gloubiboulga_swarm = new ArrayList();
         for (int j=0; j<20; j++) {
             PVector newpos = new PVector(width/2, height/2);
@@ -50537,7 +54131,7 @@ public void specificActions() {
       case 247:    //MarshallStrobo
 
         rectMode(CORNER);
-        frameRate(25);
+        frameRate(20);
         stroke(255);
         fill(255);
         // Initialisation des hauteurs des lignes
@@ -50554,7 +54148,7 @@ public void specificActions() {
       case 248:   //Strobonormal
 
         rectMode(CORNER);
-        frameRate(25);
+        frameRate(30);
         noStroke();
         strokeWeight(8);
         background(0);
@@ -50564,7 +54158,7 @@ public void specificActions() {
       case 249:    //StroboX
 
         rectMode(CORNER);
-        frameRate(25);
+        frameRate(30);
         stroke(255);
         strokeWeight(16);
         background(0);
@@ -50597,7 +54191,7 @@ public void specificActions() {
       case 254:    //StroboLine
 
         rectMode(CORNER);
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         fill(255);
         stroke(255);
@@ -51069,7 +54663,7 @@ public void specificActions() {
 
         background(0);
         noFill();
-        frameRate(60);
+        frameRate(50);
         noSmooth();
         strokeWeight(1);
         butterfly_s = random(90, 100);    
@@ -51090,7 +54684,7 @@ public void specificActions() {
         break;
       
       case 305:    //LightPainting
-        frameRate(60);
+        frameRate(50);
         background(0);
         if (lightpainting_initok == false) {
           lightpainting_canvas = new LightPaintingCanvas3D(lightpainting_focalLength, lightpainting_interaction_distance);
@@ -51173,7 +54767,7 @@ public void specificActions() {
 
       case 309:    //DoubleFlowers
 
-        frameRate(60);
+        frameRate(50);
         smooth();
         noStroke();
         colorMode(HSB);
@@ -51443,7 +55037,7 @@ public void specificActions() {
       
       case 330:    //Reverse Triangles
 
-        frameRate(60);
+        frameRate(50);
         reverseTriangles_red = createGraphics(width, height);
         reverseTriangles_green = createGraphics(width/NUMBER_OF_PANELS, height);
         reverseTriangles_size = reverseTriangles_sizeInit;
@@ -51648,7 +55242,7 @@ public void specificActions() {
       case 342:    //Redwave
 
         noStroke();
-        frameRate(60);
+        frameRate(50);
         redwave_xspan = redwave_xmax - redwave_xmin;
         redwave_yspan = redwave_ymax - redwave_ymin;
         // draw first frame
@@ -51658,7 +55252,7 @@ public void specificActions() {
       case 343:    //DiagonalColor
 
         colorMode(HSB);
-        frameRate(60);
+        frameRate(50);
         smooth();
         
         if (diagonalcolor_init == false) {
@@ -51787,7 +55381,7 @@ public void specificActions() {
 
         noStroke();
         background(255);
-        frameRate(60);
+        frameRate(50);
         nightroad_xspan = nightroad_xmax - nightroad_xmin;
         nightroad_yspan = nightroad_ymax - nightroad_ymin;
         nightroad_Y = 0;
@@ -51883,7 +55477,7 @@ public void specificActions() {
 
       case 361:    //Rotozoom 1
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         rotozoom_img=loadImage(NUMBER_OF_PANELS + "_panels/" + "Rotozoom/rotozoom1.jpg");
         rotozoom_img.resize(256, 256);
@@ -51891,7 +55485,7 @@ public void specificActions() {
       
       case 362:    //Rotozoom 2
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         rotozoom_img=loadImage(NUMBER_OF_PANELS + "_panels/" + "Rotozoom/rotozoom2.jpg");
         rotozoom_img.resize(256, 256);
@@ -51899,7 +55493,7 @@ public void specificActions() {
       
       case 363:    //Rotozoom 3
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         rotozoom_img=loadImage(NUMBER_OF_PANELS + "_panels/" + "Rotozoom/rotozoom3.jpg");
         rotozoom_img.resize(256, 256);
@@ -51921,7 +55515,7 @@ public void specificActions() {
 
       case 366:    //SlicedWave - White
 
-        frameRate(60);
+        frameRate(50);
         noFill();
         strokeCap(SQUARE); 
         randomSeed(36);
@@ -51940,7 +55534,7 @@ public void specificActions() {
       
       case 367:    //SlicedWave - Red
         
-        frameRate(60);
+        frameRate(50);
         noFill();
         strokeCap(SQUARE); 
         randomSeed(36);
@@ -51960,7 +55554,7 @@ public void specificActions() {
       case 368:    //ArcWave
 
         colorMode(RGB);
-        frameRate(60);
+        frameRate(50);
         arcwave_maxi=(int)sqrt(width/2*height/2)*4;
         background(0);
         arcwave_arcs= new ArcWaveClass[5];
@@ -51985,7 +55579,7 @@ public void specificActions() {
 
       case 370:    //ArcRot - Green
 
-        frameRate(60);
+        frameRate(50);
         colorMode(HSB);
         noFill();
         smooth();
@@ -51995,7 +55589,7 @@ public void specificActions() {
       
       case 371:    //ArcRot - Red
 
-        frameRate(60);
+        frameRate(50);
         colorMode(HSB);
         noFill();
         smooth();
@@ -52119,7 +55713,7 @@ public void specificActions() {
 
         noStroke();
         background(255);
-        frameRate(60);
+        frameRate(50);
         hypnospiralred_X = width/2;
         hypnospiralred_Y = height/2;
         hypnospiralred_xspan = hypnospiralred_xmax - hypnospiralred_xmin;
@@ -52171,7 +55765,7 @@ public void specificActions() {
       case 388:    //Kaleido
 
         background(0);
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         //kaleido_posX = 0;
         strokeWeight(1);
@@ -52183,7 +55777,7 @@ public void specificActions() {
       case 389:    //KaleidoGray
 
         background(0);
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         //kaleido_posX = 0;
         strokeWeight(1);
@@ -52252,73 +55846,73 @@ public void specificActions() {
 
       case 395:    //ShiftPixelsUp - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 396:    //ShiftPixelsDown - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 397:    //ShiftPixelsLeft - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 398:    //ShiftPixelsRight - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 399:    //ShiftPixelsUp - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_fastspeed;
         break;
       
       case 400:    //ShiftPixelsDown - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_fastspeed;
         break;
       
       case 401:    //ShiftPixelsLeft - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 402:    //ShiftPixelsRight - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 403:    //ShredPixelsVertical - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 404:    //ShredPixelsHorizontal - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 405:    //ShredPixelsVertical - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_fastspeed;
         break;
       
       case 406:    //ShredPixelsHorizontal - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_fastspeed;
         break;      
       
@@ -52372,7 +55966,7 @@ public void specificActions() {
 
         strokeWeight(4);
         smooth();
-        frameRate(80);
+        frameRate(50);
         if (woublines_init == false) {
           woublines_list = new ArrayList<WoubLine>();
           woublines_init = true;
@@ -52385,7 +55979,7 @@ public void specificActions() {
 
         strokeWeight(4);
         smooth();
-        frameRate(80);
+        frameRate(50);
         if (woublines_init == false) {
           woublines_list = new ArrayList<WoubLine>();
           woublines_init = true;
@@ -52398,7 +55992,7 @@ public void specificActions() {
 
         strokeWeight(4);
         smooth();
-        frameRate(80);
+        frameRate(50);
         if (woublines_init == false) {
           woublines_list = new ArrayList<WoubLine>();
           woublines_init = true;
@@ -52424,7 +56018,7 @@ public void specificActions() {
 
         strokeWeight(4);
         smooth();
-        frameRate(80);
+        frameRate(50);
         if (woublines_init == false) {
           woublines_list = new ArrayList<WoubLine>();
           woublines_init = true;
@@ -52494,7 +56088,7 @@ public void specificActions() {
         
       case 429:    //Simple Spiral - White
       
-        frameRate(60);
+        frameRate(50);
         noFill();
         background(0);
         strokeWeight(6);
@@ -52502,7 +56096,7 @@ public void specificActions() {
 
       case 430:    //Simple Spiral - Red
       
-        frameRate(60);
+        frameRate(50);
         noFill();
         background(0);
         strokeWeight(6);
@@ -52531,59 +56125,59 @@ public void specificActions() {
         break;
         
       case 434:    //White Spread - Start
-        frameRate(90);
+        frameRate(45);
         whitespread_progress = 0;
         break;
         
       case 435:    //White Spread - End
-        frameRate(90);
+        frameRate(45);
         whitespread_progress = 0;
         break;
       
       case 436:    //ScannerLine 1 - Fast White
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
       
       case 437:    //ScannerLine 2 - Fast White
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
         
       case 438:    //ScannerLine 1 - Fast Red
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
         
       case 439:    //ScannerLine 2 - Fast Red
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
         
       case 440:    //ScannerLine 1 - Slow White
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
       
       case 441:    //ScannerLine 2 - Slow White
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
         
       case 442:    //ScannerLine 1 - Slow Red
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
         
       case 443:    //ScannerLine 2 - Slow Red
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
@@ -52820,6 +56414,7 @@ public class Tpm2Serial {
         if (portName != "") {
                 //open specific port
                 serialPortName = portName;
+                println("Is this alright ? " + portName);
                 port = openPort(portName, baud);
         } else {
                 //the port was not defined, try to find it by guessing

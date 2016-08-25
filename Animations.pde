@@ -379,7 +379,7 @@ void draw_spiraluality() {
 //////////////////////////////////////////
 
 void draw_shadows() {
-    rand+=.01;
+    rand+=.013;
     float n=noise(rand);
     
     background(255);
@@ -458,10 +458,12 @@ void draw_va_et_vient_2() {
   strokeCap(SQUARE);
   for (int i=0;i<height/4;i++) {
     if (i%2 == 0) {
-      line(va_et_vient_progress,i*(height/4),va_et_vient_progress,(i+1)*(height/4));
+      line(va_et_vient_progress+4,i*(height/4),va_et_vient_progress+4,(i+1)*(height/4));
+      line(va_et_vient_progress-4,i*(height/4),va_et_vient_progress-4,(i+1)*(height/4));
     }
     else {
-      line(width - va_et_vient_progress,i*(height/4),width - va_et_vient_progress,(i+1)*(height/4));
+      line(width - va_et_vient_progress-4,i*(height/4),width - va_et_vient_progress-4,(i+1)*(height/4));
+      line(width - va_et_vient_progress+4,i*(height/4),width - va_et_vient_progress+4,(i+1)*(height/4));
     }
   }  
   popStyle();
@@ -833,7 +835,7 @@ class Wind {
 //////////////////////////////////////////
 
 void draw_strobonormal() {
-  if (frameCount % 2 == 0)
+  if (frameCount % 4 == 0)
   {
     //fill(int(random(50,255)),int(random(50,255)),int(random(50,255)));
     fill(255);
@@ -2824,14 +2826,16 @@ void draw_mixedlines(int position_horizontal_lines, int position_vertical_lines,
 //////////////////////////////////////////
 
 void draw_stroboX() {
-  if (frameCount % 2 == 0)
+  if (frameCount % 4 == 0)
   {
+    stroke(255);
     line(0,0,width,height);
     line(0,height,width,0);
   }
   else
   {
     fill(0);
+    stroke(0);
     rect(0,0,width,height);
   }
 }
@@ -14054,7 +14058,7 @@ void draw_nonotak_1() {
     strokeWeight(4);
     for (int i = 0; i<width/4; i++) {
       line((i*4*4 + nonotak_1_x) % width, 0, (i*4*4 + nonotak_1_x) % width, height);
-    } 
+    }
     
   }
   else {
@@ -17401,7 +17405,7 @@ void draw_simplespiral(int r, int g, int b) {
     arc(0, 0, width*1.2-i*10, width*1.2-i*10, 0, PI);
   }
   popMatrix();
-  simplespiral_theta += PI/90;
+  simplespiral_theta += PI/80;
 }
 
 //////////////////////////////////////////
