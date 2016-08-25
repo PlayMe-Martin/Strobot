@@ -41,17 +41,19 @@ int PITCH_KNOB_WHITENOISE      = 7;
 final int PITCH_SET_AUTOMODE_OFF                          = 90;
 final int PITCH_SET_AUTOMODE_ON                           = 91;
 
-final int PITCH_LOAD_ANIMATION_BANK1_TEMP                 = 96;
-final int PITCH_LOAD_ANIMATION_BANK2_TEMP                 = 97;
-final int PITCH_LOAD_ANIMATION_BANK3_TEMP                 = 98;
-final int PITCH_LOAD_ANIMATION_BANK4_TEMP                 = 99;
+final int PITCH_LOAD_ANIMATION_BANK1_TEMP                 = 92;
+final int PITCH_LOAD_ANIMATION_BANK2_TEMP                 = 93;
+final int PITCH_LOAD_ANIMATION_BANK3_TEMP                 = 94;
+final int PITCH_LOAD_ANIMATION_BANK4_TEMP                 = 95;
 
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION  = 100;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR       = 101;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM      = 102;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE = 103;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1 = 104;
-final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2 = 105;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION  = 98;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR       = 99;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM      = 100;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE = 101;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1 = 102;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2 = 103;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3 = 104;
+final int PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_4 = 105;
 final int PITCH_DMX_ANIMATION_STROBE                      = 106;
 final int PITCH_DMX_ANIMATION_PAR_SET_COLOR               = 107;
 final int PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE         = 108;
@@ -202,38 +204,40 @@ void noteOn(int channel, int pitch, int velocity, long timestamp, String bus_nam
 void processMidiInfo_semiAutoMode(int pitch, int velocity) {
   switch (pitch) {
     //Standard mode, MIDI incoming from Ableton
-    case PITCH_SET_AUTOMODE_OFF:                            setAutomaticModeOff();break;                                             //F#5   - Disable the automatic mode
-    case PITCH_SET_AUTOMODE_ON:                             setAutomaticModeOn();break;                                              //G5    - Enable the automatic mode
+    case PITCH_SET_AUTOMODE_OFF:                            setAutomaticModeOff();break;                                             // Disable the automatic mode
+    case PITCH_SET_AUTOMODE_ON:                             setAutomaticModeOn();break;                                              // Enable the automatic mode
     
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(velocity); break;              //E7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(velocity); break;                   //F7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM:        loadDMXAnimation_movingHead_setRhythm(velocity); break;                  //F#7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(velocity); break;              //G7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   loadDMXAnimation_movingHead_setAnimation1(velocity); break;              //G#7
-    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   loadDMXAnimation_movingHead_setAnimation2(velocity); break;              //A7
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(velocity); break;              // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(velocity); break;                   // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM:        loadDMXAnimation_movingHead_setRhythm(velocity); break;                  // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(velocity); break;              // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   loadDMXAnimation_movingHead_setAnimation1(velocity); break;              // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   loadDMXAnimation_movingHead_setAnimation2(velocity); break;              // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3:   loadDMXAnimation_movingHead_setAnimation3(velocity); break;              // 
+    case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_4:   loadDMXAnimation_movingHead_setAnimation4(velocity); break;              // 
     
-    case PITCH_DMX_ANIMATION_STROBE:                        loadDMXAnimation_strobe(velocity); break;                                //A#7   - Load an animation using DMX devices - Strobe bank
+    case PITCH_DMX_ANIMATION_STROBE:                        loadDMXAnimation_strobe(velocity); break;                                // Load an animation using DMX devices - Strobe bank
     
-    case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 loadDMXAnimation_par_setColor(velocity);break;                           //B7
-    case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           loadDMXAnimation_par_setLightStyle(velocity);break;                      //C8
-    case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             loadDMXAnimation_par_setAnimation(velocity);break;                       //C#8
+    case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 loadDMXAnimation_par_setColor(velocity);break;                           // 
+    case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           loadDMXAnimation_par_setLightStyle(velocity);break;                      // 
+    case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             loadDMXAnimation_par_setAnimation(velocity);break;                       // 
 
-    case PITCH_ENABLE_MAN_INPUT:                            enableManualInput();break;                                               //D8
-    case PITCH_DISABLE_MAN_INPUT:                           disableManualInput();break;                                              //D#8
-    case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(velocity);break;                              //A#8   - Load an animation for the custom devices
-    case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(velocity);break;                              //B8
-    case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(velocity);break;                              //C9
-    case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(velocity);break;                                //C#9
-    case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   loadTempAnimation1(velocity);break;                                      //C7    - Load a temporary animation using the LED panels
-    case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   loadTempAnimation2(velocity);break;                                      //C#7
-    case PITCH_LOAD_ANIMATION_BANK3_TEMP:                   loadTempAnimation3(velocity);break;                                      //D7
-    case PITCH_LOAD_ANIMATION_BANK4_TEMP:                   loadTempAnimation4(velocity);break;                                      //D#7
-    case PITCH_LOAD_ANIMATION_BANK1:                        loadAnimation1(velocity);break;                                          //D#9   - Load an animation using the LED panels
-    case PITCH_LOAD_ANIMATION_BANK2:                        loadAnimation2(velocity);break;                                          //E9
-    case PITCH_LOAD_ANIMATION_BANK3:                        loadAnimation3(velocity);break;                                          //F9
-    case PITCH_LOAD_ANIMATION_BANK4:                        loadAnimation4(velocity);break;                                          //D9
-    case PITCH_LOAD_IMAGE_BANK1:                            loadImage1(velocity);break;                                              //F#9
-    case PITCH_CHANGE_OUTPUTMAPPING:                        activateKeyboardLEDPanelMapping();break;                                 //G9    - Activate the remapping procedure
+    case PITCH_ENABLE_MAN_INPUT:                            enableManualInput();break;                                               // 
+    case PITCH_DISABLE_MAN_INPUT:                           disableManualInput();break;                                              // 
+    case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(velocity);break;                              // Load an animation for the custom devices
+    case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(velocity);break;                              // 
+    case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(velocity);break;                              // 
+    case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(velocity);break;                                // 
+    case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   loadTempAnimation1(velocity);break;                                      // Load a temporary animation using the LED panels
+    case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   loadTempAnimation2(velocity);break;                                      // 
+    case PITCH_LOAD_ANIMATION_BANK3_TEMP:                   loadTempAnimation3(velocity);break;                                      // 
+    case PITCH_LOAD_ANIMATION_BANK4_TEMP:                   loadTempAnimation4(velocity);break;                                      // 
+    case PITCH_LOAD_ANIMATION_BANK1:                        loadAnimation1(velocity);break;                                          // Load an animation using the LED panels
+    case PITCH_LOAD_ANIMATION_BANK2:                        loadAnimation2(velocity);break;                                          // 
+    case PITCH_LOAD_ANIMATION_BANK3:                        loadAnimation3(velocity);break;                                          // 
+    case PITCH_LOAD_ANIMATION_BANK4:                        loadAnimation4(velocity);break;                                          // 
+    case PITCH_LOAD_IMAGE_BANK1:                            loadImage1(velocity);break;                                              // 
+    case PITCH_CHANGE_OUTPUTMAPPING:                        activateKeyboardLEDPanelMapping();break;                                 // Activate the remapping procedure
     default: break;
   }
 }
@@ -612,6 +616,14 @@ void loadDMXAnimation_movingHead_setAnimation2(int velocity) {
   loadDMXAnimation_movingHead_setAnimation(velocity + 127);
 }
 
+void loadDMXAnimation_movingHead_setAnimation3(int velocity) {
+  loadDMXAnimation_movingHead_setAnimation(velocity + 254);
+}
+
+void loadDMXAnimation_movingHead_setAnimation4(int velocity) {
+  loadDMXAnimation_movingHead_setAnimation(velocity + 381);
+}
+
 
 void loadDMXAnimation_movingHead_setAnimation(int dmxAnimNumber) {
   //When such a command is received, and while the note continues, the DMX control is up to Strobot
@@ -856,6 +868,8 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_4:   unloadDMXAnimation_movingHead(); break;
 
         case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 break;
         case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           break;

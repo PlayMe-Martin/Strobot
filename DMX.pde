@@ -118,12 +118,13 @@ void dmxInit_registerDefaultMovingHeads() {
     DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 1*24));
     DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 2*24));
     DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 3*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 4, 10 + 4*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 5, 10 + 5*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 6, 10 + 6*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 7, 10 + 7*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 8, 10 + 7*24));
-    // DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 9, 10 + 7*24));
+    
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 4*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 5*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 6*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 4, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 5, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
     
   }
   catch (UndefinedFixtureException e) {
@@ -138,10 +139,10 @@ void dmxInit_registerDefaultPars() {
   DMXList_Pars            = new ArrayList<DMX_PAR>();
 
   try {
-    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 4*24 + 0*3));
-    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  1, 10 + 4*24 + 1*3));
-    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 2, 10 + 4*24 + 2*3 + 0*4));
-    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 3, 10 + 4*24 + 2*3 + 1*4));
+    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 8*24 + 0*3));
+    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  1, 10 + 8*24 + 1*3));
+    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 2, 10 + 8*24 + 2*3 + 0*4));
+    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 3, 10 + 8*24 + 2*3 + 1*4));
   }
   catch (UndefinedFixtureException e) {
     println("Undefined Fixture");
@@ -164,8 +165,6 @@ void dmx_buildFixtureSublists_movingHead() {
   DMXList_MovingHeads_center     = new ArrayList<DMX_MovingHead>();
   DMXList_MovingHeads_right      = new ArrayList<DMX_MovingHead>();
   DMXList_MovingHeads_left       = new ArrayList<DMX_MovingHead>();
-
-  int nbMovingHeads = DMXList_MovingHeads.size();
   
   // First, discriminate between the fixtures on the floor or not
   for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
@@ -176,6 +175,8 @@ void dmx_buildFixtureSublists_movingHead() {
       DMXList_MovingHeads_top.add(movingHead); 
     }
   }
+
+  int nbMovingHeads = DMXList_MovingHeads_bottom.size();
 
   // Then, parse all the moving heads on the floor
   // Consider that about one third of the fixtures go in the "center" group

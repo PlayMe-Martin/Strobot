@@ -48,7 +48,9 @@ int   gui_ledTubePositionY = 30;
 int   gui_rackLightPositionY = 160;
 int   gui_rackLightSpacing = 5;
 
-int   gui_movingHeadsPositionY = 310;
+int   gui_bottomMovingHeadsPositionY = 310;
+int   gui_topMovingHeadsPositionY    = 100;
+int   gui_movingHeadSpacing          = 50;
 int   gui_parsPositionY = 320;
 int   gui_parSpacing    = 40;
 
@@ -143,7 +145,7 @@ void draw_simulator(int x, int y) {
   drawSimuBackStroboscope(gui_simulatorWidth/2 + 10, gui_frontStrobePositionY);
 
   //Moving heads
-  drawMovingHeads(gui_simulatorWidth, gui_movingHeadsPositionY);
+  drawMovingHeads(gui_simulatorWidth);
 
   //PAR
   drawPars(gui_simulatorWidth, gui_parsPositionY);
@@ -422,28 +424,46 @@ void simu_drawAtomicStroboFX_spikes(int simuSpeed, int simuBrightness) {
 ////////////////////////////////////////////////
 // Moving Heads
 
-void drawMovingHeads(int simulatorWidth, int positionY) {
+void drawMovingHeads(int simulatorWidth) {
+  drawMovingHeads(simulatorWidth, gui_bottomMovingHeadsPositionY, DMXList_MovingHeads_bottom, true);
+  drawMovingHeads(simulatorWidth, gui_topMovingHeadsPositionY, DMXList_MovingHeads_top, false);
+}
+
+void drawMovingHeads(int simulatorWidth, int positionY, ArrayList<DMX_MovingHead> dmxList_movingHead_subset, boolean linearDisplay) {
   
-  if (DMXList_MovingHeads.size() > 0) {
-    int nbMovingHeads = DMXList_MovingHeads.size();
+  if (dmxList_movingHead_subset.size() > 0) {
+    int nbMovingHeads = dmxList_movingHead_subset.size();
     int centerX = simulatorWidth/2;
     int maxWidth = (80 - 6*nbMovingHeads) * nbMovingHeads;
 
     for (int i = 0; i<nbMovingHeads; i++) {
 
-      DMX_MovingHead movingHead = DMXList_MovingHeads.get(i);
+      DMX_MovingHead movingHead = dmxList_movingHead_subset.get(i);
       auxControlFrame.pushMatrix();
       int posX;
-      if (nbMovingHeads%2 == 0) {
-        //posX = centerX-maxWidth/2+(i+1)*maxWidth/(nbMovingHeads+1);
-        posX = centerX -  int((5.0/3.0) * (maxWidth/2-(i+1)*maxWidth/(nbMovingHeads+1)));        
+      int posY;
+      if (linearDisplay) {
+        posY = positionY;
+        if (nbMovingHeads%2 == 0) {
+          //posX = centerX-maxWidth/2+(i+1)*maxWidth/(nbMovingHeads+1);
+          posX = centerX -  int((5.0/3.0) * (maxWidth/2-(i+1)*maxWidth/(nbMovingHeads+1)));        
+        }
+        else {
+          posX = centerX - ((nbMovingHeads/2) - i)*maxWidth/nbMovingHeads;
+        }
       }
       else {
-        posX = centerX - ((nbMovingHeads/2) - i)*maxWidth/nbMovingHeads;
-        
+        if (i<nbMovingHeads/2) {
+          posX = centerX - (simulatorWidth-50)/2;
+          posY = positionY + i*gui_movingHeadSpacing;
+        }
+        else {
+          posX = centerX + (simulatorWidth-50)/2;
+          posY = positionY + (nbMovingHeads-1-i)*gui_movingHeadSpacing;
+        }
       }
       
-      auxControlFrame.translate(posX + 10,positionY);
+      auxControlFrame.translate(posX + 10,posY);
 
       //External circle
       auxControlFrame.fill(0);

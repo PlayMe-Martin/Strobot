@@ -196,47 +196,51 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
     //The panel device will actually output
     public int mappingPanel;
     
-    public Tpm2(int panelnumber) {
-            super(TPM2, 8);
+    public Tpm2(int panelnumber, String serialPortName) {
+      super(TPM2, 8);
 
-            int baud = COM_BAUD_RATE;
-            this.snakeCabling = false;
-            this.panelNumber = panelnumber;
-            
-            //HINT: on windows you need to (for example) use COM1, com1 will not work! (case sensitive)
-            //String serialPort = OutputHelper.getSerialPortName(ph.getTpm2Device().toUpperCase());
-            serialPort = getSerialPortName(TEENSY_SERIAL_PORT_LIST_5[panelnumber]);      //Initialize it to a possible value
-            if (NUMBER_OF_PANELS == 3) {
-              serialPort = getSerialPortName(TEENSY_SERIAL_PORT_LIST_3[panelnumber]);
-            }
-            else if (NUMBER_OF_PANELS == 5) {
-              serialPort = getSerialPortName(TEENSY_SERIAL_PORT_LIST_5[panelnumber]);
-            }
-            //outputLog.println("--------DEBUG ! Checking serialPort : " + serialPort); 
-            this.initialized = false;
-            try {
-                    tpm2 = new Tpm2Serial(serialPort, PANEL_RESOLUTION_X*PANEL_RESOLUTION_Y, baud);
-                    this.initialized = true;
-                    outputLog.println("Initialized TPM2 serial device v" + VERSION + " , target port: " + serialPort + ", Resolution: " + PANEL_RESOLUTION_X + "/" + PANEL_RESOLUTION_Y);
-                    
-            } catch (NoSerialPortFoundException e) {
-                    outputLog.println("Error !!! Failed to initialize serial port! " + e);
-            }
+      int baud = COM_BAUD_RATE;
+      this.snakeCabling = false;
+      this.panelNumber = panelnumber;
+      
+      //HINT: on windows you need to (for example) use COM1, com1 will not work! (case sensitive)
+      //String serialPort = OutputHelper.getSerialPortName(ph.getTpm2Device().toUpperCase());
+      println(panelnumber + ": Let's try this: " + serialPortName);
+
+      if (serialPortName.equals("")) {          // Debug case: the device is just a placeholder
+        println(panelnumber + ": Nothing");
+        this.initialized = false;
+      }
+      else {                                    // Real case: the serial port name is properly defined
+        println(panelnumber + ": Might be ok");
+        this.initialized = false;
+        try {
+          tpm2 = new Tpm2Serial(serialPortName, PANEL_RESOLUTION_X*PANEL_RESOLUTION_Y, baud);
+          this.initialized = true;
+          outputLog.println("Initialized TPM2 serial device v" + VERSION + " , target port: " + serialPortName + ", Resolution: " + PANEL_RESOLUTION_X + "/" + PANEL_RESOLUTION_Y);
+        } 
+        catch (NoSerialPortFoundException e) {
+          outputLog.println("Error !!! Failed to initialize serial port! " + e);
+        }        
+        
+        serialPort = getSerialPortName(serialPortName);      //Initialize it to the requested value, but double check just in case
+      }
+      
     }
     
 
     //Non Javadoc update
     //Send data to the TPM2 device
-    public void update() {                
-      if (initialized) {                                        
+    public void update() {
+      if (initialized) {
         byte[] rgbBuffer = convertBufferTo24bit(getTransformedBuffer(), colorFormat);
         //outputLog.println(rgbBuffer);
         if (rgbBuffer.length < 511) {
             //small frame, fit in one packed
             //this will always be the case with our 128 LED panels : a single packet can fit 512 bytes, amounting to 170 LED.
-            tpm2.sendFrame(createImagePayload(0,1,rgbBuffer));                                
+            tpm2.sendFrame(createImagePayload(0,1,rgbBuffer));
         } else {
-            //need to splitup buffers                                
+            //need to splitup buffers
             int bytesToSend = rgbBuffer.length;
             int currentUniverse = 0;
             int totalUniverse = (int)((bytesToSend/510f))+1;

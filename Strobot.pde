@@ -89,52 +89,14 @@ boolean output_PHP = false;
 boolean debug_without_dmx = false;
 boolean debug_without_custom_devices = false;
 
-String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
-String CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/tty.usbserial-A961L7NJ";
 
-//////////////////////////////////////////////////////
-//Define the initial config of the LED matrix here !//
-//////////////////////////////////////////////////////
 
-final static int PANEL_RESOLUTION_X = 8;        //Resolution for each individual panel - width
-final static int PANEL_RESOLUTION_Y = 16;       //Resolution for each individual panel - height 
-final static String LED_COLOR_FORMAT = "RGB";   //LED color arrangement
-int NUMBER_OF_PANELS = 5;                       //Number of panels - TBIL : automatic detection of the number of panels connected, either 3 or 5
-
-//Define the serial ports for the microcontrollers
-//String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
-//All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
-String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
-String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem479061", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem707701", "/dev/tty.usbmodem814421"}; // 707701 to add
-String[] devicesToParse;
-
-//Define the Gamma value to be used for the panels - recommended for WS2801 modules : gamma_25
-final String panelGamma = "gamma_25";
-
-//Mapping for an individual LED Panel - if the LEDs are cabled the following way, follow the example to create the mapping
-//    8 7 6
-//    3 4 5     ->    {6,7,8,3,4,5,0,1,2}
-//    2 1 0
-final int[] MANUAL_MAPPING = {127, 126, 125, 124, 123, 122, 121, 120,
-                              112, 113, 114, 115, 116, 117, 118, 119,
-                              111, 110, 109, 108, 107, 106, 105, 104,
-                               96,  97,  98,  99, 100, 101, 102, 103,
-                               95,  94,  93,  92,  91,  90,  89,  88,
-                               80,  81,  82,  83,  84,  85,  86,  87,
-                               79,  78,  77,  76,  75,  74,  73,  72,
-                               64,  65,  66,  67,  68,  69,  70,  71,
-                               63,  62,  61,  60,  59,  58,  57,  56,
-                               48,  49,  50,  51,  52,  53,  54,  55,
-                               47,  46,  45,  44,  43,  42,  41,  40,
-                               32,  33,  34,  35,  36,  37,  38,  39,
-                               31,  30,  29,  28,  27,  26,  25,  24,
-                               16,  17,  18,  19,  20,  21,  22,  23,
-                               15,  14,  13,  12,  11,  10,   9,   8,
-                                0,   1,   2,   3,   4,   5,   6,   7};
 
 //Resize option : choose either QUALITY for a slow, but good resize (using mean average), or SPEED, for a faster, but low quality pixel resize
 //Possible values : "QUALITY", "SPEED"
-final String RESIZE_OPTION = "QUALITY";
+final String RESIZE_OPTION = "SPEED";
+
+int NUMBER_OF_PANELS = 5;                       // Preferred number of panels - note: this value is updated in accordance to the available output microcontrollers
 
 //Choose the device from which Processing should receive MIDI commands
 //Standard choice : IEC bus to receive internal MIDI messages from the DAW -> "Bus 1"
@@ -143,8 +105,7 @@ String MIDI_BUS_PIONEER_CONTROLLER_INPUT = "PIONEER RMX-500";
 String MIDI_BUS_CONTROLLER_INPUT = "LPD8";
 String MIDI_BUS_KEYBOARD_INPUT   = "LPK25";
 
-//Used to changed on the fly the panel order (LED remapping), using MIDI commands
-int[] screen_order_configuration = new int [NUMBER_OF_PANELS];
+
 
 /////////////////////////////////////////////////////
 //--Should also be configured :                    //
@@ -168,7 +129,7 @@ static PrintWriter outputLog;
 final int DISPLAY_SCALING_FACTOR = 4;
 int PIXELS_X;                                                   //To be defined once the number of panels is known
 int PIXELS_Y;                                                   //16 pixels high -> 64 pixels wide
-int COM_BAUD_RATE = 115200;                                     //Serial communication rate between Processing and the LED Panel Teensy microcontrollers
+int COM_BAUD_RATE = 115200;                                     //Serial communication rate between Processing and the LED Panel Teensy microcontrollers - actually, doesn't matter, as Teensy always communicate at 12 Mbps
 int COM_BAUD_RATE_NANO = 57600;                                 //Serial communication rate between Processing and the Arduino Nano used to dispatch orders to custom devices
 
 //Buffers used to stock the displayed pixels (not yet resized)
@@ -288,7 +249,7 @@ void setup()
   }
   
   //Useful for debug : initialize the sketch with a specific animation
-  //Initial release : display 12345 on the panels -> change this to "light up all the panels in white" ("12345" is hardly elegant if a reset needs to be done live)
+  //Initial release : display 12345 on the panels -> this was changed to "light up all the panels in white" ("12345" is hardly elegant if a reset needs to be done live)
   //The mapping must be requested explicitely using the dedicated procedure
   animationnumber = 2;
   drawAnimation = 1;
@@ -300,124 +261,11 @@ void setup()
   transformedBuffersLEDPanels = new int[NUMBER_OF_PANELS][PANEL_RESOLUTION_X*PANEL_RESOLUTION_Y];
   outputLog.println("Frame buffers initialized. Size : " + str(PIXELS_X*PIXELS_Y));
   
-  devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
-  if (NUMBER_OF_PANELS == 3) {
-    devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
-  }
-  else if (NUMBER_OF_PANELS == 5) {
-    devicesToParse = TEENSY_SERIAL_PORT_LIST_5;
-  }
-  IntList nonstaticDeviceArrayNumber = new IntList();  
-  ArrayList<String> candidateDevices = new ArrayList<String>();
-  registeredDevices = new ArrayList<String>();
-  if (DMX_MICROCONTROLLER_NAME.equals("NONSTATIC") == false) {
-    registeredDevices.add(DMX_MICROCONTROLLER_NAME);
-  }
-  for (int i = 0; i < devicesToParse.length; i++) {
-    if (devicesToParse[i].equals("NONSTATIC") == false) {
-      registeredDevices.add(devicesToParse[i]);
-    }
-    else {
-      nonstaticDeviceArrayNumber.append(i);
-    }
-  }
-  if (nonstaticDeviceArrayNumber.size() == 0) {
-    outputLog.println("All USB serial devices are defined statically, no guesswork is needed"); 
-  }
-  else {
-    outputLog.println(nonstaticDeviceArrayNumber.size() + " non static USB serial device configured, trying to guess the mystery Teensy...");
-  }
-  
-  //Find out which microcontrollers of the configuration list are defined as non-static
-  for (int i = 0; i < devicesToParse.length; i++) {
-    if (devicesToParse[i].equals("NONSTATIC") == true) {
-      nonstaticDeviceArrayNumber.append(i);
-    }
-  }  
-  
-  boolean nameExceptionFound = false;
-  if (nonstaticDeviceArrayNumber.size() >= 1) {
-    String rootName = "/dev/tty.usbmodem";
-    for (int i =0; i < nonstaticDeviceArrayNumber.size();i++) {
-      for (String portName: Serial.list()) {
-
-        if (portName.contains(rootName) == true) {
-          for (String registeredDevice: registeredDevices) {
-
-            if (registeredDevice.contains(portName.substring(5, portName.length())) == false || portName.equals("/dev/tty.usbmodem1")) {
-              boolean newCandidate = true;
-              for (int j = 0; j<candidateDevices.size();j++) {
-                for (String registered: registeredDevices) {
-                  if (portName.contains(registered) || registered.contains(portName)) {
-                    newCandidate = false;
-                  }
-                  if (portName.equals("/dev/tty.usbmodem1")) {
-                    newCandidate = true;
-                  }
-                }
-                if (candidateDevices.get(j).equals(portName)) {
-                  newCandidate = false;
-                }
-              }
-              if (newCandidate) {
-                if (portName.equals("/dev/tty.usbmodem1")) {
-                  if (nameExceptionFound == false) {
-                    outputLog.println("--- Found possible candidate for the non static device : " + portName);
-                    candidateDevices.add(portName);
-                    nameExceptionFound = true;
-                  }
-                }
-                else { 
-                  outputLog.println("--- Found possible candidate for the non static device : " + portName);
-                  candidateDevices.add(portName);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  for (int i = 0; i<candidateDevices.size();i++) {
-    registeredDevices.add(candidateDevices.get(i));
-  }
-  for (int i = 0; i<candidateDevices.size();i++) {
-    devicesToParse[nonstaticDeviceArrayNumber.get(i)] = candidateDevices.get(i);
-  }
-  
+  //Detect the available Teensy microcontollers, and which ones to use (RF/USB, with a priority on USB)
+  // The detection of how many panels should be used is also automatic
+  detectPanelOutputs();
 
   
-  for (int i = 0; i<devicesToParse.length;i++) {
-    if (devicesToParse[i].contains("NONSTATIC")) {
-        outputLog.println("!!!!! -------------------------------------- !!!!!");
-        outputLog.println("!!!!! Error - Among the serial devices registered by the OS, couldn't find a possible candidate for non static device number " + i + ", the corresponding panel will not be initialised");
-        outputLog.println("!!!!! For information, the only available serial devices are :");
-        for (String portName: Serial.list()) { 
-            outputLog.println("!!!!! --- " + portName);
-        }
-        outputLog.println("!!!!! -------------------------------------- !!!!!");
-    }
-  }
-  
-  if (NUMBER_OF_PANELS == 3) {
-    TEENSY_SERIAL_PORT_LIST_3 = devicesToParse;
-  }
-  else if (NUMBER_OF_PANELS == 5) {
-    TEENSY_SERIAL_PORT_LIST_5 = devicesToParse;
-  }
-  
-  
-  //Initialize the output objects
-  outputDevices = new Tpm2[NUMBER_OF_PANELS];
-  for (int i=0; i<NUMBER_OF_PANELS; i++) {
-    outputDevices[i] = new Tpm2(i);
-  }
-  
-  //Map the output objects to their respective panel
-  for (int i=0; i<outputDevices.length; i++) {
-    outputDevices[i].panelNumber = screen_order_configuration[i];
-    outputLog.println("Microcontroller init - device " + outputDevices[i].serialPort + " is affected to output #" + outputDevices[i].panelNumber);
-  }
   
   //Initialize the resize objects
   //--- try out the results with the shitty resize, it might be enough, and the performance could be better
@@ -428,21 +276,6 @@ void setup()
   frameRate(50);
   //Define the size of the display
   size(PIXELS_X, PIXELS_Y);
-  //Sanity check regarding the Teensy serial list
-  if (NUMBER_OF_PANELS == 3) {
-    if (TEENSY_SERIAL_PORT_LIST_3.length < NUMBER_OF_PANELS) {
-      outputLog.println("!!! Error on Teensy Serial Port List ! Please fill in a correct serial port, or 'NONSTATIC' for each output !!!");
-      println("!!! Error on Teensy Serial Port List ! Please fill in a correct serial port, or 'NONSTATIC' for each output !!!");
-      System.exit(1);    //Quit application
-    }
-  }
-  else if (NUMBER_OF_PANELS == 5) {
-    if (TEENSY_SERIAL_PORT_LIST_5.length < NUMBER_OF_PANELS) {
-      outputLog.println("!!! Error on Teensy Serial Port List ! Please fill in a correct serial port, or 'NONSTATIC' for each output !!!");
-      println("!!! Error on Teensy Serial Port List ! Please fill in a correct serial port, or 'NONSTATIC' for each output !!!");
-      System.exit(1);    //Quit application
-    }
-  }  
   
   //Initialize Object for Serial2DMX microcontroller
   myDMX = new DMX(this);
@@ -505,10 +338,10 @@ void setup()
 
 void draw()
 {  
-
   if (setupcomplete == true) 
   {
 
+    // Uncomment this if you want to debug the physical output devices
     // for (Tpm2 outputDevice: outputDevices) {
     //   try {
     //     outputDevices[0].readDebugData();
@@ -516,7 +349,6 @@ void draw()
     //   catch (Exception e) {
     //     println("Exception while trying to read - " + e);
     //   }
-      
     // }
 
     //Execute the draw function for the animation corresponding to animationnumber
