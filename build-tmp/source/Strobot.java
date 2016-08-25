@@ -13,6 +13,9 @@ import java.net.*;
 import java.io.*; 
 import com.google.protobuf.*; 
 import java.io.File; 
+import java.io.FileNotFoundException; 
+import java.io.FileOutputStream; 
+import java.io.IOException; 
 import javax.xml.parsers.DocumentBuilderFactory; 
 import javax.xml.parsers.DocumentBuilder; 
 import javax.xml.parsers.ParserConfigurationException; 
@@ -43,7 +46,64 @@ import java.util.zip.Adler32;
 import processing.core.PApplet; 
 import processing.serial.Serial; 
 
+import org.apache.poi.wp.usermodel.*; 
+import org.apache.poi.hssf.extractor.*; 
+import org.apache.poi.poifs.eventfilesystem.*; 
+import org.apache.poi.sl.draw.binding.*; 
+import org.apache.poi.hssf.util.*; 
+import org.apache.poi.hssf.record.crypto.*; 
+import org.apache.poi.sl.usermodel.*; 
+import org.apache.poi.ddf.*; 
+import org.apache.poi.ss.usermodel.*; 
+import org.apache.poi.ss.format.*; 
+import org.apache.poi.ss.formula.eval.forked.*; 
+import org.apache.poi.hssf.usermodel.*; 
+import org.apache.poi.hssf.record.chart.*; 
+import org.apache.poi.hssf.*; 
+import org.apache.poi.ss.formula.constant.*; 
+import org.apache.poi.ss.*; 
+import org.apache.poi.ss.formula.functions.*; 
+import org.apache.poi.hssf.record.cf.*; 
+import org.apache.poi.poifs.crypt.cryptoapi.*; 
+import org.apache.poi.poifs.storage.*; 
+import org.apache.poi.poifs.nio.*; 
+import org.apache.poi.ss.util.*; 
+import org.apache.poi.hssf.eventmodel.*; 
+import org.apache.poi.ss.formula.*; 
+import org.apache.poi.poifs.crypt.standard.*; 
+import org.apache.poi.ss.formula.atp.*; 
+import org.apache.poi.ss.formula.udf.*; 
+import org.apache.poi.hssf.dev.*; 
+import org.apache.poi.hpsf.*; 
+import org.apache.poi.hssf.record.cont.*; 
+import org.apache.poi.sl.draw.*; 
+import org.apache.poi.dev.*; 
+import org.apache.poi.*; 
+import org.apache.poi.sl.draw.geom.*; 
+import org.apache.poi.util.*; 
+import org.apache.poi.ss.formula.function.*; 
+import org.apache.poi.ss.util.cellwalk.*; 
+import org.apache.poi.hssf.record.aggregates.*; 
+import org.apache.poi.hssf.eventusermodel.*; 
+import org.apache.poi.hpsf.wellknown.*; 
+import org.apache.poi.hssf.eventusermodel.dummyrecord.*; 
 import com.google.protobuf.*; 
+import org.apache.poi.common.usermodel.*; 
+import org.apache.poi.poifs.dev.*; 
+import org.apache.poi.hssf.model.*; 
+import org.apache.poi.poifs.property.*; 
+import org.apache.poi.poifs.common.*; 
+import org.apache.poi.ss.formula.ptg.*; 
+import org.apache.poi.ss.formula.eval.*; 
+import org.apache.poi.poifs.filesystem.*; 
+import org.apache.poi.ss.usermodel.charts.*; 
+import org.apache.poi.hpsf.extractor.*; 
+import org.apache.poi.poifs.crypt.binaryrc4.*; 
+import org.apache.poi.hssf.record.*; 
+import org.apache.poi.hssf.record.common.*; 
+import org.apache.poi.poifs.crypt.*; 
+import org.apache.poi.ss.extractor.*; 
+import org.apache.poi.hssf.record.pivottable.*; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -335,6 +395,9 @@ public void setup()
   //Define the size of the display
   size(PIXELS_X, PIXELS_Y);
   
+  //Before creating the DMX output objects, parse the fixtures requested by the user
+  myDMXConfiguration = new DMXConfiguration();
+
   //Initialize Object for Serial2DMX microcontroller
   myDMX = new DMX(this);
   //Initialize Object for Serial2CustomDevices microcontroller
@@ -28899,323 +28962,6 @@ public void empty_CustomDevices() {
   CustomDeviceList_RackLights = new ArrayList<CustomDevice_RackLight>();
 }
 
-//////////////////////////////////////////////////////
-//   DMX generic functions and fixture declaration  //
-//////////////////////////////////////////////////////
-
-// Important note:
-// Due to the project's development history, the strobes are dealt with in a particular way
-// A possible future evolution could be to harmonize the behaviour of all devices - this shall be done if enough time is available
-
-
-
-//Create a DMX object - initialize the serial port for the microcontroller responsible for the DMX equipments
-DMX myDMX;
-
-//Create lists of DMX equipments corresponding to "families" - note: due to historic reasons, strobes are still organised in a non-generic way
-ArrayList<DMX_Stroboscope> DMXList_FrontLeftStroboscopes;
-ArrayList<DMX_Stroboscope> DMXList_FrontRightStroboscopes;
-ArrayList<DMX_Stroboscope> DMXList_BackStroboscopes;
-ArrayList<DMX_MovingHead>  DMXList_MovingHeads;
-ArrayList<DMX_PAR>         DMXList_Pars;
-
-//Create sublists of the registered devices
-ArrayList<DMX_MovingHead>  DMXList_MovingHeads_top;
-ArrayList<DMX_MovingHead>  DMXList_MovingHeads_bottom;
-ArrayList<DMX_MovingHead>  DMXList_MovingHeads_side;
-ArrayList<DMX_MovingHead>  DMXList_MovingHeads_center;
-ArrayList<DMX_MovingHead>  DMXList_MovingHeads_right;
-ArrayList<DMX_MovingHead>  DMXList_MovingHeads_left;
-IntList                    DMX_registeredDeviceID_MovingHeads;
-
-ArrayList<DMX_PAR>         DMXList_Pars_side;
-ArrayList<DMX_PAR>         DMXList_Pars_center;
-ArrayList<DMX_PAR>         DMXList_Pars_right;
-ArrayList<DMX_PAR>         DMXList_Pars_left;
-IntList                    DMX_registeredDeviceID_Pars;
-
-//If an exception is raised when trying to send a DMX command, raise the flag, and do not try anymore for this particular device
-boolean exceptionRaisedDMX = false;
-
-//For 4 channel stroboscopes, default values for the special channels
-final int DMXStroboscope_defaultFlashLengthValue = 50;
-final int DMXStroboscope_defaultSpecialFXValue   = 0;      // No effect  
-
-//General DMX object, serves as en entry point to send actual DMX data over the network
-public class DMX {
- 
-  Serial myPort;
- 
-  DMX(PApplet myPApplet) {
-    if (debug_without_dmx == false) {
-      for (int element = 0; element < Serial.list().length; element++){
-        if (Serial.list()[element].contains(DMX_MICROCONTROLLER_NAME) == true) {
-          this.myPort = new Serial(myPApplet, Serial.list()[element], 9600);      
-        }
-      }
-    }
-  }
-
-  // Send command to Teensy2 to update DMX channel
-  public void setDmxChannel(int channel, int value) throws SerialPortException {
-    // Convert the parameters into a message of the form: 123c45w where 123 is the channel and 45 is the value
-    // then send to the Arduino
-    if (debug_without_dmx == false) 
-    {
-      if (exceptionRaisedDMX == false) {
-        try {
-          this.myPort.write( str(channel) + "c" + str(value) + "w" );
-        }
-        catch (Exception e) {
-          throw new SerialPortException("DMX Output error: no serial port found! " + e);
-        }
-      }
-    }
-  } 
-}
-
-public void init_defaultDMXDevices() {
-
-  dmxInit_registerDefaultStrobes();
-  dmxInit_registerDefaultMovingHeads();
-  dmxInit_registerDefaultPars();
-
-  // Execute all the subtasks needed to complete the DMX init
-  dmxInit_buildSubObjects();
-
-}
-
-public void empty_DMXDevices() {
-  DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
-  DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
-  DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
-}
-
-public boolean checkDmxAddressMapping(int startAddr, int nbChNewFixture) {
-  //TBIL - check that no fixture conflicts with another
-  return true;
-}
-
-
-public void dmxInit_registerDefaultStrobes() {
-  DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
-  DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
-  DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
-  // DMXList_MovingHeads            = new ArrayList<DMX_MovingHead>();
-
-  //The default DMX devices consist of two small stroboscopes on the left and on the right, and one big in the middle
-  DMXList_BackStroboscopes.add(new DMX_Stroboscope(5,6,7,8));
-  DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(1, 2));
-  DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
-}
-
-public void dmxInit_registerDefaultMovingHeads() {
-  DMXList_MovingHeads            = new ArrayList<DMX_MovingHead>();
-
-  // New style fixtures
-  try {
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 0*24));
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 1*24));
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 2*24));
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 3*24));
-    
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 4*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 5*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 6*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 4, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 5, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
-    
-  }
-  catch (UndefinedFixtureException e) {
-    println("Undefined Fixture");
-  }
-
-  
-  
-}
-
-public void dmxInit_registerDefaultPars() {
-  DMXList_Pars            = new ArrayList<DMX_PAR>();
-
-  try {
-    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 8*24 + 0*3));
-    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  1, 10 + 8*24 + 1*3));
-    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 2, 10 + 8*24 + 2*3 + 0*4));
-    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 3, 10 + 8*24 + 2*3 + 1*4));
-  }
-  catch (UndefinedFixtureException e) {
-    println("Undefined Fixture");
-  }  
-}
-
-public void dmxInit_buildSubObjects() {
-  // Now build the center/side/right/left sublists
-  dmx_buildFixtureSublists_movingHead();
-  dmx_buildFixtureSublists_par();
-  // Check the registered deviceIDs
-  dmx_buildDeviceIDLists();
-}
-
-public void dmx_buildFixtureSublists_movingHead() {
-  //Initialize the sublists
-  DMXList_MovingHeads_top        = new ArrayList<DMX_MovingHead>();
-  DMXList_MovingHeads_bottom     = new ArrayList<DMX_MovingHead>();
-  DMXList_MovingHeads_side       = new ArrayList<DMX_MovingHead>();
-  DMXList_MovingHeads_center     = new ArrayList<DMX_MovingHead>();
-  DMXList_MovingHeads_right      = new ArrayList<DMX_MovingHead>();
-  DMXList_MovingHeads_left       = new ArrayList<DMX_MovingHead>();
-  
-  // First, discriminate between the fixtures on the floor or not
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    if (movingHead.floorFixture) {
-      DMXList_MovingHeads_bottom.add(movingHead);
-    }
-    else {
-      DMXList_MovingHeads_top.add(movingHead); 
-    }
-  }
-
-  int nbMovingHeads = DMXList_MovingHeads_bottom.size();
-
-  // Then, parse all the moving heads on the floor
-  // Consider that about one third of the fixtures go in the "center" group
-  float centerRatio = 1.0f/3.0f;
-
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
-    if (nbMovingHeads%2 == 1) {
-      // Left / Right fixtures
-      if (movingHead.getDeviceID() < (nbMovingHeads-1)/2) {
-        DMXList_MovingHeads_left.add(movingHead);
-      }
-      else if (movingHead.getDeviceID() > (nbMovingHeads-1)/2) {
-        DMXList_MovingHeads_right.add(movingHead);
-      }
-      
-      // Side / Center fixtures
-      int nbCenterMovingHeads = ceil(nbMovingHeads*centerRatio) + ( (ceil(nbMovingHeads*centerRatio) + 1) % 2);
-      if (movingHead.getDeviceID() < (nbMovingHeads-nbCenterMovingHeads)/2 || movingHead.getDeviceID() >= (nbMovingHeads-nbCenterMovingHeads)/2 + nbCenterMovingHeads) {
-        DMXList_MovingHeads_side.add(movingHead);
-      }
-      else {
-        DMXList_MovingHeads_center.add(movingHead);
-      }
-
-    }
-    else {
-      // Left / Right fixtures
-      if (movingHead.getDeviceID() <= (nbMovingHeads-1)/2) {
-        DMXList_MovingHeads_left.add(movingHead);
-      }
-      else {
-        DMXList_MovingHeads_right.add(movingHead);
-      }
-
-      // Side / Center fixtures
-      int nbCenterMovingHeads = ceil(nbMovingHeads*centerRatio) + ( (ceil(nbMovingHeads*centerRatio) + 1) % 2);
-      if (movingHead.getDeviceID() <= (nbMovingHeads-nbCenterMovingHeads)/2 || movingHead.getDeviceID() >= (nbMovingHeads-nbCenterMovingHeads)/2 + nbCenterMovingHeads) {
-        DMXList_MovingHeads_side.add(movingHead);
-      }
-      else {
-        DMXList_MovingHeads_center.add(movingHead);
-      }
-    }
-  }
-
-  // Special case: if not enough moving heads are declared, the side list might be empty (ex: 2 fixtures -> "2 center fixtures"). In this case, consider the side and the center lists to be equal
-  if (DMXList_MovingHeads_side.size() == 0) {
-    DMXList_MovingHeads_side = DMXList_MovingHeads_center;
-  }
-  if (DMXList_MovingHeads_center.size() == 0) {
-    DMXList_MovingHeads_center = DMXList_MovingHeads_side;
-  }
-  if (DMXList_MovingHeads.size() == 1) {
-    DMXList_MovingHeads_left  = DMXList_MovingHeads_bottom;
-    DMXList_MovingHeads_right = DMXList_MovingHeads_bottom;
-  }
-
-}
-
-public void dmx_buildFixtureSublists_par() {
-  //Initialize the sublists
-  DMXList_Pars_side       = new ArrayList<DMX_PAR>();
-  DMXList_Pars_center     = new ArrayList<DMX_PAR>();
-  DMXList_Pars_right      = new ArrayList<DMX_PAR>();
-  DMXList_Pars_left       = new ArrayList<DMX_PAR>();
-
-  int nbPars = DMXList_Pars.size();
-  
-  // Consider that about one third of the fixtures go in the "center" group
-  float centerRatio = 1.0f/3.0f;
-
-  for (DMX_PAR par: DMXList_Pars) {
-    if (nbPars%2 == 1) {
-      // Left / Right fixtures
-      if (par.getDeviceID() < (nbPars-1)/2) {
-        DMXList_Pars_left.add(par);
-      }
-      else if (par.getDeviceID() > (nbPars-1)/2) {
-        DMXList_Pars_right.add(par);
-      }
-      
-      // Side / Center fixtures
-      int nbCenterPars = ceil(nbPars*centerRatio) + ( (ceil(nbPars*centerRatio) + 1) % 2);
-      if (par.getDeviceID() < (nbPars-nbCenterPars)/2 || par.getDeviceID() >= (nbPars-nbCenterPars)/2 + nbCenterPars) {
-        DMXList_Pars_side.add(par);
-      }
-      else {
-        DMXList_Pars_center.add(par);
-      }
-
-    }
-    else {
-      // Left / Right fixtures
-      if (par.getDeviceID() <= (nbPars-1)/2) {
-        DMXList_Pars_left.add(par);
-      }
-      else {
-        DMXList_Pars_right.add(par);
-      }
-
-      // Side / Center fixtures
-      int nbCenterPars = ceil(nbPars*centerRatio) + ( (ceil(nbPars*centerRatio) + 1) % 2);
-      if (par.getDeviceID() <= (nbPars-nbCenterPars)/2 || par.getDeviceID() >= (nbPars-nbCenterPars)/2 + nbCenterPars) {
-        DMXList_Pars_side.add(par);
-      }
-      else {
-        DMXList_Pars_center.add(par);
-      }
-    }
-  }
-
-  // Special case: if not enough moving heads are declared, the side list might be empty (ex: 2 fixtures -> "2 center fixtures"). In this case, consider the side and the center lists to be equal
-  if (DMXList_Pars_side.size() == 0) {
-    DMXList_Pars_side = DMXList_Pars_center;
-  }
-  if (DMXList_Pars_center.size() == 0) {
-    DMXList_Pars_center = DMXList_Pars_side;
-  }
-  if (DMXList_Pars.size() == 1) {
-    DMXList_Pars_left  = DMXList_Pars;
-    DMXList_Pars_right = DMXList_Pars;
-  }
-
-}
-
-public void dmx_buildDeviceIDLists() {
-  DMX_registeredDeviceID_MovingHeads = new IntList();
-  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
-    DMX_registeredDeviceID_MovingHeads.append(movingHead.getDeviceID());
-  }
-  DMX_registeredDeviceID_MovingHeads.sort();
-
-  DMX_registeredDeviceID_Pars = new IntList();
-  for (DMX_PAR par: DMXList_Pars) {
-    DMX_registeredDeviceID_Pars.append(par.getDeviceID());
-  }
-  DMX_registeredDeviceID_Pars.sort();
-}
-
 ///////////////////////////////////////////////////////////////
 //   DMX animations - Sequences used by the automatic mode   //
 ///////////////////////////////////////////////////////////////
@@ -30772,6 +30518,376 @@ public void dmxAnim_movingHead_blackout() {
     movingHead.setSpeed_maxSpeed();
     movingHead.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+//   DMX configuration - parse the DMX Excel sheet and decide what fixtures should be instanciated   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+//import org.apache.poi.ss.usermodel.Cell;
+//import org.apache.poi.ss.usermodel.Row;
+//import org.apache.poi.ss.usermodel.Sheet;
+//import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+public class DMXConfiguration {
+  
+
+  DMXConfiguration() {
+
+       // //create a blanc document
+       // XSSFWorkbook wb = new XSSFWorkbook();
+       // //create a black sheet
+       // Sheet sheet = wb.createSheet("new sheet");
+       // //create a new row 0
+       // Row row = sheet.createRow((short)0);
+       // //create a new cell
+       // Cell cell = row.createCell(0);
+       // //insert value in the created cell
+       // cell.setCellValue(1.4);
+   
+       // //add other cells with different types
+       // /*int*/row.createCell(1).setCellValue(7);
+       // /*int*/row.createCell(2).setCellValue(99);
+       // /*string*/row.createCell(3).setCellValue("string");
+       // /*boolean*/row.createCell(4).setCellValue(true);
+
+       // FileOutputStream fos;
+       // try {
+       //   fos= new FileOutputStream("newFile.xlsx");
+       //   wb.write(fos);
+       //   fos.close();
+       // } catch (FileNotFoundException e) {
+       //     e.printStackTrace();
+       // } catch (IOException e) {
+       //     e.printStackTrace();
+       // }
+
+  }
+
+
+}
+
+//////////////////////////////////////////////////////
+//   DMX generic functions and fixture declaration  //
+//////////////////////////////////////////////////////
+
+// Important note:
+// Due to the project's development history, the strobes are dealt with in a particular way
+// A possible future evolution could be to harmonize the behaviour of all devices - this shall be done if enough time is available
+
+
+
+//Create a DMX configuration object - this will allow to parse the user configuration Excel workbook
+DMXConfiguration myDMXConfiguration;
+
+//Create a DMX object - initialize the serial port for the microcontroller responsible for the DMX equipments
+DMX myDMX;
+
+//Create lists of DMX equipments corresponding to "families" - note: due to historic reasons, strobes are still organised in a non-generic way
+ArrayList<DMX_Stroboscope> DMXList_FrontLeftStroboscopes;
+ArrayList<DMX_Stroboscope> DMXList_FrontRightStroboscopes;
+ArrayList<DMX_Stroboscope> DMXList_BackStroboscopes;
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads;
+ArrayList<DMX_PAR>         DMXList_Pars;
+
+//Create sublists of the registered devices
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads_top;
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads_bottom;
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads_side;
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads_center;
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads_right;
+ArrayList<DMX_MovingHead>  DMXList_MovingHeads_left;
+IntList                    DMX_registeredDeviceID_MovingHeads;
+
+ArrayList<DMX_PAR>         DMXList_Pars_side;
+ArrayList<DMX_PAR>         DMXList_Pars_center;
+ArrayList<DMX_PAR>         DMXList_Pars_right;
+ArrayList<DMX_PAR>         DMXList_Pars_left;
+IntList                    DMX_registeredDeviceID_Pars;
+
+//If an exception is raised when trying to send a DMX command, raise the flag, and do not try anymore for this particular device
+boolean exceptionRaisedDMX = false;
+
+//For 4 channel stroboscopes, default values for the special channels
+final int DMXStroboscope_defaultFlashLengthValue = 50;
+final int DMXStroboscope_defaultSpecialFXValue   = 0;      // No effect  
+
+//General DMX object, serves as en entry point to send actual DMX data over the network
+public class DMX {
+ 
+  Serial myPort;
+ 
+  DMX(PApplet myPApplet) {
+    if (debug_without_dmx == false) {
+      for (int element = 0; element < Serial.list().length; element++){
+        if (Serial.list()[element].contains(DMX_MICROCONTROLLER_NAME) == true) {
+          this.myPort = new Serial(myPApplet, Serial.list()[element], 9600);      
+        }
+      }
+    }
+  }
+
+  // Send command to Teensy2 to update DMX channel
+  public void setDmxChannel(int channel, int value) throws SerialPortException {
+    // Convert the parameters into a message of the form: 123c45w where 123 is the channel and 45 is the value
+    // then send to the Arduino
+    if (debug_without_dmx == false) 
+    {
+      if (exceptionRaisedDMX == false) {
+        try {
+          this.myPort.write( str(channel) + "c" + str(value) + "w" );
+        }
+        catch (Exception e) {
+          throw new SerialPortException("DMX Output error: no serial port found! " + e);
+        }
+      }
+    }
+  } 
+}
+
+public void init_defaultDMXDevices() {
+
+  dmxInit_registerDefaultStrobes();
+  dmxInit_registerDefaultMovingHeads();
+  dmxInit_registerDefaultPars();
+
+  // Execute all the subtasks needed to complete the DMX init
+  dmxInit_buildSubObjects();
+
+}
+
+public void empty_DMXDevices() {
+  DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
+  DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
+  DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
+}
+
+public boolean checkDmxAddressMapping(int startAddr, int nbChNewFixture) {
+  //TBIL - check that no fixture conflicts with another
+  return true;
+}
+
+
+public void dmxInit_registerDefaultStrobes() {
+  DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
+  DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
+  DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
+  // DMXList_MovingHeads            = new ArrayList<DMX_MovingHead>();
+
+  //The default DMX devices consist of two small stroboscopes on the left and on the right, and one big in the middle
+  DMXList_BackStroboscopes.add(new DMX_Stroboscope(5,6,7,8));
+  DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(1, 2));
+  DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
+}
+
+public void dmxInit_registerDefaultMovingHeads() {
+  DMXList_MovingHeads            = new ArrayList<DMX_MovingHead>();
+
+  // New style fixtures
+  try {
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 0*24));
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 1*24));
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 2*24));
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 3*24));
+    
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 4*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 5*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 6*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 4, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
+    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 5, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
+    
+  }
+  catch (UndefinedFixtureException e) {
+    println("Undefined Fixture");
+  }
+
+  
+  
+}
+
+public void dmxInit_registerDefaultPars() {
+  DMXList_Pars            = new ArrayList<DMX_PAR>();
+
+  try {
+    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 8*24 + 0*3));
+    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  1, 10 + 8*24 + 1*3));
+    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 2, 10 + 8*24 + 2*3 + 0*4));
+    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 3, 10 + 8*24 + 2*3 + 1*4));
+  }
+  catch (UndefinedFixtureException e) {
+    println("Undefined Fixture");
+  }  
+}
+
+public void dmxInit_buildSubObjects() {
+  // Now build the center/side/right/left sublists
+  dmx_buildFixtureSublists_movingHead();
+  dmx_buildFixtureSublists_par();
+  // Check the registered deviceIDs
+  dmx_buildDeviceIDLists();
+}
+
+public void dmx_buildFixtureSublists_movingHead() {
+  //Initialize the sublists
+  DMXList_MovingHeads_top        = new ArrayList<DMX_MovingHead>();
+  DMXList_MovingHeads_bottom     = new ArrayList<DMX_MovingHead>();
+  DMXList_MovingHeads_side       = new ArrayList<DMX_MovingHead>();
+  DMXList_MovingHeads_center     = new ArrayList<DMX_MovingHead>();
+  DMXList_MovingHeads_right      = new ArrayList<DMX_MovingHead>();
+  DMXList_MovingHeads_left       = new ArrayList<DMX_MovingHead>();
+  
+  // First, discriminate between the fixtures on the floor or not
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    if (movingHead.floorFixture) {
+      DMXList_MovingHeads_bottom.add(movingHead);
+    }
+    else {
+      DMXList_MovingHeads_top.add(movingHead); 
+    }
+  }
+
+  int nbMovingHeads = DMXList_MovingHeads_bottom.size();
+
+  // Then, parse all the moving heads on the floor
+  // Consider that about one third of the fixtures go in the "center" group
+  float centerRatio = 1.0f/3.0f;
+
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads_bottom) {
+    if (nbMovingHeads%2 == 1) {
+      // Left / Right fixtures
+      if (movingHead.getDeviceID() < (nbMovingHeads-1)/2) {
+        DMXList_MovingHeads_left.add(movingHead);
+      }
+      else if (movingHead.getDeviceID() > (nbMovingHeads-1)/2) {
+        DMXList_MovingHeads_right.add(movingHead);
+      }
+      
+      // Side / Center fixtures
+      int nbCenterMovingHeads = ceil(nbMovingHeads*centerRatio) + ( (ceil(nbMovingHeads*centerRatio) + 1) % 2);
+      if (movingHead.getDeviceID() < (nbMovingHeads-nbCenterMovingHeads)/2 || movingHead.getDeviceID() >= (nbMovingHeads-nbCenterMovingHeads)/2 + nbCenterMovingHeads) {
+        DMXList_MovingHeads_side.add(movingHead);
+      }
+      else {
+        DMXList_MovingHeads_center.add(movingHead);
+      }
+
+    }
+    else {
+      // Left / Right fixtures
+      if (movingHead.getDeviceID() <= (nbMovingHeads-1)/2) {
+        DMXList_MovingHeads_left.add(movingHead);
+      }
+      else {
+        DMXList_MovingHeads_right.add(movingHead);
+      }
+
+      // Side / Center fixtures
+      int nbCenterMovingHeads = ceil(nbMovingHeads*centerRatio) + ( (ceil(nbMovingHeads*centerRatio) + 1) % 2);
+      if (movingHead.getDeviceID() <= (nbMovingHeads-nbCenterMovingHeads)/2 || movingHead.getDeviceID() >= (nbMovingHeads-nbCenterMovingHeads)/2 + nbCenterMovingHeads) {
+        DMXList_MovingHeads_side.add(movingHead);
+      }
+      else {
+        DMXList_MovingHeads_center.add(movingHead);
+      }
+    }
+  }
+
+  // Special case: if not enough moving heads are declared, the side list might be empty (ex: 2 fixtures -> "2 center fixtures"). In this case, consider the side and the center lists to be equal
+  if (DMXList_MovingHeads_side.size() == 0) {
+    DMXList_MovingHeads_side = DMXList_MovingHeads_center;
+  }
+  if (DMXList_MovingHeads_center.size() == 0) {
+    DMXList_MovingHeads_center = DMXList_MovingHeads_side;
+  }
+  if (DMXList_MovingHeads.size() == 1) {
+    DMXList_MovingHeads_left  = DMXList_MovingHeads_bottom;
+    DMXList_MovingHeads_right = DMXList_MovingHeads_bottom;
+  }
+
+}
+
+public void dmx_buildFixtureSublists_par() {
+  //Initialize the sublists
+  DMXList_Pars_side       = new ArrayList<DMX_PAR>();
+  DMXList_Pars_center     = new ArrayList<DMX_PAR>();
+  DMXList_Pars_right      = new ArrayList<DMX_PAR>();
+  DMXList_Pars_left       = new ArrayList<DMX_PAR>();
+
+  int nbPars = DMXList_Pars.size();
+  
+  // Consider that about one third of the fixtures go in the "center" group
+  float centerRatio = 1.0f/3.0f;
+
+  for (DMX_PAR par: DMXList_Pars) {
+    if (nbPars%2 == 1) {
+      // Left / Right fixtures
+      if (par.getDeviceID() < (nbPars-1)/2) {
+        DMXList_Pars_left.add(par);
+      }
+      else if (par.getDeviceID() > (nbPars-1)/2) {
+        DMXList_Pars_right.add(par);
+      }
+      
+      // Side / Center fixtures
+      int nbCenterPars = ceil(nbPars*centerRatio) + ( (ceil(nbPars*centerRatio) + 1) % 2);
+      if (par.getDeviceID() < (nbPars-nbCenterPars)/2 || par.getDeviceID() >= (nbPars-nbCenterPars)/2 + nbCenterPars) {
+        DMXList_Pars_side.add(par);
+      }
+      else {
+        DMXList_Pars_center.add(par);
+      }
+
+    }
+    else {
+      // Left / Right fixtures
+      if (par.getDeviceID() <= (nbPars-1)/2) {
+        DMXList_Pars_left.add(par);
+      }
+      else {
+        DMXList_Pars_right.add(par);
+      }
+
+      // Side / Center fixtures
+      int nbCenterPars = ceil(nbPars*centerRatio) + ( (ceil(nbPars*centerRatio) + 1) % 2);
+      if (par.getDeviceID() <= (nbPars-nbCenterPars)/2 || par.getDeviceID() >= (nbPars-nbCenterPars)/2 + nbCenterPars) {
+        DMXList_Pars_side.add(par);
+      }
+      else {
+        DMXList_Pars_center.add(par);
+      }
+    }
+  }
+
+  // Special case: if not enough moving heads are declared, the side list might be empty (ex: 2 fixtures -> "2 center fixtures"). In this case, consider the side and the center lists to be equal
+  if (DMXList_Pars_side.size() == 0) {
+    DMXList_Pars_side = DMXList_Pars_center;
+  }
+  if (DMXList_Pars_center.size() == 0) {
+    DMXList_Pars_center = DMXList_Pars_side;
+  }
+  if (DMXList_Pars.size() == 1) {
+    DMXList_Pars_left  = DMXList_Pars;
+    DMXList_Pars_right = DMXList_Pars;
+  }
+
+}
+
+public void dmx_buildDeviceIDLists() {
+  DMX_registeredDeviceID_MovingHeads = new IntList();
+  for (DMX_MovingHead movingHead: DMXList_MovingHeads) {
+    DMX_registeredDeviceID_MovingHeads.append(movingHead.getDeviceID());
+  }
+  DMX_registeredDeviceID_MovingHeads.sort();
+
+  DMX_registeredDeviceID_Pars = new IntList();
+  for (DMX_PAR par: DMXList_Pars) {
+    DMX_registeredDeviceID_Pars.append(par.getDeviceID());
+  }
+  DMX_registeredDeviceID_Pars.sort();
 }
 ///////////////////////////////////////////
 //   Fixture management - moving heads   //

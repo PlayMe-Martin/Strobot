@@ -9,6 +9,9 @@
 
 
 
+//Create a DMX configuration object - this will allow to parse the user configuration Excel workbook
+DMXConfiguration myDMXConfiguration;
+
 //Create a DMX object - initialize the serial port for the microcontroller responsible for the DMX equipments
 DMX myDMX;
 
