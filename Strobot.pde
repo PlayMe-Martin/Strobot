@@ -277,6 +277,9 @@ void setup()
   //Define the size of the display
   size(PIXELS_X, PIXELS_Y);
   
+  //Before creating the DMX output objects, parse the fixtures requested by the user
+  myDMXConfiguration = new DMXConfiguration();
+
   //Initialize Object for Serial2DMX microcontroller
   myDMX = new DMX(this);
   //Initialize Object for Serial2CustomDevices microcontroller
