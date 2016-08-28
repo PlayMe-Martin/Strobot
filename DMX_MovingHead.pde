@@ -155,6 +155,7 @@ class DMX_MovingHead {
   boolean fineTiltControl                  = false;
   int tilt_minVal                          = -1;
   int tilt_maxVal                          = -1;
+  boolean invertedTilt                     = false;   // The tilt control may have to be inverted
   
   
   IntList available_chIndex_color;
@@ -231,18 +232,19 @@ class DMX_MovingHead {
   int[] simulator_colorRGB;
 
   DMX_MovingHead(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
-    this(name, deviceID, startAddr, false, true);
+    this(name, deviceID, startAddr, false, false, true);
   }
 
   DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan) throws UndefinedFixtureException {
-    this(name, deviceID, startAddr, invertedPan, true);
+    this(name, deviceID, startAddr, invertedPan, false, true);
   }
 
   // Fixtures are instanciated using their name: the constructor will then look up in the fixture library if such a device exists, and throw an exception if not
-  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan, boolean floorFixture) throws UndefinedFixtureException {
+  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan, boolean invertedTilt, boolean floorFixture) throws UndefinedFixtureException {
     this.deviceID = deviceID;
     this.dmxStartAddr = startAddr;
     this.invertedPan = invertedPan;
+    this.invertedTilt = invertedTilt;
     this.floorFixture = floorFixture;
 
     // Init
@@ -741,12 +743,24 @@ class DMX_MovingHead {
 
   void setTilt(float val_percent) {
     if (fineTiltControl) {
-      int val = int( map(val_percent, 0.0, 100.0, 0, 65535) );
+      int val;
+      if (!invertedTilt) {
+        val = int( map(val_percent, 0.0, 100.0, 0, 65535) );
+      }
+      else {
+        val = int( map(val_percent, 0.0, 100.0, 65535, 0) );
+      }
+
       dmxVal[chIndex_tilt]     = (val & 0xffff) >> 8;
       dmxVal[chIndex_tiltFine] = (val & 0xffff) &  0xFF;
     }
     else {
-      dmxVal[chIndex_tilt] = int( map(val_percent, 0.0, 100.0, tilt_minVal, tilt_maxVal) );
+      if (!invertedTilt) {
+        dmxVal[chIndex_tilt] = int( map(val_percent, 0.0, 100.0, tilt_minVal, tilt_maxVal) );
+      }
+      else {
+        dmxVal[chIndex_tilt] = int( map(val_percent, 0.0, 100.0, tilt_maxVal, tilt_minVal) ); 
+      }
     }
   }
 

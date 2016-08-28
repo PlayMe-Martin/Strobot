@@ -31,6 +31,14 @@ final String XMLDESC_CHANNELSET_TO_PROPORTIONAL = "proportional";
 final String XMLDESC_CHANNELSET_RECOMMENDED     = "recommended";
 final String XMLDESC_CHANNELSET_RANGE           = "range";
 
+final String FIXTURE_TYPE_STROBE                = "Strobe";
+final String FIXTURE_TYPE_MOVING_HEAD           = "Moving Head";
+final String FIXTURE_TYPE_PAR                   = "PAR";
+final String FIXTURE_TYPE_SCANNER               = "Scanner";
+final String FIXTURE_TYPE_LASER                 = "Laser";
+final String FIXTURE_TYPE_BLINDER               = "Blinder";
+final String FIXTURE_TYPE_LED_STRIP             = "LED Strip";
+final String FIXTURE_TYPE_FOG                   = "Fog";
 
 ArrayList<Fixture> fixtureLibrary;
 
@@ -50,9 +58,7 @@ void readFixtureFiles() {
   fixtureLibrary = new ArrayList<Fixture>();
   
   //Parse all data folders, and create Fixture objects
-  String[] fixtureTypes   = { "Strobe", "Moving Head", "PAR", "Scanner", "Laser", "Blinder", "LED Strip", "Fog"};
-  //String[] fixtureTypes   = { "Strobe"};
-
+  String[] fixtureTypes   = {FIXTURE_TYPE_STROBE, FIXTURE_TYPE_MOVING_HEAD, FIXTURE_TYPE_PAR, FIXTURE_TYPE_SCANNER, FIXTURE_TYPE_LASER, FIXTURE_TYPE_BLINDER, FIXTURE_TYPE_LED_STRIP, FIXTURE_TYPE_FOG};
     
   for (String directoryToParse: fixtureTypes) {
     try {
@@ -64,7 +70,7 @@ void readFixtureFiles() {
       for (String child : children) {
         // Only check for XML files, disregard OSX's Finder cookie
         if (child.contains(".xml")) {
-          println(fullDirectoryPath + "/" + child);
+          outputLog.println("Found a DMX fixture description file: " + fullDirectoryPath + "/" + child);
           parseFixtureXML(fullDirectoryPath + "/" + child);
         }
       }
@@ -182,11 +188,10 @@ void parseFixtureXML(String path) {
         }
       }
 
-      println(newFixture);
+      outputLog.println(newFixture);
       // Very last step : once the file has been parsed, if no exception has been raised up until now, the description is valid
       // Add the new fixture to the library
       fixtureLibrary.add(newFixture);
-      println("Added a fixture to the library");
     }
 
 
@@ -291,6 +296,10 @@ class Fixture {
 
   String getShortName() {
     return this.Name;
+  }
+
+  String getType() {
+    return this.Type;
   }
 
   int getNbChannels() {

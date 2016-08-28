@@ -226,7 +226,7 @@ PImage getimage(int imagenumber)
 }
 
 PImage getConfigSpecificImage(String path) {
-  String confSpecific = NUMBER_OF_PANELS + "_panels/";
+  String confSpecific = "Images/" + NUMBER_OF_PANELS + "_panels/";
   return loadImage(confSpecific + path);
 }
 
@@ -6570,13 +6570,13 @@ void draw_colorrain(){
 }
 
 
-public class Cell{
+public class ColorRainCell{
   float locX, locY;
   float sizeX, sizeY;
   float cBrightness;
   float cHue;
    
-  public Cell(float locX, float locY, float cHue, float sizeX, float sizeY){
+  public ColorRainCell(float locX, float locY, float cHue, float sizeX, float sizeY){
     this.locX = locX;
     this.locY = locY;
     this.sizeX = sizeX;
@@ -6605,7 +6605,7 @@ public class colorrain_CellArray{
   float arrayHeight;
   float numVert;
   float numHoriz;
-  Cell[][] colorrain_cells;
+  ColorRainCell[][] colorrain_cells;
   int[] offset;
    
   public colorrain_CellArray(float arrayWidth, float arrayHeight, int numHoriz, int numVert){
@@ -6616,10 +6616,10 @@ public class colorrain_CellArray{
      
     float cellHeight = arrayHeight/numVert;
     float cellWidth  = arrayWidth/numHoriz;
-    colorrain_cells = new Cell[numHoriz][numVert];
+    colorrain_cells = new ColorRainCell[numHoriz][numVert];
     for(int i = 0; i < colorrain_cells.length; i++){
       for(int k = 0; k < colorrain_cells[0].length; k++){
-        colorrain_cells[i][k] = new Cell(cellHeight*i, cellWidth*k, 100, cellWidth, cellHeight);
+        colorrain_cells[i][k] = new ColorRainCell(cellHeight*i, cellWidth*k, 100, cellWidth, cellHeight);
       }
     }
     offset = new int[numHoriz];
@@ -6682,7 +6682,7 @@ void draw_bwtriangles() {
 
 void createParticleSystem() {
   background(0);
-  bwtriangles_particles = new ParticleSystem ();
+  bwtriangles_particles = new ParticleSystem();
   bwtriangles_particles.setBorderBounce(true, true, true, true);
  
   for (int i = 0; i < bwtriangles_nbrParticles; i ++) {
@@ -6715,7 +6715,7 @@ class BWTriangleParticle {
   float max_vel = 800;
   float bounce = -1;
   int taille = 5;
-  Boolean affBoules = true;
+  boolean affBoules = true;
    
 
   BWTriangleParticle (PVector p, PVector v, PVector a, float _bounce) {
@@ -6752,7 +6752,7 @@ class BWTriangleParticle {
     pos.add(vel);
   }
 
-  void render(Boolean aff) {
+  void render(boolean aff) {
     update();
     noStroke();
     fill(255,70);
@@ -6768,10 +6768,10 @@ class ParticleSystem {
   ArrayList history;
  
   //DIFFERENTS PARAMETRES D AFFICHAGE
-  Boolean traceTraits = false;
-  Boolean traceTriangles = true;
-  Boolean traceParticle = false;
-  Boolean changeVit = false; 
+  boolean traceTraits = false;
+  boolean traceTriangles = true;
+  boolean traceParticle = false;
+  boolean changeVit = false; 
  
   int nbBWTriangleParticle = 8;
   float bwtriangles_vitesse = 3;

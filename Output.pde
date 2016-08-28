@@ -205,14 +205,11 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
       
       //HINT: on windows you need to (for example) use COM1, com1 will not work! (case sensitive)
       //String serialPort = OutputHelper.getSerialPortName(ph.getTpm2Device().toUpperCase());
-      println(panelnumber + ": Let's try this: " + serialPortName);
 
       if (serialPortName.equals("")) {          // Debug case: the device is just a placeholder
-        println(panelnumber + ": Nothing");
         this.initialized = false;
       }
       else {                                    // Real case: the serial port name is properly defined
-        println(panelnumber + ": Might be ok");
         this.initialized = false;
         try {
           tpm2 = new Tpm2Serial(serialPortName, PANEL_RESOLUTION_X*PANEL_RESOLUTION_Y, baud);

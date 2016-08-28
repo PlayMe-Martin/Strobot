@@ -94,7 +94,7 @@ boolean debug_without_custom_devices = false;
 
 //Resize option : choose either QUALITY for a slow, but good resize (using mean average), or SPEED, for a faster, but low quality pixel resize
 //Possible values : "QUALITY", "SPEED"
-final String RESIZE_OPTION = "SPEED";
+final String RESIZE_OPTION = "QUALITY";
 
 int NUMBER_OF_PANELS = 5;                       // Preferred number of panels - note: this value is updated in accordance to the available output microcontrollers
 
