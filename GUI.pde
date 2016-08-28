@@ -270,9 +270,9 @@ void setup_gui() {
   gui_glitchBlackLogo = loadImage("GUI/logo_glitchblack.png");
   
   //Initialize the font used for text areas
-  minimlFont       = loadFont("Miniml-Standard0757-8.vlw");
-  minimlFontMedium = loadFont("Miniml-Standard0757-20.vlw");
-  minimlFontBig    = loadFont("Miniml-Standard0757-48.vlw");
+  minimlFont       = loadFont("Fonts/Miniml-Standard0757-8.vlw");
+  minimlFontMedium = loadFont("Fonts/Miniml-Standard0757-20.vlw");
+  minimlFontBig    = loadFont("Fonts/Miniml-Standard0757-48.vlw");
   
   cp5 = new ControlP5(this);
   // Create a controlFrame by using addControlFrame, this creates a new separate frame

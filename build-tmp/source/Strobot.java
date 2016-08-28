@@ -13,9 +13,17 @@ import java.net.*;
 import java.io.*; 
 import com.google.protobuf.*; 
 import java.io.File; 
-import java.io.FileNotFoundException; 
-import java.io.FileOutputStream; 
+import java.io.File; 
 import java.io.IOException; 
+import jxl.Cell; 
+import jxl.Sheet; 
+import jxl.Workbook; 
+import jxl.read.biff.BiffException; 
+import jxl.write.Label; 
+import jxl.write.Number; 
+import jxl.write.WritableSheet; 
+import jxl.write.WritableWorkbook; 
+import jxl.write.WriteException; 
 import javax.xml.parsers.DocumentBuilderFactory; 
 import javax.xml.parsers.DocumentBuilder; 
 import javax.xml.parsers.ParserConfigurationException; 
@@ -46,64 +54,18 @@ import java.util.zip.Adler32;
 import processing.core.PApplet; 
 import processing.serial.Serial; 
 
-import org.apache.poi.wp.usermodel.*; 
-import org.apache.poi.hssf.extractor.*; 
-import org.apache.poi.poifs.eventfilesystem.*; 
-import org.apache.poi.sl.draw.binding.*; 
-import org.apache.poi.hssf.util.*; 
-import org.apache.poi.hssf.record.crypto.*; 
-import org.apache.poi.sl.usermodel.*; 
-import org.apache.poi.ddf.*; 
-import org.apache.poi.ss.usermodel.*; 
-import org.apache.poi.ss.format.*; 
-import org.apache.poi.ss.formula.eval.forked.*; 
-import org.apache.poi.hssf.usermodel.*; 
-import org.apache.poi.hssf.record.chart.*; 
-import org.apache.poi.hssf.*; 
-import org.apache.poi.ss.formula.constant.*; 
-import org.apache.poi.ss.*; 
-import org.apache.poi.ss.formula.functions.*; 
-import org.apache.poi.hssf.record.cf.*; 
-import org.apache.poi.poifs.crypt.cryptoapi.*; 
-import org.apache.poi.poifs.storage.*; 
-import org.apache.poi.poifs.nio.*; 
-import org.apache.poi.ss.util.*; 
-import org.apache.poi.hssf.eventmodel.*; 
-import org.apache.poi.ss.formula.*; 
-import org.apache.poi.poifs.crypt.standard.*; 
-import org.apache.poi.ss.formula.atp.*; 
-import org.apache.poi.ss.formula.udf.*; 
-import org.apache.poi.hssf.dev.*; 
-import org.apache.poi.hpsf.*; 
-import org.apache.poi.hssf.record.cont.*; 
-import org.apache.poi.sl.draw.*; 
-import org.apache.poi.dev.*; 
-import org.apache.poi.*; 
-import org.apache.poi.sl.draw.geom.*; 
-import org.apache.poi.util.*; 
-import org.apache.poi.ss.formula.function.*; 
-import org.apache.poi.ss.util.cellwalk.*; 
-import org.apache.poi.hssf.record.aggregates.*; 
-import org.apache.poi.hssf.eventusermodel.*; 
-import org.apache.poi.hpsf.wellknown.*; 
-import org.apache.poi.hssf.eventusermodel.dummyrecord.*; 
 import com.google.protobuf.*; 
-import org.apache.poi.common.usermodel.*; 
-import org.apache.poi.poifs.dev.*; 
-import org.apache.poi.hssf.model.*; 
-import org.apache.poi.poifs.property.*; 
-import org.apache.poi.poifs.common.*; 
-import org.apache.poi.ss.formula.ptg.*; 
-import org.apache.poi.ss.formula.eval.*; 
-import org.apache.poi.poifs.filesystem.*; 
-import org.apache.poi.ss.usermodel.charts.*; 
-import org.apache.poi.hpsf.extractor.*; 
-import org.apache.poi.poifs.crypt.binaryrc4.*; 
-import org.apache.poi.hssf.record.*; 
-import org.apache.poi.hssf.record.common.*; 
-import org.apache.poi.poifs.crypt.*; 
-import org.apache.poi.ss.extractor.*; 
-import org.apache.poi.hssf.record.pivottable.*; 
+import jxl.common.*; 
+import jxl.write.*; 
+import jxl.biff.formula.*; 
+import jxl.format.*; 
+import jxl.demo.*; 
+import jxl.write.biff.*; 
+import jxl.biff.*; 
+import jxl.*; 
+import jxl.biff.drawing.*; 
+import jxl.common.log.*; 
+import jxl.read.biff.*; 
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
@@ -212,7 +174,7 @@ boolean debug_without_custom_devices = false;
 
 //Resize option : choose either QUALITY for a slow, but good resize (using mean average), or SPEED, for a faster, but low quality pixel resize
 //Possible values : "QUALITY", "SPEED"
-final String RESIZE_OPTION = "SPEED";
+final String RESIZE_OPTION = "QUALITY";
 
 int NUMBER_OF_PANELS = 5;                       // Preferred number of panels - note: this value is updated in accordance to the available output microcontrollers
 
@@ -3683,7 +3645,7 @@ public PImage getimage(int imagenumber)
 }
 
 public PImage getConfigSpecificImage(String path) {
-  String confSpecific = NUMBER_OF_PANELS + "_panels/";
+  String confSpecific = "Images/" + NUMBER_OF_PANELS + "_panels/";
   return loadImage(confSpecific + path);
 }
 
@@ -10027,13 +9989,13 @@ public void draw_colorrain(){
 }
 
 
-public class Cell{
+public class ColorRainCell{
   float locX, locY;
   float sizeX, sizeY;
   float cBrightness;
   float cHue;
    
-  public Cell(float locX, float locY, float cHue, float sizeX, float sizeY){
+  public ColorRainCell(float locX, float locY, float cHue, float sizeX, float sizeY){
     this.locX = locX;
     this.locY = locY;
     this.sizeX = sizeX;
@@ -10062,7 +10024,7 @@ public class colorrain_CellArray{
   float arrayHeight;
   float numVert;
   float numHoriz;
-  Cell[][] colorrain_cells;
+  ColorRainCell[][] colorrain_cells;
   int[] offset;
    
   public colorrain_CellArray(float arrayWidth, float arrayHeight, int numHoriz, int numVert){
@@ -10073,10 +10035,10 @@ public class colorrain_CellArray{
      
     float cellHeight = arrayHeight/numVert;
     float cellWidth  = arrayWidth/numHoriz;
-    colorrain_cells = new Cell[numHoriz][numVert];
+    colorrain_cells = new ColorRainCell[numHoriz][numVert];
     for(int i = 0; i < colorrain_cells.length; i++){
       for(int k = 0; k < colorrain_cells[0].length; k++){
-        colorrain_cells[i][k] = new Cell(cellHeight*i, cellWidth*k, 100, cellWidth, cellHeight);
+        colorrain_cells[i][k] = new ColorRainCell(cellHeight*i, cellWidth*k, 100, cellWidth, cellHeight);
       }
     }
     offset = new int[numHoriz];
@@ -10139,7 +10101,7 @@ public void draw_bwtriangles() {
 
 public void createParticleSystem() {
   background(0);
-  bwtriangles_particles = new ParticleSystem ();
+  bwtriangles_particles = new ParticleSystem();
   bwtriangles_particles.setBorderBounce(true, true, true, true);
  
   for (int i = 0; i < bwtriangles_nbrParticles; i ++) {
@@ -10172,7 +10134,7 @@ class BWTriangleParticle {
   float max_vel = 800;
   float bounce = -1;
   int taille = 5;
-  Boolean affBoules = true;
+  boolean affBoules = true;
    
 
   BWTriangleParticle (PVector p, PVector v, PVector a, float _bounce) {
@@ -10209,7 +10171,7 @@ class BWTriangleParticle {
     pos.add(vel);
   }
 
-  public void render(Boolean aff) {
+  public void render(boolean aff) {
     update();
     noStroke();
     fill(255,70);
@@ -10225,10 +10187,10 @@ class ParticleSystem {
   ArrayList history;
  
   //DIFFERENTS PARAMETRES D AFFICHAGE
-  Boolean traceTraits = false;
-  Boolean traceTriangles = true;
-  Boolean traceParticle = false;
-  Boolean changeVit = false; 
+  boolean traceTraits = false;
+  boolean traceTriangles = true;
+  boolean traceParticle = false;
+  boolean changeVit = false; 
  
   int nbBWTriangleParticle = 8;
   float bwtriangles_vitesse = 3;
@@ -24304,14 +24266,9 @@ public void createConfigFile() {
     configFile_write.println("MIDISettings|PioneerControllerInputMIDIDevice:" + MIDI_BUS_PIONEER_CONTROLLER_INPUT);
     configFile_write.println();
     configFile_write.println();
-    configFile_write.println("This section allows persistant DMX mapping - define custom addresses for the DMX devices below");
+    configFile_write.println("Custom Device configuration:");
     printCustomDevicesConfiguration();
     configFile_write.println();
-    configFile_write.println();    
-    configFile_write.println("This section allows persistant DMX mapping - define custom addresses for the DMX devices below");
-    configFile_write.println("For stroboscopes, the following devices can be configured -> FrontStroboscope/BackStroboscope, with the attributes Speed, Brightness and FlashLength"); 
-    configFile_write.println();
-    printDMXDeviceConfiguration();
     configFile_write.println();
     configFile_write.println("Choose to display the graphic user interface or not - not displaying it will result in a lighter CPU usage");
     configFile_write.println("GeneralSettings|DisplayGUI:" + DISPLAY_GUI);
@@ -24370,18 +24327,6 @@ public void createConfigFile() {
 public void printLEDPanelMicrocontrollerConfiguration() {
   for (String microcontroller: TEENSY_SERIAL_PORT_LIST_5) {
     configFile_write.println("Microcontroller|LEDPanels:" + microcontroller);
-  }
-}
-
-public void printDMXDeviceConfiguration() {
-  for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    configFile_write.println("FrontLeftStroboscope|" + stroboscope.printStatus());
-  }
-  for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    configFile_write.println("FrontRightStroboscope|" + stroboscope.printStatus());
-  }
-  for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    configFile_write.println("BackStroboscope|" + stroboscope.printStatus());
   }
 }
 
@@ -24540,22 +24485,7 @@ public void parseConfigurationFile(String line) {
       }
       
       //////////////////////////////////////////////////
-      
-      else if (lineSplit[0].contains("FrontLeftStroboscope")) {
-        parseDMXSpecificLine_FrontLeftStroboscope(line);
-      }
-      else if (lineSplit[0].contains("FrontRightStroboscope")) {
-        parseDMXSpecificLine_FrontRightStroboscope(line);
-      }
-      else if (lineSplit[0].contains("BackStroboscope")) {
-        parseDMXSpecificLine_BackStroboscope(line);
-      }
-      else if (lineSplit[0].contains("Projector")) {
-        parseDMXSpecificLine_Projector(line);
-      }
-      
-      //////////////////////////////////////////////////
-      
+            
       
       else if (lineSplit[0].contains("ManualInput|AuthorizeManualInput")) {
         authorizeGeneralManualMode = getBooleanFromString(lineSplit[1]);
@@ -24738,173 +24668,6 @@ public void parseCustomDeviceSpecificLine_RackLight(String line) {
   }
 }
 
-
-public void parseDMXSpecificLine_FrontLeftStroboscope(String line) {
-  int dmx_speed       = -1;
-  int dmx_brightness  = -1;
-  int dmx_flashLength = -1;
-  int dmx_specialFX   = -1;
-  
-  try {
-    String[] lineSplit = split(line, "|");
-    for (String element: lineSplit) {
-      String[] elementSplit = split(element, ":");
-      
-      boolean rejectLine = false;
-      if (elementSplit.length != 2) {
-        rejectLine = true;
-      }
-      if (rejectLine == false) {
-        if (elementSplit[0].contains("Speed")) {
-          dmx_speed = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("Brightness")) {
-          dmx_brightness = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("FlashLength")) {
-          dmx_flashLength = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("SpecialFX")) {
-          dmx_specialFX = convertStringToInt(elementSplit[1]);
-        }
-      }
-    }
-  }
-  catch (Exception e) {
-    outputLog.println("Error while parsing the DMX|FrontLeftStroboscope line (" + line + ") : " + e);
-  }
-  
-  boolean dataAvailable = true;
-  if (dmx_speed < 0 || dmx_brightness < 0) {
-    dataAvailable = false;
-  }
-  if (dataAvailable == true) {
-    if (dmx_flashLength < 0) {
-      outputLog.println("Adding a 2-channel front left stroboscope : Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-      DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
-    }
-    else {
-      outputLog.println("Adding a 4-channel front left stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed + "|SpecialFX:" + dmx_specialFX);
-      DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
-    }
-  }
-  else {
-    outputLog.println("Error while creating the DMX FrontLeftStroboscope object, not enough data is available. Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-  }
-}
-
-public void parseDMXSpecificLine_FrontRightStroboscope(String line) {
-  int dmx_speed = -1;
-  int dmx_brightness = -1;
-  int dmx_flashLength = -1;
-  int dmx_specialFX   = -1;
-  
-  try {
-    String[] lineSplit = split(line, "|");
-    for (String element: lineSplit) {
-      String[] elementSplit = split(element, ":");
-      
-      boolean rejectLine = false;
-      if (elementSplit.length != 2) {
-        rejectLine = true;
-      }
-      if (rejectLine == false) {
-        if (elementSplit[0].contains("Speed")) {
-          dmx_speed = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("Brightness")) {
-          dmx_brightness = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("FlashLength")) {
-          dmx_flashLength = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("SpecialFX")) {
-          dmx_specialFX = convertStringToInt(elementSplit[1]);
-        }
-      }
-    }
-  }
-  catch (Exception e) {
-    outputLog.println("Error while parsing the DMX|FrontRightStroboscope line (" + line + ") : " + e);
-  }
-  
-  boolean dataAvailable = true;
-  if (dmx_speed < 0 || dmx_brightness < 0) {
-    dataAvailable = false;
-  }
-  if (dataAvailable == true) {
-    if (dmx_flashLength < 0) {
-      outputLog.println("Adding a 2-channel front right stroboscope : Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-      DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
-    }
-    else {
-      outputLog.println("Adding a 4-channel front right stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed + "|SpecialFX:" + dmx_specialFX);
-      DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
-    }
-  }
-  else {
-    outputLog.println("Error while creating the DMX FrontRightStroboscope object, not enough data is available. Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-  }
-}
-
-public void parseDMXSpecificLine_BackStroboscope(String line) {
-  int dmx_speed = -1;
-  int dmx_brightness = -1;
-  int dmx_flashLength = -1;
-  int dmx_specialFX = -1;
-  
-  try {
-    String[] lineSplit = split(line, "|");
-    for (String element: lineSplit) {
-      String[] elementSplit = split(element, ":");
-      
-      boolean rejectLine = false;
-      if (elementSplit.length != 2) {
-        rejectLine = true;
-      }
-      if (rejectLine == false) {
-        if (elementSplit[0].contains("Speed")) {
-          dmx_speed = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("Brightness")) {
-          dmx_brightness = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("FlashLength")) {
-          dmx_flashLength = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("SpecialFX")) {
-          dmx_specialFX = convertStringToInt(elementSplit[1]);
-        }
-      }
-    }
-  }
-  catch (Exception e) {
-    outputLog.println("Error while parsing the DMX|Backstroboscope line (" + line + ") : " + e);
-  }
-  
-  boolean dataAvailable = true;
-  if (dmx_speed < 0 || dmx_brightness < 0) {
-    dataAvailable = false;
-  }
-  if (dataAvailable == true) {
-    if (dmx_flashLength < 0) {
-      outputLog.println("Adding a 2-channel back stroboscope : Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-      DMXList_BackStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
-    }
-    else {
-      outputLog.println("Adding a 4-channel back stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed + "|SpecialFX:" + dmx_specialFX);
-      DMXList_BackStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
-    }
-  }
-  else {
-    outputLog.println("Error while creating the DMX BackStroboscope object, not enough data is available. Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-  }
-}
-
-public void parseDMXSpecificLine_Projector(String line) {
-  //TBIL
-  outputLog.println("//// PAR parsing is yet to be implemented ////");
-}
 
 ///////////////////////////////////////////////////////
 // Utility functions to parse the configuration file //
@@ -30527,46 +30290,176 @@ public void dmxAnim_movingHead_blackout() {
 
 
 
-//import org.apache.poi.ss.usermodel.Cell;
-//import org.apache.poi.ss.usermodel.Row;
-//import org.apache.poi.ss.usermodel.Sheet;
-//import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+
+
+
+
+
+
+
+
+
+
+final int FIXTURE_TYPE_COLUMN            = 12;
+final int FIXTURE_NBCHANNELS_COLUMN      = 13;
+final int FIXTURE_NAME_COLUMN            = 14;
+final int FIXTURE_DESC_START_ROW         = 19;
+
+final int XLS_STRUCTURE_ARRAY_MIN_ROW    = 1;
+final int XLS_STRUCTURE_ARRAY_MAX_ROW    = 10;
+final int XLS_STRUCTURE_ARRAY_MIN_COLUMN = 3;
+final int XLS_STRUCTURE_ARRAY_MAX_COLUMN = 54;
 
 public class DMXConfiguration {
   
+  WritableWorkbook workbook;
 
   DMXConfiguration() {
+    
+    try {
+      
+      Workbook readWorkbook = Workbook.getWorkbook(new File(sketchPath("") + "/" + "DMX_Configuration.xls"));
+      workbook = Workbook.createWorkbook(new File(sketchPath("") + "/" + "DMX_Configuration.xls"), readWorkbook);
+      
+      try {
+        parseDMXConfiguration(workbook.getSheet(0));
+        // Sheet sheet = workbook.getSheet(0);
+        
+        // Initialize the subfamilies of the different configured fixtures
+        dmxInit_buildSubObjects();
+      }
+      catch (Exception e) {
+        println("Exception while trying to parse the DMX configuration (and build the internal Strobot objects: " + e);
+      }
+      // Print the DMX library in all the used Sheets
+      updateFixtureDefinitionInExcel(workbook.getSheet(0));
 
-       // //create a blanc document
-       // XSSFWorkbook wb = new XSSFWorkbook();
-       // //create a black sheet
-       // Sheet sheet = wb.createSheet("new sheet");
-       // //create a new row 0
-       // Row row = sheet.createRow((short)0);
-       // //create a new cell
-       // Cell cell = row.createCell(0);
-       // //insert value in the created cell
-       // cell.setCellValue(1.4);
-   
-       // //add other cells with different types
-       // /*int*/row.createCell(1).setCellValue(7);
-       // /*int*/row.createCell(2).setCellValue(99);
-       // /*string*/row.createCell(3).setCellValue("string");
-       // /*boolean*/row.createCell(4).setCellValue(true);
 
-       // FileOutputStream fos;
-       // try {
-       //   fos= new FileOutputStream("newFile.xlsx");
-       //   wb.write(fos);
-       //   fos.close();
-       // } catch (FileNotFoundException e) {
-       //     e.printStackTrace();
-       // } catch (IOException e) {
-       //     e.printStackTrace();
-       // }
+      workbook.write();
+      workbook.close();
+    }
+    catch (Exception e) {
+      println("Exception: " + e);
+    }
 
   }
 
+  // Print the list of available fixtures inside Excel
+  public void updateFixtureDefinitionInExcel(WritableSheet s) {
+    try {
+      int row = FIXTURE_DESC_START_ROW;
+      for (Fixture fixture: fixtureLibrary) {
+        String fixtureName = fixture.getFullName();
+        String fixtureType = fixture.getType();
+        int nbChannels     = fixture.getNbChannels();
+
+        Label nameLabel         = new Label(FIXTURE_NAME_COLUMN, row, fixtureName);
+        Label typeLabel         = new Label(FIXTURE_TYPE_COLUMN, row, fixtureType);
+        Number nbChannelsNumber = new Number(FIXTURE_NBCHANNELS_COLUMN, row, nbChannels);
+        s.addCell(nameLabel);
+        s.addCell(typeLabel);
+        s.addCell(nbChannelsNumber);
+        row++;
+      }      
+    }
+    catch (Exception e) {
+      outputLog.println("Exception while trying to print the Fixture library in the DMX Excel configuration file: " + e);
+    }
+  }
+
+  public void parseDMXConfiguration(Sheet s) {
+    for (int y = XLS_STRUCTURE_ARRAY_MIN_COLUMN; y<= XLS_STRUCTURE_ARRAY_MAX_COLUMN; y++) {
+      for (int x = XLS_STRUCTURE_ARRAY_MIN_ROW; x<= XLS_STRUCTURE_ARRAY_MAX_ROW; x++) {
+        String cellContents = s.getCell(x, y).getContents();
+        if (!cellContents.equals("")) {
+          println(cellContents);
+          String cellSplit[] = cellContents.split("\\|");   // | is treated as an OR in regex, which is why we need to escape it
+          if (cellSplit.length < 2) {
+            outputLog.println("DMX Configuration - Invalid fixture, check the Excel configuration file: " + cellContents);
+            break;
+          }
+          String fixtureName = cellSplit[0];
+          String fixtureType = cellSplit[1];
+          int startAddr = (x-XLS_STRUCTURE_ARRAY_MIN_ROW) + 10*(y-XLS_STRUCTURE_ARRAY_MIN_COLUMN);
+          
+          // Parse the different elements of the string
+          if (fixtureType.equals(FIXTURE_TYPE_STROBE)) {
+            if (cellSplit.length < 4) {
+              outputLog.println("DMX Configuration - Invalid Strobe fixture, check the Excel configuration file: " + cellContents);
+              break;
+            }
+            String id = cellSplit[2];
+            int integerID = PApplet.parseInt(id.substring(2));
+            String group = cellSplit[3];
+
+            // For strobes, group definition is still done the old way - this will eventually have to be updated
+            if (group.toLowerCase().equals("right")) {
+
+            }
+            else if (group.toLowerCase().equals("left")) {
+
+            }
+            else {
+              // DMXList_BackStroboscopes.add(new DMX_Stroboscope(5,6,7,8));
+            }
+
+
+            // DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(1, 2));
+            // DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
+
+          }
+
+          else if (fixtureType.equals(FIXTURE_TYPE_MOVING_HEAD)) {
+            if (cellSplit.length < 6) {
+              outputLog.println("DMX Configuration - Invalid Moving Head fixture, check the Excel configuration file: " + cellContents);
+              break;
+            }
+            String id       = cellSplit[2];
+            int integerID   = PApplet.parseInt(id.substring(2));
+            String group    = cellSplit[3];
+            String panMode  = cellSplit[4];
+            String tiltMode = cellSplit[5];
+            boolean booleanPanMode  = false;   // Default is "normal", aka "non-inverted"
+            boolean booleanTiltMode = false;
+            boolean booleanGroup    = true;    // Default is "floor fixture"
+            if (!panMode.toLowerCase().equals("regularpan"))   { booleanPanMode  = true; }
+            if (!tiltMode.toLowerCase().equals("regulartilt")) { booleanTiltMode = true; }
+            if (!group.toLowerCase().equals("bottom"))         { booleanGroup    = false;}
+            try {
+              DMXList_MovingHeads.add(new DMX_MovingHead(fixtureName, integerID, startAddr, booleanPanMode, booleanTiltMode, booleanGroup));  
+              println("Add Moving Head: " + fixtureName + " | " + integerID + " | " + startAddr + " | " + booleanPanMode + " | " + booleanTiltMode + " | " + booleanGroup);
+            }
+            catch (UndefinedFixtureException e) {
+              outputLog.println("Error when trying to create a Moving Head instance - undefined fixture: " + e);
+            }
+          }
+
+          else if (fixtureType.equals(FIXTURE_TYPE_PAR)) {
+            if (cellSplit.length < 3) {
+              outputLog.println("DMX Configuration - Invalid Moving Head fixture, check the Excel configuration file: " + cellContents);
+              break;
+            }
+            String id = cellSplit[2];
+            int integerID = PApplet.parseInt(id.substring(2));
+
+            try {
+              DMXList_Pars.add(new DMX_PAR(fixtureName, integerID, startAddr));
+            }
+            catch (UndefinedFixtureException e) {
+              outputLog.println("Error when trying to create a PAR instance - undefined fixture: " + e);
+            }
+          }
+
+        }
+      }
+    }
+      // Cell cell1 = s.getCell(0, 0);
+      // System.out.println(cell1.getContents());
+      // Cell cell2 = sheet.getCell(2, 3);
+      // System.out.println(cell2.getContents());
+
+  }
 
 }
 
@@ -30624,7 +30517,7 @@ public class DMX {
     if (debug_without_dmx == false) {
       for (int element = 0; element < Serial.list().length; element++){
         if (Serial.list()[element].contains(DMX_MICROCONTROLLER_NAME) == true) {
-          this.myPort = new Serial(myPApplet, Serial.list()[element], 9600);      
+          this.myPort = new Serial(myPApplet, Serial.list()[element], 115200);      
         }
       }
     }
@@ -30683,27 +30576,29 @@ public void dmxInit_registerDefaultStrobes() {
   DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
 }
 
+
 public void dmxInit_registerDefaultMovingHeads() {
   DMXList_MovingHeads            = new ArrayList<DMX_MovingHead>();
 
-  // New style fixtures
-  try {
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 0*24));
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 1*24));
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 2*24));
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 3*24));
+  // Test function used to register fixtures to debug the rest - leave the following commented when using the Excel configuration file
+  // try {
     
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 4*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 5*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 6*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 4, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 5, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 0*24));
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 1*24));
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 2*24));
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 3*24));
     
-  }
-  catch (UndefinedFixtureException e) {
-    println("Undefined Fixture");
-  }
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 4*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 5*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 6*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 7*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 4, 10 + 7*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 5, 10 + 7*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+    
+  // }
+  // catch (UndefinedFixtureException e) {
+  //   println("Undefined Fixture");
+  // }
 
   
   
@@ -30712,15 +30607,16 @@ public void dmxInit_registerDefaultMovingHeads() {
 public void dmxInit_registerDefaultPars() {
   DMXList_Pars            = new ArrayList<DMX_PAR>();
 
-  try {
-    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 8*24 + 0*3));
-    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  1, 10 + 8*24 + 1*3));
-    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 2, 10 + 8*24 + 2*3 + 0*4));
-    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 3, 10 + 8*24 + 2*3 + 1*4));
-  }
-  catch (UndefinedFixtureException e) {
-    println("Undefined Fixture");
-  }  
+  // try {
+  //   // Test function used to register fixtures to debug the rest - leave the following commented when using the Excel configuration file
+  //   DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 8*24 + 0*3));
+  //   DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  1, 10 + 8*24 + 1*3));
+  //   DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 2, 10 + 8*24 + 2*3 + 0*4));
+  //   DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 3, 10 + 8*24 + 2*3 + 1*4));
+  // }
+  // catch (UndefinedFixtureException e) {
+  //   println("Undefined Fixture");
+  // }  
 }
 
 public void dmxInit_buildSubObjects() {
@@ -30761,9 +30657,11 @@ public void dmx_buildFixtureSublists_movingHead() {
       // Left / Right fixtures
       if (movingHead.getDeviceID() < (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_left.add(movingHead);
+        println("Left Mov Head: " + movingHead.dmxStartAddr);
       }
       else if (movingHead.getDeviceID() > (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_right.add(movingHead);
+        println("Right Mov Head: " + movingHead.dmxStartAddr);
       }
       
       // Side / Center fixtures
@@ -30780,9 +30678,11 @@ public void dmx_buildFixtureSublists_movingHead() {
       // Left / Right fixtures
       if (movingHead.getDeviceID() <= (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_left.add(movingHead);
+        println("Left Mov Head: " + movingHead.dmxStartAddr);
       }
       else {
         DMXList_MovingHeads_right.add(movingHead);
+        println("Right Mov Head: " + movingHead.dmxStartAddr);
       }
 
       // Side / Center fixtures
@@ -31046,6 +30946,7 @@ class DMX_MovingHead {
   boolean fineTiltControl                  = false;
   int tilt_minVal                          = -1;
   int tilt_maxVal                          = -1;
+  boolean invertedTilt                     = false;   // The tilt control may have to be inverted
   
   
   IntList available_chIndex_color;
@@ -31122,18 +31023,19 @@ class DMX_MovingHead {
   int[] simulator_colorRGB;
 
   DMX_MovingHead(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
-    this(name, deviceID, startAddr, false, true);
+    this(name, deviceID, startAddr, false, false, true);
   }
 
   DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan) throws UndefinedFixtureException {
-    this(name, deviceID, startAddr, invertedPan, true);
+    this(name, deviceID, startAddr, invertedPan, false, true);
   }
 
   // Fixtures are instanciated using their name: the constructor will then look up in the fixture library if such a device exists, and throw an exception if not
-  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan, boolean floorFixture) throws UndefinedFixtureException {
+  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan, boolean invertedTilt, boolean floorFixture) throws UndefinedFixtureException {
     this.deviceID = deviceID;
     this.dmxStartAddr = startAddr;
     this.invertedPan = invertedPan;
+    this.invertedTilt = invertedTilt;
     this.floorFixture = floorFixture;
 
     // Init
@@ -31632,12 +31534,24 @@ class DMX_MovingHead {
 
   public void setTilt(float val_percent) {
     if (fineTiltControl) {
-      int val = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, 0, 65535) );
+      int val;
+      if (!invertedTilt) {
+        val = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, 0, 65535) );
+      }
+      else {
+        val = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, 65535, 0) );
+      }
+
       dmxVal[chIndex_tilt]     = (val & 0xffff) >> 8;
       dmxVal[chIndex_tiltFine] = (val & 0xffff) &  0xFF;
     }
     else {
-      dmxVal[chIndex_tilt] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, tilt_minVal, tilt_maxVal) );
+      if (!invertedTilt) {
+        dmxVal[chIndex_tilt] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, tilt_minVal, tilt_maxVal) );
+      }
+      else {
+        dmxVal[chIndex_tilt] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, tilt_maxVal, tilt_minVal) ); 
+      }
     }
   }
 
@@ -40889,6 +40803,14 @@ final String XMLDESC_CHANNELSET_TO_PROPORTIONAL = "proportional";
 final String XMLDESC_CHANNELSET_RECOMMENDED     = "recommended";
 final String XMLDESC_CHANNELSET_RANGE           = "range";
 
+final String FIXTURE_TYPE_STROBE                = "Strobe";
+final String FIXTURE_TYPE_MOVING_HEAD           = "Moving Head";
+final String FIXTURE_TYPE_PAR                   = "PAR";
+final String FIXTURE_TYPE_SCANNER               = "Scanner";
+final String FIXTURE_TYPE_LASER                 = "Laser";
+final String FIXTURE_TYPE_BLINDER               = "Blinder";
+final String FIXTURE_TYPE_LED_STRIP             = "LED Strip";
+final String FIXTURE_TYPE_FOG                   = "Fog";
 
 ArrayList<Fixture> fixtureLibrary;
 
@@ -40908,9 +40830,7 @@ public void readFixtureFiles() {
   fixtureLibrary = new ArrayList<Fixture>();
   
   //Parse all data folders, and create Fixture objects
-  String[] fixtureTypes   = { "Strobe", "Moving Head", "PAR", "Scanner", "Laser", "Blinder", "LED Strip", "Fog"};
-  //String[] fixtureTypes   = { "Strobe"};
-
+  String[] fixtureTypes   = {FIXTURE_TYPE_STROBE, FIXTURE_TYPE_MOVING_HEAD, FIXTURE_TYPE_PAR, FIXTURE_TYPE_SCANNER, FIXTURE_TYPE_LASER, FIXTURE_TYPE_BLINDER, FIXTURE_TYPE_LED_STRIP, FIXTURE_TYPE_FOG};
     
   for (String directoryToParse: fixtureTypes) {
     try {
@@ -40922,7 +40842,7 @@ public void readFixtureFiles() {
       for (String child : children) {
         // Only check for XML files, disregard OSX's Finder cookie
         if (child.contains(".xml")) {
-          println(fullDirectoryPath + "/" + child);
+          outputLog.println("Found a DMX fixture description file: " + fullDirectoryPath + "/" + child);
           parseFixtureXML(fullDirectoryPath + "/" + child);
         }
       }
@@ -41040,11 +40960,10 @@ public void parseFixtureXML(String path) {
         }
       }
 
-      println(newFixture);
+      outputLog.println(newFixture);
       // Very last step : once the file has been parsed, if no exception has been raised up until now, the description is valid
       // Add the new fixture to the library
       fixtureLibrary.add(newFixture);
-      println("Added a fixture to the library");
     }
 
 
@@ -41149,6 +41068,10 @@ class Fixture {
 
   public String getShortName() {
     return this.Name;
+  }
+
+  public String getType() {
+    return this.Type;
   }
 
   public int getNbChannels() {
@@ -41738,9 +41661,9 @@ public void setup_gui() {
   gui_glitchBlackLogo = loadImage("GUI/logo_glitchblack.png");
   
   //Initialize the font used for text areas
-  minimlFont       = loadFont("Miniml-Standard0757-8.vlw");
-  minimlFontMedium = loadFont("Miniml-Standard0757-20.vlw");
-  minimlFontBig    = loadFont("Miniml-Standard0757-48.vlw");
+  minimlFont       = loadFont("Fonts/Miniml-Standard0757-8.vlw");
+  minimlFontMedium = loadFont("Fonts/Miniml-Standard0757-20.vlw");
+  minimlFontBig    = loadFont("Fonts/Miniml-Standard0757-48.vlw");
   
   cp5 = new ControlP5(this);
   // Create a controlFrame by using addControlFrame, this creates a new separate frame
@@ -48238,14 +48161,11 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
       
       //HINT: on windows you need to (for example) use COM1, com1 will not work! (case sensitive)
       //String serialPort = OutputHelper.getSerialPortName(ph.getTpm2Device().toUpperCase());
-      println(panelnumber + ": Let's try this: " + serialPortName);
 
       if (serialPortName.equals("")) {          // Debug case: the device is just a placeholder
-        println(panelnumber + ": Nothing");
         this.initialized = false;
       }
       else {                                    // Real case: the serial port name is properly defined
-        println(panelnumber + ": Might be ok");
         this.initialized = false;
         try {
           tpm2 = new Tpm2Serial(serialPortName, PANEL_RESOLUTION_X*PANEL_RESOLUTION_Y, baud);
@@ -48403,7 +48323,8 @@ final static String LED_COLOR_FORMAT = "RGB";   //LED color arrangement
 //Define the serial ports for the microcontrollers
 //String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
 //All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
-String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
+//String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
+String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem1862841";
 String CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/tty.usbserial-A961L7NJ";
 
 String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
@@ -48472,10 +48393,10 @@ public void detectPanelOutputs() {
   Panel_Main_Teensy_List.put(4, "/dev/tty.usbmodem1870671");
   
   Panel_Backup_Teensy_List.put(0, "/dev/tty.usbmodem707701");
-  Panel_Backup_Teensy_List.put(1, "/dev/tty.usbmodem479061");
-  Panel_Backup_Teensy_List.put(2, "/dev/tty.usbmodem479101");
+  Panel_Backup_Teensy_List.put(1, "/dev/tty.usbmodem479101");
+  Panel_Backup_Teensy_List.put(2, "/dev/tty.usbmodem814421"); // This device is out of order - the USB socket was ripped out when adding in the RF circuit board
   Panel_Backup_Teensy_List.put(3, "/dev/tty.usbmodem113361");
-  Panel_Backup_Teensy_List.put(4, "/dev/tty.usbmodem814421");
+  Panel_Backup_Teensy_List.put(4, "/dev/tty.usbmodem479061");
 
   RF_RX_Teensy_List.put(0, "/dev/tty.usbmodem1845881");
   RF_RX_Teensy_List.put(1, "/dev/tty.usbmodem1845891");
@@ -48578,8 +48499,7 @@ public void detectPanelOutputs() {
     if (i<chosenMicrocontrollers.size()) {
       serialPort = chosenMicrocontrollers.get(i);
     }
-    println("------------------------------");
-    println(serialPort);
+
     outputDevices[i] = new Tpm2(i, serialPort);
   }
 
@@ -55582,7 +55502,7 @@ public void specificActions() {
         for (int j = 0; j < particleletters_N; j++) {
           particleletters_parts.add(new LetterParticle(random(width), random(height), 0, 0));
         }
-        particleletters_font = loadFont("AldotheApache-48.vlw");
+        particleletters_font = loadFont("Fonts/AldotheApache-48.vlw");
         break;
       
       case 360:    //RotozoomWhite
@@ -55951,7 +55871,7 @@ public void specificActions() {
         noStroke();
         textSize(28);  
         textAlign(CENTER, CENTER);
-        font = loadFont("Gobold-28.vlw");
+        font = loadFont("Fonts/Gobold-28.vlw");
         textFont(font,height);
         pongball= new Ball();
         bottom=new Paddle();

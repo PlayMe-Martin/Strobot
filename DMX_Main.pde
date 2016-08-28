@@ -53,7 +53,7 @@ public class DMX {
     if (debug_without_dmx == false) {
       for (int element = 0; element < Serial.list().length; element++){
         if (Serial.list()[element].contains(DMX_MICROCONTROLLER_NAME) == true) {
-          this.myPort = new Serial(myPApplet, Serial.list()[element], 9600);      
+          this.myPort = new Serial(myPApplet, Serial.list()[element], 115200);      
         }
       }
     }
@@ -112,27 +112,29 @@ void dmxInit_registerDefaultStrobes() {
   DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
 }
 
+
 void dmxInit_registerDefaultMovingHeads() {
   DMXList_MovingHeads            = new ArrayList<DMX_MovingHead>();
 
-  // New style fixtures
-  try {
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 0*24));
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 1*24));
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 2*24));
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 3*24));
+  // Test function used to register fixtures to debug the rest - leave the following commented when using the Excel configuration file
+  // try {
     
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 4*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 5*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 6*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 4, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
-    DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 5, 10 + 7*24, false, false));   //Non-pan inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 0*24));
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 1*24));
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 2*24));
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 3*24));
     
-  }
-  catch (UndefinedFixtureException e) {
-    println("Undefined Fixture");
-  }
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 0, 10 + 4*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 1, 10 + 5*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 2, 10 + 6*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 3, 10 + 7*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 4, 10 + 7*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+  //   DMXList_MovingHeads.add(new DMX_MovingHead("Robe Pointe (24 channels)", 5, 10 + 7*24, false, false, false));   //Non-pan inverted, non-tilt inverted, non-floor fixture
+    
+  // }
+  // catch (UndefinedFixtureException e) {
+  //   println("Undefined Fixture");
+  // }
 
   
   
@@ -141,15 +143,16 @@ void dmxInit_registerDefaultMovingHeads() {
 void dmxInit_registerDefaultPars() {
   DMXList_Pars            = new ArrayList<DMX_PAR>();
 
-  try {
-    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 8*24 + 0*3));
-    DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  1, 10 + 8*24 + 1*3));
-    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 2, 10 + 8*24 + 2*3 + 0*4));
-    DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 3, 10 + 8*24 + 2*3 + 1*4));
-  }
-  catch (UndefinedFixtureException e) {
-    println("Undefined Fixture");
-  }  
+  // try {
+  //   // Test function used to register fixtures to debug the rest - leave the following commented when using the Excel configuration file
+  //   DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 8*24 + 0*3));
+  //   DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  1, 10 + 8*24 + 1*3));
+  //   DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 2, 10 + 8*24 + 2*3 + 0*4));
+  //   DMXList_Pars.add(new DMX_PAR("Generic RGBW PAR", 3, 10 + 8*24 + 2*3 + 1*4));
+  // }
+  // catch (UndefinedFixtureException e) {
+  //   println("Undefined Fixture");
+  // }  
 }
 
 void dmxInit_buildSubObjects() {
@@ -190,9 +193,11 @@ void dmx_buildFixtureSublists_movingHead() {
       // Left / Right fixtures
       if (movingHead.getDeviceID() < (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_left.add(movingHead);
+        println("Left Mov Head: " + movingHead.dmxStartAddr);
       }
       else if (movingHead.getDeviceID() > (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_right.add(movingHead);
+        println("Right Mov Head: " + movingHead.dmxStartAddr);
       }
       
       // Side / Center fixtures
@@ -209,9 +214,11 @@ void dmx_buildFixtureSublists_movingHead() {
       // Left / Right fixtures
       if (movingHead.getDeviceID() <= (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_left.add(movingHead);
+        println("Left Mov Head: " + movingHead.dmxStartAddr);
       }
       else {
         DMXList_MovingHeads_right.add(movingHead);
+        println("Right Mov Head: " + movingHead.dmxStartAddr);
       }
 
       // Side / Center fixtures

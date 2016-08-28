@@ -13,7 +13,8 @@ final static String LED_COLOR_FORMAT = "RGB";   //LED color arrangement
 //Define the serial ports for the microcontrollers
 //String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
 //All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
-String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
+//String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
+String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem1862841";
 String CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/tty.usbserial-A961L7NJ";
 
 String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
@@ -82,10 +83,10 @@ void detectPanelOutputs() {
   Panel_Main_Teensy_List.put(4, "/dev/tty.usbmodem1870671");
   
   Panel_Backup_Teensy_List.put(0, "/dev/tty.usbmodem707701");
-  Panel_Backup_Teensy_List.put(1, "/dev/tty.usbmodem479061");
-  Panel_Backup_Teensy_List.put(2, "/dev/tty.usbmodem479101");
+  Panel_Backup_Teensy_List.put(1, "/dev/tty.usbmodem479101");
+  Panel_Backup_Teensy_List.put(2, "/dev/tty.usbmodem814421"); // This device is out of order - the USB socket was ripped out when adding in the RF circuit board
   Panel_Backup_Teensy_List.put(3, "/dev/tty.usbmodem113361");
-  Panel_Backup_Teensy_List.put(4, "/dev/tty.usbmodem814421");
+  Panel_Backup_Teensy_List.put(4, "/dev/tty.usbmodem479061");
 
   RF_RX_Teensy_List.put(0, "/dev/tty.usbmodem1845881");
   RF_RX_Teensy_List.put(1, "/dev/tty.usbmodem1845891");
@@ -188,8 +189,7 @@ void detectPanelOutputs() {
     if (i<chosenMicrocontrollers.size()) {
       serialPort = chosenMicrocontrollers.get(i);
     }
-    println("------------------------------");
-    println(serialPort);
+
     outputDevices[i] = new Tpm2(i, serialPort);
   }
 

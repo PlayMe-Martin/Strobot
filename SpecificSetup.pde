@@ -4008,7 +4008,7 @@ void specificActions() {
         for (int j = 0; j < particleletters_N; j++) {
           particleletters_parts.add(new LetterParticle(random(width), random(height), 0, 0));
         }
-        particleletters_font = loadFont("AldotheApache-48.vlw");
+        particleletters_font = loadFont("Fonts/AldotheApache-48.vlw");
         break;
       
       case 360:    //RotozoomWhite
@@ -4377,7 +4377,7 @@ void specificActions() {
         noStroke();
         textSize(28);  
         textAlign(CENTER, CENTER);
-        font = loadFont("Gobold-28.vlw");
+        font = loadFont("Fonts/Gobold-28.vlw");
         textFont(font,height);
         pongball= new Ball();
         bottom=new Paddle();
