@@ -4267,7 +4267,7 @@ void generateCircleImage(){
 //////////////////////////////////////////
 
 void draw_strobored() {
-  if (frameCount % 2 == 0)
+  if (frameCount % 4 == 0)
   {
     fill(255,0,0);
     rect(0,0,width,height);

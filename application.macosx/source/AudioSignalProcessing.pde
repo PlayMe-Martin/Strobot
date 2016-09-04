@@ -81,7 +81,7 @@ final int signalInstantValMessageSize = 7;
 final int impulseMessageSize          = 2;
 final int fftMessageSize              = 67;
 final int THREAD_SLEEP_TIME           = 20;   //20 ms (for reference, 50 fps means a 20ms period)
-final int THREAD_SLEEP_TIME_MIDI_SVR  = 10;   //10 ms (for the MIDI server, check if messages are available more often : this is important to have no latency between the music and the lights) 
+final int THREAD_SLEEP_TIME_MIDI_SVR  = 15;   //15 ms (for the MIDI and the TimeInfo servers, check if messages are available more often : this is important to have no latency between the music and the lights) . Note: TimeInfo messages are sent every 25ms
 
 //Audio buffer size, big enough to have one value for each LED pixel (= 4 pixels in Processing)
 //Important note : the number of panels is hard coded, so that even when using 3 panels, the buffer is the same

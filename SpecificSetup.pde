@@ -2751,7 +2751,7 @@ void specificActions() {
       case 256:    //StroboRed
 
         rectMode(CORNER);
-        frameRate(25);
+        frameRate(30);
         noStroke();
         background(0);
         break;

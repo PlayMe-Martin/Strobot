@@ -252,36 +252,40 @@ class PlayMeSequencer {
     
     if (eventType == NOTE_ON) {
       switch (actionNumber) {
-        case PITCH_GENERAL_STROBO_FRONT_LEFT:  startStrobe_FrontLeft(actionValue);break;
-        case PITCH_GENERAL_STROBO_FRONT_RIGHT: startStrobe_FrontRight(actionValue);break;
-        case PITCH_GENERAL_STROBO_BACK:        startStrobe_Back(actionValue);break;
+        case PITCH_DMX_ANIMATION_STROBE:                        loadDMXAnimation_strobe(actionValue); break;
 
-        case PITCH_DMX_ANIMATION_BANK1:        loadDMXAnimation1(actionValue); break;
-        case PITCH_DMX_ANIMATION_BANK2:        loadDMXAnimation2(actionValue); break;
-        case PITCH_DMX_ANIMATION_BANK3:        loadDMXAnimation3(actionValue); break;
-        
-        case PITCH_CUSTOM_DEVICE_BANK1:        loadCustomDeviceAnimation1(actionValue);break;
-        case PITCH_CUSTOM_DEVICE_BANK2:        loadCustomDeviceAnimation2(actionValue);break;
-        case PITCH_CUSTOM_DEVICE_BANK3:        loadCustomDeviceAnimation3(actionValue);break;
-        case PITCH_DISPLAY_EFFECT:             activateAdditionalEffect(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK1:       loadAnimation1(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK2:       loadAnimation2(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK3:       loadAnimation3(actionValue);break;
-        case PITCH_LOAD_ANIMATION_BANK4:       loadAnimation4(actionValue);break;
-        case PITCH_LOAD_IMAGE_BANK1:           loadImage1(actionValue);break;
+        case PITCH_DMX_ANIMATION_PAR_SET_COLOR:                 loadDMXAnimation_par_setColor(actionValue);      break;
+        case PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE:           loadDMXAnimation_par_setLightStyle(actionValue); break;
+        case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             loadDMXAnimation_par_setAnimation(actionValue);  break;
+
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    loadDMXAnimation_movingHead_initDirection(actionValue); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         loadDMXAnimation_movingHead_setColor(actionValue);      break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   loadDMXAnimation_movingHead_setLightStyle(actionValue); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   loadDMXAnimation_movingHead_setAnimation1(actionValue); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   loadDMXAnimation_movingHead_setAnimation2(actionValue); break;
+
+        case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(actionValue);break;
+        case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(actionValue);break;
+        case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(actionValue);break;
+        case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK1:                        loadAnimation1(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK2:                        loadAnimation2(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK3:                        loadAnimation3(actionValue);break;
+        case PITCH_LOAD_ANIMATION_BANK4:                        loadAnimation4(actionValue);break;
+        case PITCH_LOAD_IMAGE_BANK1:                            loadImage1(actionValue);break;
         default: break;
       }
     }
     else if (eventType == NOTE_OFF) {
-      switch (actionNumber) {
-        case PITCH_GENERAL_STROBO_FRONT_LEFT:  stopStrobe_FrontLeft();println("stopStrobe_FrontLeft() coming from the auto engine"); break;
-        case PITCH_GENERAL_STROBO_FRONT_RIGHT: stopStrobe_FrontRight();break;
-        case PITCH_GENERAL_STROBO_BACK:        stopStrobe_Back();break;
-        
-        case PITCH_DMX_ANIMATION_BANK1:        unloadDMXAnimation(); break;
-        case PITCH_DMX_ANIMATION_BANK2:        unloadDMXAnimation(); break;
-        case PITCH_DMX_ANIMATION_BANK3:        unloadDMXAnimation(); break;
-        case PITCH_DISPLAY_EFFECT:             deactivateAdditionalEffect(actionValue);break;
+      switch (actionNumber) {        
+        case PITCH_DMX_ANIMATION_STROBE:                        unloadDMXAnimation_strobe(); break;
+        case PITCH_DMX_ANIMATION_PAR_SET_ANIMATION:             unloadDMXAnimation_par(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION:    break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR:         break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
+        case PITCH_DISPLAY_EFFECT:                              deactivateAdditionalEffect(actionValue);break;
         default: break;
       }
     }
@@ -395,10 +399,10 @@ class PlayMeSequencer {
     // Fix for a shitty case which might occur : if playback is cut off when an effect is active, playback restart will forces a new animation, without killing off any effect
     // The same goes for the DMX animations for that matter, so kill any DMX device
     deactivateAdditionalEffect(0);
-    unloadDMXAnimation();
-    stopStrobe_FrontLeft();
-    stopStrobe_FrontRight();
-    stopStrobe_Back();
+    unloadDMXAnimation_strobe();
+    unloadDMXAnimation_movingHead();
+    unloadDMXAnimation_par();
+
     
     // If a special scenario had been detected previously, now's the time to reset the flag
     // When the special rule is active, the following sequence change is defined not by the audio's intensity, but by the algorithm
@@ -459,7 +463,7 @@ class PlayMeSequencer {
   
   // When in Auto mode, if the sequencer stops, kill the DMX and the custom devices
   void playActionsWhenSequencerStopped() {
-    dmxAnimationNumber  = 1;
+    dmxAnimationNumber_strobe  = 1;
     customDeviceAnimation(1);
   }
   
@@ -671,18 +675,18 @@ class PlayMeSequencer {
   // Special actions to be executed when specific conditions are met
   
   void playSpecialActions_onlyGuitar() {
-    // No need to reset dmxAnimationNumber when this special condition ends, as the auto mode will force back whatever DMX animations it wants to play
+    // No need to reset dmxAnimationNumber_strobe when this special condition ends, as the auto mode will force back whatever DMX animations it wants to play
     // Only light up the left side's stroboscope, full power 
-    dmxAnimationNumber  = 11;
+    dmxAnimationNumber_strobe  = 11;
     animationnumber     = 1;
     customDeviceAnimation(1);
     specificActions();
   }
   
   void playSpecialActions_onlyFilteredBass() {
-    // No need to reset dmxAnimationNumber when this special condition ends, as the auto mode will force back whatever DMX animations it wants to play
+    // No need to reset dmxAnimationNumber_strobe when this special condition ends, as the auto mode will force back whatever DMX animations it wants to play
     // Only light up the right side's stroboscope, full power 
-    dmxAnimationNumber  = 16;
+    dmxAnimationNumber_strobe  = 16;
     animationnumber     = 1;
     customDeviceAnimation(1);
     specificActions();

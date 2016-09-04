@@ -22,919 +22,143 @@
 	<dict>
 		<key>Java/Strobot.jar</key>
 		<data>
-		9Rhx/Uof3yD2sFddXC1wwBORNVQ=
+		otT1FfgYLcDWZFeACddgz70Lh7k=
 		</data>
 		<key>Java/controlP5.jar</key>
 		<data>
-		m2uR13DHCRqVMh8kKf2yf8W/jdo=
+		hGuvHq5jGzAYzKAYxFY3sHh7oFI=
 		</data>
 		<key>Java/core.jar</key>
 		<data>
 		9yAhryCrC0UVAs0jLxdifhNloyE=
 		</data>
-		<key>Java/data/3_panels/DTL/01.01. No.png</key>
+		<key>Java/data/Fixtures/Moving Head/Clay Paky - Alpha Spot HPE 300 (23 channels).xml</key>
 		<data>
-		UGSTHzorA/o003KT7yx2RwPOi8M=
+		ZMn+tbQeX01ShdsovDOeVwCnqlg=
 		</data>
-		<key>Java/data/3_panels/DTL/01.02. Way.png</key>
+		<key>Java/data/Fixtures/Moving Head/Martin - MAC 250 Entour (15 channels).xml</key>
 		<data>
-		5VNZrq6CxhxCfK1TrGMCchdom9I=
+		m9Wnh+WNjpvqNijLdmYTwBToh+s=
 		</data>
-		<key>Java/data/3_panels/DTL/01.03. To.png</key>
+		<key>Java/data/Fixtures/Moving Head/Martin - MAC 250 Entour (18 channels).xml</key>
 		<data>
-		Lu5veLjZuf/hGm0UsBESyRUIpak=
+		+VWDkDC3ghRr7pdk+WW6ChTSGyE=
 		</data>
-		<key>Java/data/3_panels/DTL/01.04. Break.png</key>
+		<key>Java/data/Fixtures/Moving Head/Martin - MAC 250 Krypton (14 channels).xml</key>
 		<data>
-		ehMntjzuwCk0HAHo44NoAOXQ6uE=
+		FE87+/8m05TICkE1auOoT8Ll8GA=
 		</data>
-		<key>Java/data/3_panels/DTL/01.05. Through.png</key>
+		<key>Java/data/Fixtures/Moving Head/Martin - MAC 250 Krypton (17 channels).xml</key>
 		<data>
-		xgh1ogoNLLkdcuRciqoW9XTKgkc=
+		6XLY5xW03vPXTjDO7+0xsjyCOKM=
 		</data>
-		<key>Java/data/3_panels/DTL/02.01. When.png</key>
+		<key>Java/data/Fixtures/Moving Head/Martin - MAC 250 Mode 1 (9 channels).xml</key>
 		<data>
-		qRANSfY0NJB/oCQXpBeopTiO4u8=
+		/Gf6y9pB24UWrXot1yDoNaTpDcw=
 		</data>
-		<key>Java/data/3_panels/DTL/02.02. The.png</key>
+		<key>Java/data/Fixtures/Moving Head/Martin - MAC 250 Mode 2 (11 channels).xml</key>
 		<data>
-		zbGgjyt+8gUx3o+JEh0YFIGjUyU=
+		5wy6yu/RG8//9NB2KYVMap7iFqw=
 		</data>
-		<key>Java/data/3_panels/DTL/03.01. Un.png</key>
+		<key>Java/data/Fixtures/Moving Head/Martin - MAC 250 Mode 3 (11 channels).xml</key>
 		<data>
-		TCXXseikonFpvYXAkixHEqebbXo=
+		AfffJAri3+uQLHwEM+rKiTaJOxk=
 		</data>
-		<key>Java/data/3_panels/DTL/03.02. A.png</key>
+		<key>Java/data/Fixtures/Moving Head/Martin - MAC 250 Mode 4 (13 channels).xml</key>
 		<data>
-		iKUHConzBTtoY2vpyWEINSGLb54=
+		eENQcyNmXgL89iuMmksWEATHlyI=
 		</data>
-		<key>Java/data/3_panels/DTL/03.03. Able.png</key>
+		<key>Java/data/Fixtures/Moving Head/Robe - Pointe 16 channels.xml</key>
 		<data>
-		OePpA+ENQ0ANTSPt9xQsGUjSzN4=
+		ZG7vDjjPi7pgvOJrcCnm0YyoUvM=
 		</data>
-		<key>Java/data/3_panels/DTL/03.04. To.png</key>
+		<key>Java/data/Fixtures/Moving Head/Robe - Pointe 24 channels.xml</key>
 		<data>
-		Lu5veLjZuf/hGm0UsBESyRUIpak=
+		L1D5ckv2KNdRp6uOtU3WHjVkrHE=
 		</data>
-		<key>Java/data/3_panels/DTL/03.05. Chase.png</key>
+		<key>Java/data/Fixtures/Moving Head/Robe - Pointe 30 channels.xml</key>
 		<data>
-		MQiEniV6T4HzIPbV54sSp2LF8iw=
+		0Ay2swKVhQaxoxjcRx6yYtqm33U=
 		</data>
-		<key>Java/data/3_panels/DTL/04.01. When.png</key>
+		<key>Java/data/Fixtures/Moving Head/Showtec - Phantom 20 (12 channels).xml</key>
 		<data>
-		qRANSfY0NJB/oCQXpBeopTiO4u8=
+		9yGRRR3V7O6m6QH8PcAR6dTd4Tc=
 		</data>
-		<key>Java/data/3_panels/DTL/04.02. You.png</key>
+		<key>Java/data/Fixtures/Moving Head/Showtec - Phantom 20 (9 channels).xml</key>
 		<data>
-		YC1FLMdAGPyS/3D7svMMw78Juw0=
+		4haXbbSO65fGx8xbtVkAn72+T9A=
 		</data>
-		<key>Java/data/3_panels/DTL/04.03. Want.png</key>
+		<key>Java/data/Fixtures/PAR/Generic - Color Wheel PAR (2 channels).xml</key>
 		<data>
-		oQ4w7Le9t1rE1gouiLd37hPAsg0=
+		+uHGoTfK7XfgcuH3z0jL8wFG+RY=
 		</data>
-		<key>Java/data/3_panels/DTL/04.04. Me.png</key>
+		<key>Java/data/Fixtures/PAR/Generic - RGB PAR (3 channels).xml</key>
 		<data>
-		iyYJlkGAu6QFX6xCC1PwBXmnlvQ=
+		GHdkbFLolB+JFA3KJGo9v7i/Mbs=
 		</data>
-		<key>Java/data/3_panels/DTL/04.05. To.png</key>
+		<key>Java/data/Fixtures/PAR/Generic - RGB+Strobe PAR (4 channels).xml</key>
 		<data>
-		Lu5veLjZuf/hGm0UsBESyRUIpak=
+		8eHLo+Ng91lTGu+iNf5zspSHL1E=
 		</data>
-		<key>Java/data/3_panels/DTL/05.01. An.png</key>
+		<key>Java/data/Fixtures/PAR/Generic - RGBW PAR (4 channels).xml</key>
 		<data>
-		SIQU3NIyVSf+YTPRTyP0r1Gwmn0=
+		+B1RJxQ+e6y3hz4OFMz5nagP80Q=
 		</data>
-		<key>Java/data/3_panels/DTL/05.02. O.png</key>
+		<key>Java/data/Fixtures/PAR/Generic - RGBW+Strobe PAR (5 channels).xml</key>
 		<data>
-		mPrUyx+pE5cBT5xsQpNWqBarCo4=
+		4g/5RxEoRF621sAKRVdMABk3iL8=
 		</data>
-		<key>Java/data/3_panels/DTL/05.03. Ther.png</key>
+		<key>Java/data/Fixtures/PAR/Generic - Single Channel PAR - B (1 channel).xml</key>
 		<data>
-		yjEW36bJ1ICRi/kJGavzK9ybEoA=
+		Nw4NXjt/0FIYatedg2E3LUSxd/Y=
 		</data>
-		<key>Java/data/3_panels/DTL/05.04. De.png</key>
+		<key>Java/data/Fixtures/PAR/Generic - Single Channel PAR - G (1 channel).xml</key>
 		<data>
-		nPPxyjUMPvE95lUq+PwRRYPEv/k=
+		E+hFXLZo9Q8+ch5qvBhaq5nezPw=
 		</data>
-		<key>Java/data/3_panels/DTL/05.05. Feat.png</key>
+		<key>Java/data/Fixtures/PAR/Generic - Single Channel PAR - R (1 channel).xml</key>
 		<data>
-		uisNaYHMroU4VR/IIGJ+ujq2W70=
+		JRqSWKgXBCbhYWkovZ/+LunRkgc=
 		</data>
-		<key>Java/data/3_panels/DTL/06.01. Just.png</key>
+		<key>Java/data/Fixtures/PAR/Generic - Single Channel PAR - W (1 channel).xml</key>
 		<data>
-		f5lXPFAjELShewNxs7o1r3u/BP0=
+		FHPkHhgmgzGGUNlGlmsJAGAmzIc=
 		</data>
-		<key>Java/data/3_panels/DTL/06.02. To.png</key>
+		<key>Java/data/Fixtures/Strobe/Martin - Atomic 3000 - 1 channel.xml</key>
 		<data>
-		O8HgCAO60xJRQYNsZbHmL0/nQ1U=
+		aGVK6uyRwuVauCB/usiUwTklRdk=
 		</data>
-		<key>Java/data/3_panels/DTL/06.03. Clear.png</key>
+		<key>Java/data/Fixtures/Strobe/Martin - Atomic 3000 - 3 channels.xml</key>
 		<data>
-		pQbBxmysTKVDKsDBkZIbV0TgXHo=
+		cUXWGPOuDWtA0iw0ctYrWe5wtAw=
 		</data>
-		<key>Java/data/3_panels/DTL/06.04. This.png</key>
+		<key>Java/data/Fixtures/Strobe/Martin - Atomic 3000 - 4 channels.xml</key>
 		<data>
-		96PFCIdKjMW4UnDS74FKZf5lNF4=
+		ISAzXMS9jNlXvr2yPUUi+6pbiHY=
 		</data>
-		<key>Java/data/3_panels/DTL/06.05. Up.png</key>
+		<key>Java/data/Fixtures/Strobe/Stairville - PS 1500.xml</key>
 		<data>
-		NO1wZCTYmOGUd0ZXgh5Ug5kWZyk=
+		1gzQrIPtY46JpocuhLmAIziBvKc=
 		</data>
-		<key>Java/data/3_panels/DTL/07.01. Don't.png</key>
-		<data>
-		ZwO73mF1jGkL50ucHcjKHgT6hDQ=
-		</data>
-		<key>Java/data/3_panels/DTL/07.02. Want.png</key>
-		<data>
-		/RtVmDah+yPkVFj+Mm/MXqp6H70=
-		</data>
-		<key>Java/data/3_panels/DTL/07.03. To.png</key>
-		<data>
-		U9B/CiYEyO3JkTIcc8E7cF9zhsk=
-		</data>
-		<key>Java/data/3_panels/DTL/07.04. Please.png</key>
-		<data>
-		mQj4DFSZjc4LmKxYBAd8gYYgWaE=
-		</data>
-		<key>Java/data/3_panels/DTL/07.05. You.png</key>
-		<data>
-		jtS77JQ/n1Bz4ZvqUnFgiCQpBNw=
-		</data>
-		<key>Java/data/3_panels/DTL/08.01. Not.png</key>
-		<data>
-		8Nmf5IrkQ3mzTtjNNjhNWovYbqg=
-		</data>
-		<key>Java/data/3_panels/DTL/08.02. That.png</key>
-		<data>
-		oXiDk4tJfovlVOJp8aCSLcTLhKo=
-		</data>
-		<key>Java/data/3_panels/DTL/08.03. It.png</key>
-		<data>
-		qFaNGpSFbkSrZf9WKyKTmG/j1WI=
-		</data>
-		<key>Java/data/3_panels/DTL/08.04. Matt.png</key>
-		<data>
-		r3BQ9HxAvzl5IUvk5nNaA3fUlHs=
-		</data>
-		<key>Java/data/3_panels/DTL/08.05. Ers.png</key>
-		<data>
-		+109+hkwfaYCScCPnTRtRj9Nsco=
-		</data>
-		<key>Java/data/3_panels/DTL/09.01. Might.png</key>
-		<data>
-		5oBN8uYucgFYOez7k0oJrec0/C8=
-		</data>
-		<key>Java/data/3_panels/DTL/09.02. As.png</key>
-		<data>
-		mtVoPjjN+TNPFIm3i33TigXxgWY=
-		</data>
-		<key>Java/data/3_panels/DTL/09.03. Well.png</key>
-		<data>
-		x0wexn4KTLB7lIT1XWYIOLGmj7w=
-		</data>
-		<key>Java/data/3_panels/DTL/09.04. Draw.png</key>
-		<data>
-		04vGIQUXCQDrpGgZiznJttxXzvM=
-		</data>
-		<key>Java/data/3_panels/DTL/09.05. The.png</key>
-		<data>
-		zbGgjyt+8gUx3o+JEh0YFIGjUyU=
-		</data>
-		<key>Java/data/3_panels/DTL/09.06. Line.png</key>
-		<data>
-		kS8zdONmn/EvW7+dHQDQMsUQRzI=
-		</data>
-		<key>Java/data/3_panels/DTL/10.01. Be.png</key>
-		<data>
-		XCqutakNzA4VfZd7ukkGWqPOYFs=
-		</data>
-		<key>Java/data/3_panels/DTL/10.02. Fore.png</key>
-		<data>
-		nP5+fwxj6+mmJ4qUdJUnkWGi+fo=
-		</data>
-		<key>Java/data/3_panels/DTL/10.03. We.png</key>
-		<data>
-		U+Ncpsyb6P1SEiZPiT4VyRSBNY0=
-		</data>
-		<key>Java/data/3_panels/DTL/10.04. Lose.png</key>
-		<data>
-		ihGp7IsDcRPdWdFtJftPieEKXEc=
-		</data>
-		<key>Java/data/3_panels/DTL/10.05. Our.png</key>
-		<data>
-		CeRfBMz7VGesRebXb5um/IG4lkY=
-		</data>
-		<key>Java/data/3_panels/DTL/10.06. Minds.png</key>
-		<data>
-		9AfeyKE0o8Jqrq4jVJZfqjXvnuw=
-		</data>
-		<key>Java/data/3_panels/Degeneration/01.png</key>
-		<data>
-		5VNZrq6CxhxCfK1TrGMCchdom9I=
-		</data>
-		<key>Java/data/3_panels/Generic/01. Custom.jpg</key>
-		<data>
-		CM7xMnWFdZD58/LtVOFlnObNKCg=
-		</data>
-		<key>Java/data/3_panels/Generic/01. Red.jpg</key>
-		<data>
-		IX7wxgJj3IM3V12z4mujYCy241g=
-		</data>
-		<key>Java/data/3_panels/Generic/02. Custom.jpg</key>
-		<data>
-		hpl3ofZUIgCUVLKbF/I1rkDcGSs=
-		</data>
-		<key>Java/data/3_panels/Generic/02. Red.jpg</key>
-		<data>
-		shOWwy8zm7InlW0BDPXSjih64bY=
-		</data>
-		<key>Java/data/3_panels/Generic/03. Custom.jpg</key>
-		<data>
-		KVHUQW/4pSReWhWgCZ5iQo7vpzE=
-		</data>
-		<key>Java/data/3_panels/Generic/03. Red.jpg</key>
-		<data>
-		GxthyeNkfDUHuUiOGaFDoInyuik=
-		</data>
-		<key>Java/data/3_panels/Generic/04. Custom.jpg</key>
-		<data>
-		QI6Fzcc/NqNR8pQAi1SV6uYOh3k=
-		</data>
-		<key>Java/data/3_panels/Generic/04. Red.jpg</key>
-		<data>
-		5bccea7pn095QG8axPW1srzyTbk=
-		</data>
-		<key>Java/data/3_panels/Generic/05. Custom.jpg</key>
-		<data>
-		RiCkHxL0NsLbbj+xQ7tAGfJUjDM=
-		</data>
-		<key>Java/data/3_panels/Generic/05. Red.jpg</key>
-		<data>
-		YajJwF7wUvr6dIE7hebVMAsuL7Y=
-		</data>
-		<key>Java/data/3_panels/Generic/06. Red.jpg</key>
-		<data>
-		dElKQc+t8AXseEBGfcDGy7aE9Qw=
-		</data>
-		<key>Java/data/3_panels/Generic/07. Red.jpg</key>
-		<data>
-		p+z61FnxPCc6nZO0/KnUHBnquiI=
-		</data>
-		<key>Java/data/3_panels/Generic/08. Red.jpg</key>
-		<data>
-		Y0GfKT4Fa9AZdpqT1fqD9dO9BAE=
-		</data>
-		<key>Java/data/3_panels/Generic/09. Red.jpg</key>
-		<data>
-		rvn1tf7PX4z3jzOaORa13mMPSVA=
-		</data>
-		<key>Java/data/3_panels/Generic/10. Red.jpg</key>
-		<data>
-		sq4F2w0zxXuSXyrpfWHGay8oEuo=
-		</data>
-		<key>Java/data/3_panels/Generic/11. Red.jpg</key>
-		<data>
-		y8maWnfbvQJ8CJcv98bk7As8EQo=
-		</data>
-		<key>Java/data/3_panels/Generic/12. Red.jpg</key>
-		<data>
-		mq1ELiSnGz6bL6/z2lf/ArWjO7Q=
-		</data>
-		<key>Java/data/3_panels/Generic/13. Red.jpg</key>
-		<data>
-		FeqyXjxt+lRqe28pLlFF61nFL9E=
-		</data>
-		<key>Java/data/3_panels/Generic/14. Red.jpg</key>
-		<data>
-		UcAo2btn6IuDAzqEXS2VmZk0SA0=
-		</data>
-		<key>Java/data/3_panels/Generic/15. Red.jpg</key>
-		<data>
-		k8jLbYufFtXO/NTHaArJwtkB80A=
-		</data>
-		<key>Java/data/3_panels/Generic/16. Red.jpg</key>
-		<data>
-		S+84QUt1ZlmGwM8dK6LcjYZst5o=
-		</data>
-		<key>Java/data/3_panels/Generic/17. Red.jpg</key>
-		<data>
-		DSY762rgJeeU1SigKC6aWF+u64Y=
-		</data>
-		<key>Java/data/3_panels/Generic/18. Red.jpg</key>
-		<data>
-		PBXf36ZnPUwS28hlMzBYvlPQLpE=
-		</data>
-		<key>Java/data/3_panels/Generic/19. Red.jpg</key>
-		<data>
-		HpRLEqb9E8URZaI7enk1nfhgBGg=
-		</data>
-		<key>Java/data/3_panels/Generic/20. Red.jpg</key>
-		<data>
-		MfSQldvIPLSbhii0NDT/Kkgf/5g=
-		</data>
-		<key>Java/data/3_panels/Generic/21. Red.jpg</key>
-		<data>
-		RN9FpGTa53jAU0PVitSAleqGSWI=
-		</data>
-		<key>Java/data/3_panels/Generic/22. Red.jpg</key>
-		<data>
-		nbNBGZxQ09NMuw6rExaWWKfhgzo=
-		</data>
-		<key>Java/data/3_panels/Generic/23. Red.jpg</key>
-		<data>
-		MZVtjduXYz/MfH5DRE0sPlIqrQE=
-		</data>
-		<key>Java/data/3_panels/PlayMe/01.P-white-black.jpg</key>
-		<data>
-		ixBLz55h/2OvRkPGtNXH834oNjk=
-		</data>
-		<key>Java/data/3_panels/PlayMe/02.L-white-black.jpg</key>
-		<data>
-		L0bc8LNvvGhdKOEjLeaD2vMaB2g=
-		</data>
-		<key>Java/data/3_panels/PlayMe/03.A-white-black.jpg</key>
-		<data>
-		3I1HknVW3+qWusWazjqxjrhR6k4=
-		</data>
-		<key>Java/data/3_panels/PlayMe/04.Y-white-black.jpg</key>
-		<data>
-		vjENZEgaTlEpAA2mU1JJLzbBdOc=
-		</data>
-		<key>Java/data/3_panels/PlayMe/05.M-white-black.jpg</key>
-		<data>
-		SSBQRh/a4tAsq7GrJ8IP+RpwwVQ=
-		</data>
-		<key>Java/data/3_panels/PlayMe/06.E-white-black.jpg</key>
-		<data>
-		Nnd6euuD2Ceh28Xj2Auy8/NBnys=
-		</data>
-		<key>Java/data/3_panels/PlayMe/07.P-black-white.jpg</key>
-		<data>
-		C24OaUFP1MWNZy+iV56/2iZh6ag=
-		</data>
-		<key>Java/data/3_panels/PlayMe/08.L-black-white.jpg</key>
-		<data>
-		FzQ01QVA6C8bnkvNGd8O6dsN6fs=
-		</data>
-		<key>Java/data/3_panels/PlayMe/09.A-black-white.jpg</key>
-		<data>
-		UKUzQNGQhxVJBiL/ULlDkZf9rQI=
-		</data>
-		<key>Java/data/3_panels/PlayMe/10.Y-black-white.jpg</key>
-		<data>
-		iTOWKrQOlWpf75xa45H9EYXhquQ=
-		</data>
-		<key>Java/data/3_panels/PlayMe/11.M-black-white.jpg</key>
-		<data>
-		4Nh4N+VXAxGVq2OyehSw8dcHX3A=
-		</data>
-		<key>Java/data/3_panels/PlayMe/12.E-black-white.jpg</key>
-		<data>
-		Rkk+qf1RRcjDPf+XPKbIeUCuzNg=
-		</data>
-		<key>Java/data/3_panels/PlayMe/13.P-red-black.jpg</key>
-		<data>
-		+yQGpOgHc7qWxyuQzWJqbNHxd9k=
-		</data>
-		<key>Java/data/3_panels/PlayMe/14.L-red-black.jpg</key>
-		<data>
-		Zt7B2+KDCtVeSyd5T/oszYgpcZc=
-		</data>
-		<key>Java/data/3_panels/PlayMe/15.A-red-black.jpg</key>
-		<data>
-		Hug8h9sVDr+FcuX7ttn6htCnxgg=
-		</data>
-		<key>Java/data/3_panels/PlayMe/16.Y-red-black.jpg</key>
-		<data>
-		7Lue8jSW+lyycsAXHGroIyfOpGI=
-		</data>
-		<key>Java/data/3_panels/PlayMe/17.M-red-black.jpg</key>
-		<data>
-		Lge2KEOZ2Rb0/4z2YRb+SrUF3rE=
-		</data>
-		<key>Java/data/3_panels/PlayMe/18.E-red-black.jpg</key>
-		<data>
-		QBHKWNE5UOFSYQ8zQwf0Yelc0Cw=
-		</data>
-		<key>Java/data/3_panels/Rotozoom/rotozoom1.jpg</key>
-		<data>
-		SUe6gYQ0gYy+8QD03NQvIjpFMHE=
-		</data>
-		<key>Java/data/3_panels/Rotozoom/rotozoom2.jpg</key>
-		<data>
-		vJ9DKU1Y26Scy0R4RSO1mhpeltg=
-		</data>
-		<key>Java/data/3_panels/Rotozoom/rotozoom3.jpg</key>
-		<data>
-		Xtk2cEwq9embiet70NctKXOG05o=
-		</data>
-		<key>Java/data/3_panels/Rotozoom/rotozoom3.psd</key>
-		<data>
-		3LPI+0t/R5nWBcrimdcJOH4IN38=
-		</data>
-		<key>Java/data/3_panels/Rotozoom/rotozoom3_old.jpg</key>
-		<data>
-		9i7aY1e1RqnPOmaPFNSqtrpc6Yg=
-		</data>
-		<key>Java/data/3_panels/Rotozoom/rotozoom3_old2.jpg</key>
-		<data>
-		ltE0wbXC4Mj/mWuj2xcAF4csxAY=
-		</data>
-		<key>Java/data/3_panels/Startup.jpg</key>
-		<data>
-		Q125dboPxLWS8GC6con8+kYcm2Q=
-		</data>
-		<key>Java/data/3_panels/Startup_1.jpg</key>
-		<data>
-		kEfaEv3nP5Puvbgkcpn9Z2Mucqw=
-		</data>
-		<key>Java/data/3_panels/Startup_2.jpg</key>
-		<data>
-		b0da35fE+BZPp4OV5O/w06V29dM=
-		</data>
-		<key>Java/data/3_panels/Startup_3.jpg</key>
-		<data>
-		tZPrML5fIkmMdZNieClJsGOWJDQ=
-		</data>
-		<key>Java/data/3_panels/voidImage.jpg</key>
-		<data>
-		m2cwlaCdJgPnvjYHkPeotrDGB/w=
-		</data>
-		<key>Java/data/5_panels/DTL/01.01. No.png</key>
-		<data>
-		grHx/W1V0+HTvj9ZgEgWEmR2eZU=
-		</data>
-		<key>Java/data/5_panels/DTL/01.02. Way.png</key>
-		<data>
-		GHTNE7QJF35qEwSL/rpuFbAW61Q=
-		</data>
-		<key>Java/data/5_panels/DTL/01.03. To.png</key>
-		<data>
-		N703LMrWg5/9OBnddjDlHrU6Y0U=
-		</data>
-		<key>Java/data/5_panels/DTL/01.04. Break.png</key>
-		<data>
-		+sPChV6I/WPqgrvtndToK+/qPoc=
-		</data>
-		<key>Java/data/5_panels/DTL/01.05. Through.png</key>
-		<data>
-		M/uUpE5kGyEISV+zZmJCPCeiuZ4=
-		</data>
-		<key>Java/data/5_panels/DTL/02.01. When.png</key>
-		<data>
-		J8AmqnxO+7JoF3R5N/LCneJDeF8=
-		</data>
-		<key>Java/data/5_panels/DTL/02.02. The.png</key>
-		<data>
-		rDReXKwTNQm8Wd5cohY8oeGB6NM=
-		</data>
-		<key>Java/data/5_panels/DTL/03.01. Un.png</key>
-		<data>
-		MCjnFPkJzRS+KQf54CnQEwTZp48=
-		</data>
-		<key>Java/data/5_panels/DTL/03.02. A.png</key>
-		<data>
-		uVLdTLiYEP8bkmrj8Q6TUD+fbX4=
-		</data>
-		<key>Java/data/5_panels/DTL/03.03. Able.png</key>
-		<data>
-		AjLbUPWK5tgtTRolaMNc/rU/laA=
-		</data>
-		<key>Java/data/5_panels/DTL/03.04. To.png</key>
-		<data>
-		N703LMrWg5/9OBnddjDlHrU6Y0U=
-		</data>
-		<key>Java/data/5_panels/DTL/03.05. Chase.png</key>
-		<data>
-		py99WcBvP5j/u+hkuElQisK1Ur0=
-		</data>
-		<key>Java/data/5_panels/DTL/04.01. When.png</key>
-		<data>
-		J8AmqnxO+7JoF3R5N/LCneJDeF8=
-		</data>
-		<key>Java/data/5_panels/DTL/04.02. You.png</key>
-		<data>
-		lbpMtWZ5Er9UeIvPcSw3XZ7PFbo=
-		</data>
-		<key>Java/data/5_panels/DTL/04.03. Want.png</key>
-		<data>
-		U/RiyPlS1r0rFx2/SnnrYAB5dK8=
-		</data>
-		<key>Java/data/5_panels/DTL/04.04. Me.png</key>
-		<data>
-		RGaLUMIhqoDktBA+f6KOcoBML48=
-		</data>
-		<key>Java/data/5_panels/DTL/04.05. To.png</key>
-		<data>
-		SDXosuRQr+EOBkej1TyZaw/mcgc=
-		</data>
-		<key>Java/data/5_panels/DTL/05.01. An.png</key>
-		<data>
-		TVg5vCLYntUULLe27Lpg8dp4x80=
-		</data>
-		<key>Java/data/5_panels/DTL/05.02. O.png</key>
-		<data>
-		zrfC1SK/KBGCAS2fl5vvtXIRCLc=
-		</data>
-		<key>Java/data/5_panels/DTL/05.03. Ther.png</key>
-		<data>
-		AD1aTqXmq9dcXFiBIURPk79OYGQ=
-		</data>
-		<key>Java/data/5_panels/DTL/05.04. De.png</key>
-		<data>
-		LVD2HKCK9MKSi7FNF8akN4DF0J0=
-		</data>
-		<key>Java/data/5_panels/DTL/05.05. Feat.png</key>
-		<data>
-		lcOY+5G6+rUJ3H7nX5ejscRK4ow=
-		</data>
-		<key>Java/data/5_panels/DTL/06.01. Just.png</key>
-		<data>
-		Of+Ywp/hu/1rdSEwc3YW6vDEboE=
-		</data>
-		<key>Java/data/5_panels/DTL/06.02. To.png</key>
-		<data>
-		FlcRpOzKMP5Z9c+38lAfYXQ9XUg=
-		</data>
-		<key>Java/data/5_panels/DTL/06.03. Clear.png</key>
-		<data>
-		UYn4Jaxt8R3DLycMVtuKI0WD5Ek=
-		</data>
-		<key>Java/data/5_panels/DTL/06.04. This.png</key>
-		<data>
-		MKTovhlfLAPO/s3nR1aZ53RLddQ=
-		</data>
-		<key>Java/data/5_panels/DTL/06.05. Up.png</key>
-		<data>
-		1NJovgUge5WrB41kFuDYkVHFISM=
-		</data>
-		<key>Java/data/5_panels/DTL/07.01. Don't.png</key>
-		<data>
-		BttTgcImyYzdkG8ecFV2rWaIT74=
-		</data>
-		<key>Java/data/5_panels/DTL/07.02. Want.png</key>
-		<data>
-		uWZbudZMzJx+qlTgWSS8pshhSd8=
-		</data>
-		<key>Java/data/5_panels/DTL/07.03. To.png</key>
-		<data>
-		T8qcpemdlfbhBOwTT+1fVb4m5zU=
-		</data>
-		<key>Java/data/5_panels/DTL/07.04. Please.png</key>
-		<data>
-		i76Ah3sj6ufmAyjx2w/ZcOYtAow=
-		</data>
-		<key>Java/data/5_panels/DTL/07.05. You.png</key>
-		<data>
-		TlOiwzBGlqU7HANOvfJNi8+ia1k=
-		</data>
-		<key>Java/data/5_panels/DTL/08.01. Not.png</key>
-		<data>
-		52seqyekNqmgT7c6U05N/3VXmKI=
-		</data>
-		<key>Java/data/5_panels/DTL/08.02. That.png</key>
-		<data>
-		+WcVmeRUBDDRImwtXVpnDoqzk18=
-		</data>
-		<key>Java/data/5_panels/DTL/08.03. It.png</key>
-		<data>
-		RVuxYs+iP0GaJBIJzDnn7PXnYHM=
-		</data>
-		<key>Java/data/5_panels/DTL/08.04. Matt.png</key>
-		<data>
-		JUDe0kcK+1/5Pmm6wRha7rDXoRc=
-		</data>
-		<key>Java/data/5_panels/DTL/08.05. Ers.png</key>
-		<data>
-		G32QIasv2RbM0kWs6V2r/YcZ3ao=
-		</data>
-		<key>Java/data/5_panels/DTL/09.01. Might.png</key>
-		<data>
-		jdONZsHsO8BpGiI/pVJLtJn5wFI=
-		</data>
-		<key>Java/data/5_panels/DTL/09.02. As.png</key>
-		<data>
-		i7DQsss4um2V7aGTv+cpOoXcTlg=
-		</data>
-		<key>Java/data/5_panels/DTL/09.03. Well.png</key>
-		<data>
-		4ELzZkQeNpDyk9Y7Om1jhbgoXMg=
-		</data>
-		<key>Java/data/5_panels/DTL/09.04. Draw.png</key>
-		<data>
-		RNNzEZr/fal/YJnbEhIilkyROv8=
-		</data>
-		<key>Java/data/5_panels/DTL/09.05. The.png</key>
-		<data>
-		Nbb2M+W9JDY2nW1QsAipnXnkabo=
-		</data>
-		<key>Java/data/5_panels/DTL/09.06. Line.png</key>
-		<data>
-		+58F0VVU2OthFyJVkfv2ggo8zJw=
-		</data>
-		<key>Java/data/5_panels/DTL/10.01. Be.png</key>
-		<data>
-		xA5UvgpdWzOBJsDdK37VSjqvyIU=
-		</data>
-		<key>Java/data/5_panels/DTL/10.02. Fore.png</key>
-		<data>
-		4rvlMn6XilYcaQG4jmFcJGwjZ0M=
-		</data>
-		<key>Java/data/5_panels/DTL/10.03. We.png</key>
-		<data>
-		QILasOCFpUF4Vm02Y1EnqnyiHzo=
-		</data>
-		<key>Java/data/5_panels/DTL/10.04. Lose.png</key>
-		<data>
-		UmcAnl/V6t9Pq3czWqw0r+Ya4+A=
-		</data>
-		<key>Java/data/5_panels/DTL/10.05. Our.png</key>
-		<data>
-		DRD+lD49mB0248bvpSrWTKXz+LE=
-		</data>
-		<key>Java/data/5_panels/DTL/10.06. Minds.png</key>
-		<data>
-		ATcoFzyxZw7UFdEBdMDS3rKJdlQ=
-		</data>
-		<key>Java/data/5_panels/Degeneration/01.01. No.png</key>
-		<data>
-		grHx/W1V0+HTvj9ZgEgWEmR2eZU=
-		</data>
-		<key>Java/data/5_panels/Degeneration/01.png</key>
-		<data>
-		8GMwKTs6ytmNWt/iR9g2iJ9c1F0=
-		</data>
-		<key>Java/data/5_panels/Degeneration/02.png</key>
-		<data>
-		t88jSi48AcucXOh3hgla+BvnmZw=
-		</data>
-		<key>Java/data/5_panels/Degeneration/03.png</key>
-		<data>
-		loHLIgWb5lX4fTPOvIthq7EYknk=
-		</data>
-		<key>Java/data/5_panels/Degeneration/04.png</key>
-		<data>
-		x8yRZaf7k3ZKlZ7erm4tWx8UoIc=
-		</data>
-		<key>Java/data/5_panels/Degeneration/05.png</key>
-		<data>
-		DekfPhdMtQQLe9cqwyTIzKMCJ44=
-		</data>
-		<key>Java/data/5_panels/Degeneration/06.png</key>
-		<data>
-		Bf95dP5zk9S71SmcLReJ2lLaEL4=
-		</data>
-		<key>Java/data/5_panels/Degeneration/07.png</key>
-		<data>
-		O7gxD5D6gtmocwR/v6mjlbqo938=
-		</data>
-		<key>Java/data/5_panels/Degeneration/08.png</key>
-		<data>
-		5SwqMZeJFiQe9j/5gSsafGZMx6A=
-		</data>
-		<key>Java/data/5_panels/Degeneration/You Dance Like Shit.psd</key>
-		<data>
-		jhTvenHkWc0B1XgKfNkhNXGAV0Y=
-		</data>
-		<key>Java/data/5_panels/Degeneration/You.png</key>
-		<data>
-		OJSW2sTKAconbL62nIREdXCyylE=
-		</data>
-		<key>Java/data/5_panels/Generic/01. Custom.jpg</key>
-		<data>
-		Wj7hdM1LaMN1o6GNax30y3L5Vgw=
-		</data>
-		<key>Java/data/5_panels/Generic/01. Red.jpg</key>
-		<data>
-		ye+5lgkI1L5sED48XhMpK+g2k4g=
-		</data>
-		<key>Java/data/5_panels/Generic/02. Custom.jpg</key>
-		<data>
-		kF3XbAvHcPkrm30sl1LDoTTiI5I=
-		</data>
-		<key>Java/data/5_panels/Generic/02. Red.jpg</key>
-		<data>
-		vXxqovREXlohEzuVf9p4oZor50k=
-		</data>
-		<key>Java/data/5_panels/Generic/03. Custom.jpg</key>
-		<data>
-		UgphRKcOGD0W19ygP1ZtIUCvAvk=
-		</data>
-		<key>Java/data/5_panels/Generic/03. Red.jpg</key>
-		<data>
-		qfsuHj8iey8MHZUNRWrkcSu6HfU=
-		</data>
-		<key>Java/data/5_panels/Generic/04. Custom.jpg</key>
-		<data>
-		T8eOnI4Jdx+gZ/4PY4pxSbRUSPc=
-		</data>
-		<key>Java/data/5_panels/Generic/04. Red.jpg</key>
-		<data>
-		S2pML7f1e9eJyFfCxiO/0NG4Kxs=
-		</data>
-		<key>Java/data/5_panels/Generic/05. Custom.jpg</key>
-		<data>
-		50zMrqEmZ54ChpK1eMN7DUj+N0w=
-		</data>
-		<key>Java/data/5_panels/Generic/05. Red.jpg</key>
-		<data>
-		6xgLBySon7CnQ5glk6rGTdsLirE=
-		</data>
-		<key>Java/data/5_panels/Generic/06. Red.jpg</key>
-		<data>
-		TkqyDlZpJO95Mqk9qUeQmmOSmXo=
-		</data>
-		<key>Java/data/5_panels/Generic/07. Red.jpg</key>
-		<data>
-		JhzL+VHIl9P2pSEwAXdUp23GMHQ=
-		</data>
-		<key>Java/data/5_panels/Generic/08. Red.jpg</key>
-		<data>
-		mqbN1oFK0HhXk0yHQtDiJMakofw=
-		</data>
-		<key>Java/data/5_panels/Generic/09. Red.jpg</key>
-		<data>
-		MTf76y71Xl9+EFrLtzC0CSc8PZw=
-		</data>
-		<key>Java/data/5_panels/Generic/10. Red.jpg</key>
-		<data>
-		+pxqpfsxOBs1hoYCL8yyX7j3Bc0=
-		</data>
-		<key>Java/data/5_panels/Generic/11. Red.jpg</key>
-		<data>
-		id1Ox2LmE/J/0sfT1NHPbOx7yDE=
-		</data>
-		<key>Java/data/5_panels/Generic/12. Red.jpg</key>
-		<data>
-		RO+fG6RuCsQeKNIDka2QtrQLG24=
-		</data>
-		<key>Java/data/5_panels/Generic/13. Red.jpg</key>
-		<data>
-		Ij6VLwgKJRq8MMw4IJFxy4ygThA=
-		</data>
-		<key>Java/data/5_panels/Generic/14. Red.jpg</key>
-		<data>
-		kGfM6gmpG2zhnyi4hhr9BwqGrt8=
-		</data>
-		<key>Java/data/5_panels/Generic/15. Red.jpg</key>
-		<data>
-		TxlmQXTMdR6maLP4ReK3U3uR8O8=
-		</data>
-		<key>Java/data/5_panels/Generic/16. Red.jpg</key>
-		<data>
-		opGT45CxFnDYPXU6OlKNPH7nLZI=
-		</data>
-		<key>Java/data/5_panels/Generic/17. Red.jpg</key>
-		<data>
-		zb4pZetNXiQAsoA3VSsg3jG9gU4=
-		</data>
-		<key>Java/data/5_panels/Generic/18. Red.jpg</key>
-		<data>
-		AfLBeKONhJvLPYUXDwe53KniRpU=
-		</data>
-		<key>Java/data/5_panels/Generic/19. Red.jpg</key>
-		<data>
-		LMDt9VZlOQGT8+bjtQ1TLANCKQM=
-		</data>
-		<key>Java/data/5_panels/Generic/20. Red.jpg</key>
-		<data>
-		Oe1MzeIsUwnJx65iDkLiiBao5SE=
-		</data>
-		<key>Java/data/5_panels/Generic/21. Red.jpg</key>
-		<data>
-		aXlnjsvY8jBDOz2nkeOoQiEn2wA=
-		</data>
-		<key>Java/data/5_panels/Generic/22. Red.jpg</key>
-		<data>
-		3Bzr3mnvp/7clGzmHyyAC3bi6ck=
-		</data>
-		<key>Java/data/5_panels/Generic/23. Red.jpg</key>
-		<data>
-		ZpX1LLUFQi+Eh8QQQp6C+AxZg2Q=
-		</data>
-		<key>Java/data/5_panels/PlayMe/01.P-white-black.jpg</key>
-		<data>
-		U7oBIO+riyJ+WM71DbyocQo6N60=
-		</data>
-		<key>Java/data/5_panels/PlayMe/02.L-white-black.jpg</key>
-		<data>
-		2vaNDnl6JlusnXfpycELUaJlAKo=
-		</data>
-		<key>Java/data/5_panels/PlayMe/03.A-white-black.jpg</key>
-		<data>
-		whY/+KQw2bqDAxEM0ZLklqd0zjg=
-		</data>
-		<key>Java/data/5_panels/PlayMe/04.Y-white-black.jpg</key>
-		<data>
-		LkowSim68qb7raBaQigRvban+KI=
-		</data>
-		<key>Java/data/5_panels/PlayMe/05.M-white-black.jpg</key>
-		<data>
-		3BYgC+m1+aDpUdTGQudZon0PHwg=
-		</data>
-		<key>Java/data/5_panels/PlayMe/06.E-white-black.jpg</key>
-		<data>
-		RbYjqJjVjWZDArVO2BcRUZlqBDw=
-		</data>
-		<key>Java/data/5_panels/PlayMe/07.P-black-white.jpg</key>
-		<data>
-		Gkfx5oXvUF8PCxQvIBClPRuHGWw=
-		</data>
-		<key>Java/data/5_panels/PlayMe/08.L-black-white.jpg</key>
-		<data>
-		PSxKotzAyfwnNN6SMuNFhwrYOy4=
-		</data>
-		<key>Java/data/5_panels/PlayMe/09.A-black-white.jpg</key>
-		<data>
-		rWMmlvnD1QX6erb+Qp4av0prdxY=
-		</data>
-		<key>Java/data/5_panels/PlayMe/10.Y-black-white.jpg</key>
-		<data>
-		9VOfpPjNKX1NPdBn8LHtjDfenyU=
-		</data>
-		<key>Java/data/5_panels/PlayMe/11.M-black-white.jpg</key>
-		<data>
-		7UZc37yZ87Pm3yCwwAS4cvCaU9Y=
-		</data>
-		<key>Java/data/5_panels/PlayMe/12.E-black-white.jpg</key>
-		<data>
-		ILMnqOg88X71pBodiC94QD7vuk4=
-		</data>
-		<key>Java/data/5_panels/PlayMe/13.P-red-black.jpg</key>
-		<data>
-		ei0Nl4wfeTWD5Ft8JQym0t/N6tI=
-		</data>
-		<key>Java/data/5_panels/PlayMe/14.L-red-black.jpg</key>
-		<data>
-		seppdPuWR/Xl/r/JQuWY6FzN4nI=
-		</data>
-		<key>Java/data/5_panels/PlayMe/15.A-red-black.jpg</key>
-		<data>
-		bdfJ7R6i5wUHiouDXgQSnb8FwmY=
-		</data>
-		<key>Java/data/5_panels/PlayMe/16.Y-red-black.jpg</key>
-		<data>
-		dzLooahjDqteCrHB3aj77MhTl0M=
-		</data>
-		<key>Java/data/5_panels/PlayMe/17.M-red-black.jpg</key>
-		<data>
-		5y7TCtkCPPEQnUx+KOHobZf4gyE=
-		</data>
-		<key>Java/data/5_panels/PlayMe/18.E-red-black.jpg</key>
-		<data>
-		FqVOzx4+/M6053Pe8iQrlF/1iJs=
-		</data>
-		<key>Java/data/5_panels/Rotozoom/rotozoom1.jpg</key>
-		<data>
-		SUe6gYQ0gYy+8QD03NQvIjpFMHE=
-		</data>
-		<key>Java/data/5_panels/Rotozoom/rotozoom2.jpg</key>
-		<data>
-		vJ9DKU1Y26Scy0R4RSO1mhpeltg=
-		</data>
-		<key>Java/data/5_panels/Rotozoom/rotozoom3.jpg</key>
-		<data>
-		Xtk2cEwq9embiet70NctKXOG05o=
-		</data>
-		<key>Java/data/5_panels/Rotozoom/rotozoom3_old.jpg</key>
-		<data>
-		9i7aY1e1RqnPOmaPFNSqtrpc6Yg=
-		</data>
-		<key>Java/data/5_panels/Rotozoom/rotozoom3_old2.jpg</key>
-		<data>
-		ltE0wbXC4Mj/mWuj2xcAF4csxAY=
-		</data>
-		<key>Java/data/5_panels/Startup.jpg</key>
-		<data>
-		xIOmMO1zK9s4ZBo6drheN5nVQpc=
-		</data>
-		<key>Java/data/5_panels/Startup_1.jpg</key>
-		<data>
-		ASyDjDdRU4HSfQCFqlfnCPLP8xo=
-		</data>
-		<key>Java/data/5_panels/Startup_2.jpg</key>
-		<data>
-		70S2LA+Zp7P4kT4esf6ZgEcmrUo=
-		</data>
-		<key>Java/data/5_panels/Startup_3.jpg</key>
-		<data>
-		PfcmcQn2zoUPxvNeX83wGI7QDtk=
-		</data>
-		<key>Java/data/5_panels/Startup_4.jpg</key>
-		<data>
-		jHeVxVmvpO8rXJ+k0wKERt8BVek=
-		</data>
-		<key>Java/data/5_panels/Startup_5.jpg</key>
-		<data>
-		FSGj3Pn2eMH9aBE17tBBsEPXhjM=
-		</data>
-		<key>Java/data/5_panels/voidImage.jpg</key>
-		<data>
-		OevSrr0isAmi+SPOOfrQKAD0UMs=
-		</data>
-		<key>Java/data/AldotheApache-48.vlw</key>
+		<key>Java/data/Fonts/AldotheApache-48.vlw</key>
 		<data>
 		G2g1qwlNi5PPuXZrI7+6jp5YsIU=
+		</data>
+		<key>Java/data/Fonts/Gobold-28.vlw</key>
+		<data>
+		roxC4d0OrklrXlpZvTrPSYtyMfE=
+		</data>
+		<key>Java/data/Fonts/Miniml-Standard0757-20.vlw</key>
+		<data>
+		DWyHk5NaQWCcrjbVCFh0gGZAZTU=
+		</data>
+		<key>Java/data/Fonts/Miniml-Standard0757-48.vlw</key>
+		<data>
+		gg7VgIuLWs+OloFO+ejqqt+0iiY=
+		</data>
+		<key>Java/data/Fonts/Miniml-Standard0757-8.vlw</key>
+		<data>
+		Wk8hLbfsyESDE6HqiATMB7AI7ms=
 		</data>
 		<key>Java/data/GUI/Xi Bold Transparent.png</key>
 		<data>
@@ -960,10 +184,6 @@
 		<data>
 		+gnY5TDZNpDwZRbgAQpHzUOhdNI=
 		</data>
-		<key>Java/data/Gobold-28.vlw</key>
-		<data>
-		roxC4d0OrklrXlpZvTrPSYtyMfE=
-		</data>
 		<key>Java/data/Icons/Strobot-icon-gray.png</key>
 		<data>
 		Kv7xEtF8YhEVKqqCCLydqwqFGCQ=
@@ -975,6 +195,906 @@
 		<key>Java/data/Icons/Strobot-icon.psd</key>
 		<data>
 		BoUsB6a+MmpXDnylk81BK9jtPQs=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/01.01. No.png</key>
+		<data>
+		UGSTHzorA/o003KT7yx2RwPOi8M=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/01.02. Way.png</key>
+		<data>
+		5VNZrq6CxhxCfK1TrGMCchdom9I=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/01.03. To.png</key>
+		<data>
+		Lu5veLjZuf/hGm0UsBESyRUIpak=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/01.04. Break.png</key>
+		<data>
+		ehMntjzuwCk0HAHo44NoAOXQ6uE=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/01.05. Through.png</key>
+		<data>
+		xgh1ogoNLLkdcuRciqoW9XTKgkc=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/02.01. When.png</key>
+		<data>
+		qRANSfY0NJB/oCQXpBeopTiO4u8=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/02.02. The.png</key>
+		<data>
+		zbGgjyt+8gUx3o+JEh0YFIGjUyU=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/03.01. Un.png</key>
+		<data>
+		TCXXseikonFpvYXAkixHEqebbXo=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/03.02. A.png</key>
+		<data>
+		iKUHConzBTtoY2vpyWEINSGLb54=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/03.03. Able.png</key>
+		<data>
+		OePpA+ENQ0ANTSPt9xQsGUjSzN4=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/03.04. To.png</key>
+		<data>
+		Lu5veLjZuf/hGm0UsBESyRUIpak=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/03.05. Chase.png</key>
+		<data>
+		MQiEniV6T4HzIPbV54sSp2LF8iw=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/04.01. When.png</key>
+		<data>
+		qRANSfY0NJB/oCQXpBeopTiO4u8=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/04.02. You.png</key>
+		<data>
+		YC1FLMdAGPyS/3D7svMMw78Juw0=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/04.03. Want.png</key>
+		<data>
+		oQ4w7Le9t1rE1gouiLd37hPAsg0=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/04.04. Me.png</key>
+		<data>
+		iyYJlkGAu6QFX6xCC1PwBXmnlvQ=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/04.05. To.png</key>
+		<data>
+		Lu5veLjZuf/hGm0UsBESyRUIpak=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/05.01. An.png</key>
+		<data>
+		SIQU3NIyVSf+YTPRTyP0r1Gwmn0=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/05.02. O.png</key>
+		<data>
+		mPrUyx+pE5cBT5xsQpNWqBarCo4=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/05.03. Ther.png</key>
+		<data>
+		yjEW36bJ1ICRi/kJGavzK9ybEoA=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/05.04. De.png</key>
+		<data>
+		nPPxyjUMPvE95lUq+PwRRYPEv/k=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/05.05. Feat.png</key>
+		<data>
+		uisNaYHMroU4VR/IIGJ+ujq2W70=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/06.01. Just.png</key>
+		<data>
+		f5lXPFAjELShewNxs7o1r3u/BP0=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/06.02. To.png</key>
+		<data>
+		O8HgCAO60xJRQYNsZbHmL0/nQ1U=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/06.03. Clear.png</key>
+		<data>
+		pQbBxmysTKVDKsDBkZIbV0TgXHo=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/06.04. This.png</key>
+		<data>
+		96PFCIdKjMW4UnDS74FKZf5lNF4=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/06.05. Up.png</key>
+		<data>
+		NO1wZCTYmOGUd0ZXgh5Ug5kWZyk=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/07.01. Don't.png</key>
+		<data>
+		ZwO73mF1jGkL50ucHcjKHgT6hDQ=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/07.02. Want.png</key>
+		<data>
+		/RtVmDah+yPkVFj+Mm/MXqp6H70=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/07.03. To.png</key>
+		<data>
+		U9B/CiYEyO3JkTIcc8E7cF9zhsk=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/07.04. Please.png</key>
+		<data>
+		mQj4DFSZjc4LmKxYBAd8gYYgWaE=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/07.05. You.png</key>
+		<data>
+		jtS77JQ/n1Bz4ZvqUnFgiCQpBNw=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/08.01. Not.png</key>
+		<data>
+		8Nmf5IrkQ3mzTtjNNjhNWovYbqg=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/08.02. That.png</key>
+		<data>
+		oXiDk4tJfovlVOJp8aCSLcTLhKo=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/08.03. It.png</key>
+		<data>
+		qFaNGpSFbkSrZf9WKyKTmG/j1WI=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/08.04. Matt.png</key>
+		<data>
+		r3BQ9HxAvzl5IUvk5nNaA3fUlHs=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/08.05. Ers.png</key>
+		<data>
+		+109+hkwfaYCScCPnTRtRj9Nsco=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/09.01. Might.png</key>
+		<data>
+		5oBN8uYucgFYOez7k0oJrec0/C8=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/09.02. As.png</key>
+		<data>
+		mtVoPjjN+TNPFIm3i33TigXxgWY=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/09.03. Well.png</key>
+		<data>
+		x0wexn4KTLB7lIT1XWYIOLGmj7w=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/09.04. Draw.png</key>
+		<data>
+		04vGIQUXCQDrpGgZiznJttxXzvM=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/09.05. The.png</key>
+		<data>
+		zbGgjyt+8gUx3o+JEh0YFIGjUyU=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/09.06. Line.png</key>
+		<data>
+		kS8zdONmn/EvW7+dHQDQMsUQRzI=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/10.01. Be.png</key>
+		<data>
+		XCqutakNzA4VfZd7ukkGWqPOYFs=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/10.02. Fore.png</key>
+		<data>
+		nP5+fwxj6+mmJ4qUdJUnkWGi+fo=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/10.03. We.png</key>
+		<data>
+		U+Ncpsyb6P1SEiZPiT4VyRSBNY0=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/10.04. Lose.png</key>
+		<data>
+		ihGp7IsDcRPdWdFtJftPieEKXEc=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/10.05. Our.png</key>
+		<data>
+		CeRfBMz7VGesRebXb5um/IG4lkY=
+		</data>
+		<key>Java/data/Images/3_panels/DTL/10.06. Minds.png</key>
+		<data>
+		9AfeyKE0o8Jqrq4jVJZfqjXvnuw=
+		</data>
+		<key>Java/data/Images/3_panels/Degeneration/01.png</key>
+		<data>
+		5VNZrq6CxhxCfK1TrGMCchdom9I=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/01. Custom.jpg</key>
+		<data>
+		CM7xMnWFdZD58/LtVOFlnObNKCg=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/01. Red.jpg</key>
+		<data>
+		IX7wxgJj3IM3V12z4mujYCy241g=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/02. Custom.jpg</key>
+		<data>
+		hpl3ofZUIgCUVLKbF/I1rkDcGSs=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/02. Red.jpg</key>
+		<data>
+		shOWwy8zm7InlW0BDPXSjih64bY=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/03. Custom.jpg</key>
+		<data>
+		KVHUQW/4pSReWhWgCZ5iQo7vpzE=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/03. Red.jpg</key>
+		<data>
+		GxthyeNkfDUHuUiOGaFDoInyuik=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/04. Custom.jpg</key>
+		<data>
+		QI6Fzcc/NqNR8pQAi1SV6uYOh3k=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/04. Red.jpg</key>
+		<data>
+		5bccea7pn095QG8axPW1srzyTbk=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/05. Custom.jpg</key>
+		<data>
+		RiCkHxL0NsLbbj+xQ7tAGfJUjDM=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/05. Red.jpg</key>
+		<data>
+		YajJwF7wUvr6dIE7hebVMAsuL7Y=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/06. Red.jpg</key>
+		<data>
+		dElKQc+t8AXseEBGfcDGy7aE9Qw=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/07. Red.jpg</key>
+		<data>
+		p+z61FnxPCc6nZO0/KnUHBnquiI=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/08. Red.jpg</key>
+		<data>
+		Y0GfKT4Fa9AZdpqT1fqD9dO9BAE=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/09. Red.jpg</key>
+		<data>
+		rvn1tf7PX4z3jzOaORa13mMPSVA=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/10. Red.jpg</key>
+		<data>
+		sq4F2w0zxXuSXyrpfWHGay8oEuo=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/11. Red.jpg</key>
+		<data>
+		y8maWnfbvQJ8CJcv98bk7As8EQo=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/12. Red.jpg</key>
+		<data>
+		mq1ELiSnGz6bL6/z2lf/ArWjO7Q=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/13. Red.jpg</key>
+		<data>
+		FeqyXjxt+lRqe28pLlFF61nFL9E=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/14. Red.jpg</key>
+		<data>
+		UcAo2btn6IuDAzqEXS2VmZk0SA0=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/15. Red.jpg</key>
+		<data>
+		k8jLbYufFtXO/NTHaArJwtkB80A=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/16. Red.jpg</key>
+		<data>
+		S+84QUt1ZlmGwM8dK6LcjYZst5o=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/17. Red.jpg</key>
+		<data>
+		DSY762rgJeeU1SigKC6aWF+u64Y=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/18. Red.jpg</key>
+		<data>
+		PBXf36ZnPUwS28hlMzBYvlPQLpE=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/19. Red.jpg</key>
+		<data>
+		HpRLEqb9E8URZaI7enk1nfhgBGg=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/20. Red.jpg</key>
+		<data>
+		MfSQldvIPLSbhii0NDT/Kkgf/5g=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/21. Red.jpg</key>
+		<data>
+		RN9FpGTa53jAU0PVitSAleqGSWI=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/22. Red.jpg</key>
+		<data>
+		nbNBGZxQ09NMuw6rExaWWKfhgzo=
+		</data>
+		<key>Java/data/Images/3_panels/Generic/23. Red.jpg</key>
+		<data>
+		MZVtjduXYz/MfH5DRE0sPlIqrQE=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/01.P-white-black.jpg</key>
+		<data>
+		ixBLz55h/2OvRkPGtNXH834oNjk=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/02.L-white-black.jpg</key>
+		<data>
+		L0bc8LNvvGhdKOEjLeaD2vMaB2g=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/03.A-white-black.jpg</key>
+		<data>
+		3I1HknVW3+qWusWazjqxjrhR6k4=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/04.Y-white-black.jpg</key>
+		<data>
+		vjENZEgaTlEpAA2mU1JJLzbBdOc=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/05.M-white-black.jpg</key>
+		<data>
+		SSBQRh/a4tAsq7GrJ8IP+RpwwVQ=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/06.E-white-black.jpg</key>
+		<data>
+		Nnd6euuD2Ceh28Xj2Auy8/NBnys=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/07.P-black-white.jpg</key>
+		<data>
+		C24OaUFP1MWNZy+iV56/2iZh6ag=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/08.L-black-white.jpg</key>
+		<data>
+		FzQ01QVA6C8bnkvNGd8O6dsN6fs=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/09.A-black-white.jpg</key>
+		<data>
+		UKUzQNGQhxVJBiL/ULlDkZf9rQI=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/10.Y-black-white.jpg</key>
+		<data>
+		iTOWKrQOlWpf75xa45H9EYXhquQ=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/11.M-black-white.jpg</key>
+		<data>
+		4Nh4N+VXAxGVq2OyehSw8dcHX3A=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/12.E-black-white.jpg</key>
+		<data>
+		Rkk+qf1RRcjDPf+XPKbIeUCuzNg=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/13.P-red-black.jpg</key>
+		<data>
+		+yQGpOgHc7qWxyuQzWJqbNHxd9k=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/14.L-red-black.jpg</key>
+		<data>
+		Zt7B2+KDCtVeSyd5T/oszYgpcZc=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/15.A-red-black.jpg</key>
+		<data>
+		Hug8h9sVDr+FcuX7ttn6htCnxgg=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/16.Y-red-black.jpg</key>
+		<data>
+		7Lue8jSW+lyycsAXHGroIyfOpGI=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/17.M-red-black.jpg</key>
+		<data>
+		Lge2KEOZ2Rb0/4z2YRb+SrUF3rE=
+		</data>
+		<key>Java/data/Images/3_panels/PlayMe/18.E-red-black.jpg</key>
+		<data>
+		QBHKWNE5UOFSYQ8zQwf0Yelc0Cw=
+		</data>
+		<key>Java/data/Images/3_panels/Rotozoom/rotozoom1.jpg</key>
+		<data>
+		SUe6gYQ0gYy+8QD03NQvIjpFMHE=
+		</data>
+		<key>Java/data/Images/3_panels/Rotozoom/rotozoom2.jpg</key>
+		<data>
+		vJ9DKU1Y26Scy0R4RSO1mhpeltg=
+		</data>
+		<key>Java/data/Images/3_panels/Rotozoom/rotozoom3.jpg</key>
+		<data>
+		Xtk2cEwq9embiet70NctKXOG05o=
+		</data>
+		<key>Java/data/Images/3_panels/Rotozoom/rotozoom3.psd</key>
+		<data>
+		3LPI+0t/R5nWBcrimdcJOH4IN38=
+		</data>
+		<key>Java/data/Images/3_panels/Rotozoom/rotozoom3_old.jpg</key>
+		<data>
+		9i7aY1e1RqnPOmaPFNSqtrpc6Yg=
+		</data>
+		<key>Java/data/Images/3_panels/Rotozoom/rotozoom3_old2.jpg</key>
+		<data>
+		ltE0wbXC4Mj/mWuj2xcAF4csxAY=
+		</data>
+		<key>Java/data/Images/3_panels/Startup.jpg</key>
+		<data>
+		Q125dboPxLWS8GC6con8+kYcm2Q=
+		</data>
+		<key>Java/data/Images/3_panels/Startup_1.jpg</key>
+		<data>
+		kEfaEv3nP5Puvbgkcpn9Z2Mucqw=
+		</data>
+		<key>Java/data/Images/3_panels/Startup_2.jpg</key>
+		<data>
+		b0da35fE+BZPp4OV5O/w06V29dM=
+		</data>
+		<key>Java/data/Images/3_panels/Startup_3.jpg</key>
+		<data>
+		tZPrML5fIkmMdZNieClJsGOWJDQ=
+		</data>
+		<key>Java/data/Images/3_panels/voidImage.jpg</key>
+		<data>
+		m2cwlaCdJgPnvjYHkPeotrDGB/w=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/01.01. No.png</key>
+		<data>
+		grHx/W1V0+HTvj9ZgEgWEmR2eZU=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/01.02. Way.png</key>
+		<data>
+		GHTNE7QJF35qEwSL/rpuFbAW61Q=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/01.03. To.png</key>
+		<data>
+		N703LMrWg5/9OBnddjDlHrU6Y0U=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/01.04. Break.png</key>
+		<data>
+		+sPChV6I/WPqgrvtndToK+/qPoc=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/01.05. Through.png</key>
+		<data>
+		M/uUpE5kGyEISV+zZmJCPCeiuZ4=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/02.01. When.png</key>
+		<data>
+		J8AmqnxO+7JoF3R5N/LCneJDeF8=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/02.02. The.png</key>
+		<data>
+		rDReXKwTNQm8Wd5cohY8oeGB6NM=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/03.01. Un.png</key>
+		<data>
+		MCjnFPkJzRS+KQf54CnQEwTZp48=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/03.02. A.png</key>
+		<data>
+		uVLdTLiYEP8bkmrj8Q6TUD+fbX4=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/03.03. Able.png</key>
+		<data>
+		AjLbUPWK5tgtTRolaMNc/rU/laA=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/03.04. To.png</key>
+		<data>
+		N703LMrWg5/9OBnddjDlHrU6Y0U=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/03.05. Chase.png</key>
+		<data>
+		py99WcBvP5j/u+hkuElQisK1Ur0=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/04.01. When.png</key>
+		<data>
+		J8AmqnxO+7JoF3R5N/LCneJDeF8=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/04.02. You.png</key>
+		<data>
+		lbpMtWZ5Er9UeIvPcSw3XZ7PFbo=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/04.03. Want.png</key>
+		<data>
+		U/RiyPlS1r0rFx2/SnnrYAB5dK8=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/04.04. Me.png</key>
+		<data>
+		RGaLUMIhqoDktBA+f6KOcoBML48=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/04.05. To.png</key>
+		<data>
+		SDXosuRQr+EOBkej1TyZaw/mcgc=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/05.01. An.png</key>
+		<data>
+		TVg5vCLYntUULLe27Lpg8dp4x80=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/05.02. O.png</key>
+		<data>
+		zrfC1SK/KBGCAS2fl5vvtXIRCLc=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/05.03. Ther.png</key>
+		<data>
+		AD1aTqXmq9dcXFiBIURPk79OYGQ=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/05.04. De.png</key>
+		<data>
+		LVD2HKCK9MKSi7FNF8akN4DF0J0=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/05.05. Feat.png</key>
+		<data>
+		lcOY+5G6+rUJ3H7nX5ejscRK4ow=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/06.01. Just.png</key>
+		<data>
+		Of+Ywp/hu/1rdSEwc3YW6vDEboE=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/06.02. To.png</key>
+		<data>
+		FlcRpOzKMP5Z9c+38lAfYXQ9XUg=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/06.03. Clear.png</key>
+		<data>
+		UYn4Jaxt8R3DLycMVtuKI0WD5Ek=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/06.04. This.png</key>
+		<data>
+		MKTovhlfLAPO/s3nR1aZ53RLddQ=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/06.05. Up.png</key>
+		<data>
+		1NJovgUge5WrB41kFuDYkVHFISM=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/07.01. Don't.png</key>
+		<data>
+		BttTgcImyYzdkG8ecFV2rWaIT74=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/07.02. Want.png</key>
+		<data>
+		uWZbudZMzJx+qlTgWSS8pshhSd8=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/07.03. To.png</key>
+		<data>
+		T8qcpemdlfbhBOwTT+1fVb4m5zU=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/07.04. Please.png</key>
+		<data>
+		i76Ah3sj6ufmAyjx2w/ZcOYtAow=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/07.05. You.png</key>
+		<data>
+		TlOiwzBGlqU7HANOvfJNi8+ia1k=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/08.01. Not.png</key>
+		<data>
+		52seqyekNqmgT7c6U05N/3VXmKI=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/08.02. That.png</key>
+		<data>
+		+WcVmeRUBDDRImwtXVpnDoqzk18=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/08.03. It.png</key>
+		<data>
+		RVuxYs+iP0GaJBIJzDnn7PXnYHM=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/08.04. Matt.png</key>
+		<data>
+		JUDe0kcK+1/5Pmm6wRha7rDXoRc=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/08.05. Ers.png</key>
+		<data>
+		G32QIasv2RbM0kWs6V2r/YcZ3ao=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/09.01. Might.png</key>
+		<data>
+		jdONZsHsO8BpGiI/pVJLtJn5wFI=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/09.02. As.png</key>
+		<data>
+		i7DQsss4um2V7aGTv+cpOoXcTlg=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/09.03. Well.png</key>
+		<data>
+		4ELzZkQeNpDyk9Y7Om1jhbgoXMg=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/09.04. Draw.png</key>
+		<data>
+		RNNzEZr/fal/YJnbEhIilkyROv8=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/09.05. The.png</key>
+		<data>
+		Nbb2M+W9JDY2nW1QsAipnXnkabo=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/09.06. Line.png</key>
+		<data>
+		+58F0VVU2OthFyJVkfv2ggo8zJw=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/10.01. Be.png</key>
+		<data>
+		xA5UvgpdWzOBJsDdK37VSjqvyIU=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/10.02. Fore.png</key>
+		<data>
+		4rvlMn6XilYcaQG4jmFcJGwjZ0M=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/10.03. We.png</key>
+		<data>
+		QILasOCFpUF4Vm02Y1EnqnyiHzo=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/10.04. Lose.png</key>
+		<data>
+		UmcAnl/V6t9Pq3czWqw0r+Ya4+A=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/10.05. Our.png</key>
+		<data>
+		DRD+lD49mB0248bvpSrWTKXz+LE=
+		</data>
+		<key>Java/data/Images/5_panels/DTL/10.06. Minds.png</key>
+		<data>
+		ATcoFzyxZw7UFdEBdMDS3rKJdlQ=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/01.01. No.png</key>
+		<data>
+		grHx/W1V0+HTvj9ZgEgWEmR2eZU=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/01.png</key>
+		<data>
+		8GMwKTs6ytmNWt/iR9g2iJ9c1F0=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/02.png</key>
+		<data>
+		t88jSi48AcucXOh3hgla+BvnmZw=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/03.png</key>
+		<data>
+		loHLIgWb5lX4fTPOvIthq7EYknk=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/04.png</key>
+		<data>
+		x8yRZaf7k3ZKlZ7erm4tWx8UoIc=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/05.png</key>
+		<data>
+		DekfPhdMtQQLe9cqwyTIzKMCJ44=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/06.png</key>
+		<data>
+		Bf95dP5zk9S71SmcLReJ2lLaEL4=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/07.png</key>
+		<data>
+		O7gxD5D6gtmocwR/v6mjlbqo938=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/08.png</key>
+		<data>
+		5SwqMZeJFiQe9j/5gSsafGZMx6A=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/You Dance Like Shit.psd</key>
+		<data>
+		jhTvenHkWc0B1XgKfNkhNXGAV0Y=
+		</data>
+		<key>Java/data/Images/5_panels/Degeneration/You.png</key>
+		<data>
+		OJSW2sTKAconbL62nIREdXCyylE=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/01. Custom.jpg</key>
+		<data>
+		Wj7hdM1LaMN1o6GNax30y3L5Vgw=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/01. Red.jpg</key>
+		<data>
+		ye+5lgkI1L5sED48XhMpK+g2k4g=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/02. Custom.jpg</key>
+		<data>
+		kF3XbAvHcPkrm30sl1LDoTTiI5I=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/02. Red.jpg</key>
+		<data>
+		vXxqovREXlohEzuVf9p4oZor50k=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/03. Custom.jpg</key>
+		<data>
+		UgphRKcOGD0W19ygP1ZtIUCvAvk=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/03. Red.jpg</key>
+		<data>
+		qfsuHj8iey8MHZUNRWrkcSu6HfU=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/04. Custom.jpg</key>
+		<data>
+		T8eOnI4Jdx+gZ/4PY4pxSbRUSPc=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/04. Red.jpg</key>
+		<data>
+		S2pML7f1e9eJyFfCxiO/0NG4Kxs=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/05. Custom.jpg</key>
+		<data>
+		50zMrqEmZ54ChpK1eMN7DUj+N0w=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/05. Red.jpg</key>
+		<data>
+		6xgLBySon7CnQ5glk6rGTdsLirE=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/06. Red.jpg</key>
+		<data>
+		TkqyDlZpJO95Mqk9qUeQmmOSmXo=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/07. Red.jpg</key>
+		<data>
+		JhzL+VHIl9P2pSEwAXdUp23GMHQ=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/08. Red.jpg</key>
+		<data>
+		mqbN1oFK0HhXk0yHQtDiJMakofw=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/09. Red.jpg</key>
+		<data>
+		MTf76y71Xl9+EFrLtzC0CSc8PZw=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/10. Red.jpg</key>
+		<data>
+		+pxqpfsxOBs1hoYCL8yyX7j3Bc0=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/11. Red.jpg</key>
+		<data>
+		id1Ox2LmE/J/0sfT1NHPbOx7yDE=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/12. Red.jpg</key>
+		<data>
+		RO+fG6RuCsQeKNIDka2QtrQLG24=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/13. Red.jpg</key>
+		<data>
+		Ij6VLwgKJRq8MMw4IJFxy4ygThA=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/14. Red.jpg</key>
+		<data>
+		kGfM6gmpG2zhnyi4hhr9BwqGrt8=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/15. Red.jpg</key>
+		<data>
+		TxlmQXTMdR6maLP4ReK3U3uR8O8=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/16. Red.jpg</key>
+		<data>
+		opGT45CxFnDYPXU6OlKNPH7nLZI=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/17. Red.jpg</key>
+		<data>
+		zb4pZetNXiQAsoA3VSsg3jG9gU4=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/18. Red.jpg</key>
+		<data>
+		AfLBeKONhJvLPYUXDwe53KniRpU=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/19. Red.jpg</key>
+		<data>
+		LMDt9VZlOQGT8+bjtQ1TLANCKQM=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/20. Red.jpg</key>
+		<data>
+		Oe1MzeIsUwnJx65iDkLiiBao5SE=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/21. Red.jpg</key>
+		<data>
+		aXlnjsvY8jBDOz2nkeOoQiEn2wA=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/22. Red.jpg</key>
+		<data>
+		3Bzr3mnvp/7clGzmHyyAC3bi6ck=
+		</data>
+		<key>Java/data/Images/5_panels/Generic/23. Red.jpg</key>
+		<data>
+		ZpX1LLUFQi+Eh8QQQp6C+AxZg2Q=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/01.P-white-black.jpg</key>
+		<data>
+		U7oBIO+riyJ+WM71DbyocQo6N60=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/02.L-white-black.jpg</key>
+		<data>
+		2vaNDnl6JlusnXfpycELUaJlAKo=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/03.A-white-black.jpg</key>
+		<data>
+		whY/+KQw2bqDAxEM0ZLklqd0zjg=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/04.Y-white-black.jpg</key>
+		<data>
+		LkowSim68qb7raBaQigRvban+KI=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/05.M-white-black.jpg</key>
+		<data>
+		3BYgC+m1+aDpUdTGQudZon0PHwg=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/06.E-white-black.jpg</key>
+		<data>
+		RbYjqJjVjWZDArVO2BcRUZlqBDw=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/07.P-black-white.jpg</key>
+		<data>
+		Gkfx5oXvUF8PCxQvIBClPRuHGWw=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/08.L-black-white.jpg</key>
+		<data>
+		PSxKotzAyfwnNN6SMuNFhwrYOy4=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/09.A-black-white.jpg</key>
+		<data>
+		rWMmlvnD1QX6erb+Qp4av0prdxY=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/10.Y-black-white.jpg</key>
+		<data>
+		9VOfpPjNKX1NPdBn8LHtjDfenyU=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/11.M-black-white.jpg</key>
+		<data>
+		7UZc37yZ87Pm3yCwwAS4cvCaU9Y=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/12.E-black-white.jpg</key>
+		<data>
+		ILMnqOg88X71pBodiC94QD7vuk4=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/13.P-red-black.jpg</key>
+		<data>
+		ei0Nl4wfeTWD5Ft8JQym0t/N6tI=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/14.L-red-black.jpg</key>
+		<data>
+		seppdPuWR/Xl/r/JQuWY6FzN4nI=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/15.A-red-black.jpg</key>
+		<data>
+		bdfJ7R6i5wUHiouDXgQSnb8FwmY=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/16.Y-red-black.jpg</key>
+		<data>
+		dzLooahjDqteCrHB3aj77MhTl0M=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/17.M-red-black.jpg</key>
+		<data>
+		5y7TCtkCPPEQnUx+KOHobZf4gyE=
+		</data>
+		<key>Java/data/Images/5_panels/PlayMe/18.E-red-black.jpg</key>
+		<data>
+		FqVOzx4+/M6053Pe8iQrlF/1iJs=
+		</data>
+		<key>Java/data/Images/5_panels/Rotozoom/rotozoom1.jpg</key>
+		<data>
+		SUe6gYQ0gYy+8QD03NQvIjpFMHE=
+		</data>
+		<key>Java/data/Images/5_panels/Rotozoom/rotozoom2.jpg</key>
+		<data>
+		vJ9DKU1Y26Scy0R4RSO1mhpeltg=
+		</data>
+		<key>Java/data/Images/5_panels/Rotozoom/rotozoom3.jpg</key>
+		<data>
+		Xtk2cEwq9embiet70NctKXOG05o=
+		</data>
+		<key>Java/data/Images/5_panels/Rotozoom/rotozoom3_old.jpg</key>
+		<data>
+		9i7aY1e1RqnPOmaPFNSqtrpc6Yg=
+		</data>
+		<key>Java/data/Images/5_panels/Rotozoom/rotozoom3_old2.jpg</key>
+		<data>
+		ltE0wbXC4Mj/mWuj2xcAF4csxAY=
+		</data>
+		<key>Java/data/Images/5_panels/Startup.jpg</key>
+		<data>
+		xIOmMO1zK9s4ZBo6drheN5nVQpc=
+		</data>
+		<key>Java/data/Images/5_panels/Startup_1.jpg</key>
+		<data>
+		ASyDjDdRU4HSfQCFqlfnCPLP8xo=
+		</data>
+		<key>Java/data/Images/5_panels/Startup_2.jpg</key>
+		<data>
+		70S2LA+Zp7P4kT4esf6ZgEcmrUo=
+		</data>
+		<key>Java/data/Images/5_panels/Startup_3.jpg</key>
+		<data>
+		PfcmcQn2zoUPxvNeX83wGI7QDtk=
+		</data>
+		<key>Java/data/Images/5_panels/Startup_4.jpg</key>
+		<data>
+		jHeVxVmvpO8rXJ+k0wKERt8BVek=
+		</data>
+		<key>Java/data/Images/5_panels/Startup_5.jpg</key>
+		<data>
+		FSGj3Pn2eMH9aBE17tBBsEPXhjM=
+		</data>
+		<key>Java/data/Images/5_panels/voidImage.jpg</key>
+		<data>
+		OevSrr0isAmi+SPOOfrQKAD0UMs=
 		</data>
 		<key>Java/data/MIDI/DMX &amp; Custom Devices/Default Intensity/Full Stop.mid</key>
 		<data>
@@ -1696,18 +1816,6 @@
 		<data>
 		G24xRzTPUIIynmV0/rig43Hl5Hs=
 		</data>
-		<key>Java/data/Miniml-Standard0757-20.vlw</key>
-		<data>
-		DWyHk5NaQWCcrjbVCFh0gGZAZTU=
-		</data>
-		<key>Java/data/Miniml-Standard0757-48.vlw</key>
-		<data>
-		gg7VgIuLWs+OloFO+ejqqt+0iiY=
-		</data>
-		<key>Java/data/Miniml-Standard0757-8.vlw</key>
-		<data>
-		Wk8hLbfsyESDE6HqiATMB7AI7ms=
-		</data>
 		<key>Java/gluegen-rt-natives-macosx-universal.jar</key>
 		<data>
 		11uvp9PE8pshoC2Ui3fprr9Rlyk=
@@ -1732,6 +1840,10 @@
 		<data>
 		oNMgccwbKmCFTlmq4LOmgufSvZk=
 		</data>
+		<key>Java/jxl.jar</key>
+		<data>
+		f69i4Gl/eoiVRiLf6MjeM+0UKsc=
+		</data>
 		<key>Java/libjSSC-2.8.jnilib</key>
 		<data>
 		e62Pi7yGa2wCqoFf4HOBIsgRH40=
@@ -1748,6 +1860,15 @@
 		<data>
 		4VBEiaMtBiZ5LBJ+TjuwlWwXkBk=
 		</data>
+		<key>PlugIns/jdk1.7.0_55.jdk</key>
+		<dict>
+			<key>cdhash</key>
+			<data>
+			hD7d92W//OczkhPPJF2IrfBejnk=
+			</data>
+			<key>requirement</key>
+			<string>identifier "com.oracle.java.7u55.jdk" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = "8SBRM6J77J"</string>
+		</dict>
 		<key>Resources/en.lproj/Localizable.strings</key>
 		<dict>
 			<key>hash</key>

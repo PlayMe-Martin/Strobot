@@ -81,20 +81,10 @@ import java.util.*;
 //This file's primary use is to provide support when creating large MIDI files calling multiple animations
 boolean output_PHP = false;
 
-/////////////////////////////////////////////////////
-/////////Define the DMX configuration here !/////////
-/////////////////////////////////////////////////////
-
-//Set to True to execute the sketch in debug mode, without the Teensy2 connected
-boolean debug_without_dmx = false;
-boolean debug_without_custom_devices = false;
-
-
-
 
 //Resize option : choose either QUALITY for a slow, but good resize (using mean average), or SPEED, for a faster, but low quality pixel resize
 //Possible values : "QUALITY", "SPEED"
-final String RESIZE_OPTION = "QUALITY";
+final String RESIZE_OPTION = "SPEED";
 
 int NUMBER_OF_PANELS = 5;                       // Preferred number of panels - note: this value is updated in accordance to the available output microcontrollers
 
@@ -277,11 +267,14 @@ void setup()
   //Define the size of the display
   size(PIXELS_X, PIXELS_Y);
   
+  //Initialize Object for Serial2DMX microcontroller
+  outputDMX = new ArrayList<DMX>();
+  outputDMX.add(new DMX(this, 0, DMX_UNIVERSE_1_MICROCONTROLLER_NAME));
+  outputDMX.add(new DMX(this, 1, DMX_UNIVERSE_2_MICROCONTROLLER_NAME));
+
   //Before creating the DMX output objects, parse the fixtures requested by the user
   myDMXConfiguration = new DMXConfiguration();
 
-  //Initialize Object for Serial2DMX microcontroller
-  myDMX = new DMX(this);
   //Initialize Object for Serial2CustomDevices microcontroller
   myCustomDeviceController = new CustomDeviceController(this);
   

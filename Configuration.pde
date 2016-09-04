@@ -13,10 +13,6 @@ final String configFilename = "Strobot_config.txt";
 BufferedReader configFile_read;
 PrintWriter configFile_write;
 
-//Default values are initialised as follows : 1 front stroboscope with the following settings
-int DMXAddress_stroboscopeSpeed = 1;
-int DMXAddress_stroboscopeBrightness = 2;
-
 int numberOfLEDPanelMicrocontrollersFoundInConf = 0;
 
 void getInfoFromConfigFile() {
@@ -25,8 +21,7 @@ void getInfoFromConfigFile() {
     createConfigFile();
   }
   else {
-    //Configuration file exists - consider only the DMX devices declared inside the file, reinit the device lists, same goes for custom devices
-    empty_DMXDevices();
+    //Configuration file exists - consider only the custom devices declared inside the file
     empty_CustomDevices();
     
     configFile_read = createReader(configFilename);
@@ -61,11 +56,11 @@ void createConfigFile() {
     configFile_write.println("General output settings");
     configFile_write.println("Note - for panel mapping, the fastest way to set the correct parameter is by using the MIDI controller, the info shall be automatically written in this file");
     configFile_write.println("------------------------------------");
-    configFile_write.println("Microcontroller|DMX:" + DMX_MICROCONTROLLER_NAME);
+    configFile_write.println("Microcontroller|DMX|Universe 1:" + DMX_UNIVERSE_1_MICROCONTROLLER_NAME);
+    configFile_write.println("Microcontroller|DMX|Universe 2:" + DMX_UNIVERSE_2_MICROCONTROLLER_NAME);
     configFile_write.println("Microcontroller|CustomDevices:" + CUSTOMDEVICES_MICROCONTROLLER_NAME);
     printLEDPanelMicrocontrollerConfiguration();
-    configFile_write.println("------------------------------------");          
-    configFile_write.println("Debug|DisableDMXOutput:" + debug_without_dmx);
+    configFile_write.println("------------------------------------");
     configFile_write.println("Debug|ActivatePHPGeneration:" + output_PHP);
     configFile_write.println("Output|NumberOfPanels:" + NUMBER_OF_PANELS);
     configFile_write.println("Output|ScreenOrder:" + getScreenOrderConfiguration());
@@ -133,9 +128,10 @@ void createConfigFile() {
 }
 
 void printLEDPanelMicrocontrollerConfiguration() {
-  for (String microcontroller: TEENSY_SERIAL_PORT_LIST_5) {
-    configFile_write.println("Microcontroller|LEDPanels:" + microcontroller);
-  }
+  //TBIL to be modified
+  // for (String microcontroller: TEENSY_SERIAL_PORT_LIST_5) {
+  //   configFile_write.println("Microcontroller|LEDPanels:" + microcontroller);
+  // }
 }
 
 void printCustomDevicesConfiguration() {
@@ -235,27 +231,28 @@ void parseConfigurationFile(String line) {
       rejectLine = true;
     }
     if (rejectLine == false) {
-      if (lineSplit[0].contains("Microcontroller|DMX")) {
-        DMX_MICROCONTROLLER_NAME = lineSplit[1];
+      if (lineSplit[0].contains("Microcontroller|DMX|Universe 1")) {
+        DMX_UNIVERSE_1_MICROCONTROLLER_NAME = lineSplit[1];
+      }
+      if (lineSplit[0].contains("Microcontroller|DMX|Universe 2")) {
+        DMX_UNIVERSE_2_MICROCONTROLLER_NAME = lineSplit[1];
       }
       else if (lineSplit[0].contains("Microcontroller|CustomDevices")) {
         CUSTOMDEVICES_MICROCONTROLLER_NAME = lineSplit[1];
       }
-      else if (lineSplit[0].contains("Microcontroller|LEDPanels")) {
-        if (numberOfLEDPanelMicrocontrollersFoundInConf < 5) {
-          TEENSY_SERIAL_PORT_LIST_5[numberOfLEDPanelMicrocontrollersFoundInConf] = lineSplit[1];
-        }
-        else {
-          outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
-          outputLog.println("Too many microcontrollers for the panels found registered inside the configuration file !");
-          outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
-        }
-        numberOfLEDPanelMicrocontrollersFoundInConf += 1;
-      }
+      // TBIL to be deleted - or modified ?
+      // else if (lineSplit[0].contains("Microcontroller|LEDPanels")) {
+      //   if (numberOfLEDPanelMicrocontrollersFoundInConf < 5) {
+      //     TEENSY_SERIAL_PORT_LIST_5[numberOfLEDPanelMicrocontrollersFoundInConf] = lineSplit[1];
+      //   }
+      //   else {
+      //     outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
+      //     outputLog.println("Too many microcontrollers for the panels found registered inside the configuration file !");
+      //     outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
+      //   }
+      //   numberOfLEDPanelMicrocontrollersFoundInConf += 1;
+      // }
 
-      else if (lineSplit[0].contains("Debug|DisableDMXOutput")) {
-        debug_without_dmx = getBooleanFromString(lineSplit[1]);
-      }
       else if (lineSplit[0].contains("Debug|ActivatePHPGeneration")) {
         output_PHP = getBooleanFromString(lineSplit[1]);
       }

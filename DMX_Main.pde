@@ -12,8 +12,8 @@
 //Create a DMX configuration object - this will allow to parse the user configuration Excel workbook
 DMXConfiguration myDMXConfiguration;
 
-//Create a DMX object - initialize the serial port for the microcontroller responsible for the DMX equipments
-DMX myDMX;
+//Create an array of DMX objects - initialize the serial port for the microcontrollers responsible for the DMX equipments, one for each universe
+ArrayList<DMX> outputDMX;
 
 //Create lists of DMX equipments corresponding to "families" - note: due to historic reasons, strobes are still organised in a non-generic way
 ArrayList<DMX_Stroboscope> DMXList_FrontLeftStroboscopes;
@@ -40,41 +40,47 @@ IntList                    DMX_registeredDeviceID_Pars;
 //If an exception is raised when trying to send a DMX command, raise the flag, and do not try anymore for this particular device
 boolean exceptionRaisedDMX = false;
 
-//For 4 channel stroboscopes, default values for the special channels
-final int DMXStroboscope_defaultFlashLengthValue = 50;
-final int DMXStroboscope_defaultSpecialFXValue   = 0;      // No effect  
 
 //General DMX object, serves as en entry point to send actual DMX data over the network
 public class DMX {
  
   Serial myPort;
+  String microconName;
+  int universeIdx;
  
-  DMX(PApplet myPApplet) {
-    if (debug_without_dmx == false) {
-      for (int element = 0; element < Serial.list().length; element++){
-        if (Serial.list()[element].contains(DMX_MICROCONTROLLER_NAME) == true) {
-          this.myPort = new Serial(myPApplet, Serial.list()[element], 115200);      
-        }
+  DMX(PApplet myPApplet, int universeIdx, String microconName) {
+    
+    this.universeIdx = universeIdx;
+    this.microconName = microconName;
+
+    for (int element = 0; element < Serial.list().length; element++){
+      if (Serial.list()[element].contains(this.microconName) == true) {
+        this.myPort = new Serial(myPApplet, Serial.list()[element], 115200);      
       }
     }
+  
   }
 
   // Send command to Teensy2 to update DMX channel
   void setDmxChannel(int channel, int value) throws SerialPortException {
     // Convert the parameters into a message of the form: 123c45w where 123 is the channel and 45 is the value
     // then send to the Arduino
-    if (debug_without_dmx == false) 
-    {
-      if (exceptionRaisedDMX == false) {
-        try {
-          this.myPort.write( str(channel) + "c" + str(value) + "w" );
-        }
-        catch (Exception e) {
-          throw new SerialPortException("DMX Output error: no serial port found! " + e);
-        }
+    
+    if (exceptionRaisedDMX == false) {
+      try {
+        this.myPort.write( str(channel) + "c" + str(value) + "w" );
+      }
+      catch (Exception e) {
+        throw new SerialPortException("DMX Output error: no serial port found! " + e);
       }
     }
+    
+  }
+
+  int getUniverseIdx() {
+    return universeIdx;
   } 
+
 }
 
 void init_defaultDMXDevices() {
@@ -88,12 +94,6 @@ void init_defaultDMXDevices() {
 
 }
 
-void empty_DMXDevices() {
-  DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
-  DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
-  DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
-}
-
 boolean checkDmxAddressMapping(int startAddr, int nbChNewFixture) {
   //TBIL - check that no fixture conflicts with another
   return true;
@@ -104,12 +104,13 @@ void dmxInit_registerDefaultStrobes() {
   DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
   DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
   DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
-  // DMXList_MovingHeads            = new ArrayList<DMX_MovingHead>();
 
-  //The default DMX devices consist of two small stroboscopes on the left and on the right, and one big in the middle
-  DMXList_BackStroboscopes.add(new DMX_Stroboscope(5,6,7,8));
-  DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(1, 2));
-  DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
+  // Test function used to register fixtures to debug the rest - leave the following commented when using the Excel configuration file
+  // //The default DMX devices consist of two small stroboscopes on the left and on the right, and one big in the middle
+  // DMXList_BackStroboscopes.add(new DMX_Stroboscope(5,6,7,8));
+  // DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(1, 2));
+  // DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
+
 }
 
 
@@ -143,6 +144,7 @@ void dmxInit_registerDefaultMovingHeads() {
 void dmxInit_registerDefaultPars() {
   DMXList_Pars            = new ArrayList<DMX_PAR>();
 
+  // Test function used to register fixtures to debug the rest - leave the following commented when using the Excel configuration file
   // try {
   //   // Test function used to register fixtures to debug the rest - leave the following commented when using the Excel configuration file
   //   DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 8*24 + 0*3));
@@ -193,11 +195,9 @@ void dmx_buildFixtureSublists_movingHead() {
       // Left / Right fixtures
       if (movingHead.getDeviceID() < (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_left.add(movingHead);
-        println("Left Mov Head: " + movingHead.dmxStartAddr);
       }
       else if (movingHead.getDeviceID() > (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_right.add(movingHead);
-        println("Right Mov Head: " + movingHead.dmxStartAddr);
       }
       
       // Side / Center fixtures
@@ -214,11 +214,9 @@ void dmx_buildFixtureSublists_movingHead() {
       // Left / Right fixtures
       if (movingHead.getDeviceID() <= (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_left.add(movingHead);
-        println("Left Mov Head: " + movingHead.dmxStartAddr);
       }
       else {
         DMXList_MovingHeads_right.add(movingHead);
-        println("Right Mov Head: " + movingHead.dmxStartAddr);
       }
 
       // Side / Center fixtures
