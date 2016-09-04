@@ -13,10 +13,6 @@ final String configFilename = "Strobot_config.txt";
 BufferedReader configFile_read;
 PrintWriter configFile_write;
 
-//Default values are initialised as follows : 1 front stroboscope with the following settings
-int DMXAddress_stroboscopeSpeed = 1;
-int DMXAddress_stroboscopeBrightness = 2;
-
 int numberOfLEDPanelMicrocontrollersFoundInConf = 0;
 
 void getInfoFromConfigFile() {
@@ -25,8 +21,7 @@ void getInfoFromConfigFile() {
     createConfigFile();
   }
   else {
-    //Configuration file exists - consider only the DMX devices declared inside the file, reinit the device lists, same goes for custom devices
-    empty_DMXDevices();
+    //Configuration file exists - consider only the custom devices declared inside the file
     empty_CustomDevices();
     
     configFile_read = createReader(configFilename);
@@ -61,11 +56,11 @@ void createConfigFile() {
     configFile_write.println("General output settings");
     configFile_write.println("Note - for panel mapping, the fastest way to set the correct parameter is by using the MIDI controller, the info shall be automatically written in this file");
     configFile_write.println("------------------------------------");
-    configFile_write.println("Microcontroller|DMX:" + DMX_MICROCONTROLLER_NAME);
+    configFile_write.println("Microcontroller|DMX|Universe 1:" + DMX_UNIVERSE_1_MICROCONTROLLER_NAME);
+    configFile_write.println("Microcontroller|DMX|Universe 2:" + DMX_UNIVERSE_2_MICROCONTROLLER_NAME);
     configFile_write.println("Microcontroller|CustomDevices:" + CUSTOMDEVICES_MICROCONTROLLER_NAME);
     printLEDPanelMicrocontrollerConfiguration();
-    configFile_write.println("------------------------------------");          
-    configFile_write.println("Debug|DisableDMXOutput:" + debug_without_dmx);
+    configFile_write.println("------------------------------------");
     configFile_write.println("Debug|ActivatePHPGeneration:" + output_PHP);
     configFile_write.println("Output|NumberOfPanels:" + NUMBER_OF_PANELS);
     configFile_write.println("Output|ScreenOrder:" + getScreenOrderConfiguration());
@@ -74,14 +69,9 @@ void createConfigFile() {
     configFile_write.println("MIDISettings|PioneerControllerInputMIDIDevice:" + MIDI_BUS_PIONEER_CONTROLLER_INPUT);
     configFile_write.println();
     configFile_write.println();
-    configFile_write.println("This section allows persistant DMX mapping - define custom addresses for the DMX devices below");
+    configFile_write.println("Custom Device configuration:");
     printCustomDevicesConfiguration();
     configFile_write.println();
-    configFile_write.println();    
-    configFile_write.println("This section allows persistant DMX mapping - define custom addresses for the DMX devices below");
-    configFile_write.println("For stroboscopes, the following devices can be configured -> FrontStroboscope/BackStroboscope, with the attributes Speed, Brightness and FlashLength"); 
-    configFile_write.println();
-    printDMXDeviceConfiguration();
     configFile_write.println();
     configFile_write.println("Choose to display the graphic user interface or not - not displaying it will result in a lighter CPU usage");
     configFile_write.println("GeneralSettings|DisplayGUI:" + DISPLAY_GUI);
@@ -138,24 +128,10 @@ void createConfigFile() {
 }
 
 void printLEDPanelMicrocontrollerConfiguration() {
-  for (String microcontroller: TEENSY_SERIAL_PORT_LIST_5) {
-    configFile_write.println("Microcontroller|LEDPanels:" + microcontroller);
-  }
-}
-
-void printDMXDeviceConfiguration() {
-  for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    configFile_write.println("FrontLeftStroboscope|" + stroboscope.printStatus());
-  }
-  for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    configFile_write.println("FrontRightStroboscope|" + stroboscope.printStatus());
-  }
-  for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    configFile_write.println("BackStroboscope|" + stroboscope.printStatus());
-  }
-  for (DMX_PAR projector: DMXList_PARs) {
-    configFile_write.println("Projector|" + projector.printStatus());
-  }
+  //TBIL to be modified
+  // for (String microcontroller: TEENSY_SERIAL_PORT_LIST_5) {
+  //   configFile_write.println("Microcontroller|LEDPanels:" + microcontroller);
+  // }
 }
 
 void printCustomDevicesConfiguration() {
@@ -255,27 +231,28 @@ void parseConfigurationFile(String line) {
       rejectLine = true;
     }
     if (rejectLine == false) {
-      if (lineSplit[0].contains("Microcontroller|DMX")) {
-        DMX_MICROCONTROLLER_NAME = lineSplit[1];
+      if (lineSplit[0].contains("Microcontroller|DMX|Universe 1")) {
+        DMX_UNIVERSE_1_MICROCONTROLLER_NAME = lineSplit[1];
+      }
+      if (lineSplit[0].contains("Microcontroller|DMX|Universe 2")) {
+        DMX_UNIVERSE_2_MICROCONTROLLER_NAME = lineSplit[1];
       }
       else if (lineSplit[0].contains("Microcontroller|CustomDevices")) {
         CUSTOMDEVICES_MICROCONTROLLER_NAME = lineSplit[1];
       }
-      else if (lineSplit[0].contains("Microcontroller|LEDPanels")) {
-        if (numberOfLEDPanelMicrocontrollersFoundInConf < 5) {
-          TEENSY_SERIAL_PORT_LIST_5[numberOfLEDPanelMicrocontrollersFoundInConf] = lineSplit[1];
-        }
-        else {
-          outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
-          outputLog.println("Too many microcontrollers for the panels found registered inside the configuration file !");
-          outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
-        }
-        numberOfLEDPanelMicrocontrollersFoundInConf += 1;
-      }
+      // TBIL to be deleted - or modified ?
+      // else if (lineSplit[0].contains("Microcontroller|LEDPanels")) {
+      //   if (numberOfLEDPanelMicrocontrollersFoundInConf < 5) {
+      //     TEENSY_SERIAL_PORT_LIST_5[numberOfLEDPanelMicrocontrollersFoundInConf] = lineSplit[1];
+      //   }
+      //   else {
+      //     outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
+      //     outputLog.println("Too many microcontrollers for the panels found registered inside the configuration file !");
+      //     outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
+      //   }
+      //   numberOfLEDPanelMicrocontrollersFoundInConf += 1;
+      // }
 
-      else if (lineSplit[0].contains("Debug|DisableDMXOutput")) {
-        debug_without_dmx = getBooleanFromString(lineSplit[1]);
-      }
       else if (lineSplit[0].contains("Debug|ActivatePHPGeneration")) {
         output_PHP = getBooleanFromString(lineSplit[1]);
       }
@@ -313,22 +290,7 @@ void parseConfigurationFile(String line) {
       }
       
       //////////////////////////////////////////////////
-      
-      else if (lineSplit[0].contains("FrontLeftStroboscope")) {
-        parseDMXSpecificLine_FrontLeftStroboscope(line);
-      }
-      else if (lineSplit[0].contains("FrontRightStroboscope")) {
-        parseDMXSpecificLine_FrontRightStroboscope(line);
-      }
-      else if (lineSplit[0].contains("BackStroboscope")) {
-        parseDMXSpecificLine_BackStroboscope(line);
-      }
-      else if (lineSplit[0].contains("Projector")) {
-        parseDMXSpecificLine_Projector(line);
-      }
-      
-      //////////////////////////////////////////////////
-      
+            
       
       else if (lineSplit[0].contains("ManualInput|AuthorizeManualInput")) {
         authorizeGeneralManualMode = getBooleanFromString(lineSplit[1]);
@@ -512,173 +474,6 @@ void parseCustomDeviceSpecificLine_RackLight(String line) {
 }
 
 
-void parseDMXSpecificLine_FrontLeftStroboscope(String line) {
-  int dmx_speed       = -1;
-  int dmx_brightness  = -1;
-  int dmx_flashLength = -1;
-  int dmx_specialFX   = -1;
-  
-  try {
-    String[] lineSplit = split(line, "|");
-    for (String element: lineSplit) {
-      String[] elementSplit = split(element, ":");
-      
-      boolean rejectLine = false;
-      if (elementSplit.length != 2) {
-        rejectLine = true;
-      }
-      if (rejectLine == false) {
-        if (elementSplit[0].contains("Speed")) {
-          dmx_speed = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("Brightness")) {
-          dmx_brightness = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("FlashLength")) {
-          dmx_flashLength = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("SpecialFX")) {
-          dmx_specialFX = convertStringToInt(elementSplit[1]);
-        }
-      }
-    }
-  }
-  catch (Exception e) {
-    outputLog.println("Error while parsing the DMX|FrontLeftStroboscope line (" + line + ") : " + e);
-  }
-  
-  boolean dataAvailable = true;
-  if (dmx_speed < 0 || dmx_brightness < 0) {
-    dataAvailable = false;
-  }
-  if (dataAvailable == true) {
-    if (dmx_flashLength < 0) {
-      outputLog.println("Adding a 2-channel front left stroboscope : Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-      DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
-    }
-    else {
-      outputLog.println("Adding a 4-channel front left stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed + "|SpecialFX:" + dmx_specialFX);
-      DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
-    }
-  }
-  else {
-    outputLog.println("Error while creating the DMX FrontLeftStroboscope object, not enough data is available. Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-  }
-}
-
-void parseDMXSpecificLine_FrontRightStroboscope(String line) {
-  int dmx_speed = -1;
-  int dmx_brightness = -1;
-  int dmx_flashLength = -1;
-  int dmx_specialFX   = -1;
-  
-  try {
-    String[] lineSplit = split(line, "|");
-    for (String element: lineSplit) {
-      String[] elementSplit = split(element, ":");
-      
-      boolean rejectLine = false;
-      if (elementSplit.length != 2) {
-        rejectLine = true;
-      }
-      if (rejectLine == false) {
-        if (elementSplit[0].contains("Speed")) {
-          dmx_speed = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("Brightness")) {
-          dmx_brightness = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("FlashLength")) {
-          dmx_flashLength = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("SpecialFX")) {
-          dmx_specialFX = convertStringToInt(elementSplit[1]);
-        }
-      }
-    }
-  }
-  catch (Exception e) {
-    outputLog.println("Error while parsing the DMX|FrontRightStroboscope line (" + line + ") : " + e);
-  }
-  
-  boolean dataAvailable = true;
-  if (dmx_speed < 0 || dmx_brightness < 0) {
-    dataAvailable = false;
-  }
-  if (dataAvailable == true) {
-    if (dmx_flashLength < 0) {
-      outputLog.println("Adding a 2-channel front right stroboscope : Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-      DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
-    }
-    else {
-      outputLog.println("Adding a 4-channel front right stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed + "|SpecialFX:" + dmx_specialFX);
-      DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
-    }
-  }
-  else {
-    outputLog.println("Error while creating the DMX FrontRightStroboscope object, not enough data is available. Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-  }
-}
-
-void parseDMXSpecificLine_BackStroboscope(String line) {
-  int dmx_speed = -1;
-  int dmx_brightness = -1;
-  int dmx_flashLength = -1;
-  int dmx_specialFX = -1;
-  
-  try {
-    String[] lineSplit = split(line, "|");
-    for (String element: lineSplit) {
-      String[] elementSplit = split(element, ":");
-      
-      boolean rejectLine = false;
-      if (elementSplit.length != 2) {
-        rejectLine = true;
-      }
-      if (rejectLine == false) {
-        if (elementSplit[0].contains("Speed")) {
-          dmx_speed = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("Brightness")) {
-          dmx_brightness = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("FlashLength")) {
-          dmx_flashLength = convertStringToInt(elementSplit[1]);
-        }
-        else if (elementSplit[0].contains("SpecialFX")) {
-          dmx_specialFX = convertStringToInt(elementSplit[1]);
-        }
-      }
-    }
-  }
-  catch (Exception e) {
-    outputLog.println("Error while parsing the DMX|Backstroboscope line (" + line + ") : " + e);
-  }
-  
-  boolean dataAvailable = true;
-  if (dmx_speed < 0 || dmx_brightness < 0) {
-    dataAvailable = false;
-  }
-  if (dataAvailable == true) {
-    if (dmx_flashLength < 0) {
-      outputLog.println("Adding a 2-channel back stroboscope : Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-      DMXList_BackStroboscopes.add(new DMX_Stroboscope(dmx_speed, dmx_brightness));
-    }
-    else {
-      outputLog.println("Adding a 4-channel back stroboscope : Brightness:" + dmx_brightness + "|FlashLength:" + dmx_flashLength + "|Speed: " + dmx_speed + "|SpecialFX:" + dmx_specialFX);
-      DMXList_BackStroboscopes.add(new DMX_Stroboscope(dmx_brightness, dmx_flashLength, dmx_speed, dmx_specialFX));
-    }
-  }
-  else {
-    outputLog.println("Error while creating the DMX BackStroboscope object, not enough data is available. Speed:" + dmx_speed + "|Brightness:" + dmx_brightness);
-  }
-}
-
-void parseDMXSpecificLine_Projector(String line) {
-  //TBIL
-  outputLog.println("//// PAR parsing is yet to be implemented ////");
-}
-
 ///////////////////////////////////////////////////////
 // Utility functions to parse the configuration file //
 ///////////////////////////////////////////////////////
@@ -786,17 +581,88 @@ String getStringFromCustomDeviceAnimationNumber(int animNbr) {
   return temp;
 }
 
-String getStringFromDMXAnimationNumber(int animNbr) {
+String getStringFromDMXAnimationNumber_strobe(int animNbr) {
   String temp = "Undefined";
   if (animNbr <= 127) {                                                                   
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK1) + "  |  " + str(animNbr);
-  }                                                                                              
-  else if (animNbr <= 254) {
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK2) + "  |  " + str(animNbr - 127);
-  }                                                                                              
-  else if (animNbr <= 381) {
-    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_BANK3) + "  |  " + str(animNbr - 254);    
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_STROBE) + "  |  " + str(animNbr);
   }
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_par_Color(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR_SET_COLOR) + "  |  " + str(animNbr);
+  }
+  
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_par_LightStyle(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE) + "  |  " + str(animNbr);
+  }
+  
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_par_Animation(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR_SET_ANIMATION) + "  |  " + str(animNbr);
+  }
+  
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_movingHead_Movement(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION) + "  |  " + str(animNbr);
+  }
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_movingHead_Color(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR) + "  |  " + str(animNbr);
+  }
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_movingHead_Rhythm(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_RHYTHM) + "  |  " + str(animNbr);
+  }
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_movingHead_LightStyle(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE) + "  |  " + str(animNbr);
+  }
+  return temp;
+}
+
+String getStringFromDMXAnimationNumber_movingHead_Animation(int animNbr) {
+  String temp = "Undefined";
+  if (animNbr <= 127) {                                                                   
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1) + "  |  " + str(animNbr);
+  }
+  else if (animNbr <= 254) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2) + "  |  " + str(animNbr - 127);
+  }
+  else if (animNbr <= 381) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3) + "  |  " + str(animNbr - 381);
+  }
+  else if (animNbr <= 508) {
+    temp = getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_4) + "  |  " + str(animNbr - 508);
+  }
+
   return temp;
 }
 

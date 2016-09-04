@@ -226,7 +226,7 @@ PImage getimage(int imagenumber)
 }
 
 PImage getConfigSpecificImage(String path) {
-  String confSpecific = NUMBER_OF_PANELS + "_panels/";
+  String confSpecific = "Images/" + NUMBER_OF_PANELS + "_panels/";
   return loadImage(confSpecific + path);
 }
 
@@ -379,7 +379,7 @@ void draw_spiraluality() {
 //////////////////////////////////////////
 
 void draw_shadows() {
-    rand+=.01;
+    rand+=.013;
     float n=noise(rand);
     
     background(255);
@@ -458,10 +458,12 @@ void draw_va_et_vient_2() {
   strokeCap(SQUARE);
   for (int i=0;i<height/4;i++) {
     if (i%2 == 0) {
-      line(va_et_vient_progress,i*(height/4),va_et_vient_progress,(i+1)*(height/4));
+      line(va_et_vient_progress+4,i*(height/4),va_et_vient_progress+4,(i+1)*(height/4));
+      line(va_et_vient_progress-4,i*(height/4),va_et_vient_progress-4,(i+1)*(height/4));
     }
     else {
-      line(width - va_et_vient_progress,i*(height/4),width - va_et_vient_progress,(i+1)*(height/4));
+      line(width - va_et_vient_progress-4,i*(height/4),width - va_et_vient_progress-4,(i+1)*(height/4));
+      line(width - va_et_vient_progress+4,i*(height/4),width - va_et_vient_progress+4,(i+1)*(height/4));
     }
   }  
   popStyle();
@@ -833,7 +835,7 @@ class Wind {
 //////////////////////////////////////////
 
 void draw_strobonormal() {
-  if (frameCount % 2 == 0)
+  if (frameCount % 4 == 0)
   {
     //fill(int(random(50,255)),int(random(50,255)),int(random(50,255)));
     fill(255);
@@ -2824,14 +2826,16 @@ void draw_mixedlines(int position_horizontal_lines, int position_vertical_lines,
 //////////////////////////////////////////
 
 void draw_stroboX() {
-  if (frameCount % 2 == 0)
+  if (frameCount % 4 == 0)
   {
+    stroke(255);
     line(0,0,width,height);
     line(0,height,width,0);
   }
   else
   {
     fill(0);
+    stroke(0);
     rect(0,0,width,height);
   }
 }
@@ -3417,10 +3421,6 @@ void draw_tetris() {
     if (game_over) {
       text("G A M E", width/2, height/3 - 4);
       text("O V E R", width/2, 2*height/3 + 4);
-      if (debug_without_dmx == false) {
-        myDMX.setStrobePreset_FrontLeft(10);  //Start the stroboscope
-        myDMX.setStrobePreset_FrontRight(10);  //Start the stroboscope
-      }
       
       if (command_p1_left | command_p1_right | command_p2_left | command_p2_right)
       {
@@ -3432,10 +3432,6 @@ void draw_tetris() {
     else if (show_score) {
       text("SCORE", width/2, height/3 - 4);
       text(lines, width/2, 2*height/3 + 4);
-      if (debug_without_dmx == false) {
-        myDMX.stopStrobe_FrontLeft();
-        myDMX.stopStrobe_FrontRight();
-      }
       if (command_p1_left | command_p1_right | command_p2_left | command_p2_right)
       {
         setup_tetris();
@@ -4271,7 +4267,7 @@ void generateCircleImage(){
 //////////////////////////////////////////
 
 void draw_strobored() {
-  if (frameCount % 2 == 0)
+  if (frameCount % 4 == 0)
   {
     fill(255,0,0);
     rect(0,0,width,height);
@@ -6574,13 +6570,13 @@ void draw_colorrain(){
 }
 
 
-public class Cell{
+public class ColorRainCell{
   float locX, locY;
   float sizeX, sizeY;
   float cBrightness;
   float cHue;
    
-  public Cell(float locX, float locY, float cHue, float sizeX, float sizeY){
+  public ColorRainCell(float locX, float locY, float cHue, float sizeX, float sizeY){
     this.locX = locX;
     this.locY = locY;
     this.sizeX = sizeX;
@@ -6609,7 +6605,7 @@ public class colorrain_CellArray{
   float arrayHeight;
   float numVert;
   float numHoriz;
-  Cell[][] colorrain_cells;
+  ColorRainCell[][] colorrain_cells;
   int[] offset;
    
   public colorrain_CellArray(float arrayWidth, float arrayHeight, int numHoriz, int numVert){
@@ -6620,10 +6616,10 @@ public class colorrain_CellArray{
      
     float cellHeight = arrayHeight/numVert;
     float cellWidth  = arrayWidth/numHoriz;
-    colorrain_cells = new Cell[numHoriz][numVert];
+    colorrain_cells = new ColorRainCell[numHoriz][numVert];
     for(int i = 0; i < colorrain_cells.length; i++){
       for(int k = 0; k < colorrain_cells[0].length; k++){
-        colorrain_cells[i][k] = new Cell(cellHeight*i, cellWidth*k, 100, cellWidth, cellHeight);
+        colorrain_cells[i][k] = new ColorRainCell(cellHeight*i, cellWidth*k, 100, cellWidth, cellHeight);
       }
     }
     offset = new int[numHoriz];
@@ -6686,7 +6682,7 @@ void draw_bwtriangles() {
 
 void createParticleSystem() {
   background(0);
-  bwtriangles_particles = new ParticleSystem ();
+  bwtriangles_particles = new ParticleSystem();
   bwtriangles_particles.setBorderBounce(true, true, true, true);
  
   for (int i = 0; i < bwtriangles_nbrParticles; i ++) {
@@ -6719,7 +6715,7 @@ class BWTriangleParticle {
   float max_vel = 800;
   float bounce = -1;
   int taille = 5;
-  Boolean affBoules = true;
+  boolean affBoules = true;
    
 
   BWTriangleParticle (PVector p, PVector v, PVector a, float _bounce) {
@@ -6756,7 +6752,7 @@ class BWTriangleParticle {
     pos.add(vel);
   }
 
-  void render(Boolean aff) {
+  void render(boolean aff) {
     update();
     noStroke();
     fill(255,70);
@@ -6772,10 +6768,10 @@ class ParticleSystem {
   ArrayList history;
  
   //DIFFERENTS PARAMETRES D AFFICHAGE
-  Boolean traceTraits = false;
-  Boolean traceTriangles = true;
-  Boolean traceParticle = false;
-  Boolean changeVit = false; 
+  boolean traceTraits = false;
+  boolean traceTriangles = true;
+  boolean traceParticle = false;
+  boolean changeVit = false; 
  
   int nbBWTriangleParticle = 8;
   float bwtriangles_vitesse = 3;
@@ -14062,7 +14058,7 @@ void draw_nonotak_1() {
     strokeWeight(4);
     for (int i = 0; i<width/4; i++) {
       line((i*4*4 + nonotak_1_x) % width, 0, (i*4*4 + nonotak_1_x) % width, height);
-    } 
+    }
     
   }
   else {
@@ -17409,7 +17405,7 @@ void draw_simplespiral(int r, int g, int b) {
     arc(0, 0, width*1.2-i*10, width*1.2-i*10, 0, PI);
   }
   popMatrix();
-  simplespiral_theta += PI/90;
+  simplespiral_theta += PI/80;
 }
 
 //////////////////////////////////////////

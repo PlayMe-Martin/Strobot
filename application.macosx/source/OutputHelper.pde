@@ -4,8 +4,6 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 
 
-//import processing.serial.Serial;
-
 //Cannot name the regular RGB as RGB : Processing already uses a global variable called RGB
 String Regular_RGB = "RGB";
 String RBG = "RBG";

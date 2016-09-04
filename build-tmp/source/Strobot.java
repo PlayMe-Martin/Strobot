@@ -14,6 +14,7 @@ import java.io.*;
 import com.google.protobuf.*; 
 import java.io.File; 
 import java.io.File; 
+import java.nio.file.StandardCopyOption.*; 
 import java.io.IOException; 
 import jxl.Cell; 
 import jxl.Sheet; 
@@ -161,20 +162,10 @@ For example ---
 //This file's primary use is to provide support when creating large MIDI files calling multiple animations
 boolean output_PHP = false;
 
-/////////////////////////////////////////////////////
-/////////Define the DMX configuration here !/////////
-/////////////////////////////////////////////////////
-
-//Set to True to execute the sketch in debug mode, without the Teensy2 connected
-boolean debug_without_dmx = false;
-boolean debug_without_custom_devices = false;
-
-
-
 
 //Resize option : choose either QUALITY for a slow, but good resize (using mean average), or SPEED, for a faster, but low quality pixel resize
 //Possible values : "QUALITY", "SPEED"
-final String RESIZE_OPTION = "QUALITY";
+final String RESIZE_OPTION = "SPEED";
 
 int NUMBER_OF_PANELS = 5;                       // Preferred number of panels - note: this value is updated in accordance to the available output microcontrollers
 
@@ -357,11 +348,14 @@ public void setup()
   //Define the size of the display
   size(PIXELS_X, PIXELS_Y);
   
+  //Initialize Object for Serial2DMX microcontroller
+  outputDMX = new ArrayList<DMX>();
+  outputDMX.add(new DMX(this, 0, DMX_UNIVERSE_1_MICROCONTROLLER_NAME));
+  outputDMX.add(new DMX(this, 1, DMX_UNIVERSE_2_MICROCONTROLLER_NAME));
+
   //Before creating the DMX output objects, parse the fixtures requested by the user
   myDMXConfiguration = new DMXConfiguration();
 
-  //Initialize Object for Serial2DMX microcontroller
-  myDMX = new DMX(this);
   //Initialize Object for Serial2CustomDevices microcontroller
   myCustomDeviceController = new CustomDeviceController(this);
   
@@ -7686,7 +7680,7 @@ public void generateCircleImage(){
 //////////////////////////////////////////
 
 public void draw_strobored() {
-  if (frameCount % 2 == 0)
+  if (frameCount % 4 == 0)
   {
     fill(255,0,0);
     rect(0,0,width,height);
@@ -24205,10 +24199,6 @@ final String configFilename = "Strobot_config.txt";
 BufferedReader configFile_read;
 PrintWriter configFile_write;
 
-//Default values are initialised as follows : 1 front stroboscope with the following settings
-int DMXAddress_stroboscopeSpeed = 1;
-int DMXAddress_stroboscopeBrightness = 2;
-
 int numberOfLEDPanelMicrocontrollersFoundInConf = 0;
 
 public void getInfoFromConfigFile() {
@@ -24217,8 +24207,7 @@ public void getInfoFromConfigFile() {
     createConfigFile();
   }
   else {
-    //Configuration file exists - consider only the DMX devices declared inside the file, reinit the device lists, same goes for custom devices
-    empty_DMXDevices();
+    //Configuration file exists - consider only the custom devices declared inside the file
     empty_CustomDevices();
     
     configFile_read = createReader(configFilename);
@@ -24253,11 +24242,11 @@ public void createConfigFile() {
     configFile_write.println("General output settings");
     configFile_write.println("Note - for panel mapping, the fastest way to set the correct parameter is by using the MIDI controller, the info shall be automatically written in this file");
     configFile_write.println("------------------------------------");
-    configFile_write.println("Microcontroller|DMX:" + DMX_MICROCONTROLLER_NAME);
+    configFile_write.println("Microcontroller|DMX|Universe 1:" + DMX_UNIVERSE_1_MICROCONTROLLER_NAME);
+    configFile_write.println("Microcontroller|DMX|Universe 2:" + DMX_UNIVERSE_2_MICROCONTROLLER_NAME);
     configFile_write.println("Microcontroller|CustomDevices:" + CUSTOMDEVICES_MICROCONTROLLER_NAME);
     printLEDPanelMicrocontrollerConfiguration();
-    configFile_write.println("------------------------------------");          
-    configFile_write.println("Debug|DisableDMXOutput:" + debug_without_dmx);
+    configFile_write.println("------------------------------------");
     configFile_write.println("Debug|ActivatePHPGeneration:" + output_PHP);
     configFile_write.println("Output|NumberOfPanels:" + NUMBER_OF_PANELS);
     configFile_write.println("Output|ScreenOrder:" + getScreenOrderConfiguration());
@@ -24325,9 +24314,10 @@ public void createConfigFile() {
 }
 
 public void printLEDPanelMicrocontrollerConfiguration() {
-  for (String microcontroller: TEENSY_SERIAL_PORT_LIST_5) {
-    configFile_write.println("Microcontroller|LEDPanels:" + microcontroller);
-  }
+  //TBIL to be modified
+  // for (String microcontroller: TEENSY_SERIAL_PORT_LIST_5) {
+  //   configFile_write.println("Microcontroller|LEDPanels:" + microcontroller);
+  // }
 }
 
 public void printCustomDevicesConfiguration() {
@@ -24427,27 +24417,28 @@ public void parseConfigurationFile(String line) {
       rejectLine = true;
     }
     if (rejectLine == false) {
-      if (lineSplit[0].contains("Microcontroller|DMX")) {
-        DMX_MICROCONTROLLER_NAME = lineSplit[1];
+      if (lineSplit[0].contains("Microcontroller|DMX|Universe 1")) {
+        DMX_UNIVERSE_1_MICROCONTROLLER_NAME = lineSplit[1];
+      }
+      if (lineSplit[0].contains("Microcontroller|DMX|Universe 2")) {
+        DMX_UNIVERSE_2_MICROCONTROLLER_NAME = lineSplit[1];
       }
       else if (lineSplit[0].contains("Microcontroller|CustomDevices")) {
         CUSTOMDEVICES_MICROCONTROLLER_NAME = lineSplit[1];
       }
-      else if (lineSplit[0].contains("Microcontroller|LEDPanels")) {
-        if (numberOfLEDPanelMicrocontrollersFoundInConf < 5) {
-          TEENSY_SERIAL_PORT_LIST_5[numberOfLEDPanelMicrocontrollersFoundInConf] = lineSplit[1];
-        }
-        else {
-          outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
-          outputLog.println("Too many microcontrollers for the panels found registered inside the configuration file !");
-          outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
-        }
-        numberOfLEDPanelMicrocontrollersFoundInConf += 1;
-      }
+      // TBIL to be deleted - or modified ?
+      // else if (lineSplit[0].contains("Microcontroller|LEDPanels")) {
+      //   if (numberOfLEDPanelMicrocontrollersFoundInConf < 5) {
+      //     TEENSY_SERIAL_PORT_LIST_5[numberOfLEDPanelMicrocontrollersFoundInConf] = lineSplit[1];
+      //   }
+      //   else {
+      //     outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
+      //     outputLog.println("Too many microcontrollers for the panels found registered inside the configuration file !");
+      //     outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
+      //   }
+      //   numberOfLEDPanelMicrocontrollersFoundInConf += 1;
+      // }
 
-      else if (lineSplit[0].contains("Debug|DisableDMXOutput")) {
-        debug_without_dmx = getBooleanFromString(lineSplit[1]);
-      }
       else if (lineSplit[0].contains("Debug|ActivatePHPGeneration")) {
         output_PHP = getBooleanFromString(lineSplit[1]);
       }
@@ -28618,31 +28609,30 @@ public class CustomDeviceController{
   Serial myPort;
  
   CustomDeviceController(PApplet myPApplet) {
-    if (debug_without_custom_devices == false) {
-      for (int element = 0; element < Serial.list().length; element++){
-        if (Serial.list()[element].contains(CUSTOMDEVICES_MICROCONTROLLER_NAME) == true) {
-          this.myPort = new Serial(myPApplet, Serial.list()[element], 57600);
-          break;
-        }
+    
+    for (int element = 0; element < Serial.list().length; element++){
+      if (Serial.list()[element].contains(CUSTOMDEVICES_MICROCONTROLLER_NAME) == true) {
+        this.myPort = new Serial(myPApplet, Serial.list()[element], 57600);
+        break;
       }
     }
+  
   }
 
   // Send command to Arduino to update a specific custom device
   public void setCustomDeviceAnimation(int deviceNumber, int animation) throws SerialPortException {
     // Convert the parameters into a message of the form: 123c45w where 123 is the number of the device and 45 is the animation
     // then send to the Arduino
-    if (debug_without_custom_devices == false) 
-    {
-      if (exceptionRaisedCustomDevice == false) {
-        try {
-          this.myPort.write( str(deviceNumber) + "c" + str(animation) + "w" );
-        }
-        catch (Exception e) {
-          throw new SerialPortException("CustomDevice Output error: no serial port found! " + e);
-        }
+
+    if (exceptionRaisedCustomDevice == false) {
+      try {
+        this.myPort.write( str(deviceNumber) + "c" + str(animation) + "w" );
+      }
+      catch (Exception e) {
+        throw new SerialPortException("CustomDevice Output error: no serial port found! " + e);
       }
     }
+  
   }
 }
 
@@ -30259,13 +30249,13 @@ public void dmxAnim_total_blackout() {
 // Stop all strobe fixtures, create a complete blackout
 public void dmxAnim_strobe_blackout() {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    stroboscope.stopDMX();
+    stroboscope.stopStrobe();
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    stroboscope.stopDMX();
+    stroboscope.stopStrobe();
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    stroboscope.stopDMX();
+    stroboscope.stopStrobe();
   }
 }
 
@@ -30301,6 +30291,7 @@ public void dmxAnim_movingHead_blackout() {
 
 
 
+
 final int FIXTURE_TYPE_COLUMN            = 12;
 final int FIXTURE_NBCHANNELS_COLUMN      = 13;
 final int FIXTURE_NAME_COLUMN            = 14;
@@ -30313,34 +30304,54 @@ final int XLS_STRUCTURE_ARRAY_MAX_COLUMN = 54;
 
 public class DMXConfiguration {
   
-  WritableWorkbook workbook;
-
   DMXConfiguration() {
-    
+    boolean exceptionRaised = false;
+
     try {
       
       Workbook readWorkbook = Workbook.getWorkbook(new File(sketchPath("") + "/" + "DMX_Configuration.xls"));
-      workbook = Workbook.createWorkbook(new File(sketchPath("") + "/" + "DMX_Configuration.xls"), readWorkbook);
       
       try {
-        parseDMXConfiguration(workbook.getSheet(0));
+        parseDMXConfiguration(readWorkbook.getSheet(0), 0);     // Universe 1
+        parseDMXConfiguration(readWorkbook.getSheet(1), 1);     // Universe 2
         // Sheet sheet = workbook.getSheet(0);
         
         // Initialize the subfamilies of the different configured fixtures
         dmxInit_buildSubObjects();
       }
       catch (Exception e) {
-        println("Exception while trying to parse the DMX configuration (and build the internal Strobot objects: " + e);
+        exceptionRaised = true;
+        outputLog.println("Exception while trying to parse the DMX configuration (and build the internal Strobot objects: " + e);
       }
+
+      WritableWorkbook workbook = Workbook.createWorkbook(new File(sketchPath("") + "/" + "DMX_Configuration_temp.xls"), readWorkbook);
+
       // Print the DMX library in all the used Sheets
       updateFixtureDefinitionInExcel(workbook.getSheet(0));
-
+      updateFixtureDefinitionInExcel(workbook.getSheet(1));
 
       workbook.write();
       workbook.close();
+      readWorkbook.close();
     }
     catch (Exception e) {
-      println("Exception: " + e);
+      exceptionRaised = true;
+      outputLog.println("Exception while editing the XLS configuration file: " + e);
+    }
+
+    if (!exceptionRaised) {
+      //Parsing and editing the Excel file did not yield any problem, copy the edited file to the main one
+      // TBIL
+      //Files.copy(new File(sketchPath("") + "/" + "DMX_Configuration_temp.xls"), new File(sketchPath("") + "/" + "DMX_Configuration.xls"), REPLACE_EXISTING);
+      try {
+        File tempFile = new File(sketchPath("") + "/" + "DMX_Configuration_temp.xls");
+        copyFileUsingFileStreams(tempFile, new File(sketchPath("") + "/" + "DMX_Configuration.xls"));
+        tempFile.delete();
+
+      }
+      catch (IOException e) {
+        outputLog.println("Exception while overwriting the original XLS configuration file: " + e);
+      }
     }
 
   }
@@ -30368,12 +30379,12 @@ public class DMXConfiguration {
     }
   }
 
-  public void parseDMXConfiguration(Sheet s) {
+  public void parseDMXConfiguration(Sheet s, int universeID) {
     for (int y = XLS_STRUCTURE_ARRAY_MIN_COLUMN; y<= XLS_STRUCTURE_ARRAY_MAX_COLUMN; y++) {
       for (int x = XLS_STRUCTURE_ARRAY_MIN_ROW; x<= XLS_STRUCTURE_ARRAY_MAX_ROW; x++) {
         String cellContents = s.getCell(x, y).getContents();
         if (!cellContents.equals("")) {
-          println(cellContents);
+
           String cellSplit[] = cellContents.split("\\|");   // | is treated as an OR in regex, which is why we need to escape it
           if (cellSplit.length < 2) {
             outputLog.println("DMX Configuration - Invalid fixture, check the Excel configuration file: " + cellContents);
@@ -30393,20 +30404,20 @@ public class DMXConfiguration {
             int integerID = PApplet.parseInt(id.substring(2));
             String group = cellSplit[3];
 
-            // For strobes, group definition is still done the old way - this will eventually have to be updated
-            if (group.toLowerCase().equals("right")) {
-
+            try {
+              if (group.toLowerCase().equals("right")) {
+                DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(fixtureName, integerID, startAddr, universeID));
+              }
+              else if (group.toLowerCase().equals("left")) {
+                DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(fixtureName, integerID, startAddr, universeID));
+              }
+              else {
+                DMXList_BackStroboscopes.add(new DMX_Stroboscope(fixtureName, integerID, startAddr, universeID));
+              }
             }
-            else if (group.toLowerCase().equals("left")) {
-
+            catch (UndefinedFixtureException e) {
+              outputLog.println("Error when trying to create a Strobe instance - undefined fixture: " + e);
             }
-            else {
-              // DMXList_BackStroboscopes.add(new DMX_Stroboscope(5,6,7,8));
-            }
-
-
-            // DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(1, 2));
-            // DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
 
           }
 
@@ -30427,8 +30438,7 @@ public class DMXConfiguration {
             if (!tiltMode.toLowerCase().equals("regulartilt")) { booleanTiltMode = true; }
             if (!group.toLowerCase().equals("bottom"))         { booleanGroup    = false;}
             try {
-              DMXList_MovingHeads.add(new DMX_MovingHead(fixtureName, integerID, startAddr, booleanPanMode, booleanTiltMode, booleanGroup));  
-              println("Add Moving Head: " + fixtureName + " | " + integerID + " | " + startAddr + " | " + booleanPanMode + " | " + booleanTiltMode + " | " + booleanGroup);
+              DMXList_MovingHeads.add(new DMX_MovingHead(fixtureName, integerID, startAddr, booleanPanMode, booleanTiltMode, booleanGroup, universeID));  
             }
             catch (UndefinedFixtureException e) {
               outputLog.println("Error when trying to create a Moving Head instance - undefined fixture: " + e);
@@ -30444,7 +30454,7 @@ public class DMXConfiguration {
             int integerID = PApplet.parseInt(id.substring(2));
 
             try {
-              DMXList_Pars.add(new DMX_PAR(fixtureName, integerID, startAddr));
+              DMXList_Pars.add(new DMX_PAR(fixtureName, integerID, startAddr, universeID));
             }
             catch (UndefinedFixtureException e) {
               outputLog.println("Error when trying to create a PAR instance - undefined fixture: " + e);
@@ -30454,12 +30464,25 @@ public class DMXConfiguration {
         }
       }
     }
-      // Cell cell1 = s.getCell(0, 0);
-      // System.out.println(cell1.getContents());
-      // Cell cell2 = sheet.getCell(2, 3);
-      // System.out.println(cell2.getContents());
-
   }
+
+
+  public void copyFileUsingFileStreams(File source, File dest) throws IOException {
+    InputStream input = null;
+    OutputStream output = null;
+    try {
+      input = new FileInputStream(source);
+      output = new FileOutputStream(dest);
+      byte[] buf = new byte[1024];
+      int bytesRead;
+      while ((bytesRead = input.read(buf)) > 0) {
+        output.write(buf, 0, bytesRead);
+      }
+    } finally {
+      input.close();
+      output.close();
+    }
+  }     
 
 }
 
@@ -30476,8 +30499,8 @@ public class DMXConfiguration {
 //Create a DMX configuration object - this will allow to parse the user configuration Excel workbook
 DMXConfiguration myDMXConfiguration;
 
-//Create a DMX object - initialize the serial port for the microcontroller responsible for the DMX equipments
-DMX myDMX;
+//Create an array of DMX objects - initialize the serial port for the microcontrollers responsible for the DMX equipments, one for each universe
+ArrayList<DMX> outputDMX;
 
 //Create lists of DMX equipments corresponding to "families" - note: due to historic reasons, strobes are still organised in a non-generic way
 ArrayList<DMX_Stroboscope> DMXList_FrontLeftStroboscopes;
@@ -30504,41 +30527,47 @@ IntList                    DMX_registeredDeviceID_Pars;
 //If an exception is raised when trying to send a DMX command, raise the flag, and do not try anymore for this particular device
 boolean exceptionRaisedDMX = false;
 
-//For 4 channel stroboscopes, default values for the special channels
-final int DMXStroboscope_defaultFlashLengthValue = 50;
-final int DMXStroboscope_defaultSpecialFXValue   = 0;      // No effect  
 
 //General DMX object, serves as en entry point to send actual DMX data over the network
 public class DMX {
  
   Serial myPort;
+  String microconName;
+  int universeIdx;
  
-  DMX(PApplet myPApplet) {
-    if (debug_without_dmx == false) {
-      for (int element = 0; element < Serial.list().length; element++){
-        if (Serial.list()[element].contains(DMX_MICROCONTROLLER_NAME) == true) {
-          this.myPort = new Serial(myPApplet, Serial.list()[element], 115200);      
-        }
+  DMX(PApplet myPApplet, int universeIdx, String microconName) {
+    
+    this.universeIdx = universeIdx;
+    this.microconName = microconName;
+
+    for (int element = 0; element < Serial.list().length; element++){
+      if (Serial.list()[element].contains(this.microconName) == true) {
+        this.myPort = new Serial(myPApplet, Serial.list()[element], 115200);      
       }
     }
+  
   }
 
   // Send command to Teensy2 to update DMX channel
   public void setDmxChannel(int channel, int value) throws SerialPortException {
     // Convert the parameters into a message of the form: 123c45w where 123 is the channel and 45 is the value
     // then send to the Arduino
-    if (debug_without_dmx == false) 
-    {
-      if (exceptionRaisedDMX == false) {
-        try {
-          this.myPort.write( str(channel) + "c" + str(value) + "w" );
-        }
-        catch (Exception e) {
-          throw new SerialPortException("DMX Output error: no serial port found! " + e);
-        }
+    
+    if (exceptionRaisedDMX == false) {
+      try {
+        this.myPort.write( str(channel) + "c" + str(value) + "w" );
+      }
+      catch (Exception e) {
+        throw new SerialPortException("DMX Output error: no serial port found! " + e);
       }
     }
+    
+  }
+
+  public int getUniverseIdx() {
+    return universeIdx;
   } 
+
 }
 
 public void init_defaultDMXDevices() {
@@ -30552,12 +30581,6 @@ public void init_defaultDMXDevices() {
 
 }
 
-public void empty_DMXDevices() {
-  DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
-  DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
-  DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
-}
-
 public boolean checkDmxAddressMapping(int startAddr, int nbChNewFixture) {
   //TBIL - check that no fixture conflicts with another
   return true;
@@ -30568,12 +30591,13 @@ public void dmxInit_registerDefaultStrobes() {
   DMXList_FrontLeftStroboscopes  = new ArrayList<DMX_Stroboscope>();
   DMXList_FrontRightStroboscopes = new ArrayList<DMX_Stroboscope>();
   DMXList_BackStroboscopes       = new ArrayList<DMX_Stroboscope>();
-  // DMXList_MovingHeads            = new ArrayList<DMX_MovingHead>();
 
-  //The default DMX devices consist of two small stroboscopes on the left and on the right, and one big in the middle
-  DMXList_BackStroboscopes.add(new DMX_Stroboscope(5,6,7,8));
-  DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(1, 2));
-  DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
+  // Test function used to register fixtures to debug the rest - leave the following commented when using the Excel configuration file
+  // //The default DMX devices consist of two small stroboscopes on the left and on the right, and one big in the middle
+  // DMXList_BackStroboscopes.add(new DMX_Stroboscope(5,6,7,8));
+  // DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(1, 2));
+  // DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(3, 4));
+
 }
 
 
@@ -30607,6 +30631,7 @@ public void dmxInit_registerDefaultMovingHeads() {
 public void dmxInit_registerDefaultPars() {
   DMXList_Pars            = new ArrayList<DMX_PAR>();
 
+  // Test function used to register fixtures to debug the rest - leave the following commented when using the Excel configuration file
   // try {
   //   // Test function used to register fixtures to debug the rest - leave the following commented when using the Excel configuration file
   //   DMXList_Pars.add(new DMX_PAR("Generic RGB PAR",  0, 10 + 8*24 + 0*3));
@@ -30657,11 +30682,9 @@ public void dmx_buildFixtureSublists_movingHead() {
       // Left / Right fixtures
       if (movingHead.getDeviceID() < (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_left.add(movingHead);
-        println("Left Mov Head: " + movingHead.dmxStartAddr);
       }
       else if (movingHead.getDeviceID() > (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_right.add(movingHead);
-        println("Right Mov Head: " + movingHead.dmxStartAddr);
       }
       
       // Side / Center fixtures
@@ -30678,11 +30701,9 @@ public void dmx_buildFixtureSublists_movingHead() {
       // Left / Right fixtures
       if (movingHead.getDeviceID() <= (nbMovingHeads-1)/2) {
         DMXList_MovingHeads_left.add(movingHead);
-        println("Left Mov Head: " + movingHead.dmxStartAddr);
       }
       else {
         DMXList_MovingHeads_right.add(movingHead);
-        println("Right Mov Head: " + movingHead.dmxStartAddr);
       }
 
       // Side / Center fixtures
@@ -30920,6 +30941,7 @@ class DMX_MovingHead {
   int deviceID;                                       // Device ID: defined at device instanciation, 0 for the fixtures located on house left, n for the fixtures on house right
   boolean floorFixture;                               // Is the device on the floor -true-, or is it located high up -false- ?
   int dmxStartAddr;                                   // Address of the first channel
+  int dmxUniverseIdx;                                 // Which DMX universe does this device belong to
   int syncIdx                              = 0;       // Among the BPM-synced fixtures, define the index
 
   int nbChannels                           = 0;
@@ -31017,23 +31039,24 @@ class DMX_MovingHead {
   int animCpt4                            = 0;
   int animCpt5                            = 0;
 
-
+  boolean exceptionRaisedDMX              = false;
   
   //Additional variables which might be used by other non-DMX related functions (most notably, the simulator)
   int[] simulator_colorRGB;
 
-  DMX_MovingHead(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
-    this(name, deviceID, startAddr, false, false, true);
-  }
+  // DMX_MovingHead(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
+  //   this(name, deviceID, startAddr, false, false, true);
+  // }
 
-  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan) throws UndefinedFixtureException {
-    this(name, deviceID, startAddr, invertedPan, false, true);
-  }
+  // DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan) throws UndefinedFixtureException {
+  //   this(name, deviceID, startAddr, invertedPan, false, true);
+  // }
 
   // Fixtures are instanciated using their name: the constructor will then look up in the fixture library if such a device exists, and throw an exception if not
-  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan, boolean invertedTilt, boolean floorFixture) throws UndefinedFixtureException {
+  DMX_MovingHead(String name, int deviceID, int startAddr, boolean invertedPan, boolean invertedTilt, boolean floorFixture, int universe) throws UndefinedFixtureException {
     this.deviceID = deviceID;
     this.dmxStartAddr = startAddr;
+    this.dmxUniverseIdx = universe;
     this.invertedPan = invertedPan;
     this.invertedTilt = invertedTilt;
     this.floorFixture = floorFixture;
@@ -31047,7 +31070,7 @@ class DMX_MovingHead {
     nbChannels       = movingHead.getNbChannels();
     dmxVal           = new int[nbChannels];
     for (int i=0; i<nbChannels; i++) {
-      dmxVal[i] = DMX_MOVINGHEAD_DEFAULT_FALLBACK_VAL;
+      setDMXVal(i, DMX_MOVINGHEAD_DEFAULT_FALLBACK_VAL);
     }
 
     boolean fixtureCanBeCreated = checkDmxAddressMapping(dmxStartAddr, nbChannels);
@@ -31083,6 +31106,22 @@ class DMX_MovingHead {
 
   ///////////////////////////////////
 
+  // Send the DMXVal buffer to the appropriate microcontroller
+  public void setDMXVal(int chIndex, int value) {
+    dmxVal[chIndex] = value;
+    if (!exceptionRaisedDMX) {
+      try {
+        outputDMX.get(this.dmxUniverseIdx).setDmxChannel(this.dmxStartAddr + chIndex, dmxVal[chIndex]);  
+      }
+      catch (Exception e) {
+        exceptionRaisedDMX = true;
+        outputLog.println("DMX exception: Moving Head devID" + this.deviceID + " - " + e);
+      }
+    }
+  }
+
+  ///////////////////////////////////
+
   public int getDeviceID() {
     return this.deviceID;
   }
@@ -31093,13 +31132,13 @@ class DMX_MovingHead {
 
   // Set the default values for the main channels
   public void setMainChannelsDefaultValues() {
-    dmxVal[chIndex_pan]  = 127;
-    dmxVal[chIndex_tilt] = 127;
+    setDMXVal(chIndex_pan, 127);
+    setDMXVal(chIndex_tilt, 127);
     if (chIndex_panFine != -1) {
-      dmxVal[chIndex_panFine]  = 127;
+      setDMXVal(chIndex_panFine, 127);
     }
     if (chIndex_tiltFine != -1) {
-      dmxVal[chIndex_tiltFine]  = 127;
+      setDMXVal(chIndex_tiltFine, 127);
     }
   }
 
@@ -31489,7 +31528,7 @@ class DMX_MovingHead {
         }
       }
       // Set the requested default value for the corresponding channel index
-      dmxVal[index] = val;
+      setDMXVal(index, val);
     }
   }
 
@@ -31502,11 +31541,11 @@ class DMX_MovingHead {
   public void setDimmer(float val_percent) {
     if (fineDimmerControl) {
       int val = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, 0, 65535) );
-      dmxVal[chIndex_dimmer]     = (val & 0xffff) >> 8;
-      dmxVal[chIndex_dimmerFine] = (val & 0xffff) &  0xFF;
+      setDMXVal(chIndex_dimmer,     (val & 0xffff) >> 8);
+      setDMXVal(chIndex_dimmerFine, (val & 0xffff) &  0xFF);
     }
     else {
-      dmxVal[chIndex_dimmer] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, dimmer_minVal, dimmer_maxVal) );
+      setDMXVal(chIndex_dimmer, PApplet.parseInt( map(val_percent, 0.0f, 100.0f, dimmer_minVal, dimmer_maxVal) ) );
     }
   }
 
@@ -31519,15 +31558,15 @@ class DMX_MovingHead {
       else {
         val = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, 65535, 0) );
       }
-      dmxVal[chIndex_pan]     = (val & 0xffff) >> 8;
-      dmxVal[chIndex_panFine] = (val & 0xffff) &  0xFF;
+      setDMXVal(chIndex_pan,     (val & 0xffff) >> 8);
+      setDMXVal(chIndex_panFine, (val & 0xffff) &  0xFF);
     }
     else {
       if (!invertedPan) {
-        dmxVal[chIndex_pan] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, pan_minVal, pan_maxVal) );
+        setDMXVal(chIndex_pan, PApplet.parseInt( map(val_percent, 0.0f, 100.0f, pan_minVal, pan_maxVal) ) );
       }
       else {
-        dmxVal[chIndex_pan] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, pan_maxVal, pan_minVal) ); 
+        setDMXVal(chIndex_pan, PApplet.parseInt( map(val_percent, 0.0f, 100.0f, pan_maxVal, pan_minVal) ) ); 
       }
     }
   }
@@ -31542,24 +31581,24 @@ class DMX_MovingHead {
         val = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, 65535, 0) );
       }
 
-      dmxVal[chIndex_tilt]     = (val & 0xffff) >> 8;
-      dmxVal[chIndex_tiltFine] = (val & 0xffff) &  0xFF;
+      setDMXVal(chIndex_tilt,     (val & 0xffff) >> 8);
+      setDMXVal(chIndex_tiltFine, (val & 0xffff) &  0xFF);
     }
     else {
       if (!invertedTilt) {
-        dmxVal[chIndex_tilt] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, tilt_minVal, tilt_maxVal) );
+        setDMXVal(chIndex_tilt, PApplet.parseInt( map(val_percent, 0.0f, 100.0f, tilt_minVal, tilt_maxVal) ) );
       }
       else {
-        dmxVal[chIndex_tilt] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, tilt_maxVal, tilt_minVal) ); 
+        setDMXVal(chIndex_tilt, PApplet.parseInt( map(val_percent, 0.0f, 100.0f, tilt_maxVal, tilt_minVal) ) ); 
       }
     }
   }
 
   public void setSpeed(float val_percent) {
     switch (speedMode) {
-      case DMX_MOVINGHEAD_SPEEDMODE_DEFAULT:       dmxVal[chIndex_speedSet] = speedMode_standardSpeed_val; break;  //Ignore the input argument: default speed mode
-      case DMX_MOVINGHEAD_SPEEDMODE_MAX:           dmxVal[chIndex_speedSet] = speedMode_maxSpeed_val; break;       //Ignore the input argument: max speed mode
-      case DMX_MOVINGHEAD_SPEEDMODE_PROGRESSIVE:   dmxVal[chIndex_speedSet] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, speedMode_fine_range_min, speedMode_fine_range_max) ); break;
+      case DMX_MOVINGHEAD_SPEEDMODE_DEFAULT:       setDMXVal(chIndex_speedSet, speedMode_standardSpeed_val); break;  //Ignore the input argument: default speed mode
+      case DMX_MOVINGHEAD_SPEEDMODE_MAX:           setDMXVal(chIndex_speedSet, speedMode_maxSpeed_val); break;       //Ignore the input argument: max speed mode
+      case DMX_MOVINGHEAD_SPEEDMODE_PROGRESSIVE:   setDMXVal(chIndex_speedSet, PApplet.parseInt( map(val_percent, 0.0f, 100.0f, speedMode_fine_range_min, speedMode_fine_range_max) ) ); break;
       case DMX_MOVINGHEAD_SPEEDMODE_FIXED:         break;  // Nothing to do, no channel reserved for pan/tilt movement speed
       default: break;
     }
@@ -31621,18 +31660,18 @@ class DMX_MovingHead {
     if (chIndex_shutter != -1 && shutter_open != -1 && shutter_closed != -1) {
       if (shutterMode == DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT) {
         if (val_percent < 50.0f) {
-          dmxVal[chIndex_shutter] = shutter_open;
+          setDMXVal(chIndex_shutter, shutter_open);
         }
         else {
-          dmxVal[chIndex_shutter] = shutter_closed;
+          setDMXVal(chIndex_shutter, shutter_closed);
         }
       }
       else if (shutterMode == DMX_MOVINGHEAD_SHUTTERMODE_STROBE) {
         if (shutter_strobe_maxSpeed != -1 && shutter_strobe_minSpeed != -1) {
-          dmxVal[chIndex_shutter] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, shutter_strobe_minSpeed, shutter_strobe_maxSpeed) );
+          setDMXVal(chIndex_shutter, PApplet.parseInt( map(val_percent, 0.0f, 100.0f, shutter_strobe_minSpeed, shutter_strobe_maxSpeed) ) );
         }
         else {
-          dmxVal[chIndex_shutter] = shutter_open;   // This fuxture does not have a strobe control incorporated to its shutter channel
+          setDMXVal(chIndex_shutter, shutter_open);   // This fuxture does not have a strobe control incorporated to its shutter channel
         }
       }
     }
@@ -31674,10 +31713,10 @@ class DMX_MovingHead {
   public void setColor_genericColor(int colorWheel_code, int[] colorRGB, int[] colorRGBW) {
     int[] colorCMY   = {255 - colorRGB[0], 255 - colorRGB[1], 255 - colorRGB[2]};
     switch (colorControlMode) {
-      case DMX_MOVINGHEAD_COLORMODE_WHEEL    : dmxVal[chIndex_color_WHEEL] = colorWheel_code; break; 
-      case DMX_MOVINGHEAD_COLORMODE_RGB      : dmxVal[chIndex_color_RGB_R] = colorRGB[0];       dmxVal[chIndex_color_RGB_G] = colorRGB[1];       dmxVal[chIndex_color_RGB_B] = colorRGB[2];       break; 
-      case DMX_MOVINGHEAD_COLORMODE_CMY      : dmxVal[chIndex_color_CMY_C] = 255 - colorRGB[0]; dmxVal[chIndex_color_CMY_M] = 255 - colorRGB[1]; dmxVal[chIndex_color_CMY_Y] = 255 - colorRGB[2]; break; 
-      case DMX_MOVINGHEAD_COLORMODE_RGBW     : dmxVal[chIndex_color_RGB_R] = colorRGBW[0];      dmxVal[chIndex_color_RGB_G] = colorRGBW[1];      dmxVal[chIndex_color_RGB_B] = colorRGBW[2];      dmxVal[chIndex_color_RGB_W] = colorRGBW[3]; break; 
+      case DMX_MOVINGHEAD_COLORMODE_WHEEL    : setDMXVal(chIndex_color_WHEEL,  colorWheel_code); break; 
+      case DMX_MOVINGHEAD_COLORMODE_RGB      : setDMXVal(chIndex_color_RGB_R,  colorRGB[0]);       setDMXVal(chIndex_color_RGB_G, colorRGB[1]);       setDMXVal(chIndex_color_RGB_B, colorRGB[2]);       break; 
+      case DMX_MOVINGHEAD_COLORMODE_CMY      : setDMXVal(chIndex_color_CMY_C,  255 - colorRGB[0]); setDMXVal(chIndex_color_CMY_M, 255 - colorRGB[1]); setDMXVal(chIndex_color_CMY_Y, 255 - colorRGB[2]); break; 
+      case DMX_MOVINGHEAD_COLORMODE_RGBW     : setDMXVal(chIndex_color_RGB_R,  colorRGBW[0]);      setDMXVal(chIndex_color_RGB_G, colorRGBW[1]);      setDMXVal(chIndex_color_RGB_B, colorRGBW[2]);      setDMXVal(chIndex_color_RGB_W, colorRGBW[3]); break; 
       case DMX_MOVINGHEAD_COLORMODE_UNDEFINED: break; 
       default: break;
     }
@@ -31799,13 +31838,13 @@ class DMX_MovingHead {
     }
     else if (apertureMode == DMX_MOVINGHEAD_APERTUREMODE_PROGRESSIVE) {
       if (chIndex_aperture != -1 && aperture_progressive_min != -1 && aperture_progressive_max != -1) {
-        dmxVal[chIndex_aperture] = PApplet.parseInt( map(val_percent, 0.0f, 100.0f, aperture_progressive_min, aperture_progressive_max) );
+        setDMXVal(chIndex_aperture, PApplet.parseInt( map(val_percent, 0.0f, 100.0f, aperture_progressive_min, aperture_progressive_max) ) );
       }
     }
     else if (apertureMode == DMX_MOVINGHEAD_APERTUREMODE_STEP) {
       if (aperture_steps.size() > 0) {
         int step =  PApplet.parseInt( map(val_percent,0,100.0f, 0, aperture_steps.size()));
-        dmxVal[chIndex_aperture] = aperture_steps.get(min(step, aperture_steps.size()-1))[1];
+        setDMXVal(chIndex_aperture, aperture_steps.get(min(step, aperture_steps.size()-1))[1] );
       }
     }
   }
@@ -31939,6 +31978,10 @@ class DMX_MovingHead {
 
   public boolean isFloorFixture() {
     return floorFixture;
+  }
+
+  public int getDmxStartAddr() {
+    return dmxStartAddr;
   }
 
 
@@ -37680,6 +37723,7 @@ class DMX_PAR {
   Fixture par;                                        // The fixture defining this object
   int deviceID;                                       // Device ID: defined at device instanciation, 0 for the fixtures located on house left, n for the fixtures on house right
   int dmxStartAddr;                                   // Address of the first channel
+  int dmxUniverseIdx;                                 // Which DMX universe does this device belong to
   int syncIdx                              = 0;       // Among the BPM-synced fixtures, define the index
 
   int nbChannels                           = 0;
@@ -37775,11 +37819,14 @@ class DMX_PAR {
 
   int[] simulator_colorRGB;
 
+  boolean exceptionRaisedDMX = false;
+
   // Fixtures are instanciated using their name: the constructor will then look up in the fixture library if such a device exists, and throw an exception if not
-  DMX_PAR(String name, int deviceID, int startAddr) throws UndefinedFixtureException {
+  DMX_PAR(String name, int deviceID, int startAddr, int universe) throws UndefinedFixtureException {
 
     this.deviceID = deviceID;
     this.dmxStartAddr = startAddr;
+    this.dmxUniverseIdx = 0;
 
     // Init
     par = getFixtureFromName(name);
@@ -37812,6 +37859,20 @@ class DMX_PAR {
 
     setMiscVariablesDefaultValues();
     setColor(DMX_PAR_COLORWHEEL_WHITE);   //Default color: white
+  }
+
+  // Send the DMXVal buffer to the appropriate microcontroller
+  public void setDMXVal(int chIndex, int value) {
+    dmxVal[chIndex] = value;
+    if (!exceptionRaisedDMX) {
+      try {
+        outputDMX.get(this.dmxUniverseIdx).setDmxChannel(this.dmxStartAddr + chIndex, dmxVal[chIndex]);  
+      }
+      catch (Exception e) {
+        exceptionRaisedDMX = true;
+        outputLog.println("DMX exception: PAR devID" + this.deviceID + " - " + e);
+      }
+    }
   }
 
   public int getDeviceID() {
@@ -37880,7 +37941,7 @@ class DMX_PAR {
       }
     }
 
-    if (chIndex_dimmer_global != -1) {
+    if (chIndex_dimmer_white != -1) {
       channel = par.getChannelCorrespondingToIndex(chIndex_dimmer_white);
       channelSets = channel.getAllChannelSets();
       for (ChannelSet channelSet: channelSets) {
@@ -38071,7 +38132,7 @@ class DMX_PAR {
         }
       }
       // Set the requested default value for the corresponding channel index
-      dmxVal[index] = val;
+      setDMXVal(index, val);
     }
   }
 
@@ -38212,15 +38273,15 @@ class DMX_PAR {
   public void setColor_genericColor(int colorWheel_code, int[] colorRGB, int[] colorRGBW) {
     int[] colorCMY   = {255 - colorRGB[0], 255 - colorRGB[1], 255 - colorRGB[2]};
     switch (colorControlMode) {
-      case DMX_PAR_COLORMODE_WHEEL         : dmxVal[chIndex_colorWheel] = colorWheel_code; currentRedVal     = colorRGB[0];                 currentGreenVal  = colorRGB[1];                currentBlueVal   = colorRGB[2];   simulator_colorRGB = colorRGB;       break;   // The currentXVal are functionnally not needed - however they need to be saved for the simulator
-      case DMX_PAR_COLORMODE_CMY           : currentCyanVal  = 255 - colorRGB[0];          currentMagentaVal = 255 - colorRGB[1];           currentYellowVal = 255 - colorRGB[2];                                            simulator_colorRGB = colorRGB;       break;
-      case DMX_PAR_COLORMODE_RGB           : currentRedVal   = colorRGBW[0];               currentGreenVal   = colorRGBW[1];                currentBlueVal   = colorRGBW[2];                                                 simulator_colorRGB = colorRGB;       break;
-      case DMX_PAR_COLORMODE_RGBW          : currentRedVal   = colorRGBW[0];               currentGreenVal   = colorRGBW[1];                currentBlueVal   = colorRGBW[2];               currentWhiteVal = colorRGBW[3];   simulator_colorRGB = colorRGB;       break;
-      case DMX_PAR_COLORMODE_SINGLE_RED    : currentRedVal   = colorRGB[0];                simulator_colorRGB[0] = colorRGB[0];             simulator_colorRGB[1] = 0;                     simulator_colorRGB[2] = 0;                                             break;
-      case DMX_PAR_COLORMODE_SINGLE_GREEN  : currentGreenVal = colorRGB[1];                simulator_colorRGB[1] = colorRGB[1];             simulator_colorRGB[0] = 0;                     simulator_colorRGB[2] = 0;                                             break;
-      case DMX_PAR_COLORMODE_SINGLE_BLUE   : currentBlueVal  = colorRGB[2];                simulator_colorRGB[2] = colorRGB[2];             simulator_colorRGB[0] = 0;                     simulator_colorRGB[1] = 0;                                             break;
-      case DMX_PAR_COLORMODE_SINGLE_WHITE  : currentWhiteVal = colorRGBW[3];               simulator_colorRGB[0] = colorRGB[0];             simulator_colorRGB[1] = colorRGB[1];           simulator_colorRGB[2] = colorRGB[2];                                   break;
-      case DMX_PAR_COLORMODE_GLOBAL_DIMMER : dmxVal[chIndex_intensity_red] = colorRGB[0];  dmxVal[chIndex_intensity_green] = colorRGB[1];   dmxVal[chIndex_intensity_blue] = colorRGB[2];  simulator_colorRGB = colorRGB;                                         break;
+      case DMX_PAR_COLORMODE_WHEEL         : setDMXVal(chIndex_colorWheel, colorWheel_code); currentRedVal     = colorRGB[0];                   currentGreenVal  = colorRGB[1];                  currentBlueVal   = colorRGB[2];   simulator_colorRGB = colorRGB;       break;   // The currentXVal are functionnally not needed - however they need to be saved for the simulator
+      case DMX_PAR_COLORMODE_CMY           : currentCyanVal  = 255 - colorRGB[0];            currentMagentaVal = 255 - colorRGB[1];             currentYellowVal = 255 - colorRGB[2];                                              simulator_colorRGB = colorRGB;       break;
+      case DMX_PAR_COLORMODE_RGB           : currentRedVal   = colorRGBW[0];                 currentGreenVal   = colorRGBW[1];                  currentBlueVal   = colorRGBW[2];                                                   simulator_colorRGB = colorRGB;       break;
+      case DMX_PAR_COLORMODE_RGBW          : currentRedVal   = colorRGBW[0];                 currentGreenVal   = colorRGBW[1];                  currentBlueVal   = colorRGBW[2];                 currentWhiteVal = colorRGBW[3];   simulator_colorRGB = colorRGB;       break;
+      case DMX_PAR_COLORMODE_SINGLE_RED    : currentRedVal   = colorRGB[0];                  simulator_colorRGB[0] = colorRGB[0];               simulator_colorRGB[1] = 0;                       simulator_colorRGB[2] = 0;                                             break;
+      case DMX_PAR_COLORMODE_SINGLE_GREEN  : currentGreenVal = colorRGB[1];                  simulator_colorRGB[1] = colorRGB[1];               simulator_colorRGB[0] = 0;                       simulator_colorRGB[2] = 0;                                             break;
+      case DMX_PAR_COLORMODE_SINGLE_BLUE   : currentBlueVal  = colorRGB[2];                  simulator_colorRGB[2] = colorRGB[2];               simulator_colorRGB[0] = 0;                       simulator_colorRGB[1] = 0;                                             break;
+      case DMX_PAR_COLORMODE_SINGLE_WHITE  : currentWhiteVal = colorRGBW[3];                 simulator_colorRGB[0] = colorRGB[0];               simulator_colorRGB[1] = colorRGB[1];             simulator_colorRGB[2] = colorRGB[2];                                   break;
+      case DMX_PAR_COLORMODE_GLOBAL_DIMMER : setDMXVal(chIndex_intensity_red, colorRGB[0]);  setDMXVal(chIndex_intensity_green, colorRGB[1]);   setDMXVal(chIndex_intensity_blue, colorRGB[2]);  simulator_colorRGB = colorRGB;                                         break;
       case DMX_PAR_COLORMODE_UNDEFINED     : break; 
       default: break;
     }
@@ -38230,22 +38291,22 @@ class DMX_PAR {
   public void setDimmer(float val_percent) {
     currentGlobalDimmerValue_perCent = val_percent;
     switch (colorControlMode) {
-      case DMX_PAR_COLORMODE_WHEEL         : dmxVal[chIndex_dimmer_global]  = PApplet.parseInt( map(currentGlobalDimmerValue_perCent, 0.0f, 100.0f, dimmer_global_minVal, dimmer_global_maxVal) );                              break;
-      case DMX_PAR_COLORMODE_RGB           : dmxVal[chIndex_dimmer_red]     = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentRedVal     / 100, 0.0f, 255.0f, dimmer_red_minVal,     dimmer_red_maxVal    ) );
-                                             dmxVal[chIndex_dimmer_green]   = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentGreenVal   / 100, 0.0f, 255.0f, dimmer_green_minVal,   dimmer_green_maxVal  ) );
-                                             dmxVal[chIndex_dimmer_blue]    = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentBlueVal    / 100, 0.0f, 255.0f, dimmer_blue_minVal,    dimmer_blue_maxVal   ) );  break;
-      case DMX_PAR_COLORMODE_CMY           : dmxVal[chIndex_dimmer_cyan]    = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentCyanVal    / 100, 0.0f, 255.0f, dimmer_cyan_minVal,    dimmer_cyan_maxVal   ) );
-                                             dmxVal[chIndex_dimmer_magenta] = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentMagentaVal / 100, 0.0f, 255.0f, dimmer_magenta_minVal, dimmer_magenta_maxVal) );
-                                             dmxVal[chIndex_dimmer_yellow]  = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentYellowVal  / 100, 0.0f, 255.0f, dimmer_yellow_minVal,  dimmer_yellow_maxVal ) );  break;
-      case DMX_PAR_COLORMODE_RGBW          : dmxVal[chIndex_dimmer_red]     = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentRedVal     / 100, 0.0f, 255.0f, dimmer_red_minVal,     dimmer_red_maxVal    ) );
-                                             dmxVal[chIndex_dimmer_green]   = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentGreenVal   / 100, 0.0f, 255.0f, dimmer_green_minVal,   dimmer_green_maxVal  ) );
-                                             dmxVal[chIndex_dimmer_blue]    = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentBlueVal    / 100, 0.0f, 255.0f, dimmer_blue_minVal,    dimmer_blue_maxVal   ) );
-                                             dmxVal[chIndex_dimmer_white]   = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentWhiteVal   / 100, 0.0f, 255.0f, dimmer_white_minVal,   dimmer_white_maxVal  ) );  break;
-      case DMX_PAR_COLORMODE_SINGLE_RED    : dmxVal[chIndex_dimmer_red]     = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentRedVal     / 100, 0.0f, 255.0f, dimmer_red_minVal,     dimmer_red_maxVal    ) );  break;
-      case DMX_PAR_COLORMODE_SINGLE_GREEN  : dmxVal[chIndex_dimmer_green]   = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentGreenVal   / 100, 0.0f, 255.0f, dimmer_green_minVal,   dimmer_green_maxVal  ) );  break;
-      case DMX_PAR_COLORMODE_SINGLE_BLUE   : dmxVal[chIndex_dimmer_blue]    = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentBlueVal    / 100, 0.0f, 255.0f, dimmer_blue_minVal,    dimmer_blue_maxVal   ) );  break;
-      case DMX_PAR_COLORMODE_SINGLE_WHITE  : dmxVal[chIndex_dimmer_white]   = PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentWhiteVal   / 100, 0.0f, 255.0f, dimmer_white_minVal,   dimmer_white_maxVal  ) );  break;
-      case DMX_PAR_COLORMODE_GLOBAL_DIMMER : dmxVal[chIndex_dimmer_global]  = PApplet.parseInt( map(currentGlobalDimmerValue_perCent, 0.0f, 100.0f, dimmer_global_minVal, dimmer_global_maxVal) );                              break;
+      case DMX_PAR_COLORMODE_WHEEL         : setDMXVal(chIndex_dimmer_global  , PApplet.parseInt( map(currentGlobalDimmerValue_perCent, 0.0f, 100.0f, dimmer_global_minVal, dimmer_global_maxVal) ));                              break;
+      case DMX_PAR_COLORMODE_RGB           : setDMXVal(chIndex_dimmer_red     , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentRedVal     / 100, 0.0f, 255.0f, dimmer_red_minVal,     dimmer_red_maxVal    ) ));
+                                             setDMXVal(chIndex_dimmer_green   , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentGreenVal   / 100, 0.0f, 255.0f, dimmer_green_minVal,   dimmer_green_maxVal  ) ));
+                                             setDMXVal(chIndex_dimmer_blue    , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentBlueVal    / 100, 0.0f, 255.0f, dimmer_blue_minVal,    dimmer_blue_maxVal   ) ));  break;
+      case DMX_PAR_COLORMODE_CMY           : setDMXVal(chIndex_dimmer_cyan    , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentCyanVal    / 100, 0.0f, 255.0f, dimmer_cyan_minVal,    dimmer_cyan_maxVal   ) ));
+                                             setDMXVal(chIndex_dimmer_magenta , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentMagentaVal / 100, 0.0f, 255.0f, dimmer_magenta_minVal, dimmer_magenta_maxVal) ));
+                                             setDMXVal(chIndex_dimmer_yellow  , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentYellowVal  / 100, 0.0f, 255.0f, dimmer_yellow_minVal,  dimmer_yellow_maxVal ) ));  break;
+      case DMX_PAR_COLORMODE_RGBW          : setDMXVal(chIndex_dimmer_red     , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentRedVal     / 100, 0.0f, 255.0f, dimmer_red_minVal,     dimmer_red_maxVal    ) ));
+                                             setDMXVal(chIndex_dimmer_green   , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentGreenVal   / 100, 0.0f, 255.0f, dimmer_green_minVal,   dimmer_green_maxVal  ) ));
+                                             setDMXVal(chIndex_dimmer_blue    , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentBlueVal    / 100, 0.0f, 255.0f, dimmer_blue_minVal,    dimmer_blue_maxVal   ) ));
+                                             setDMXVal(chIndex_dimmer_white   , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentWhiteVal   / 100, 0.0f, 255.0f, dimmer_white_minVal,   dimmer_white_maxVal  ) ));  break;
+      case DMX_PAR_COLORMODE_SINGLE_RED    : setDMXVal(chIndex_dimmer_red     , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentRedVal     / 100, 0.0f, 255.0f, dimmer_red_minVal,     dimmer_red_maxVal    ) ));  break;
+      case DMX_PAR_COLORMODE_SINGLE_GREEN  : setDMXVal(chIndex_dimmer_green   , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentGreenVal   / 100, 0.0f, 255.0f, dimmer_green_minVal,   dimmer_green_maxVal  ) ));  break;
+      case DMX_PAR_COLORMODE_SINGLE_BLUE   : setDMXVal(chIndex_dimmer_blue    , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentBlueVal    / 100, 0.0f, 255.0f, dimmer_blue_minVal,    dimmer_blue_maxVal   ) ));  break;
+      case DMX_PAR_COLORMODE_SINGLE_WHITE  : setDMXVal(chIndex_dimmer_white   , PApplet.parseInt( map(currentGlobalDimmerValue_perCent * currentWhiteVal   / 100, 0.0f, 255.0f, dimmer_white_minVal,   dimmer_white_maxVal  ) ));  break;
+      case DMX_PAR_COLORMODE_GLOBAL_DIMMER : setDMXVal(chIndex_dimmer_global  , PApplet.parseInt( map(currentGlobalDimmerValue_perCent, 0.0f, 100.0f, dimmer_global_minVal, dimmer_global_maxVal) ));                              break;
       case DMX_PAR_COLORMODE_UNDEFINED     : break;
       default: break;
     }
@@ -38390,6 +38451,10 @@ class DMX_PAR {
     return PApplet.parseInt( map(currentGlobalDimmerValue_perCent, 0, 100, 0.0f, 255.0f) );
   }
 
+  public int getDmxStartAddr() {
+    return dmxStartAddr;
+  }
+  
   ////////////////////////////////////////////////////////////////////////////////
   // ANIMATION FUNCTIONS
   //////////////////////
@@ -39285,146 +39350,188 @@ public void dmxAnim_par_performCurrentLightStyle_noSync(ArrayList<DMX_PAR> parLi
 //Harmonize the speeds using the two using this factor
 final float ATOMICSTROBE_SPEEDFACTOR = 0.37f;
 
+final String DMX_STROBE_SPEED          = "SPEED";
+final String DMX_STROBE_DIMMER         = "DIMMER";
+final String DMX_STROBE_FLASH_DURATION = "FLASH_DURATION";
+final String DMX_STROBE_EFFECTS        = "EFFECTS";
+
+final int DMX_STROBE_DEFAULT_FALLBACK_VAL = 0;
+
+//For 4 channel stroboscopes, default values for the special channels
+final int DMX_STROBE_DEFAULT_FLASH_LENGTH_VAL    = 50;
+final int DMX_STROBE_DEFAULT_SPECIAL_FX_VAL      = 0;      // No effect  
 
 //Specific object for stroboscopes
 class DMX_Stroboscope {
   
-  int DMXAddress_stroboscopeSpeed;
-  int DMXAddress_stroboscopeBrightness;
-  int DMXAddress_stroboscopeFlashLength;
-  int DMXAddress_stroboscopeSpecialFX;
-  int numberOfChannels;
-  int currentSpeed           = 0;
-  int currentBrightness      = 0;
-  int currentFlashLength     = DMXStroboscope_defaultFlashLengthValue;
-  int currentSpecialFX       = DMXStroboscope_defaultSpecialFXValue;
-  boolean isActive           = false;
-  boolean exceptionRaisedDMX = false;
+  // New way of describing a strobe
+  Fixture strobe;                                        // The fixture defining this object
+  int deviceID;                                          // Device ID: defined at device instanciation, 0 for the fixtures located on house left, n for the fixtures on house right, the ones in the middle will be in the center
+  int dmxStartAddr;                                      // Address of the first channel
+  int dmxUniverseIdx;                                    // Which DMX universe does this device belong to
+
+  int nbChannels                           = 0;
+  int[] dmxVal;                                          // Array which shall contain all the instant DMX values for all of this fixture's channels
+  int chIndex_speed                        = -1;
+  int chIndex_dimmer                       = -1;
+  int chIndex_flashDuration                = -1;
+  int chIndex_effects                      = -1;
+
+  boolean isActive                         = false;
+  boolean exceptionRaisedDMX               = false;
   
-  //Classic 2-channel stroboscope (eg. the cheap ones)
-  DMX_Stroboscope(int stroboscopeSpeed, int stroboscopeBrightness) {
-    this.DMXAddress_stroboscopeSpeed       = stroboscopeSpeed;
-    this.DMXAddress_stroboscopeBrightness  = stroboscopeBrightness;
-    this.DMXAddress_stroboscopeFlashLength = -1;
-    this.DMXAddress_stroboscopeSpecialFX   = -1;
-    this.numberOfChannels = 2;
-  }
-  
-  //More complex 4-channel stroboscope (eg. Martin Atomic 3000)
-  DMX_Stroboscope(int stroboscopeBrightness, int stroboscopeFlashLength, int stroboscopeSpeed, int stroboscopeSpecialFX ) {
-    this.DMXAddress_stroboscopeSpeed       = stroboscopeSpeed;
-    this.DMXAddress_stroboscopeBrightness  = stroboscopeBrightness;
-    this.DMXAddress_stroboscopeFlashLength = stroboscopeFlashLength;
-    this.DMXAddress_stroboscopeSpecialFX   = stroboscopeSpecialFX;
-    this.numberOfChannels = 4;
-  }
-  
-  //Used to print the informations regarding this device in the configuration file
-  public String printStatus() {
-    if (this.numberOfChannels == 2) {
-      return "Speed:" + this.DMXAddress_stroboscopeSpeed + "|Brightness:" + this.DMXAddress_stroboscopeBrightness;
+  // New way to define the stroboscopes
+  DMX_Stroboscope(String name, int deviceID, int startAddr, int universe) throws UndefinedFixtureException {
+    this.deviceID = deviceID;
+    this.dmxStartAddr = startAddr;
+    this.dmxUniverseIdx = universe;
+
+    // Init
+    strobe = getFixtureFromName(name);
+    if (strobe.isValidFixture() == false) {
+      throw new UndefinedFixtureException("Undefined fixture: " + name);
     }
-    else {
-      return "Brightness:" + this.DMXAddress_stroboscopeBrightness + "|FlashLength:" + this.DMXAddress_stroboscopeFlashLength + "|Speed:" + this.DMXAddress_stroboscopeSpeed + "|SpecialFX:" + this.DMXAddress_stroboscopeSpecialFX;
+
+    nbChannels       = strobe.getNbChannels();
+    dmxVal           = new int[nbChannels];
+    for (int i=0; i<nbChannels; i++) {
+      setDMXVal(i, DMX_STROBE_DEFAULT_FALLBACK_VAL);
+    }
+
+    chIndex_speed          = strobe.getChannelIndexCorrespondingToFunction(DMX_STROBE_SPEED);
+    chIndex_dimmer         = strobe.getChannelIndexCorrespondingToFunction(DMX_STROBE_DIMMER);
+    chIndex_flashDuration  = strobe.getChannelIndexCorrespondingToFunction(DMX_STROBE_FLASH_DURATION);
+    chIndex_effects        = strobe.getChannelIndexCorrespondingToFunction(DMX_STROBE_EFFECTS);
+
+  }
+
+
+  // Send the DMXVal buffer to the appropriate microcontroller
+  public void setDMXVal(int chIndex, int value) {
+    dmxVal[chIndex] = value;
+    if (!this.exceptionRaisedDMX) {
+      try {
+        outputDMX.get(this.dmxUniverseIdx).setDmxChannel(this.dmxStartAddr + chIndex, dmxVal[chIndex]);
+      }
+      catch (Exception e) {
+        exceptionRaisedDMX = true;
+        outputLog.println("DMX exception: Strobe devID" + this.deviceID + " - " + e);
+      }
     }
   }
   
   // Set all the device's channels to 0
-  public void stopDMX() {
+  public void stopStrobe() {
     //Consider that the strobe is not active anymore
     this.isActive = false;
-    this.currentSpeed = 10;      //the default speed is a bit particular : setting it to a non-null value allows to easily make single flashes using the Atomic 3000 strobes
-    this.currentBrightness = 0;
-        
-    if (this.exceptionRaisedDMX == false) {
-      try {
-        if (this.numberOfChannels == 2) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
-        }
-        else if (this.numberOfChannels == 4) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,PApplet.parseInt(this.currentSpeed*ATOMICSTROBE_SPEEDFACTOR));
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength, DMXStroboscope_defaultFlashLengthValue);
-          if (this.DMXAddress_stroboscopeSpecialFX != -1) {
-            myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX, DMXStroboscope_defaultSpecialFXValue);
-          }
-        }
-        
-      }
-      catch (Exception e) {
-        outputLog.println("DMX exception : " + e);
-        this.exceptionRaisedDMX = true;
-      }    
+    // this.currentSpeed = 10;      //the default speed is a bit particular : setting it to a non-null value allows to easily make single flashes using the Atomic 3000 strobes
+    // this.currentBrightness = 0;
+
+    if (this.nbChannels == 2) {
+      setDMXVal(chIndex_speed, 10);     //the default speed is a bit particular : setting it to a non-null value allows to easily make single flashes using the Atomic 3000 strobes
+      setDMXVal(chIndex_dimmer, 0);
     }
+    else if (this.nbChannels == 4) {
+      setDMXVal(chIndex_speed, 10);
+      setDMXVal(chIndex_dimmer, 0);
+      setDMXVal(chIndex_flashDuration, DMX_STROBE_DEFAULT_FLASH_LENGTH_VAL);
+      if (chIndex_effects != -1) {
+        setDMXVal(chIndex_effects, DMX_STROBE_DEFAULT_SPECIAL_FX_VAL);
+      }
+
+    }        
+
   }
   
   // Specify the individual channels' value, maximum value is 255
-  public void startDMX(int stroboscopeSpeed, int stroboscopeBrightness) {
+  public void startStrobe(int stroboscopeSpeed, int stroboscopeBrightness) {
     //Consider that the strobe is active
     this.isActive = true;
-    this.currentSpeed       = stroboscopeSpeed;
-    this.currentBrightness  = stroboscopeBrightness;
-    this.currentFlashLength = DMXStroboscope_defaultFlashLengthValue; 
-    this.currentSpecialFX   = DMXStroboscope_defaultSpecialFXValue;
-        
-    if (this.exceptionRaisedDMX == false) {
       
-      try {
-        if (this.numberOfChannels == 2) { 
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
-        }
-        else if (this.numberOfChannels == 4) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,PApplet.parseInt(this.currentSpeed*ATOMICSTROBE_SPEEDFACTOR));
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,DMXStroboscope_defaultFlashLengthValue);
-          if (this.DMXAddress_stroboscopeSpecialFX != -1) {
-            myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,DMXStroboscope_defaultSpecialFXValue);
-          }
-        }
-      }
-      catch (Exception e) {
-        outputLog.println("DMX exception : " + e);
-        this.exceptionRaisedDMX = true;
-      }
+    if (this.nbChannels == 2) { 
+      // myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
+      // myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
+      setDMXVal(chIndex_speed, stroboscopeSpeed);
+      setDMXVal(chIndex_dimmer, stroboscopeBrightness);
     }
+    else if (this.nbChannels == 4) {
+      setDMXVal(chIndex_speed, stroboscopeSpeed);
+      setDMXVal(chIndex_dimmer, stroboscopeBrightness);
+      setDMXVal(chIndex_flashDuration, DMX_STROBE_DEFAULT_FLASH_LENGTH_VAL);
+      if (chIndex_effects != -1) {
+        setDMXVal(chIndex_effects, DMX_STROBE_DEFAULT_SPECIAL_FX_VAL);
+      }
+
+    }
+    
   }
   
   //Alternate function, with additional parameters
   //This function is only used by the Atomic 3000 functions, as such the ATOMICSTROBE_SPEEDFACTOR is not used : the rate is not restrained anymore 
-  public void startDMX(int stroboscopeSpeed, int stroboscopeBrightness, int stroboscopeFlashLength, int stroboscopeSpecialFX) {
+  public void startStrobe(int stroboscopeSpeed, int stroboscopeBrightness, int stroboscopeFlashLength, int stroboscopeSpecialFX) {
     //Consider that the strobe is active
     this.isActive = true;
-    this.currentSpeed       = stroboscopeSpeed;
-    this.currentBrightness  = stroboscopeBrightness;
-    this.currentFlashLength = stroboscopeFlashLength;
-    this.currentSpecialFX   = stroboscopeSpecialFX;
-
-    //Debug
-    //println(this.currentSpeed + " - " + this.currentBrightness + " - " + this.currentFlashLength + " - " + this.currentSpecialFX);
       
-    if (this.exceptionRaisedDMX == false) {
-      try {
-        // Additional security : only allow this function for the 4-channel strobes
-        if (this.numberOfChannels == 4) {
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpeed,this.currentSpeed);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeBrightness,this.currentBrightness);
-          myDMX.setDmxChannel(this.DMXAddress_stroboscopeFlashLength,this.currentFlashLength);
-          if (this.DMXAddress_stroboscopeSpecialFX != -1) {
-            myDMX.setDmxChannel(this.DMXAddress_stroboscopeSpecialFX,this.currentSpecialFX);
-          }
-        }
-        else {
-          outputLog.println("Internal DMX error : Tried calling a complete startDMX for devices other than the 4-channel strobes"); 
-        }
-      }
-      catch (Exception e) {
-        outputLog.println("DMX exception : " + e);
-        this.exceptionRaisedDMX = true;
+    // Additional security : only allow this function for the 4-channel strobes
+    if (this.nbChannels == 4) {
+
+      setDMXVal(chIndex_speed, stroboscopeSpeed);
+      setDMXVal(chIndex_dimmer, stroboscopeBrightness);
+      setDMXVal(chIndex_flashDuration, stroboscopeFlashLength);
+      if (chIndex_effects != -1) {
+        setDMXVal(chIndex_effects, stroboscopeSpecialFX);
       }
     }
+    else {
+      outputLog.println("Internal DMX error : Tried calling a complete startStrobe for devices other than the 4-channel strobes"); 
+    }
   }
+
+  public int getSpeed() {
+    if (chIndex_speed != -1) {
+      return dmxVal[chIndex_speed];
+    }
+    else {
+      return 0;
+    }
+  }
+
+  public int getDimmer() {
+    if (chIndex_dimmer != -1) {
+      return dmxVal[chIndex_dimmer];
+    }
+    else {
+      return 0;
+    }
+  }
+
+  public int getFlashDuration() {
+    if (chIndex_flashDuration != -1) {
+      return dmxVal[chIndex_flashDuration];
+    }
+    else {
+      return 0;
+    }
+  }
+
+  public int getEffects() {
+    if (chIndex_effects != -1) {
+      return dmxVal[chIndex_effects];
+    }
+    else {
+      return 0;
+    }
+  }
+
+  public int getDmxStartAddr() {
+    return dmxStartAddr;
+  }
+
+  public int getDeviceID() {
+    return deviceID;
+  }
+
+
 }
 
 
@@ -39435,13 +39542,13 @@ class DMX_Stroboscope {
 
 // Note :
 // These animations can use every device registered inside DMXList_FrontLeftStroboscopes, DMXList_FrontRightStroboscopes, etc.
-// and call startDMX with the desired values
+// and call startStrobe with the desired values
 // When implementing these animations, be careful to stay modular : everything needs to be scalable, and look good whether the front
 // left stroboscopes group contains one, or ten devices.
 
 public void dmxAnim_backStrobe_stop() {
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    stroboscope.stopDMX();
+    stroboscope.stopStrobe();
   }
 }
 
@@ -39453,13 +39560,13 @@ public void dmxAnim_backStrobe_stop() {
 // Switch all stroboscopes on
 public void dmxAnim_fullStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    stroboscope.startDMX(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
+    stroboscope.startStrobe(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    stroboscope.startDMX(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
+    stroboscope.startStrobe(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    stroboscope.startDMX(PApplet.parseInt(speed*BACKSTROBE_MAX_SPEED),intensity);
+    stroboscope.startStrobe(PApplet.parseInt(speed*BACKSTROBE_MAX_SPEED),intensity);
   }
 }
 
@@ -39486,20 +39593,20 @@ public void dmxAnim_fullStrobeVeryFast() {
 // Switch only the left stroboscopes on
 public void dmxAnim_leftStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    stroboscope.startDMX(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
+    stroboscope.startStrobe(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    stroboscope.stopDMX();
+    stroboscope.stopStrobe();
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    stroboscope.stopDMX();
+    stroboscope.stopStrobe();
   }
 }
 
 // Switch the left stroboscopes on, but do not touch the other strobes
 public void dmxAnim_leftStrobe_noStop(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    stroboscope.startDMX(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
+    stroboscope.startStrobe(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
 }
 
@@ -39526,20 +39633,20 @@ public void dmxAnim_leftStrobeVeryFast() {
 // Switch only the right stroboscopes on
 public void dmxAnim_rightStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    stroboscope.stopDMX();
+    stroboscope.stopStrobe();
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    stroboscope.startDMX(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
+    stroboscope.startStrobe(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    stroboscope.stopDMX();
+    stroboscope.stopStrobe();
   }
 }
 
 // Switch the right stroboscopes on, but do not touch the other strobes
 public void dmxAnim_rightStrobe_noStop(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    stroboscope.startDMX(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
+    stroboscope.startStrobe(PApplet.parseInt(speed*SIDESTROBE_MAX_SPEED),intensity);
   }
 }
 
@@ -39566,20 +39673,20 @@ public void dmxAnim_rightStrobeVeryFast() {
 // Switch only the back stroboscopes on
 public void dmxAnim_backStrobe(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-    stroboscope.stopDMX();
+    stroboscope.stopStrobe();
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    stroboscope.stopDMX();
+    stroboscope.stopStrobe();
   }
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    stroboscope.startDMX(PApplet.parseInt(speed*BACKSTROBE_MAX_SPEED),intensity);
+    stroboscope.startStrobe(PApplet.parseInt(speed*BACKSTROBE_MAX_SPEED),intensity);
   }
 }
 
 // Switch the back stroboscopes on, but do not touch the other strobes
 public void dmxAnim_backStrobe_noStop(int speed, int intensity) {
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    stroboscope.startDMX(PApplet.parseInt(speed*BACKSTROBE_MAX_SPEED),intensity);
+    stroboscope.startStrobe(PApplet.parseInt(speed*BACKSTROBE_MAX_SPEED),intensity);
   }
 }
 
@@ -39806,19 +39913,19 @@ public void dmxAnim_singleFlash(int flashLength) {
 
     for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
       //This is a function specific to the Martin strobes, which can be set apart using their number of channels
-      if (stroboscope.numberOfChannels == 4) {
-        stroboscope.startDMX(0, 255, flashLength, 0);    //Speed = 0, Intensity = Max, specialFX = 0 
+      if (stroboscope.nbChannels == 4) {
+        stroboscope.startStrobe(0, 255, flashLength, 0);    //Speed = 0, Intensity = Max, specialFX = 0 
       }
     }
     for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-      if (stroboscope.numberOfChannels == 4) {
-        stroboscope.startDMX(0, 255, flashLength, 0);    //Speed = 0, Intensity = Max, specialFX = 0
+      if (stroboscope.nbChannels == 4) {
+        stroboscope.startStrobe(0, 255, flashLength, 0);    //Speed = 0, Intensity = Max, specialFX = 0
       }
     }
     
     for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-      if (stroboscope.numberOfChannels == 4) {
-        stroboscope.startDMX(0, 255, flashLength, 0);    //Speed = 0, Intensity = Max, specialFX = 0
+      if (stroboscope.nbChannels == 4) {
+        stroboscope.startStrobe(0, 255, flashLength, 0);    //Speed = 0, Intensity = Max, specialFX = 0
       }
     }
     
@@ -39829,13 +39936,13 @@ public void dmxAnim_singleFlash(int flashLength) {
   else {
     // Reset the intensity and the flash rate to 0
     for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
-      stroboscope.stopDMX();
+      stroboscope.stopStrobe();
     }
     for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-      stroboscope.stopDMX();
+      stroboscope.stopStrobe();
     }
     for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-      stroboscope.stopDMX();
+      stroboscope.stopStrobe();
     }
   }
 }
@@ -40042,29 +40149,29 @@ public void dmxAnim_atomicFX_Blinder_VeryStrong() {
 public void dmxAnim_atomicFX(int intensity, int flashLength, int speed, int fxNumber) {
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
     //This is a function specific to the Martin strobes, which can be set apart using their number of channels
-    if (stroboscope.numberOfChannels == 4) {
-      stroboscope.startDMX(speed, intensity, flashLength, fxNumber); 
+    if (stroboscope.nbChannels == 4) {
+      stroboscope.startStrobe(speed, intensity, flashLength, fxNumber); 
     }
     else {
-      stroboscope.stopDMX();
+      stroboscope.stopStrobe();
     }
   }
   for (DMX_Stroboscope stroboscope: DMXList_FrontRightStroboscopes) {
-    stroboscope.stopDMX();
-    if (stroboscope.numberOfChannels == 4) {
-      stroboscope.startDMX(speed, intensity, flashLength, fxNumber);
+    stroboscope.stopStrobe();
+    if (stroboscope.nbChannels == 4) {
+      stroboscope.startStrobe(speed, intensity, flashLength, fxNumber);
     }
     else {
-      stroboscope.stopDMX();
+      stroboscope.stopStrobe();
     }
   }
   
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
-    if (stroboscope.numberOfChannels == 4) {
-      stroboscope.startDMX(speed, intensity, flashLength, fxNumber);
+    if (stroboscope.nbChannels == 4) {
+      stroboscope.startStrobe(speed, intensity, flashLength, fxNumber);
     }
     else {
-      stroboscope.stopDMX();
+      stroboscope.stopStrobe();
     }
   }
 }
@@ -41718,8 +41825,8 @@ public class ControlFrame extends PApplet {
   //controlP5.Button add_FrontRightStrobo;
   controlP5.Button add_LEDTube;
   controlP5.Button add_RackLight;
-  controlP5.Button add_DMXFixture;
-  controlP5.Button remove_DMXFixture;
+  // controlP5.Button add_DMXFixture;
+  // controlP5.Button remove_DMXFixture;
   //controlP5.Button add_BackStrobo;
  
   controlP5.CheckBox LEDPanelAnimations_animationListCheckBox;
@@ -41890,7 +41997,7 @@ public class ControlFrame extends PApplet {
     
     int nbrOfPanelsTextFieldPosY = gui_spacing + 0*spacingRow;
     int DMXTextLabelPosY = 150;
-    int CustomDevicesTextLabelPosY = 320; 
+    int CustomDevicesTextLabelPosY = 360; 
     int warningTextLabelPosY = gui_generalInformationsHeight - 2*textfieldHeight - 2*spacingRow;
     int panelConfigBangPosY = nbrOfPanelsTextFieldPosY + toggleHeight + spacingRow;
     int panelConfigBangSize = 15;
@@ -41942,12 +42049,12 @@ public class ControlFrame extends PApplet {
        .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
        ;
      
-     
-    cp5.addTextfield("DMX Microcontroller")
+     // TBIL Add Universe 2
+    cp5.addTextfield("DMX Microcontroller Universe 1")
        .setPosition(accordionWidth - bigTextfieldWidth - leftOffset,nbrOfPanelsTextFieldPosY + 3*spacingRow + 3*textfieldHeight)
        .setSize(bigTextfieldWidth,textfieldHeight)
-       .setValue(DMX_MICROCONTROLLER_NAME.substring(5, DMX_MICROCONTROLLER_NAME.length()))
-       .setCaptionLabel("DMX Microcontroller:    ")
+       .setValue(DMX_UNIVERSE_1_MICROCONTROLLER_NAME.substring(5, DMX_UNIVERSE_1_MICROCONTROLLER_NAME.length()))
+       .setCaptionLabel("DMX Microcontroller Universe 1:    ")
        .setAutoClear(false)
        .setFont(minimlFont)
        .moveTo(hardwareInfo)
@@ -41966,8 +42073,79 @@ public class ControlFrame extends PApplet {
        ;
     
 
+    int offsetY_2 = nbrOfPanelsTextFieldPosY + 5*spacingRow + 5*textfieldHeight; 
+
+    Textarea dmxDevList_Addr = cp5.addTextarea("DMX Configuration Info - Addresses")
+                                  .setPosition(10,offsetY_2)
+                                  .setSize(200,300)
+                                  .setFont(minimlFont)
+                                  .setLineHeight(10)
+                                  .setColor(color(230))
+                                  .hideScrollbar()
+                                  .moveTo(hardwareInfo)
+                                  ;
+    Textarea dmxDevList_Name = cp5.addTextarea("DMX Configuration Info - Name")
+                                  .setPosition(120,offsetY_2)
+                                  .setSize(200,300)
+                                  .setFont(minimlFont)
+                                  .setLineHeight(10)
+                                  .setColor(color(230))
+                                  .hideScrollbar()
+                                  .moveTo(hardwareInfo)
+                                  ;
+
+    String dmxConf_Addr = "DMX Configuration - registered fixtures:" + "\n" +
+                          "\n"
+                          ;
+    String dmxConf_Name = "\n" +
+                          "\n"
+                          ;
+
+    dmxConf_Addr += "-- Strobes --" + "\n";
+    dmxConf_Name += "\n";
+
+    for (DMX_Stroboscope strobeDev: DMXList_FrontLeftStroboscopes) {
+      dmxConf_Addr += "Dev " + strobeDev.getDeviceID() + " | DMX: " + strobeDev.getDmxStartAddr() + " | " + strobeDev.strobe.getNbChannels() + " Ch" + "\n"; 
+      dmxConf_Name += strobeDev.strobe.getShortName() + "\n";
+    }
+    for (DMX_Stroboscope strobeDev: DMXList_FrontRightStroboscopes) {
+      dmxConf_Addr += "Dev " + strobeDev.getDeviceID() + " | DMX: " + strobeDev.getDmxStartAddr() + " | " + strobeDev.strobe.getNbChannels() + " Ch" + "\n"; 
+      dmxConf_Name += strobeDev.strobe.getShortName() + "\n";
+    }
+    for (DMX_Stroboscope strobeDev: DMXList_BackStroboscopes) {
+      dmxConf_Addr += "Dev " + strobeDev.getDeviceID() + " | DMX: " + strobeDev.getDmxStartAddr() + " | " + strobeDev.strobe.getNbChannels() + " Ch" + "\n"; 
+      dmxConf_Name += strobeDev.strobe.getShortName() + "\n";
+    }
+
+    dmxConf_Addr += "\n" + "-- Bottom Moving Heads --" + "\n";
+    dmxConf_Name += "\n\n";
+
+    for (DMX_MovingHead movingHeadDev: DMXList_MovingHeads_bottom) {
+      dmxConf_Addr += "Dev " + movingHeadDev.getDeviceID() + " | DMX: " + movingHeadDev.getDmxStartAddr() + " | " + movingHeadDev.movingHead.getNbChannels() + " Ch" + "\n"; 
+      dmxConf_Name += movingHeadDev.movingHead.getShortName() + "\n";
+    }
+
+    dmxConf_Addr += "\n" + "-- Top Moving Heads --" + "\n";
+    dmxConf_Name += "\n\n";
+
+    for (DMX_MovingHead movingHeadDev: DMXList_MovingHeads_top) {
+      dmxConf_Addr += "Dev " + movingHeadDev.getDeviceID() + " | DMX: " + movingHeadDev.getDmxStartAddr() + " | " + movingHeadDev.movingHead.getNbChannels() + " Ch" + "\n"; 
+      dmxConf_Name += movingHeadDev.movingHead.getShortName() + "\n";
+    }
+
+    dmxConf_Addr += "\n" + "-- PARs --" + "\n";
+    dmxConf_Name += "\n\n";
+
+    for (DMX_PAR parDev: DMXList_Pars) {
+      dmxConf_Addr += "Dev " + parDev.getDeviceID() + " | DMX: " + parDev.getDmxStartAddr() + " | " + parDev.par.getNbChannels() + " Ch" + "\n"; 
+      dmxConf_Name += parDev.par.getShortName() + "\n";
+    }
+
+    dmxDevList_Addr.setText(dmxConf_Addr.toUpperCase());
+    dmxDevList_Name.setText(dmxConf_Name.toUpperCase());
+
        // TBIL
-    // int offsetY_2 = nbrOfPanelsTextFieldPosY + 5*spacingRow + 5*textfieldHeight; 
+    
     // for (int i=0; i<NUMBER_OF_PANELS; i++) {
     //   cp5.addTextfield("LED Panel Microcontroller " + i)
     //      .setPosition(accordionWidth - bigTextfieldWidth - leftOffset,offsetY_2)
@@ -41982,119 +42160,120 @@ public class ControlFrame extends PApplet {
     //   offsetY_2 += spacingRow + textfieldHeight;
     // }
     
+    // To be removed - TBIL    
+    // int offsetY = DMXTextLabelPosY;
+    // cp5.addTextlabel("DMX Info")
+    //    .setText("DMX STROBE CHANNELS : (SPD, INTSTY) OR (INTSTY, LNGTH, SPD, SFX)")
+    //    .setPosition(leftOffset,offsetY)
+    //    .setFont(minimlFont)
+    //    .moveTo(hardwareInfo)
+    //    ;
+    // offsetY += textfieldHeight;
+    // cp5.addTextlabel("DMX Info 2")
+    //    .setText("REMOVE A DEVICE BY SETTING IT TO (0,0,0,0) or (0,0)")
+    //    .setPosition(leftOffset,offsetY)
+    //    .setFont(minimlFont)
+    //    .moveTo(hardwareInfo)
+    //    ;
+    // offsetY += textfieldHeight + 2*spacingRow;
     
-    int offsetY = DMXTextLabelPosY;
-    cp5.addTextlabel("DMX Info")
-       .setText("DMX STROBE CHANNELS : (SPD, INTSTY) OR (INTSTY, LNGTH, SPD, SFX)")
-       .setPosition(leftOffset,offsetY)
-       .setFont(minimlFont)
-       .moveTo(hardwareInfo)
-       ;
-    offsetY += textfieldHeight;
-    cp5.addTextlabel("DMX Info 2")
-       .setText("REMOVE A DEVICE BY SETTING IT TO (0,0,0,0) or (0,0)")
-       .setPosition(leftOffset,offsetY)
-       .setFont(minimlFont)
-       .moveTo(hardwareInfo)
-       ;
-    offsetY += textfieldHeight + 2*spacingRow;
-    
-    for (int i=0; i<DMXList_FrontLeftStroboscopes.size(); i++) {
-      DMX_Stroboscope stroboscope = DMXList_FrontLeftStroboscopes.get(i);
-      String fieldValue;
-      if (stroboscope.numberOfChannels == 2) {
-        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + ")";
-      } 
-      else {
-        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + "," + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeSpecialFX + ")";
-      }
-      cp5.addTextfield("Left Strobe " + i)
-         .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
-         .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
-         .setValue(fieldValue)
-         .setFont(minimlFont)
-         .setCaptionLabel("Left Strobe " + (i+1) + " :    ")
-         .setAutoClear(false)
-         .moveTo(hardwareInfo)
-         .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
-         ;
-      cp5.addToggle("Test FrontLeftStroboscope " + i)
-         .setValue(0)
-         .setLabelVisible(false)
-         .setPosition(accordionWidth - 2*textfieldHeight, offsetY)
-         .setSize(2*textfieldHeight - leftOffset, textfieldHeight)
-         .setColorForeground(color(4,104,154))
-         .setColorActive(color(0,180,234))
-         .setColorActive(color(120,0,0))
-         .moveTo(hardwareInfo)
-         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
-         ;
-      offsetY += textfieldHeight + spacingRow;
-    }
-    for (int i=0; i<DMXList_FrontRightStroboscopes.size(); i++) {
-      DMX_Stroboscope stroboscope = DMXList_FrontRightStroboscopes.get(i);
-      String fieldValue;
-      if (stroboscope.numberOfChannels == 2) {
-        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + ")";
-      } 
-      else {
-        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + "," + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeSpecialFX + ")";
-      }
-      cp5.addTextfield("Right Strobe " + i)
-         .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
-         .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
-         .setValue(fieldValue)
-         .setFont(minimlFont)
-         .setCaptionLabel("Right Strobe " + (i+1) + " :    ")
-         .setAutoClear(false)
-         .moveTo(hardwareInfo)
-         .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
-         ;
-      cp5.addToggle("Test FrontRightStroboscope " + i)
-         .setValue(0)
-         .setLabelVisible(false)
-         .setPosition(accordionWidth - 2*textfieldHeight, offsetY)
-         .setSize(2*textfieldHeight - leftOffset, textfieldHeight)
-         .setColorForeground(color(4,104,154))
-         .setColorActive(color(0,180,234))
-         .setColorActive(color(120,0,0))
-         .moveTo(hardwareInfo)
-         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
-         ;
-      offsetY += textfieldHeight + spacingRow;
-    }
-    for (int i=0; i<DMXList_BackStroboscopes.size(); i++) {
-      DMX_Stroboscope stroboscope = DMXList_BackStroboscopes.get(i);
-      String fieldValue;
-      if (stroboscope.numberOfChannels == 2) {
-        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + ")";
-      } 
-      else {
-        fieldValue = "(" + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + "," + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeSpecialFX + ")";
-      }
-      cp5.addTextfield("Back Strobe " + i)
-         .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
-         .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
-         .setValue(fieldValue)
-         .setFont(minimlFont)
-         .setCaptionLabel("Back Strobe " + (i+1) + " :    ")
-         .setAutoClear(false)
-         .moveTo(hardwareInfo)
-         .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
-         ;
-      cp5.addToggle("Test BackStroboscope " + i)
-         .setValue(0)
-         .setLabelVisible(false)
-         .setPosition(accordionWidth - 2*textfieldHeight, offsetY)
-         .setSize(2*textfieldHeight - leftOffset, textfieldHeight)
-         .setColorForeground(color(4,104,154))
-         .setColorActive(color(0,180,234))
-         .setColorActive(color(120,0,0))
-         .moveTo(hardwareInfo)
-         .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
-         ;         
-      offsetY += textfieldHeight + spacingRow;
-    }
+    // To be removed - TBIL : or better, to be replaced with a simple list of the parsed devices, we don't need them to be modified
+    // for (int i=0; i<DMXList_FrontLeftStroboscopes.size(); i++) {
+    //   DMX_Stroboscope stroboscope = DMXList_FrontLeftStroboscopes.get(i);
+    //   String fieldValue;
+    //   if (stroboscope.numberOfChannels == 2) {
+    //     fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + ")";
+    //   } 
+    //   else {
+    //     fieldValue = "(" + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + "," + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeSpecialFX + ")";
+    //   }
+    //   cp5.addTextfield("Left Strobe " + i)
+    //      .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
+    //      .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
+    //      .setValue(fieldValue)
+    //      .setFont(minimlFont)
+    //      .setCaptionLabel("Left Strobe " + (i+1) + " :    ")
+    //      .setAutoClear(false)
+    //      .moveTo(hardwareInfo)
+    //      .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
+    //      ;
+    //   cp5.addToggle("Test FrontLeftStroboscope " + i)
+    //      .setValue(0)
+    //      .setLabelVisible(false)
+    //      .setPosition(accordionWidth - 2*textfieldHeight, offsetY)
+    //      .setSize(2*textfieldHeight - leftOffset, textfieldHeight)
+    //      .setColorForeground(color(4,104,154))
+    //      .setColorActive(color(0,180,234))
+    //      .setColorActive(color(120,0,0))
+    //      .moveTo(hardwareInfo)
+    //      .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
+    //      ;
+    //   offsetY += textfieldHeight + spacingRow;
+    // }
+    // for (int i=0; i<DMXList_FrontRightStroboscopes.size(); i++) {
+    //   DMX_Stroboscope stroboscope = DMXList_FrontRightStroboscopes.get(i);
+    //   String fieldValue;
+    //   if (stroboscope.numberOfChannels == 2) {
+    //     fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + ")";
+    //   } 
+    //   else {
+    //     fieldValue = "(" + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + "," + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeSpecialFX + ")";
+    //   }
+    //   cp5.addTextfield("Right Strobe " + i)
+    //      .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
+    //      .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
+    //      .setValue(fieldValue)
+    //      .setFont(minimlFont)
+    //      .setCaptionLabel("Right Strobe " + (i+1) + " :    ")
+    //      .setAutoClear(false)
+    //      .moveTo(hardwareInfo)
+    //      .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
+    //      ;
+    //   cp5.addToggle("Test FrontRightStroboscope " + i)
+    //      .setValue(0)
+    //      .setLabelVisible(false)
+    //      .setPosition(accordionWidth - 2*textfieldHeight, offsetY)
+    //      .setSize(2*textfieldHeight - leftOffset, textfieldHeight)
+    //      .setColorForeground(color(4,104,154))
+    //      .setColorActive(color(0,180,234))
+    //      .setColorActive(color(120,0,0))
+    //      .moveTo(hardwareInfo)
+    //      .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
+    //      ;
+    //   offsetY += textfieldHeight + spacingRow;
+    // }
+    // for (int i=0; i<DMXList_BackStroboscopes.size(); i++) {
+    //   DMX_Stroboscope stroboscope = DMXList_BackStroboscopes.get(i);
+    //   String fieldValue;
+    //   if (stroboscope.numberOfChannels == 2) {
+    //     fieldValue = "(" + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeBrightness + ")";
+    //   } 
+    //   else {
+    //     fieldValue = "(" + stroboscope.DMXAddress_stroboscopeBrightness + "," + stroboscope.DMXAddress_stroboscopeFlashLength + "," + stroboscope.DMXAddress_stroboscopeSpeed + "," + stroboscope.DMXAddress_stroboscopeSpecialFX + ")";
+    //   }
+    //   cp5.addTextfield("Back Strobe " + i)
+    //      .setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
+    //      .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
+    //      .setValue(fieldValue)
+    //      .setFont(minimlFont)
+    //      .setCaptionLabel("Back Strobe " + (i+1) + " :    ")
+    //      .setAutoClear(false)
+    //      .moveTo(hardwareInfo)
+    //      .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
+    //      ;
+    //   cp5.addToggle("Test BackStroboscope " + i)
+    //      .setValue(0)
+    //      .setLabelVisible(false)
+    //      .setPosition(accordionWidth - 2*textfieldHeight, offsetY)
+    //      .setSize(2*textfieldHeight - leftOffset, textfieldHeight)
+    //      .setColorForeground(color(4,104,154))
+    //      .setColorActive(color(0,180,234))
+    //      .setColorActive(color(120,0,0))
+    //      .moveTo(hardwareInfo)
+    //      .getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER)
+    //      ;         
+    //   offsetY += textfieldHeight + spacingRow;
+    // }
     
     
     /*
@@ -42133,35 +42312,37 @@ public class ControlFrame extends PApplet {
     add_BackStrobo.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
     */
     
-    add_DMXFixture  = cp5.addButton("Add DMX Fixture")
-                         .setValue(0)
-                         .setCaptionLabel("\n\nAdd DMX\n\n Fixture")
-                         .setPosition(leftOffset, DMXTextLabelPosY + 2*textfieldHeight + 2*spacingRow)
-                         .setSize(toggleWidth, 8*toggleHeight)
-                         .setColorBackground(color(110,0,0))
-                         .setColorForeground(color(150,0,0))
-                         .setColorActive(color(190,0,0))
-                         .moveTo(hardwareInfo)
-                         ;
-    add_DMXFixture.getCaptionLabel().align(ControlP5.CENTER, ControlP5.UP)
-                                    .setSize(12)
-                                    ;
+
+    // To be deleted - TBIL
+    // add_DMXFixture  = cp5.addButton("Add DMX Fixture")
+    //                      .setValue(0)
+    //                      .setCaptionLabel("\n\nAdd DMX\n\n Fixture")
+    //                      .setPosition(leftOffset, DMXTextLabelPosY + 2*textfieldHeight + 2*spacingRow)
+    //                      .setSize(toggleWidth, 8*toggleHeight)
+    //                      .setColorBackground(color(110,0,0))
+    //                      .setColorForeground(color(150,0,0))
+    //                      .setColorActive(color(190,0,0))
+    //                      .moveTo(hardwareInfo)
+    //                      ;
+    // add_DMXFixture.getCaptionLabel().align(ControlP5.CENTER, ControlP5.UP)
+    //                                 .setSize(12)
+    //                                 ;
     
-    remove_DMXFixture = cp5.addButton("Remove DMX Fixture")
-                         .setValue(0)
-                         .setCaptionLabel("\nRemove DMX\n\n     Fixture")
-                         .setPosition(leftOffset, DMXTextLabelPosY + 2*textfieldHeight + 9*toggleHeight + 3*spacingRow)
-                         .setSize(toggleWidth, 5*toggleHeight)
-                         .setColorBackground(color(110,0,0))
-                         .setColorForeground(color(150,0,0))
-                         .setColorActive(color(190,0,0))
-                         .moveTo(hardwareInfo)
-                         ;
-    remove_DMXFixture.getCaptionLabel().align(ControlP5.CENTER, ControlP5.UP)
-                                       .setSize(12)
-                                       ;
+    // remove_DMXFixture = cp5.addButton("Remove DMX Fixture")
+    //                      .setValue(0)
+    //                      .setCaptionLabel("\nRemove DMX\n\n     Fixture")
+    //                      .setPosition(leftOffset, DMXTextLabelPosY + 2*textfieldHeight + 9*toggleHeight + 3*spacingRow)
+    //                      .setSize(toggleWidth, 5*toggleHeight)
+    //                      .setColorBackground(color(110,0,0))
+    //                      .setColorForeground(color(150,0,0))
+    //                      .setColorActive(color(190,0,0))
+    //                      .moveTo(hardwareInfo)
+    //                      ;
+    // remove_DMXFixture.getCaptionLabel().align(ControlP5.CENTER, ControlP5.UP)
+    //                                    .setSize(12)
+    //                                    ;
     
-    offsetY = CustomDevicesTextLabelPosY;
+    int offsetY = CustomDevicesTextLabelPosY;
     cp5.addTextlabel("Custom devices Info")
        .setText("CUSTOM DEVICES : DEVICE NUMBER")
        .setPosition(leftOffset,offsetY)
@@ -42328,6 +42509,7 @@ public class ControlFrame extends PApplet {
                                   "MOVING HEADS - SET LIGHT STYLE\n" +
                                   "MOVING HEADS - ANIMATION BANK 1\n" +
                                   "MOVING HEADS - ANIMATION BANK 2\n" +
+                                  "MOVING HEADS - ANIMATION BANK 3\n" +
                                   "CUSTOM DEVICE BANK 1\n" +
                                   "CUSTOM DEVICE BANK 2\n" +
                                   "CUSTOM DEVICE BANK 3\n" +
@@ -42393,6 +42575,8 @@ public class ControlFrame extends PApplet {
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1 + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2 + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3 + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_3) + "\n" +
+
 
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK1                       + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK1                      ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_CUSTOM_DEVICE_BANK2                       + " | " + getStringFromNoteInt(PITCH_CUSTOM_DEVICE_BANK2                      ) + "\n" +
@@ -44002,60 +44186,6 @@ public class ControlFrame extends PApplet {
     b2.getCaptionLabel().getStyle().marginLeft = 22;
   }
   
-  // buttonOK will be triggered when pressing the OK button of the messageBox.
-  public void buttonOK_FrontLeftStrobe(int theValue) {
-    GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_FrontLeftStrobe")).getText();
-    GUIMessageBoxResult = theValue;
-    gui_parseMessageBoxFrontLeftStrobe(GUIMessageBoxString);
-    GUIMessageBox.hide();
-  }
-  
-  public void buttonOK_FrontRightStrobe(int theValue) {
-    GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_FrontRightStrobe")).getText();
-    GUIMessageBoxResult = theValue;
-    gui_parseMessageBoxFrontRightStrobe(GUIMessageBoxString);
-    GUIMessageBox.hide();
-  }
-  
-  // function buttonCancel will be triggered when pressing the Cancel button of the messageBox.
-  public void buttonCancel_FrontLeftStrobe(int theValue) {
-    GUIMessageBoxResult = theValue;
-    GUIMessageBox.hide();
-  }
-  
-  public void buttonCancel_FrontRightStrobe(int theValue) {
-    GUIMessageBoxResult = theValue;
-    GUIMessageBox.hide();
-  }
-  
-  // inputbox is called whenever RETURN has been pressed in textfield-controller inputbox 
-  public void inputbox_FrontLeftStrobe(String theString) {
-    GUIMessageBoxString = theString;
-    gui_parseMessageBoxFrontLeftStrobe(GUIMessageBoxString);    
-    GUIMessageBox.hide();
-  }
-  
-  public void inputbox_FrontRightStrobe(String theString) {
-    GUIMessageBoxString = theString;
-    gui_parseMessageBoxFrontRightStrobe(GUIMessageBoxString);    
-    GUIMessageBox.hide();
-  }
-
-  public void buttonOK_BackStrobe(int theValue) {
-    GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_BackStrobe")).getText();
-    GUIMessageBoxResult = theValue;
-    gui_parseMessageBoxBackStrobe(GUIMessageBoxString);
-    GUIMessageBox.hide();
-  }
-  public void buttonCancel_BackStrobe(int theValue) {
-    GUIMessageBoxResult = theValue;
-    GUIMessageBox.hide();
-  }
-  public void inputbox_BackStrobe(String theString) {
-    GUIMessageBoxString = theString;
-    gui_parseMessageBoxBackStrobe(GUIMessageBoxString);    
-    GUIMessageBox.hide();
-  }
 
   public void buttonOK_LEDTube(int theValue) {
     GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_LEDTube")).getText();
@@ -44089,47 +44219,6 @@ public class ControlFrame extends PApplet {
     GUIMessageBox.hide();
   }
   
-  public void gui_parseMessageBoxFrontLeftStrobe(String result) {
-    int[] parsedResult = gui_parseStringGenericDMX(result, 4);
-    if (parsedResult[2] < 0) {
-      DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1]));
-      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT LEFT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+")");
-    }
-    else {
-      DMXList_FrontLeftStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1], parsedResult[2], parsedResult[3]));
-      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT LEFT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+" | "+parsedResult[2]+" | "+parsedResult[3]+")");
-    }
-    
-    resetExpectedTextLabel.setVisible(true);
-    createConfigFile();
-  }
-  public void gui_parseMessageBoxFrontRightStrobe(String result) {
-    int[] parsedResult = gui_parseStringGenericDMX(result, 4);
-    if (parsedResult[2] < 0) {
-      DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1]));
-      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT RIGHT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+")");
-    }
-    else {
-      DMXList_FrontRightStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1], parsedResult[2], parsedResult[3]));
-      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : FRONT RIGHT STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+" | "+parsedResult[2]+" | "+parsedResult[3]+")");
-    }
-    
-    resetExpectedTextLabel.setVisible(true);
-    createConfigFile();
-  }
-  public void gui_parseMessageBoxBackStrobe(String result) {
-    int[] parsedResult = gui_parseStringGenericDMX(result, 4);
-    if (parsedResult[2] < 0) {
-      DMXList_BackStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1]));
-      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : BACK STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+")");
-    }
-    else {
-      DMXList_BackStroboscopes.add(new DMX_Stroboscope(parsedResult[0], parsedResult[1], parsedResult[2], parsedResult[3]));
-      resetExpectedTextLabel.setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nNEW DEVICE REGISTERED : BACK STROBOSCOPE ("+parsedResult[0]+" | "+parsedResult[1]+" | "+parsedResult[2]+" | "+parsedResult[3]+")");
-    }
-    resetExpectedTextLabel.setVisible(true);
-    createConfigFile();
-  }
   public void gui_parseMessageBoxLEDTube(String result) {
     int parsedResult = -1;
     try {
@@ -44161,41 +44250,42 @@ public class ControlFrame extends PApplet {
     createConfigFile();
   }
   
-  //Parse strings like "(2,3,5)", to return {2,3,5}
-  public int[] gui_parseStringGenericDMX(String string, int numberOfChannels) {
+  // TBIL To delete
+  // //Parse strings like "(2,3,5)", to return {2,3,5}
+  // int[] gui_parseStringGenericDMX(String string, int numberOfChannels) {
     
-    int[] result = new int[numberOfChannels];
-    for (int i=0; i<numberOfChannels; i++) {result[i] = -1;}
+  //   int[] result = new int[numberOfChannels];
+  //   for (int i=0; i<numberOfChannels; i++) {result[i] = -1;}
     
-    try {
-      boolean rejectLine = false;
-      if (string.indexOf("(") != 0) {
-        rejectLine = true;
-        outputLog.println("Bad string formatting for new DMX device declaration : " + string);
-      }
-      if (string.indexOf(")") != string.length() - 1) {
-        rejectLine = true;
-        outputLog.println("Bad string formatting for new DMX device declaration : " + string);
-      }
+  //   try {
+  //     boolean rejectLine = false;
+  //     if (string.indexOf("(") != 0) {
+  //       rejectLine = true;
+  //       outputLog.println("Bad string formatting for new DMX device declaration : " + string);
+  //     }
+  //     if (string.indexOf(")") != string.length() - 1) {
+  //       rejectLine = true;
+  //       outputLog.println("Bad string formatting for new DMX device declaration : " + string);
+  //     }
       
-      String[] subStringSplit = split(string.substring(1, string.length() - 1), ",");
+  //     String[] subStringSplit = split(string.substring(1, string.length() - 1), ",");
       
-      if (subStringSplit.length != numberOfChannels) {
-        rejectLine = true;
-        outputLog.println("Bad string formatting for new DMX device declaration : " + string);
-      }
-      if (rejectLine == false) {
-        for (int i=0; i<numberOfChannels; i++) {
-          result[i] = Integer.parseInt(subStringSplit[i]);
-        }
-      }
-      return result;
-    }
-    catch (Exception e) {
-      outputLog.println("Caught an exception while trying to parse the following string : " + string + " (in order to create a new DMX device) : " + e);
-      return result;
-    }
-  }
+  //     if (subStringSplit.length != numberOfChannels) {
+  //       rejectLine = true;
+  //       outputLog.println("Bad string formatting for new DMX device declaration : " + string);
+  //     }
+  //     if (rejectLine == false) {
+  //       for (int i=0; i<numberOfChannels; i++) {
+  //         result[i] = Integer.parseInt(subStringSplit[i]);
+  //       }
+  //     }
+  //     return result;
+  //   }
+  //   catch (Exception e) {
+  //     outputLog.println("Caught an exception while trying to parse the following string : " + string + " (in order to create a new DMX device) : " + e);
+  //     return result;
+  //   }
+  // }
 
 
     
@@ -44250,8 +44340,13 @@ public class ControlFrame extends PApplet {
         // resetExpectedTextLabel.setVisible(true);
         // createConfigFile();
       }
-      else if (theEvent.getName() == "DMX Microcontroller") {
-        DMX_MICROCONTROLLER_NAME = "/dev/" + cp5.getController("DMX Microcontroller").getStringValue();
+      else if (theEvent.getName() == "DMX Microcontroller Universe 1") {
+        DMX_UNIVERSE_1_MICROCONTROLLER_NAME = "/dev/" + cp5.getController("DMX Microcontroller Universe 1").getStringValue();
+        resetExpectedTextLabel.setVisible(true);
+        createConfigFile();
+      }
+      else if (theEvent.getName() == "DMX Microcontroller Universe 2") {
+        DMX_UNIVERSE_2_MICROCONTROLLER_NAME = "/dev/" + cp5.getController("DMX Microcontroller Universe 2").getStringValue();
         resetExpectedTextLabel.setVisible(true);
         createConfigFile();
       }
@@ -44259,162 +44354,6 @@ public class ControlFrame extends PApplet {
         CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/" + cp5.getController("Custom Devices Microcontroller").getStringValue();
         resetExpectedTextLabel.setVisible(true);
         createConfigFile();
-      }
-      
-      ////////////////////
-      // DMX events
-      
-      else if (theEvent.getName() == "Add Front Left Strobe") {
-        String [] explanation = {"Input new DMX device's channel info using the following syntax : ",
-                                 "            For a 2-channel strobe : (Speed, Brightness)",
-                                 "            For a 4-channel strobe : (Intensity, Duration, Speed, Special FX)",
-                                 "For example, for a 2-channel stroboscope working on channels 4 and 5, input: (4,5)"};
-        createMessageBox("FrontLeftStrobe", explanation);
-        //The Reset flag is raised in case of successful parsing
-      }
-      else if (theEvent.getName() == "Add Front Right Strobe") {
-        String [] explanation = {"Input new DMX device's channel info using the following syntax : ",
-                                 "            For a 2-channel strobe : (Speed, Brightness)",
-                                 "            For a 4-channel strobe : (Intensity, Duration, Speed, Special FX)",
-                                 "For example, for a 2-channel stroboscope working on channels 4 and 5, input: (4,5)"};
-        createMessageBox("FrontRightStrobe", explanation);
-        //The Reset flag is raised in case of successful parsing
-      }
-      else if (theEvent.getName() == "Add Back Strobe") {
-        String [] explanation = {"Input new DMX device's channel info using the following syntax : ",
-                                 "            For a 2-channel strobe : (Speed, Brightness)",
-                                 "            For a 4-channel strobe : (Intensity, Duration, Speed, Special FX)",
-                                 "For example, for a 2-channel stroboscope working on channels 4 and 5, input: (4,5)"};
-        createMessageBox("BackStrobe", explanation);
-        //The Reset flag is raised in case of successful parsing
-      }
-      
-      else if (theEvent.getName().contains("Front Left Strobe ")) {
-        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
-        //Check if the user wants to delete the device
-
-        if (cp5.getController(theEvent.getName()).getStringValue().equals("(0,0,0,0)") ||
-            cp5.getController(theEvent.getName()).getStringValue().equals("(0,0)")) {
-          DMXList_FrontLeftStroboscopes.remove(DMXList_FrontLeftStroboscopes.get(devNumber));
-          outputLog.println("IMPORTANT : Removed front left stroboscope device #" + devNumber);
-          resetExpectedTextLabel.setVisible(true);
-          createConfigFile();
-          
-          //Rebuild the GUI !
-          createGeneralInfoAccordion();
-        }
-        //The user only wants to change the DMX settings
-        else {
-          int[] parseResult = gui_parseStringGenericDMX(cp5.getController(theEvent.getName()).getStringValue(), 3);
-
-          //Check if the values returned are coherent - ie do not contain any negative values
-          int voidOccurence = 0;
-          int posOccurence  = 0;
-          for (int i: parseResult) {
-            if (i < 0) {voidOccurence += 1;}
-                  else {posOccurence  += 1;}
-          }
-          if (voidOccurence == 0) {
-            if (posOccurence == 2) {
-              DMXList_FrontLeftStroboscopes.get(devNumber).DMXAddress_stroboscopeSpeed        = parseResult[0];
-              DMXList_FrontLeftStroboscopes.get(devNumber).DMXAddress_stroboscopeBrightness   = parseResult[1];
-
-              outputLog.println("IMPORTANT : Modified front left stroboscope device #" + devNumber + " with the values : " + parseResult[0] + "," + parseResult[1] + "," + parseResult[2]);
-              resetExpectedTextLabel.setVisible(true);
-              createConfigFile();
-              
-              //Rebuild the GUI !
-              createGeneralInfoAccordion();
-            }
-            else if (posOccurence == 4) {
-              DMXList_FrontLeftStroboscopes.get(devNumber).DMXAddress_stroboscopeBrightness   = parseResult[0];
-              DMXList_FrontLeftStroboscopes.get(devNumber).DMXAddress_stroboscopeFlashLength  = parseResult[1];
-              DMXList_FrontLeftStroboscopes.get(devNumber).DMXAddress_stroboscopeSpeed        = parseResult[2];
-              DMXList_FrontLeftStroboscopes.get(devNumber).DMXAddress_stroboscopeSpecialFX    = parseResult[3];
-              outputLog.println("IMPORTANT : Modified front left stroboscope device #" + devNumber + " with the values : " + parseResult[0] + "," + parseResult[1] + "," + parseResult[2] + "," + parseResult[3]);
-              resetExpectedTextLabel.setVisible(true);
-              createConfigFile();
-              
-              //Rebuild the GUI !
-              createGeneralInfoAccordion();
-            }
-            else {
-              outputLog.println("ERROR : Could not parse a modification for a left stroboscope");
-            }
-          }
-        }
-      }
-      else if (theEvent.getName().contains("Front Right Strobe ")) {
-        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
-        //Check if the user wants to delete the device
-
-        if (cp5.getController(theEvent.getName()).getStringValue().equals("(0,0,0,0)") ||
-            cp5.getController(theEvent.getName()).getStringValue().equals("(0,0)")) {
-          DMXList_FrontRightStroboscopes.remove(DMXList_FrontRightStroboscopes.get(devNumber));
-          outputLog.println("IMPORTANT : Removed front right stroboscope device #" + devNumber);
-          resetExpectedTextLabel.setVisible(true);
-          createConfigFile();
-          
-          //Rebuild the GUI !
-          createGeneralInfoAccordion();
-        }
-        //The user only wants to change the DMX settings
-        else {
-          int[] parseResult = gui_parseStringGenericDMX(cp5.getController(theEvent.getName()).getStringValue(), 3);
-
-          //Check if the values returned are coherent - ie do not contain more than once "-1"
-          int voidOccurence = 0;
-          for (int i: parseResult) {
-            if (i == -1) {voidOccurence += 1;}
-          }
-          if (voidOccurence <= 1) {
-            DMXList_FrontRightStroboscopes.get(devNumber).DMXAddress_stroboscopeSpeed        = parseResult[0];
-            DMXList_FrontRightStroboscopes.get(devNumber).DMXAddress_stroboscopeBrightness   = parseResult[1];
-            DMXList_FrontRightStroboscopes.get(devNumber).DMXAddress_stroboscopeFlashLength  = parseResult[2];
-            outputLog.println("IMPORTANT : Modified front left stroboscope device #" + devNumber + " with the values : " + parseResult[0] + "," + parseResult[1] + "," + parseResult[2]);
-            resetExpectedTextLabel.setVisible(true);
-            createConfigFile();
-            
-            //Rebuild the GUI !
-            createGeneralInfoAccordion();
-          }
-        }
-      }
-      else if (theEvent.getName().contains("Back Strobe ")) {
-        int devNumber = Integer.parseInt(theEvent.getName().substring(theEvent.getName().length() - 1, theEvent.getName().length()));
-        //Check if the user wants to delete the device
-
-        if (cp5.getController(theEvent.getName()).getStringValue().equals("(0,0,0,0)") ||
-            cp5.getController(theEvent.getName()).getStringValue().equals("(0,0)")) {
-          DMXList_BackStroboscopes.remove(DMXList_BackStroboscopes.get(devNumber));
-          outputLog.println("IMPORTANT : Removed back stroboscope device #" + devNumber);
-          resetExpectedTextLabel.setVisible(true);
-          createConfigFile();
-          
-          //Rebuild the GUI !
-          createGeneralInfoAccordion();
-        }
-        //The user only wants to change the DMX settings
-        else {
-          int[] parseResult = gui_parseStringGenericDMX(cp5.getController(theEvent.getName()).getStringValue(), 3);
-
-          //Check if the values returned are coherent - ie do not contain more than once "-1"
-          int voidOccurence = 0;
-          for (int i: parseResult) {
-            if (i == -1) {voidOccurence += 1;}
-          }
-          if (voidOccurence <= 1) {
-            DMXList_BackStroboscopes.get(devNumber).DMXAddress_stroboscopeSpeed        = parseResult[0];
-            DMXList_BackStroboscopes.get(devNumber).DMXAddress_stroboscopeBrightness   = parseResult[1];
-            DMXList_BackStroboscopes.get(devNumber).DMXAddress_stroboscopeFlashLength  = parseResult[2];
-            outputLog.println("IMPORTANT : Modified back stroboscope device #" + devNumber + " with the values : " + parseResult[0] + "," + parseResult[1] + "," + parseResult[2]);
-            resetExpectedTextLabel.setVisible(true);
-            createConfigFile();
-            
-            //Rebuild the GUI !
-            createGeneralInfoAccordion();
-          }
-        }
       }
       
       
@@ -48324,8 +48263,9 @@ final static String LED_COLOR_FORMAT = "RGB";   //LED color arrangement
 //String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
 //All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
 //String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
-String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem1862841";
-String CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/tty.usbserial-A961L7NJ";
+String DMX_UNIVERSE_1_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
+String DMX_UNIVERSE_2_MICROCONTROLLER_NAME = "/dev/tty.usbmodem1862841";
+String CUSTOMDEVICES_MICROCONTROLLER_NAME  = "/dev/tty.usbserial-A961L7NJ";
 
 String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
 String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem479061", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem707701", "/dev/tty.usbmodem814421"}; // 707701 to add
@@ -49577,7 +49517,7 @@ class PanelSimulator {
 public void drawSimuFrontLeftStroboscope(int positionX, int positionY) {
   auxControlFrame.fill(100);
   auxControlFrame.rect(positionX - strobe_sizeX/2,positionY,strobe_sizeX,strobe_sizeY);
-  
+
   boolean drawStrobe = false;
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
     if (stroboscope.isActive != false) {
@@ -49593,12 +49533,12 @@ public void drawSimuFrontLeftStroboscope(int positionX, int positionY) {
     int simuSpecialFx = 0;
     //Get the maximum speed/brightness of this strobe group
     for (DMX_Stroboscope stroboscope : DMXList_FrontLeftStroboscopes) {
-      simuSpeed       = max(simuSpeed, stroboscope.currentSpeed);
-      simuBrightness  = max(simuBrightness, stroboscope.currentBrightness);
-      simuFlashLength = max(simuFlashLength, stroboscope.currentFlashLength);
-      simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
+      simuSpeed       = max(simuSpeed, stroboscope.getSpeed());
+      simuBrightness  = max(simuBrightness, stroboscope.getDimmer());
+      simuFlashLength = max(simuFlashLength, stroboscope.getFlashDuration());
+      simuSpecialFx   = max(simuSpecialFx, stroboscope.getEffects());
     }
-    
+
     simu_computeStrobeColor(simuSpeed, simuBrightness, simuFlashLength, simuSpecialFx);
   }
   else {
@@ -49626,10 +49566,10 @@ public void drawSimuFrontRightStroboscope(int positionX, int positionY) {
     int simuSpecialFx = 0;
     //Get the maximum speed/brightness of this strobe group
     for (DMX_Stroboscope stroboscope : DMXList_FrontRightStroboscopes) {
-      simuSpeed       = max(simuSpeed, stroboscope.currentSpeed);
-      simuBrightness  = max(simuBrightness, stroboscope.currentBrightness);
-      simuFlashLength = max(simuFlashLength, stroboscope.currentFlashLength);
-      simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
+      simuSpeed       = max(simuSpeed, stroboscope.getSpeed());
+      simuBrightness  = max(simuBrightness, stroboscope.getDimmer());
+      simuFlashLength = max(simuFlashLength, stroboscope.getFlashDuration());
+      simuSpecialFx   = max(simuSpecialFx, stroboscope.getEffects());
     }
     
     simu_computeStrobeColor(simuSpeed, simuBrightness, simuFlashLength, simuSpecialFx);
@@ -49643,15 +49583,15 @@ public void drawSimuFrontRightStroboscope(int positionX, int positionY) {
 public void drawSimuBackStroboscope(int positionX, int positionY) {
   auxControlFrame.fill(100);
   auxControlFrame.rect(positionX - strobe_sizeX/2,positionY,strobe_sizeX,strobe_sizeY);
-  
+
   boolean drawStrobe = false;
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
+
     if (stroboscope.isActive != false) {
       drawStrobe = true;
       break;
     }
   }
-  
   if (drawStrobe == true) {
     int simuSpeed = 0;
     int simuBrightness = 0;
@@ -49659,10 +49599,10 @@ public void drawSimuBackStroboscope(int positionX, int positionY) {
     int simuSpecialFx = 0;
     //Get the maximum speed/brightness of this strobe group
     for (DMX_Stroboscope stroboscope : DMXList_BackStroboscopes) {
-      simuSpeed       = max(simuSpeed, stroboscope.currentSpeed);
-      simuBrightness  = max(simuBrightness, stroboscope.currentBrightness);
-      simuFlashLength = max(simuFlashLength, stroboscope.currentFlashLength);
-      simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
+      simuSpeed       = max(simuSpeed, stroboscope.getSpeed());
+      simuBrightness  = max(simuBrightness, stroboscope.getDimmer());
+      simuFlashLength = max(simuFlashLength, stroboscope.getFlashDuration());
+      simuSpecialFx   = max(simuSpecialFx, stroboscope.getEffects());
     }
     
     simu_computeStrobeColor(simuSpeed, simuBrightness, simuFlashLength, simuSpecialFx);
@@ -49685,7 +49625,7 @@ public void simu_computeStrobeColor(int simuSpeed, int simuBrightness, int simuF
     }
   }
   // No effect is currently active, normal strobe
-  else if (simuSpecialFx == DMXStroboscope_defaultSpecialFXValue) {
+  else if (simuSpecialFx == DMX_STROBE_DEFAULT_SPECIAL_FX_VAL) {
     //Map simuSpeed to a more usable value
     simuSpeed = PApplet.parseInt(map(simuSpeed, 0, 255, 12, 2));
     
@@ -54245,7 +54185,7 @@ public void specificActions() {
       case 256:    //StroboRed
 
         rectMode(CORNER);
-        frameRate(25);
+        frameRate(30);
         noStroke();
         background(0);
         break;

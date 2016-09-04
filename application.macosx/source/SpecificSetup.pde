@@ -585,7 +585,7 @@ void specificActions() {
         
       case 63:          //Nonotak 4
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         background(0);
         stroke(255);
@@ -595,7 +595,7 @@ void specificActions() {
       
       case 64:          //Nonotak 5
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         background(0);
         strokeWeight(8);
@@ -666,25 +666,25 @@ void specificActions() {
 
       case 70:    //NonotakWoosh 1
 
-        frameRate(60);
+        frameRate(50);
         nonotakWoosh_list.add(new NonotakWoosh(0));
         break;
       
       case 71:    //NonotakWoosh 2
 
-        frameRate(60);
+        frameRate(50);
         nonotakWoosh_list.add(new NonotakWoosh(1));
         break;
       
       case 72:    //NonotakWoosh 3
 
-        frameRate(60);
+        frameRate(50);
         nonotakWoosh_list.add(new NonotakWoosh(2));
         break;
       
       case 73:    //NonotakWoosh 4
 
-        frameRate(60);
+        frameRate(50);
         nonotakWoosh_list.add(new NonotakWoosh(3));
         break;
       
@@ -1193,14 +1193,14 @@ void specificActions() {
       
       case 111:    //Va et vient - 1
       
-        frameRate(100);
+        frameRate(50);
         va_et_vient_progress = 0;
         strokeWeight(8);
         break;
       
       case 112:    //Va et vient - 2
       
-        frameRate(100);
+        frameRate(50);
         va_et_vient_progress = 0;
         strokeWeight(8);
         break;
@@ -1508,7 +1508,7 @@ void specificActions() {
 
       case 143:    //OrbitingParticles
 
-        frameRate(60);
+        frameRate(50);
         background(0);
         strokeWeight(8);
         stroke(255);
@@ -1831,7 +1831,7 @@ void specificActions() {
       case 174:    //ExplodingCircleLeft
 
         background(0);
-        frameRate(60);
+        frameRate(50);
         stroke(255); 
         noFill();
         strokeWeight(28);
@@ -1841,7 +1841,7 @@ void specificActions() {
       case 175:    //ExplodingCircleRight
 
         background(0);
-        frameRate(60);
+        frameRate(50);
         stroke(255,0,0); 
         noFill();
         strokeWeight(28);
@@ -1993,7 +1993,7 @@ void specificActions() {
         background(0);
         strokeCap(ROUND);
         strokeWeight(1);
-        frameRate(60);
+        frameRate(50);
         mandala_ballsize = mandala_maxballsize;
         break;
       
@@ -2004,7 +2004,7 @@ void specificActions() {
         background(0);
         strokeCap(ROUND);
         strokeWeight(1);
-        frameRate(60);
+        frameRate(50);
         //mandala_ballsize = mandala_maxballsize;
         mandala_switch = !mandala_switch;
         break;
@@ -2030,7 +2030,7 @@ void specificActions() {
 
       case 192:    //Crescent
 
-        frameRate(60);
+        frameRate(50);
         colorMode(HSB); 
         strokeWeight(12);
         crescent_distext = width/2;
@@ -2040,7 +2040,7 @@ void specificActions() {
       
       case 193:    //Trigo Shapes
 
-        frameRate(60);
+        frameRate(50);
         noStroke();
         colorMode(HSB);
         if (trigoshapes_initComplete == false) {
@@ -2296,7 +2296,7 @@ void specificActions() {
       
       case 214:    //Shadows
       
-        frameRate(60);
+        frameRate(50);
         noStroke();
         break;
       
@@ -2416,7 +2416,7 @@ void specificActions() {
 
       case 228:    //HyperSpeed
 
-        frameRate(60);
+        frameRate(50);
         stroke(255);
         strokeWeight(4);
         strokeCap(ROUND);
@@ -2500,7 +2500,7 @@ void specificActions() {
       
       case 235:    //ThunderLinesInit
 
-        frameRate(60);
+        frameRate(50);
         stroke(255); 
         noFill();
         strokeWeight(4);
@@ -2515,7 +2515,7 @@ void specificActions() {
       
       case 236:    //ThunderLines - More lines
 
-        frameRate(60);
+        frameRate(50);
         stroke(255); 
         noFill();
         strokeWeight(4);
@@ -2548,7 +2548,7 @@ void specificActions() {
       
       case 238:    //DarkSnakes
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         stroke(0, 0, 0, 10);
         smooth();
@@ -2559,7 +2559,7 @@ void specificActions() {
       
       case 239:    //BrightSnakes
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         stroke(255, 40);
         smooth();
@@ -2605,7 +2605,7 @@ void specificActions() {
 
         noStroke();
         background(255);
-        frameRate(60);
+        frameRate(50);
         lightfusion_xspan = lightfusion_xmax - lightfusion_xmin;
         lightfusion_yspan = lightfusion_ymax - lightfusion_ymin;
         lightfusion_X = width/6;
@@ -2632,7 +2632,7 @@ void specificActions() {
       case 244:    //ColorVertex
 
         smooth();
-        frameRate(60);
+        frameRate(50);
         colorvertex_pointarray = new ArrayList();
         for (int j=0;j<30;j++) {
           colorvertex_pointarray.add(new colorvertex_Dots(new PVector(random(-64, 64), random(-50, 50))));
@@ -2642,7 +2642,7 @@ void specificActions() {
       case 245:    //Gloubiboulga
 
         colorMode(HSB);
-        frameRate(60);
+        frameRate(50);
         gloubiboulga_swarm = new ArrayList();
         for (int j=0; j<20; j++) {
             PVector newpos = new PVector(width/2, height/2);
@@ -2673,7 +2673,7 @@ void specificActions() {
       case 247:    //MarshallStrobo
 
         rectMode(CORNER);
-        frameRate(25);
+        frameRate(20);
         stroke(255);
         fill(255);
         // Initialisation des hauteurs des lignes
@@ -2690,7 +2690,7 @@ void specificActions() {
       case 248:   //Strobonormal
 
         rectMode(CORNER);
-        frameRate(25);
+        frameRate(30);
         noStroke();
         strokeWeight(8);
         background(0);
@@ -2700,7 +2700,7 @@ void specificActions() {
       case 249:    //StroboX
 
         rectMode(CORNER);
-        frameRate(25);
+        frameRate(30);
         stroke(255);
         strokeWeight(16);
         background(0);
@@ -2733,7 +2733,7 @@ void specificActions() {
       case 254:    //StroboLine
 
         rectMode(CORNER);
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         fill(255);
         stroke(255);
@@ -2751,7 +2751,7 @@ void specificActions() {
       case 256:    //StroboRed
 
         rectMode(CORNER);
-        frameRate(25);
+        frameRate(30);
         noStroke();
         background(0);
         break;
@@ -3205,7 +3205,7 @@ void specificActions() {
 
         background(0);
         noFill();
-        frameRate(60);
+        frameRate(50);
         noSmooth();
         strokeWeight(1);
         butterfly_s = random(90, 100);    
@@ -3226,7 +3226,7 @@ void specificActions() {
         break;
       
       case 305:    //LightPainting
-        frameRate(60);
+        frameRate(50);
         background(0);
         if (lightpainting_initok == false) {
           lightpainting_canvas = new LightPaintingCanvas3D(lightpainting_focalLength, lightpainting_interaction_distance);
@@ -3309,7 +3309,7 @@ void specificActions() {
 
       case 309:    //DoubleFlowers
 
-        frameRate(60);
+        frameRate(50);
         smooth();
         noStroke();
         colorMode(HSB);
@@ -3579,7 +3579,7 @@ void specificActions() {
       
       case 330:    //Reverse Triangles
 
-        frameRate(60);
+        frameRate(50);
         reverseTriangles_red = createGraphics(width, height);
         reverseTriangles_green = createGraphics(width/NUMBER_OF_PANELS, height);
         reverseTriangles_size = reverseTriangles_sizeInit;
@@ -3784,7 +3784,7 @@ void specificActions() {
       case 342:    //Redwave
 
         noStroke();
-        frameRate(60);
+        frameRate(50);
         redwave_xspan = redwave_xmax - redwave_xmin;
         redwave_yspan = redwave_ymax - redwave_ymin;
         // draw first frame
@@ -3794,7 +3794,7 @@ void specificActions() {
       case 343:    //DiagonalColor
 
         colorMode(HSB);
-        frameRate(60);
+        frameRate(50);
         smooth();
         
         if (diagonalcolor_init == false) {
@@ -3923,7 +3923,7 @@ void specificActions() {
 
         noStroke();
         background(255);
-        frameRate(60);
+        frameRate(50);
         nightroad_xspan = nightroad_xmax - nightroad_xmin;
         nightroad_yspan = nightroad_ymax - nightroad_ymin;
         nightroad_Y = 0;
@@ -4008,7 +4008,7 @@ void specificActions() {
         for (int j = 0; j < particleletters_N; j++) {
           particleletters_parts.add(new LetterParticle(random(width), random(height), 0, 0));
         }
-        particleletters_font = loadFont("AldotheApache-48.vlw");
+        particleletters_font = loadFont("Fonts/AldotheApache-48.vlw");
         break;
       
       case 360:    //RotozoomWhite
@@ -4019,7 +4019,7 @@ void specificActions() {
 
       case 361:    //Rotozoom 1
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         rotozoom_img=loadImage(NUMBER_OF_PANELS + "_panels/" + "Rotozoom/rotozoom1.jpg");
         rotozoom_img.resize(256, 256);
@@ -4027,7 +4027,7 @@ void specificActions() {
       
       case 362:    //Rotozoom 2
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         rotozoom_img=loadImage(NUMBER_OF_PANELS + "_panels/" + "Rotozoom/rotozoom2.jpg");
         rotozoom_img.resize(256, 256);
@@ -4035,7 +4035,7 @@ void specificActions() {
       
       case 363:    //Rotozoom 3
 
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         rotozoom_img=loadImage(NUMBER_OF_PANELS + "_panels/" + "Rotozoom/rotozoom3.jpg");
         rotozoom_img.resize(256, 256);
@@ -4057,7 +4057,7 @@ void specificActions() {
 
       case 366:    //SlicedWave - White
 
-        frameRate(60);
+        frameRate(50);
         noFill();
         strokeCap(SQUARE); 
         randomSeed(36);
@@ -4076,7 +4076,7 @@ void specificActions() {
       
       case 367:    //SlicedWave - Red
         
-        frameRate(60);
+        frameRate(50);
         noFill();
         strokeCap(SQUARE); 
         randomSeed(36);
@@ -4096,7 +4096,7 @@ void specificActions() {
       case 368:    //ArcWave
 
         colorMode(RGB);
-        frameRate(60);
+        frameRate(50);
         arcwave_maxi=(int)sqrt(width/2*height/2)*4;
         background(0);
         arcwave_arcs= new ArcWaveClass[5];
@@ -4121,7 +4121,7 @@ void specificActions() {
 
       case 370:    //ArcRot - Green
 
-        frameRate(60);
+        frameRate(50);
         colorMode(HSB);
         noFill();
         smooth();
@@ -4131,7 +4131,7 @@ void specificActions() {
       
       case 371:    //ArcRot - Red
 
-        frameRate(60);
+        frameRate(50);
         colorMode(HSB);
         noFill();
         smooth();
@@ -4255,7 +4255,7 @@ void specificActions() {
 
         noStroke();
         background(255);
-        frameRate(60);
+        frameRate(50);
         hypnospiralred_X = width/2;
         hypnospiralred_Y = height/2;
         hypnospiralred_xspan = hypnospiralred_xmax - hypnospiralred_xmin;
@@ -4307,7 +4307,7 @@ void specificActions() {
       case 388:    //Kaleido
 
         background(0);
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         //kaleido_posX = 0;
         strokeWeight(1);
@@ -4319,7 +4319,7 @@ void specificActions() {
       case 389:    //KaleidoGray
 
         background(0);
-        frameRate(60);
+        frameRate(50);
         colorMode(RGB);
         //kaleido_posX = 0;
         strokeWeight(1);
@@ -4377,7 +4377,7 @@ void specificActions() {
         noStroke();
         textSize(28);  
         textAlign(CENTER, CENTER);
-        font = loadFont("Gobold-28.vlw");
+        font = loadFont("Fonts/Gobold-28.vlw");
         textFont(font,height);
         pongball= new Ball();
         bottom=new Paddle();
@@ -4388,73 +4388,73 @@ void specificActions() {
 
       case 395:    //ShiftPixelsUp - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 396:    //ShiftPixelsDown - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 397:    //ShiftPixelsLeft - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 398:    //ShiftPixelsRight - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 399:    //ShiftPixelsUp - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_fastspeed;
         break;
       
       case 400:    //ShiftPixelsDown - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_fastspeed;
         break;
       
       case 401:    //ShiftPixelsLeft - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 402:    //ShiftPixelsRight - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 403:    //ShredPixelsVertical - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 404:    //ShredPixelsHorizontal - Slow
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_slowspeed;
         break;
       
       case 405:    //ShredPixelsVertical - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_fastspeed;
         break;
       
       case 406:    //ShredPixelsHorizontal - Fast
 
-        frameRate(60);
+        frameRate(50);
         shiftpixels_speed = shiftpixels_fastspeed;
         break;      
       
@@ -4508,7 +4508,7 @@ void specificActions() {
 
         strokeWeight(4);
         smooth();
-        frameRate(80);
+        frameRate(50);
         if (woublines_init == false) {
           woublines_list = new ArrayList<WoubLine>();
           woublines_init = true;
@@ -4521,7 +4521,7 @@ void specificActions() {
 
         strokeWeight(4);
         smooth();
-        frameRate(80);
+        frameRate(50);
         if (woublines_init == false) {
           woublines_list = new ArrayList<WoubLine>();
           woublines_init = true;
@@ -4534,7 +4534,7 @@ void specificActions() {
 
         strokeWeight(4);
         smooth();
-        frameRate(80);
+        frameRate(50);
         if (woublines_init == false) {
           woublines_list = new ArrayList<WoubLine>();
           woublines_init = true;
@@ -4560,7 +4560,7 @@ void specificActions() {
 
         strokeWeight(4);
         smooth();
-        frameRate(80);
+        frameRate(50);
         if (woublines_init == false) {
           woublines_list = new ArrayList<WoubLine>();
           woublines_init = true;
@@ -4630,7 +4630,7 @@ void specificActions() {
         
       case 429:    //Simple Spiral - White
       
-        frameRate(60);
+        frameRate(50);
         noFill();
         background(0);
         strokeWeight(6);
@@ -4638,7 +4638,7 @@ void specificActions() {
 
       case 430:    //Simple Spiral - Red
       
-        frameRate(60);
+        frameRate(50);
         noFill();
         background(0);
         strokeWeight(6);
@@ -4667,59 +4667,59 @@ void specificActions() {
         break;
         
       case 434:    //White Spread - Start
-        frameRate(90);
+        frameRate(45);
         whitespread_progress = 0;
         break;
         
       case 435:    //White Spread - End
-        frameRate(90);
+        frameRate(45);
         whitespread_progress = 0;
         break;
       
       case 436:    //ScannerLine 1 - Fast White
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
       
       case 437:    //ScannerLine 2 - Fast White
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
         
       case 438:    //ScannerLine 1 - Fast Red
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
         
       case 439:    //ScannerLine 2 - Fast Red
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
         
       case 440:    //ScannerLine 1 - Slow White
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
       
       case 441:    //ScannerLine 2 - Slow White
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
         
       case 442:    //ScannerLine 1 - Slow Red
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;
         
       case 443:    //ScannerLine 2 - Slow Red
-        frameRate(90);
+        frameRate(45);
         colorMode(RGB);
         scannerLine_progress = 0;
         break;

@@ -226,7 +226,7 @@ class PanelSimulator {
 void drawSimuFrontLeftStroboscope(int positionX, int positionY) {
   auxControlFrame.fill(100);
   auxControlFrame.rect(positionX - strobe_sizeX/2,positionY,strobe_sizeX,strobe_sizeY);
-  
+
   boolean drawStrobe = false;
   for (DMX_Stroboscope stroboscope: DMXList_FrontLeftStroboscopes) {
     if (stroboscope.isActive != false) {
@@ -242,12 +242,12 @@ void drawSimuFrontLeftStroboscope(int positionX, int positionY) {
     int simuSpecialFx = 0;
     //Get the maximum speed/brightness of this strobe group
     for (DMX_Stroboscope stroboscope : DMXList_FrontLeftStroboscopes) {
-      simuSpeed       = max(simuSpeed, stroboscope.currentSpeed);
-      simuBrightness  = max(simuBrightness, stroboscope.currentBrightness);
-      simuFlashLength = max(simuFlashLength, stroboscope.currentFlashLength);
-      simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
+      simuSpeed       = max(simuSpeed, stroboscope.getSpeed());
+      simuBrightness  = max(simuBrightness, stroboscope.getDimmer());
+      simuFlashLength = max(simuFlashLength, stroboscope.getFlashDuration());
+      simuSpecialFx   = max(simuSpecialFx, stroboscope.getEffects());
     }
-    
+
     simu_computeStrobeColor(simuSpeed, simuBrightness, simuFlashLength, simuSpecialFx);
   }
   else {
@@ -275,10 +275,10 @@ void drawSimuFrontRightStroboscope(int positionX, int positionY) {
     int simuSpecialFx = 0;
     //Get the maximum speed/brightness of this strobe group
     for (DMX_Stroboscope stroboscope : DMXList_FrontRightStroboscopes) {
-      simuSpeed       = max(simuSpeed, stroboscope.currentSpeed);
-      simuBrightness  = max(simuBrightness, stroboscope.currentBrightness);
-      simuFlashLength = max(simuFlashLength, stroboscope.currentFlashLength);
-      simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
+      simuSpeed       = max(simuSpeed, stroboscope.getSpeed());
+      simuBrightness  = max(simuBrightness, stroboscope.getDimmer());
+      simuFlashLength = max(simuFlashLength, stroboscope.getFlashDuration());
+      simuSpecialFx   = max(simuSpecialFx, stroboscope.getEffects());
     }
     
     simu_computeStrobeColor(simuSpeed, simuBrightness, simuFlashLength, simuSpecialFx);
@@ -292,15 +292,15 @@ void drawSimuFrontRightStroboscope(int positionX, int positionY) {
 void drawSimuBackStroboscope(int positionX, int positionY) {
   auxControlFrame.fill(100);
   auxControlFrame.rect(positionX - strobe_sizeX/2,positionY,strobe_sizeX,strobe_sizeY);
-  
+
   boolean drawStrobe = false;
   for (DMX_Stroboscope stroboscope: DMXList_BackStroboscopes) {
+
     if (stroboscope.isActive != false) {
       drawStrobe = true;
       break;
     }
   }
-  
   if (drawStrobe == true) {
     int simuSpeed = 0;
     int simuBrightness = 0;
@@ -308,10 +308,10 @@ void drawSimuBackStroboscope(int positionX, int positionY) {
     int simuSpecialFx = 0;
     //Get the maximum speed/brightness of this strobe group
     for (DMX_Stroboscope stroboscope : DMXList_BackStroboscopes) {
-      simuSpeed       = max(simuSpeed, stroboscope.currentSpeed);
-      simuBrightness  = max(simuBrightness, stroboscope.currentBrightness);
-      simuFlashLength = max(simuFlashLength, stroboscope.currentFlashLength);
-      simuSpecialFx   = max(simuSpecialFx, stroboscope.currentSpecialFX);
+      simuSpeed       = max(simuSpeed, stroboscope.getSpeed());
+      simuBrightness  = max(simuBrightness, stroboscope.getDimmer());
+      simuFlashLength = max(simuFlashLength, stroboscope.getFlashDuration());
+      simuSpecialFx   = max(simuSpecialFx, stroboscope.getEffects());
     }
     
     simu_computeStrobeColor(simuSpeed, simuBrightness, simuFlashLength, simuSpecialFx);
@@ -334,7 +334,7 @@ void simu_computeStrobeColor(int simuSpeed, int simuBrightness, int simuFlashLen
     }
   }
   // No effect is currently active, normal strobe
-  else if (simuSpecialFx == DMXStroboscope_defaultSpecialFXValue) {
+  else if (simuSpecialFx == DMX_STROBE_DEFAULT_SPECIAL_FX_VAL) {
     //Map simuSpeed to a more usable value
     simuSpeed = int(map(simuSpeed, 0, 255, 12, 2));
     

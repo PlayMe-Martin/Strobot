@@ -30,31 +30,30 @@ public class CustomDeviceController{
   Serial myPort;
  
   CustomDeviceController(PApplet myPApplet) {
-    if (debug_without_custom_devices == false) {
-      for (int element = 0; element < Serial.list().length; element++){
-        if (Serial.list()[element].contains(CUSTOMDEVICES_MICROCONTROLLER_NAME) == true) {
-          this.myPort = new Serial(myPApplet, Serial.list()[element], 57600);
-          break;
-        }
+    
+    for (int element = 0; element < Serial.list().length; element++){
+      if (Serial.list()[element].contains(CUSTOMDEVICES_MICROCONTROLLER_NAME) == true) {
+        this.myPort = new Serial(myPApplet, Serial.list()[element], 57600);
+        break;
       }
     }
+  
   }
 
   // Send command to Arduino to update a specific custom device
   void setCustomDeviceAnimation(int deviceNumber, int animation) throws SerialPortException {
     // Convert the parameters into a message of the form: 123c45w where 123 is the number of the device and 45 is the animation
     // then send to the Arduino
-    if (debug_without_custom_devices == false) 
-    {
-      if (exceptionRaisedCustomDevice == false) {
-        try {
-          this.myPort.write( str(deviceNumber) + "c" + str(animation) + "w" );
-        }
-        catch (Exception e) {
-          throw new SerialPortException("CustomDevice Output error: no serial port found! " + e);
-        }
+
+    if (exceptionRaisedCustomDevice == false) {
+      try {
+        this.myPort.write( str(deviceNumber) + "c" + str(animation) + "w" );
+      }
+      catch (Exception e) {
+        throw new SerialPortException("CustomDevice Output error: no serial port found! " + e);
       }
     }
+  
   }
 }
 

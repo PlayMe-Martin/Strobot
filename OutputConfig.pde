@@ -14,8 +14,9 @@ final static String LED_COLOR_FORMAT = "RGB";   //LED color arrangement
 //String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
 //All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
 //String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
-String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem1862841";
-String CUSTOMDEVICES_MICROCONTROLLER_NAME = "/dev/tty.usbserial-A961L7NJ";
+String DMX_UNIVERSE_1_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
+String DMX_UNIVERSE_2_MICROCONTROLLER_NAME = "/dev/tty.usbmodem1862841";
+String CUSTOMDEVICES_MICROCONTROLLER_NAME  = "/dev/tty.usbserial-A961L7NJ";
 
 String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
 String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem479061", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem707701", "/dev/tty.usbmodem814421"}; // 707701 to add

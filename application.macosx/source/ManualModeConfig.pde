@@ -297,10 +297,6 @@ void setManualAnimation(int channel, int pitch) {
       writeScreenOrderInConfigurationFile();
     }
     else if (animationToBePlayed == PADKILLER) {
-      myDMX.stopStrobe_FrontLeft();
-      myDMX.stopStrobe_FrontRight();
-      strobepreset_frontleft = 0;
-      strobepreset_frontright = 0;
       setupcomplete = false;
       animationnumber = 110;
       specificActions();
@@ -314,7 +310,8 @@ void setManualAnimation(int channel, int pitch) {
     else {
       //Stroboscope actions are always in RELEASE mode
       noteOffToResetDMX = pitch;
-      setManualFrontStroboscope(animationToBePlayed);    
+      // TBIL - needs to be remade with the new DMX functions
+      //setManualFrontStroboscope(animationToBePlayed);    
     }
   }
 }
@@ -327,28 +324,6 @@ void noteOffRevertToPreviousAnimation() {
   specificActions();
 }
 
-void setManualFrontStroboscope(int pitch) {
-  drawStrobe_FrontLeft = 1;
-  drawStrobe_FrontRight = 1;
-  switch(pitch) {
-    case STROBO_SLOW_1: myDMX.setStrobePreset_FrontLeft(36);  strobepreset_frontleft = 36;  myDMX.setStrobePreset_FrontRight(36);  strobepreset_frontright = 36; break;
-    case STROBO_SLOW_2: myDMX.setStrobePreset_FrontLeft(38);  strobepreset_frontleft = 38;  myDMX.setStrobePreset_FrontRight(38);  strobepreset_frontright = 38; break;
-    case STROBO_SLOW_3: myDMX.setStrobePreset_FrontLeft(39);  strobepreset_frontleft = 39;  myDMX.setStrobePreset_FrontRight(39);  strobepreset_frontright = 39; break;
-    case STROBO_SLOW_4: myDMX.setStrobePreset_FrontLeft(40);  strobepreset_frontleft = 40;  myDMX.setStrobePreset_FrontRight(40);  strobepreset_frontright = 40; break;
-    case STROBO_MED_1:  myDMX.setStrobePreset_FrontLeft(66);  strobepreset_frontleft = 66;  myDMX.setStrobePreset_FrontRight(66);  strobepreset_frontright = 66; break;
-    case STROBO_MED_2:  myDMX.setStrobePreset_FrontLeft(68);  strobepreset_frontleft = 68;  myDMX.setStrobePreset_FrontRight(68);  strobepreset_frontright = 68; break;
-    case STROBO_MED_3:  myDMX.setStrobePreset_FrontLeft(69);  strobepreset_frontleft = 69;  myDMX.setStrobePreset_FrontRight(69);  strobepreset_frontright = 69; break;
-    case STROBO_MED_4:  myDMX.setStrobePreset_FrontLeft(70);  strobepreset_frontleft = 70;  myDMX.setStrobePreset_FrontRight(70);  strobepreset_frontright = 70; break;
-    case STROBO_FAST_1: myDMX.setStrobePreset_FrontLeft(86);  strobepreset_frontleft = 86;  myDMX.setStrobePreset_FrontRight(86);  strobepreset_frontright = 86; break;
-    case STROBO_FAST_2: myDMX.setStrobePreset_FrontLeft(88);  strobepreset_frontleft = 88;  myDMX.setStrobePreset_FrontRight(88);  strobepreset_frontright = 88; break;
-    case STROBO_FAST_3: myDMX.setStrobePreset_FrontLeft(89);  strobepreset_frontleft = 89;  myDMX.setStrobePreset_FrontRight(89);  strobepreset_frontright = 89; break;
-    case STROBO_FAST_4: myDMX.setStrobePreset_FrontLeft(90);  strobepreset_frontleft = 90;  myDMX.setStrobePreset_FrontRight(90);  strobepreset_frontright = 90; break;
-    case STROBO_MAX_1:  myDMX.setStrobePreset_FrontLeft(96);  strobepreset_frontleft = 96;  myDMX.setStrobePreset_FrontRight(96);  strobepreset_frontright = 96; break;
-    case STROBO_MAX_2:  myDMX.setStrobePreset_FrontLeft(98);  strobepreset_frontleft = 98;  myDMX.setStrobePreset_FrontRight(98);  strobepreset_frontright = 98; break;
-    case STROBO_MAX_3:  myDMX.setStrobePreset_FrontLeft(99);  strobepreset_frontleft = 99;  myDMX.setStrobePreset_FrontRight(99);  strobepreset_frontright = 99; break;
-    case STROBO_MAX_4:  myDMX.setStrobePreset_FrontLeft(100); strobepreset_frontleft = 100; myDMX.setStrobePreset_FrontRight(100); strobepreset_frontright = 100;break;
-  }
-}
 
 //Add to manualMode_InputTranslationList the configuration for a MPC group
 void buildIntputTranslationList(ManualGroup group) {

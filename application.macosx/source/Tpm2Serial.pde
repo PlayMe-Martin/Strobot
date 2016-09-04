@@ -75,7 +75,6 @@ public byte[] createImagePayload(int packetNumber, int totalPackets, byte[] data
 
     //copy payload
     System.arraycopy(data, 0, outputBuffer, TPM2_NET_HEADER_SIZE, frameSize);
-    
     return outputBuffer;
 }
 
@@ -153,6 +152,7 @@ public class Tpm2Serial {
         if (portName != "") {
                 //open specific port
                 serialPortName = portName;
+                println("Is this alright ? " + portName);
                 port = openPort(portName, baud);
         } else {
                 //the port was not defined, try to find it by guessing
