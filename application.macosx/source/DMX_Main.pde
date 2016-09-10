@@ -65,7 +65,6 @@ public class DMX {
   void setDmxChannel(int channel, int value) throws SerialPortException {
     // Convert the parameters into a message of the form: 123c45w where 123 is the channel and 45 is the value
     // then send to the Arduino
-    
     if (exceptionRaisedDMX == false) {
       try {
         this.myPort.write( str(channel) + "c" + str(value) + "w" );

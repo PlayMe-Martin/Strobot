@@ -3548,8 +3548,8 @@ public PImage getimage(int imagenumber)
     case 11: temp = getConfigSpecificImage("Degeneration/06.png");break;
     case 12: temp = getConfigSpecificImage("Degeneration/07.png");break;
     case 13: temp = getConfigSpecificImage("Degeneration/08.png");break;
-    case 14: temp = getConfigSpecificImage("DTL/04.02. You.png");break;
-    case 15: temp = getConfigSpecificImage("DTL/04.03. Want.png");break;
+    case 14: temp = getConfigSpecificImage("XI.png");break;
+    case 15: temp = getConfigSpecificImage("XI2.png");break;
     case 16: temp = getConfigSpecificImage("DTL/04.04. Me.png");break;
     case 17: temp = getConfigSpecificImage("DTL/04.05. To.png");break;
     case 18: temp = getConfigSpecificImage("DTL/05.01. An.png");break;
@@ -30552,7 +30552,6 @@ public class DMX {
   public void setDmxChannel(int channel, int value) throws SerialPortException {
     // Convert the parameters into a message of the form: 123c45w where 123 is the channel and 45 is the value
     // then send to the Arduino
-    
     if (exceptionRaisedDMX == false) {
       try {
         this.myPort.write( str(channel) + "c" + str(value) + "w" );
@@ -30876,6 +30875,7 @@ final String DMX_MOVINGHEAD_SHUTTER_CLOSED                   = "CLOSED";
 final String DMX_MOVINGHEAD_SHUTTER_STROBE                   = "STROBE";
 final int    DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT              = 0;
 final int    DMX_MOVINGHEAD_SHUTTERMODE_STROBE               = 1;
+final int    DMX_MOVINGHEAD_SHUTTERMODE_CLOSED               = 2;
 
 final int    DMX_MOVINGHEAD_APERTUREMODE_DEFAULT             = 0;          // Default Aperture control means no aperture control !
 final String DMX_MOVINGHEAD_APERTUREMODE_DEFAULT_TEXT        = "DEFAULT";
@@ -30933,7 +30933,10 @@ final int    DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_4THSYNC             = 22;
 final int    DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_2NDSYNC             = 23;
 final int    DMXANIM_MOVINGHEAD_LIGHTRHYTHM_RANDOM_BARSYNC             = 24;
 
-
+final float  ANIMFACTOR_SPEED_VERYSLOW                                 = 0.125f/12.0f;
+final float  ANIMFACTOR_SPEED_SLOW                                     = 0.125f/8.0f;
+final float  ANIMFACTOR_SPEED_REGULAR                                  = 0.125f/6.0f;
+final float  ANIMFACTOR_SPEED_FAST                                     = 0.125f/3.0f;
 
 class DMX_MovingHead {
 
@@ -31434,6 +31437,10 @@ class DMX_MovingHead {
             shutter_strobe_minSpeed = channelSet.getFrom_dmx();
             shutter_strobe_maxSpeed = channelSet.getTo_dmx();
           }
+          else {
+            shutter_strobe_minSpeed = channelSet.getFrom_dmx();
+            shutter_strobe_maxSpeed = channelSet.getTo_dmx();            
+          }
         }
         else {
           // Shouldn't really matter as the channel is set as "non-proportional". However, it is strange that the progressive mode should be defined as such
@@ -31660,10 +31667,10 @@ class DMX_MovingHead {
     if (chIndex_shutter != -1 && shutter_open != -1 && shutter_closed != -1) {
       if (shutterMode == DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT) {
         if (val_percent < 50.0f) {
-          setDMXVal(chIndex_shutter, shutter_open);
+          setDMXVal(chIndex_shutter, shutter_closed);
         }
         else {
-          setDMXVal(chIndex_shutter, shutter_closed);
+          setDMXVal(chIndex_shutter, shutter_open);
         }
       }
       else if (shutterMode == DMX_MOVINGHEAD_SHUTTERMODE_STROBE) {
@@ -32023,10 +32030,12 @@ class DMX_MovingHead {
 
   public void performLight_blackout() {
     this.setDimmer(0);
+    this.setShutter(0);
   }
 
   public void performLight_continuousLight() {
     this.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
+    this.setShutter(100);
     this.setDimmer(100);
     this.setApertureReduction(0);
   }
@@ -32034,6 +32043,7 @@ class DMX_MovingHead {
   public void performLight_singleLongFlash() {
     this.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
     this.setDimmer(max(0,100-this.animCpt1_performLight));
+    this.setShutter(100);
     this.setApertureReduction(0);
     this.animCpt1_performLight += 1;
   }
@@ -32041,6 +32051,7 @@ class DMX_MovingHead {
   public void performLight_singleShortFlash() {
     this.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
     this.setDimmer(max(0,100-4*this.animCpt1_performLight));
+    this.setShutter(100);
     this.setApertureReduction(0);
     this.animCpt1_performLight += 1;
   }
@@ -32048,6 +32059,7 @@ class DMX_MovingHead {
   public void performLight_slowCrescendo() {
     this.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
     this.setDimmer(min(100,this.animCpt1_performLight));
+    this.setShutter(100);
     this.setApertureReduction(0);
     this.animCpt1_performLight += 1;
   }
@@ -32055,6 +32067,7 @@ class DMX_MovingHead {
   public void performLight_fastCrescendo() {
     this.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
     this.setDimmer(min(100,4*this.animCpt1_performLight));
+    this.setShutter(100);
     this.setApertureReduction(0);
     this.animCpt1_performLight += 1;
   }
@@ -32062,6 +32075,7 @@ class DMX_MovingHead {
   public void performLight_strobe(float dimmer_perCent, float strobeSpeed_perCent) {
     this.setShutter(strobeSpeed_perCent);
     this.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_STROBE);
+    this.setShutter(100);
     this.setDimmer(dimmer_perCent);
     this.setApertureReduction(0);
   }
@@ -32087,6 +32101,7 @@ class DMX_MovingHead {
     else {
       this.setDimmer(100 *  (0.5f + 0.5f*sin(offset - animCpt1_performLight * speed)));
     }
+    this.setShutter(100);
     this.setApertureReduction(0);
     this.animCpt1_performLight += 1;
   }
@@ -32111,12 +32126,14 @@ class DMX_MovingHead {
     // Use perlin noise + deviceID as random seed
     this.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
     this.setDimmer(100 * noise(frameCount*0.1f));
+    this.setShutter(100);
     this.setApertureReduction(0);
   }
 
   public void performLight_minimalApertureBeam() {
     this.setShutterMode(DMX_MOVINGHEAD_SHUTTERMODE_DEFAULT);
     this.setDimmer(100);
+    this.setShutter(100);
     this.setApertureReduction(80);
   }
 
@@ -35185,32 +35202,32 @@ public void dmxAnim_movingHead_lightOn_fastMove_topDev_ExtremeDivergentPan_Narro
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.125f, true, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_SLOW, true, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.25f, true, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_REGULAR, true, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.5f, true, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_FAST, true, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.125f, false, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_SLOW, false, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.25f, false, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_REGULAR, false, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.5f , false, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_FAST, false, offset, false, dmxList_movingHead_subset);
 }
 
 
@@ -35218,32 +35235,32 @@ public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_RightToLe
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.125f, true, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_SLOW, true, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.25f, true, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_REGULAR, true, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = -(PI*(dmxList_movingHead_subset.size()-1)/dmxList_movingHead_subset.size() + PI/2);
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.5f, true, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_FAST, true, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.125f, false, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_SLOW, false, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.25f, false, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_REGULAR, false, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(0.5f , false, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal(ANIMFACTOR_SPEED_FAST, false, offset, true, dmxList_movingHead_subset);
 }
 
 
@@ -35475,63 +35492,63 @@ public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Horizontal_Fast_RightT
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.125f, true, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_SLOW, true, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.25f, true, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_REGULAR, true, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.5f, true, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_FAST, true, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.125f, false, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_SLOW, false, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.25f, false, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_REGULAR, false, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.5f , false, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_FAST , false, offset, false, dmxList_movingHead_subset);
 }
 
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.125f, true, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_SLOW, true, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.25f, true, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_REGULAR, true, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.5f, true, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_FAST, true, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.125f, false, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_SLOW, false, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.25f, false, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_REGULAR, false, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Vertical_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(0.5f , false, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Vertical(ANIMFACTOR_SPEED_FAST , false, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical(float factor, boolean leftToRight, float offset, boolean oneShot, ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
@@ -35594,32 +35611,32 @@ public void dmxAnim_movingHead_lightOn_continuousSweep_Vertical(float factor, bo
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.125f, true, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_SLOW, true, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.25f, true, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_REGULAR, true, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.5f, true, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_FAST, true, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.125f, false, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_SLOW, false, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.25f, false, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_REGULAR, false, offset, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.5f , false, offset, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_FAST , false, offset, false, dmxList_movingHead_subset);
 }
 
 
@@ -35627,32 +35644,32 @@ public void dmxAnim_movingHead_lightOn_continuousSweep_Circular_Fast_RightToLeft
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.125f, true, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_SLOW, true, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.25f, true, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_REGULAR, true, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_LeftToRight(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = 0;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.5f, true, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_FAST, true, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Slow_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.125f, false, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_SLOW, false, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Regular_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.25f, false, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_REGULAR, false, offset, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Circular_Fast_RightToLeft(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset = PI/2;
-  dmxAnim_movingHead_lightOn_continuousSweep_Circular(0.5f , false, offset, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Circular(ANIMFACTOR_SPEED_FAST , false, offset, true, dmxList_movingHead_subset);
 }
 
 
@@ -36039,74 +36056,74 @@ public void dmxAnim_movingHead_lightOn_topDev_singleSweep_Vertical_Fast_RightToL
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
   float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.125f, true, offset1, offset2, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_SLOW, true, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
   float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.25f, true, offset1, offset2, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_REGULAR, true, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
   float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.5f, true, offset1, offset2, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_FAST, true, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Slow_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
   float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.125f, false, offset1, offset2, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_SLOW, false, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Regular_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
   float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.25f, false, offset1, offset2, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_REGULAR, false, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Fast_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
   float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.5f, false, offset1, offset2, false, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_FAST, false, offset1, offset2, false, dmxList_movingHead_subset);
 }
 
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
   float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.125f, true, offset1, offset2, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_SLOW, true, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
   float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.25f, true, offset1, offset2, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_REGULAR, true, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalConvergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = -PI/2 - PI*((dmxList_movingHead_subset.size()/2 - 1))/dmxList_movingHead_subset.size();
   float offset2 = PI/2 + PI*ceil((dmxList_movingHead_subset.size()/2))/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.5f, true, offset1, offset2, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_FAST, true, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Slow_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
   float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.125f, false, offset1, offset2, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_SLOW, false, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Regular_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
   float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.25f, false, offset1, offset2, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_REGULAR, false, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleSweep_Horizontal_Fast_SymmetricalDivergent(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
   float offset1 = PI/2;
   float offset2 = -PI/2 - PI*(dmxList_movingHead_subset.size() - 1)/dmxList_movingHead_subset.size();
-  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(0.5f, false, offset1, offset2, true, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_continuousSweep_Horizontal_Symmetrical(ANIMFACTOR_SPEED_FAST, false, offset1, offset2, true, dmxList_movingHead_subset);
 }
 
 
@@ -36442,196 +36459,196 @@ public void dmxAnim_movingHead_lightOn_singleMove_Vertical(boolean upDown, boole
 
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_UpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 0, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_DownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 0, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeUpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 0, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Parallel_OppositeDownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 0, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_UpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, 60, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_DownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, 60, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeUpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, 60, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Divergent_OppositeDownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, 60, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_UpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, false, -60, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_DownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, false, -60, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeUpDown_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(true, true, -60, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_VerySlow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, 0.125f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, ANIMFACTOR_SPEED_VERYSLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Slow(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, 0.25f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, ANIMFACTOR_SPEED_SLOW, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Regular(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, 0.5f, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, ANIMFACTOR_SPEED_REGULAR, dmxList_movingHead_subset);
 }
 
 public void dmxAnim_movingHead_lightOn_singleMove_Vertical_Convergent_OppositeDownUp_Fast(ArrayList<DMX_MovingHead> dmxList_movingHead_subset) {
-  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, 1, dmxList_movingHead_subset);
+  dmxAnim_movingHead_lightOn_singleMove_Vertical(false, true, -60, ANIMFACTOR_SPEED_FAST, dmxList_movingHead_subset);
 }
 
 

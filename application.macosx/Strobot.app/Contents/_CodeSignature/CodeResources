@@ -22,7 +22,7 @@
 	<dict>
 		<key>Java/Strobot.jar</key>
 		<data>
-		otT1FfgYLcDWZFeACddgz70Lh7k=
+		Eql3gsBQ2BpDZwJ0QfjUdjSvLeY=
 		</data>
 		<key>Java/controlP5.jar</key>
 		<data>
@@ -123,6 +123,10 @@
 		<key>Java/data/Fixtures/PAR/Generic - Single Channel PAR - W (1 channel).xml</key>
 		<data>
 		FHPkHhgmgzGGUNlGlmsJAGAmzIc=
+		</data>
+		<key>Java/data/Fixtures/PAR/Starway - Full Kolor (10 channels).xml</key>
+		<data>
+		+aBdRtHRo0f68pk9w9GRfUlM3IA=
 		</data>
 		<key>Java/data/Fixtures/Strobe/Martin - Atomic 3000 - 1 channel.xml</key>
 		<data>
@@ -620,6 +624,14 @@
 		<data>
 		tZPrML5fIkmMdZNieClJsGOWJDQ=
 		</data>
+		<key>Java/data/Images/3_panels/XI.png</key>
+		<data>
+		Hy1DnBFzM7pgPxzQO/bydFebDKI=
+		</data>
+		<key>Java/data/Images/3_panels/XI2.png</key>
+		<data>
+		FaTWdnULlh0OqwsSconDZ7QMswA=
+		</data>
 		<key>Java/data/Images/3_panels/voidImage.jpg</key>
 		<data>
 		m2cwlaCdJgPnvjYHkPeotrDGB/w=
@@ -1091,6 +1103,14 @@
 		<key>Java/data/Images/5_panels/Startup_5.jpg</key>
 		<data>
 		FSGj3Pn2eMH9aBE17tBBsEPXhjM=
+		</data>
+		<key>Java/data/Images/5_panels/XI.png</key>
+		<data>
+		piqTB3mfa7AOttHIhSsnzJxmf/k=
+		</data>
+		<key>Java/data/Images/5_panels/XI2.png</key>
+		<data>
+		66SaUfhPPf/clmJQ399ZAoFdNLU=
 		</data>
 		<key>Java/data/Images/5_panels/voidImage.jpg</key>
 		<data>
