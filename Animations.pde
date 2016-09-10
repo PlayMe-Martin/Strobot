@@ -135,8 +135,8 @@ PImage getimage(int imagenumber)
     case 11: temp = getConfigSpecificImage("Degeneration/06.png");break;
     case 12: temp = getConfigSpecificImage("Degeneration/07.png");break;
     case 13: temp = getConfigSpecificImage("Degeneration/08.png");break;
-    case 14: temp = getConfigSpecificImage("DTL/04.02. You.png");break;
-    case 15: temp = getConfigSpecificImage("DTL/04.03. Want.png");break;
+    case 14: temp = getConfigSpecificImage("XI.png");break;
+    case 15: temp = getConfigSpecificImage("XI2.png");break;
     case 16: temp = getConfigSpecificImage("DTL/04.04. Me.png");break;
     case 17: temp = getConfigSpecificImage("DTL/04.05. To.png");break;
     case 18: temp = getConfigSpecificImage("DTL/05.01. An.png");break;
