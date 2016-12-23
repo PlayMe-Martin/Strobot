@@ -4,16 +4,13 @@
 
 // What's this ?
 A Processing/Java application to control stage lighting, including DMX, LED matrixes, and other custom devices.
-This application is taylor-made for the electro-rock band PlayMe, though it could be adapted for other shows.
+This application is taylor-made for the electronic music band XI, though it could be adapted for other shows.
 It can be controlled using MIDI and audio, directly from the DAW and from the various keyboards/controllers available.
 
-// How do I build it ?
-Install the Processing development environment : http://processing.org/
-The following libraries are used in this App:
-Controlp5  : used to build the GUI
-themidibus : used to parse any incoming MIDI message
-protobuf   : Google Protocol Buffer 2.5.0, used to parse incoming audio data
-This program is not yet in its final release version, which is why no binary release is available.
+// Disclaimer
+The code inside this was not written to be publicly released as some kind of big open-source project, which is why a 
+certain degree of freedom was taken with coding rules, but hey it works. Some of the code is currently undergoing a 
+rewrite to comply with everyone's sense of esthetics
 
 // How do I use it ?
 Connect all the different devices you want to use : Teensy 3 microcontrollers for the LED panels, Teensy 2 for 
