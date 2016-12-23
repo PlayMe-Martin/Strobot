@@ -9,22 +9,19 @@ final static int PANEL_RESOLUTION_X = 8;        //Resolution for each individual
 final static int PANEL_RESOLUTION_Y = 16;       //Resolution for each individual panel - height 
 final static String LED_COLOR_FORMAT = "RGB";   //LED color arrangement
 
-
-//Define the serial ports for the microcontrollers
-//String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
-//All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
-//String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
 String DMX_UNIVERSE_1_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
 String DMX_UNIVERSE_2_MICROCONTROLLER_NAME = "/dev/tty.usbmodem1862841";
 String CUSTOMDEVICES_MICROCONTROLLER_NAME  = "/dev/tty.usbserial-A961L7NJ";
+String RF_SCANNER_MICROCONTROLLER_NAME     = "/dev/tty.usbmodem1869971";
 
-String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
-String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem479061", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem707701", "/dev/tty.usbmodem814421"}; // 707701 to add
+Hashtable RF_TX_Teensy_List;                          // The following hashtables contain the different microcontrollers used by Strobot
+Hashtable Panel_Main_Teensy_List;                     // Either the RF ones - used by default -, the main panel LED controllers, when there is a direct connection to the
+Hashtable Panel_Backup_Teensy_List;                   // panel, or the backup ones - which are usually disconnected, but which may be reconnected should any hazard fry the main Teensys
+Hashtable RF_RX_Teensy_List;                          // This last one only exists for reference purpose - it is not used per se, but might as well know what are the RX Teensys
+int[]     RF_Channel_List = {104, 28, 60, 89, 119};   // This array contains the default RF channels used by the panels, updated when the configuration file is read // Do not use channel 96, as it is used by the LED tubes
 
-Hashtable RF_TX_Teensy_List;                // The following hashtables contain the different microcontrollers used by Strobot
-Hashtable Panel_Main_Teensy_List;           // Either the RF ones - used by default -, the main panel LED controllers, when there is a direct connection to the
-Hashtable Panel_Backup_Teensy_List;         // panel, or the backup ones - which are usually disconnected, but which may be reconnected should any hazard fry the main Teensys
-Hashtable RF_RX_Teensy_List;                // This last one only exists for reference purpose - it is not used per se, but might as well know what are the RX Teensys
+final int RFCHANNEL_LED_TUBES = 96;                   // Channel used by the LED tubes, hard-coded in the firmware. It is important for the panels not to use this channel
+final int RFCHANNEL_EDUCATION = 124;                  // Channel used during the panel RF education process
 
 // All the microcontrollers used by Strobot are recognized as usb devices - either usbmodem, or usbserial, and as such the following string can matched against their name
 final static String MICROCONTROLLER_NAME_PATTERN = "/dev/tty.usb";
@@ -56,10 +53,19 @@ final int[] MANUAL_MAPPING = {127, 126, 125, 124, 123, 122, 121, 120,
                                16,  17,  18,  19,  20,  21,  22,  23,
                                15,  14,  13,  12,  11,  10,   9,   8,
                                 0,   1,   2,   3,   4,   5,   6,   7};
-
-
+       
 //Used to change on the fly the panel order (LED remapping), using MIDI commands
 int[] screen_order_configuration = new int [NUMBER_OF_PANELS];
+
+//For the wireless RF output, control the RF channel education and scan
+boolean rfChannelEducation_requested = false;
+boolean rfChannelScan_requested      = false;
+int[] rfChannelCarrierCpt;
+final int rfScan_nbRfCh              = 126;
+final int rfScan_headerSize          = 2;
+final int rfScan_header1             = 0xFF;
+final int rfScan_header2             = 0xDD;
+
 
 void detectPanelOutputs() {
 
@@ -76,6 +82,7 @@ void detectPanelOutputs() {
   RF_TX_Teensy_List.put(2, "/dev/tty.usbmodem1846011");
   RF_TX_Teensy_List.put(3, "/dev/tty.usbmodem1870121");
   RF_TX_Teensy_List.put(4, "/dev/tty.usbmodem1847751");
+  //RF_TX_Teensy_List.put(4, "/dev/tty.usbmodem1847750");
 
   Panel_Main_Teensy_List.put(0, "/dev/tty.usbmodem1870061");
   Panel_Main_Teensy_List.put(1, "/dev/tty.usbmodem1870171");
@@ -95,6 +102,7 @@ void detectPanelOutputs() {
   RF_RX_Teensy_List.put(3, "/dev/tty.usbmodem1847011");
   RF_RX_Teensy_List.put(4, "/dev/tty.usbmodem1845951");
 
+  
 
   // First, check all the connected microcontrollers, create a list containing all the devices
   // All the microcontrollers used by Strobot have one thing in common
@@ -159,26 +167,10 @@ void detectPanelOutputs() {
   if (chosenMicrocontrollers.size() == 0) {
     outputLog.println("--- Found no microcontroller which can be used as an output device (as defined in the configuration) ---");
   }
-  // else if (chosenMicrocontrollers.size() == 3) {
-  //   NUMBER_OF_PANELS = 3;
-  //   outputLog.println("--- Found 3 microcontrollers usable as output - entering 3-panel mode ---");
-  // }
-  // else if (chosenMicrocontrollers.size() == 5) {
-  //   NUMBER_OF_PANELS = 5;
-  //   outputLog.println("--- Found 5 microcontrollers usable as output - using the regular 5 panel mode ---");
-  // }
+
     else {
       outputLog.println("--- Found " + chosenMicrocontrollers.size() + " microcontrollers usable as an output device ---");
     }
-
-
-  // A voir ce qu'on fait avec ca - utilisable du cote de la conf
-  // if (NUMBER_OF_PANELS == 3) {
-  //   TEENSY_SERIAL_PORT_LIST_3 = devicesToParse;
-  // }
-  // else if (NUMBER_OF_PANELS == 5) {
-  //   TEENSY_SERIAL_PORT_LIST_5 = devicesToParse;
-  // }
   
   
   // Finally, initialize the actual output objects with the associated output device
@@ -194,120 +186,6 @@ void detectPanelOutputs() {
     outputDevices[i] = new Tpm2(i, serialPort);
   }
 
-
-
-  // devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
-  // if (NUMBER_OF_PANELS == 3) {
-  //   devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
-  // }
-  // else if (NUMBER_OF_PANELS == 5) {
-  //   devicesToParse = TEENSY_SERIAL_PORT_LIST_5;
-  // }
-  // IntList nonstaticDeviceArrayNumber = new IntList();  
-  // ArrayList<String> candidateDevices = new ArrayList<String>();
-  // registeredDevices = new ArrayList<String>();
-  // if (DMX_MICROCONTROLLER_NAME.equals("NONSTATIC") == false) {
-  //   registeredDevices.add(DMX_MICROCONTROLLER_NAME);
-  // }
-  // for (int i = 0; i < devicesToParse.length; i++) {
-  //   if (devicesToParse[i].equals("NONSTATIC") == false) {
-  //     registeredDevices.add(devicesToParse[i]);
-  //   }
-  //   else {
-  //     nonstaticDeviceArrayNumber.append(i);
-  //   }
-  // }
-  // if (nonstaticDeviceArrayNumber.size() == 0) {
-  //   outputLog.println("All USB serial devices are defined statically, no guesswork is needed"); 
-  // }
-  // else {
-  //   outputLog.println(nonstaticDeviceArrayNumber.size() + " non static USB serial device configured, trying to guess the mystery Teensy...");
-  // }
-  
-  // //Find out which microcontrollers of the configuration list are defined as non-static
-  // for (int i = 0; i < devicesToParse.length; i++) {
-  //   if (devicesToParse[i].equals("NONSTATIC") == true) {
-  //     nonstaticDeviceArrayNumber.append(i);
-  //   }
-  // }  
-  
-  // boolean nameExceptionFound = false;
-  // if (nonstaticDeviceArrayNumber.size() >= 1) {
-  //   String rootName = "/dev/tty.usbmodem";
-  //   for (int i =0; i < nonstaticDeviceArrayNumber.size();i++) {
-  //     for (String portName: Serial.list()) {
-
-  //       if (portName.contains(rootName) == true) {
-  //         for (String registeredDevice: registeredDevices) {
-
-  //           if (registeredDevice.contains(portName.substring(5, portName.length())) == false || portName.equals("/dev/tty.usbmodem1")) {
-  //             boolean newCandidate = true;
-  //             for (int j = 0; j<candidateDevices.size();j++) {
-  //               for (String registered: registeredDevices) {
-  //                 if (portName.contains(registered) || registered.contains(portName)) {
-  //                   newCandidate = false;
-  //                 }
-  //                 if (portName.equals("/dev/tty.usbmodem1")) {
-  //                   newCandidate = true;
-  //                 }
-  //               }
-  //               if (candidateDevices.get(j).equals(portName)) {
-  //                 newCandidate = false;
-  //               }
-  //             }
-  //             if (newCandidate) {
-  //               if (portName.equals("/dev/tty.usbmodem1")) {
-  //                 if (nameExceptionFound == false) {
-  //                   outputLog.println("--- Found possible candidate for the non static device : " + portName);
-  //                   candidateDevices.add(portName);
-  //                   nameExceptionFound = true;
-  //                 }
-  //               }
-  //               else { 
-  //                 outputLog.println("--- Found possible candidate for the non static device : " + portName);
-  //                 candidateDevices.add(portName);
-  //               }
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-  // for (int i = 0; i<candidateDevices.size();i++) {
-  //   registeredDevices.add(candidateDevices.get(i));
-  // }
-  // for (int i = 0; i<candidateDevices.size();i++) {
-  //   devicesToParse[nonstaticDeviceArrayNumber.get(i)] = candidateDevices.get(i);
-  // }
-  
-
-  
-  // for (int i = 0; i<devicesToParse.length;i++) {
-  //   if (devicesToParse[i].contains("NONSTATIC")) {
-  //       outputLog.println("!!!!! -------------------------------------- !!!!!");
-  //       outputLog.println("!!!!! Error - Among the serial devices registered by the OS, couldn't find a possible candidate for non static device number " + i + ", the corresponding panel will not be initialised");
-  //       outputLog.println("!!!!! For information, the only available serial devices are :");
-  //       for (String portName: Serial.list()) { 
-  //           outputLog.println("!!!!! --- " + portName);
-  //       }
-  //       outputLog.println("!!!!! -------------------------------------- !!!!!");
-  //   }
-  // }
-  
-  // if (NUMBER_OF_PANELS == 3) {
-  //   TEENSY_SERIAL_PORT_LIST_3 = devicesToParse;
-  // }
-  // else if (NUMBER_OF_PANELS == 5) {
-  //   TEENSY_SERIAL_PORT_LIST_5 = devicesToParse;
-  // }
-  
-  
-  // //Initialize the output objects
-  // outputDevices = new Tpm2[NUMBER_OF_PANELS];
-  // for (int i=0; i<NUMBER_OF_PANELS; i++) {
-  //   outputDevices[i] = new Tpm2(i);
-  // }
   
   //Map the output objects to their respective panel
   for (int i=0; i<outputDevices.length; i++) {
@@ -315,4 +193,121 @@ void detectPanelOutputs() {
     outputLog.println("Microcontroller init - device " + outputDevices[i].serialPort + " is affected to output #" + outputDevices[i].panelNumber);
   }
 
+
+  // Additional microcontroller which may be available: RF channel scanner
+  rfScanDevice = new Tpm2(0, RF_SCANNER_MICROCONTROLLER_NAME);
+
+}
+
+void manageRFChannelEducation(boolean request) {
+  rfChannelEducation_requested = request;
+  if (rfChannelEducation_requested) {
+    startRfChannelEducation();
+  }
+  else {
+    stopRfChannelEducation();
+  }
+}
+
+void startRfChannelEducation() {
+  for (int i=0; i<outputDevices.length; i++) { 
+    outputDevices[i].sendRFChannelEducationStartCommand();
+  }
+}
+
+void stopRfChannelEducation() {
+  for (int i=0; i<outputDevices.length; i++) { 
+    outputDevices[i].sendRFChannelEducationStopCommand();
+  }
+}
+
+
+
+void manageRFChannelScan(boolean request) {
+  rfChannelScan_requested = request;
+  if (rfChannelScan_requested) {
+    startRfChannelScan();
+  }
+  else {
+    stopRfChannelScan();
+  }
+}
+
+void startRfChannelScan() {
+  rfChannelCarrierCpt = new int[rfScan_nbRfCh];
+  for (int i=0; i<rfScan_nbRfCh; i++) {
+    rfChannelCarrierCpt[i] = 0;
+  }
+
+  for (int i=0; i<outputDevices.length; i++) { 
+    outputDevices[i].sendRFChannelScanStartCommand();     // All output microcontrollers will temporarily stop sending messages and power off the antenna
+  }
+  rfScanDevice.sendRFChannelScanStartCommand();
+}
+
+void stopRfChannelScan() {
+  for (int i=0; i<outputDevices.length; i++) { 
+    outputDevices[i].sendRFChannelScanStopCommand();      // The other way around: power on the antenna, and go back in nominal mode
+  }
+  rfScanDevice.sendRFChannelScanStopCommand();
+}
+
+
+void rfChannelScanProcess() {
+  try {
+      String rdBytes = rfScanDevice.readOutputData();
+      if (!rdBytes.equals("")) {
+        String[] rdBytesSplit = split(rdBytes, " ");
+        if (int(rdBytesSplit[0]) == rfScan_header1 && int(rdBytesSplit[1]) == rfScan_header2) {
+          for (int i=0; i<rfScan_nbRfCh; i++) {
+            rfChannelCarrierCpt[i] += int(rdBytesSplit[i + rfScan_headerSize]);
+          }
+        }
+      }
+    }
+    catch (Exception e) {
+      println("Exception while trying to read - " + e);
+    }
+}
+
+void rfChannelScanFinalize() {
+  IntList rfChannels_forbiddenValues = new IntList();
+  rfChannels_forbiddenValues.append(0);                        // The very first channels are a bit tricky: they are the most likely to be used by a random RF equipment / wifi 
+  rfChannels_forbiddenValues.append(1);                        // If someone creates a Wifi network on the spot, there is a fair chance that it'll be on the default channel 0
+  rfChannels_forbiddenValues.append(2);                        // whose frequency also corresponds to the first NRF24 channels
+  rfChannels_forbiddenValues.append(3);
+  rfChannels_forbiddenValues.append(4);
+  rfChannels_forbiddenValues.append(5);
+  rfChannels_forbiddenValues.append(6);
+  rfChannels_forbiddenValues.append(7);
+  rfChannels_forbiddenValues.append(8);
+  rfChannels_forbiddenValues.append(9);
+  rfChannels_forbiddenValues.append(10);
+  rfChannels_forbiddenValues.append(RFCHANNEL_LED_TUBES - 2);  // Avoid any interference with the LED tubes
+  rfChannels_forbiddenValues.append(RFCHANNEL_LED_TUBES - 1);
+  rfChannels_forbiddenValues.append(RFCHANNEL_LED_TUBES);
+  rfChannels_forbiddenValues.append(RFCHANNEL_LED_TUBES + 1);
+  rfChannels_forbiddenValues.append(RFCHANNEL_LED_TUBES + 2);
+  rfChannels_forbiddenValues.append(RFCHANNEL_EDUCATION - 1);  // Do not use the channel used by the education process
+  rfChannels_forbiddenValues.append(RFCHANNEL_EDUCATION);
+  rfChannels_forbiddenValues.append(RFCHANNEL_EDUCATION + 1);
+
+  IntList rfChannels_availableChannels = new IntList();
+  for (int i=0; i<rfScan_nbRfCh; i++) {
+    if ((!rfChannels_forbiddenValues.hasValue(i)) && rfChannelCarrierCpt[i] == 0) {
+      rfChannels_availableChannels.append(i);
+    }
+  }
+
+  // Now, choose the most distant values among the available frequencies
+  for (int i=0; i< RF_TX_Teensy_List.size(); i++ ) {
+
+    RF_Channel_List[i] = rfChannels_availableChannels.get(i*(rfChannels_availableChannels.size() - 1) / (RF_TX_Teensy_List.size() - 1));
+    auxControlFrame.gui_rfChannelPanelTextfields.get(i).setValue(str(RF_Channel_List[i]));
+  }
+  createConfigFile();
+
+  // And finally, start an education
+  manageRFChannelEducation(true);
+  auxControlFrame.performRFChannelEducation.setState(true);
 }

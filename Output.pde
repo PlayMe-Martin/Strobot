@@ -15,6 +15,13 @@
 String TPM2 = "TPM2";
 String NULL = "NULL";
 
+
+// Special command types
+final byte CMD_START_RF_EDUCATION = (byte) 0xB3;
+final byte CMD_STOP_RF_EDUCATION  = (byte) 0xA4;
+final byte CMD_START_RF_SCAN      = (byte) 0x9A;
+final byte CMD_STOP_RF_SCAN       = (byte) 0xD5;
+
 public abstract class Output {
 
   // The outputDevice - as a string, for example "TPM2"
@@ -249,7 +256,6 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
                 
                 System.arraycopy(rgbBuffer, 510*currentUniverse, tmp, 0, l);
                 tpm2.sendFrame(createImagePayload(currentUniverse, totalUniverse, tmp));
-                                                        
                 currentUniverse++;
             }
         }
@@ -317,6 +323,82 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
       }      
     }
 
+    public String readOutputData() {
+      String inBuffer = "";
+      while (tpm2.port.available() > 0) {
+        inBuffer = tpm2.port.readString();   
+        if (inBuffer != null) {
+          return inBuffer;
+        }
+        else {
+          return "";
+        }
+      }
+      return inBuffer;
+    }
+
+
+    // Send a command to change the RF transmitter's base frequency (only available on wireless-based TPM2 devices)
+    public void sendRFChannelEducationStartCommand() {
+      byte[] rfDataBuffer = new byte[RF_RX_Teensy_List.size() + 1];
+      rfDataBuffer[0] = CMD_START_RF_EDUCATION;
+      for (int i=0; i<RF_RX_Teensy_List.size(); i++) {
+        rfDataBuffer[i+1] = byte(RF_Channel_List[i]);
+      }
+      
+      try {
+        tpm2.sendFrame(createCmdPayload(rfDataBuffer));
+      }
+      catch(Exception e) {
+        println("Exception while trying to send a Start Educ cmd to output device #" + panelNumber);
+      }
+    }
+
+    public void sendRFChannelEducationStopCommand() {
+      byte[] rfDataBuffer = new byte[RF_RX_Teensy_List.size() + 1];
+      rfDataBuffer[0] = CMD_STOP_RF_EDUCATION;
+      for (int i=0; i<RF_RX_Teensy_List.size(); i++) {
+        rfDataBuffer[i+1] = byte(RF_Channel_List[i]);
+      }
+      
+      try {
+        tpm2.sendFrame(createCmdPayload(rfDataBuffer));
+      }
+      catch(Exception e) {
+        println("Exception while trying to send a Stop Educ cmd to output device #" + panelNumber);
+      }
+    }
+
+    // Send a command to start scanning the current environment's RF activity, in order to select available channels: to that order, the usual RF devices are expected to stop all activity
+    public void sendRFChannelScanStartCommand() {
+      byte[] rfDataBuffer = new byte[8];
+      rfDataBuffer[0] = CMD_START_RF_SCAN;
+      for (int i=1;i<8;i++) {
+        rfDataBuffer[i] = 0;
+      }
+      
+      try {
+        tpm2.sendFrame(createCmdPayload(rfDataBuffer));
+      }
+      catch(Exception e) {
+        println("Exception while trying to send a Start Educ cmd to output device #" + panelNumber);
+      }
+    }
+
+    public void sendRFChannelScanStopCommand() {
+      byte[] rfDataBuffer = new byte[8];
+      rfDataBuffer[0] = CMD_STOP_RF_SCAN;
+      for (int i=1;i<8;i++) {
+        rfDataBuffer[i] = 0;
+      }
+      
+      try {
+        tpm2.sendFrame(createCmdPayload(rfDataBuffer));
+      }
+      catch(Exception e) {
+        println("Exception while trying to send a Stop Educ cmd to output device #" + panelNumber);
+      }
+    }    
 }
 
 //////////////////////////////////////////////////////////////

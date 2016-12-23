@@ -3,6 +3,7 @@ Strobot_logfile.txt
 application.macosx64/
 application.macosx32/
 tmp/
+build-tmp/
 *.class
 
 *.class

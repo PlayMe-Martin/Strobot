@@ -43,6 +43,9 @@ int whiteNoisePowerManualMode            = 0;
 boolean effectToBeDrawn = false;
 int currentEffectNumber = -1;
 int effectNumberToDeactivateEffects = -1;
+boolean effect2ToBeDrawn = false;
+int currentEffect2Number = -1;
+int effectNumber2ToDeactivateEffects = -1;
 
 void actionControlled_preSpecificDraw() {
   if (authorizeGeneralManualMode == true) {
