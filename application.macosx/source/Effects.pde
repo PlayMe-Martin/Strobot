@@ -39,9 +39,17 @@ final float lightBlue_reductionFactor_red = 0.4;
 final float lightBlue_reductionFactor_green = 0.4;
 
 //General effect switcher
-void draw_effects() {
-  if (effectToBeDrawn == true) {
-    switch(currentEffectNumber) {   
+void draw_effects1(){
+  draw_effects(currentEffectNumber, effectToBeDrawn);
+}
+
+void draw_effects2(){
+  draw_effects(currentEffect2Number, effect2ToBeDrawn);
+}
+
+void draw_effects(int effectNb, boolean drawEnabled) {
+  if (drawEnabled == true) {
+    switch(effectNb) {   
       case 1:   draw_classicglitcherEffect();break;
       case 2:   draw_rgbGlitcherEffect();break;
       case 3:   draw_180RotateEffect();break;
@@ -78,13 +86,27 @@ void draw_effects() {
       case 34:  draw_randomRedPanelFlicker();break;
       case 35:  draw_lightBlueFilter(); break;
       case 36:  draw_panelsOff(); break;
+      case 37:  draw_onlyExtremeLeftPanel(); break;
+      case 38:  draw_onlyCenterLeftPanel(); break;
+      case 39:  draw_onlyCenterPanel(); break;
+      case 40:  draw_onlyCenterRightPanel(); break;
+      case 41:  draw_onlyExtremeRightPanel(); break;
+      case 42:  draw_killCenterPanel(); break;
       default: break;
     }
   }
 }
 
-void initSpecificEffectParams() {
-  switch(currentEffectNumber) {
+void initSpecificEffectParams1() {
+  initSpecificEffectParams(currentEffectNumber);
+}
+
+void initSpecificEffectParams2() {
+  initSpecificEffectParams(currentEffect2Number);
+}
+
+void initSpecificEffectParams(int effectNb) {
+  switch(effectNb) {
     case 24: fadeout_counter         = 0; break;
     case 25: fadein_counter          = 0; break;
     case 26: fadeout_counter         = 0; break;
@@ -404,7 +426,7 @@ void draw_invertFilterEffect() {
   filter(INVERT);
 }
 
-void draw_onlyLeftEffect() {
+void draw_onlyRightEffect() {
   pushStyle();
   noStroke();
   fill(0);
@@ -412,7 +434,7 @@ void draw_onlyLeftEffect() {
   popStyle();
 }
 
-void draw_onlyRightEffect() {
+void draw_onlyLeftEffect() {
   pushStyle();
   noStroke();
   fill(0);
@@ -559,4 +581,56 @@ void draw_panelsOff() {
   resetMatrix();
   popStyle();
   popMatrix();
+}
+
+
+void draw_onlyExtremeLeftPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect(width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS - 1)*width/NUMBER_OF_PANELS,height);
+  popStyle();
+}
+
+void draw_onlyCenterLeftPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect(0,0,(NUMBER_OF_PANELS - 4)*width/NUMBER_OF_PANELS,height);
+  rect(2*width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS - 2)*width/NUMBER_OF_PANELS,height);
+  popStyle();
+}
+
+void draw_onlyCenterPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect(0,0,(NUMBER_OF_PANELS - 3)*width/NUMBER_OF_PANELS,height);
+  rect( (NUMBER_OF_PANELS/2 + 1) *width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS - 3)*width/NUMBER_OF_PANELS,height);
+  popStyle();
+}
+
+void draw_onlyCenterRightPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect(0,0,(NUMBER_OF_PANELS - 2)*width/NUMBER_OF_PANELS,height);
+  rect((NUMBER_OF_PANELS - 1)*width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS - 4)*width/NUMBER_OF_PANELS,height);
+  popStyle();
+}
+
+void draw_onlyExtremeRightPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect(0,0,(NUMBER_OF_PANELS - 1)*width/NUMBER_OF_PANELS,height);
+  popStyle();
+}
+
+void draw_killCenterPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect( (NUMBER_OF_PANELS/2) *width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS,height);
+  popStyle();
 }

@@ -128,10 +128,9 @@ void createConfigFile() {
 }
 
 void printLEDPanelMicrocontrollerConfiguration() {
-  //TBIL to be modified
-  // for (String microcontroller: TEENSY_SERIAL_PORT_LIST_5) {
-  //   configFile_write.println("Microcontroller|LEDPanels:" + microcontroller);
-  // }
+  for (int panelIdx=0; panelIdx < RF_Channel_List.length; panelIdx++) {
+    configFile_write.println("RF Channel|LED Panel " + panelIdx + ":" + RF_Channel_List[panelIdx]);
+  }
 }
 
 void printCustomDevicesConfiguration() {
@@ -240,19 +239,10 @@ void parseConfigurationFile(String line) {
       else if (lineSplit[0].contains("Microcontroller|CustomDevices")) {
         CUSTOMDEVICES_MICROCONTROLLER_NAME = lineSplit[1];
       }
-      // TBIL to be deleted - or modified ?
-      // else if (lineSplit[0].contains("Microcontroller|LEDPanels")) {
-      //   if (numberOfLEDPanelMicrocontrollersFoundInConf < 5) {
-      //     TEENSY_SERIAL_PORT_LIST_5[numberOfLEDPanelMicrocontrollersFoundInConf] = lineSplit[1];
-      //   }
-      //   else {
-      //     outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
-      //     outputLog.println("Too many microcontrollers for the panels found registered inside the configuration file !");
-      //     outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
-      //   }
-      //   numberOfLEDPanelMicrocontrollersFoundInConf += 1;
-      // }
-
+      else if (lineSplit[0].contains("RF Channel|LED Panel")) {
+        int panelIdx = int(lineSplit[0].substring(lineSplit[0].length() - 1,lineSplit[0].length()));
+        RF_Channel_List[panelIdx] = convertStringToInt(lineSplit[1]);
+      }
       else if (lineSplit[0].contains("Debug|ActivatePHPGeneration")) {
         output_PHP = getBooleanFromString(lineSplit[1]);
       }

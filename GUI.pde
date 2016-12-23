@@ -330,6 +330,8 @@ public class ControlFrame extends PApplet {
   // controlP5.Button add_DMXFixture;
   // controlP5.Button remove_DMXFixture;
   //controlP5.Button add_BackStrobo;
+  controlP5.Toggle performRFChannelEducation;
+  controlP5.Toggle performRFChannelScan;
  
   controlP5.CheckBox LEDPanelAnimations_animationListCheckBox;
   controlP5.CheckBox CustomDeviceAnimations_animationListCheckBox;
@@ -379,9 +381,12 @@ public class ControlFrame extends PApplet {
   controlP5.Textarea DMXParAnimations_LightStyle_currentAnimationDescription;
   controlP5.Textarea DMXParAnimations_Animations_currentAnimationDescription;
   
+  ArrayList<controlP5.Textfield> gui_rfChannelPanelTextfields;
+
   Group effectsInfo;
   
   ControlGroup GUIMessageBox;
+  ControlGroup RFScanMessageBox;
   int GUIMessageBoxResult = -1;
   String GUIMessageBoxString = "";
   
@@ -432,6 +437,10 @@ public class ControlFrame extends PApplet {
     
     if (gui_activateAudioMonitoring) {
       draw_audioMonitoring(gui_audioMonitoringGroupOffsetX + gui_spacing, gui_audioMonitoringGroupBaseHeight + 4*gui_spacing, 10);
+    }
+
+    if (rfChannelScan_requested) {
+      rfChannelScan_updateGUIDisplay();
     }
   }
   
@@ -498,8 +507,8 @@ public class ControlFrame extends PApplet {
     int accordionWidth    = width - (gui_simulatorPosX + gui_simulatorWidth + 2*gui_spacing);
     
     int nbrOfPanelsTextFieldPosY = gui_spacing + 0*spacingRow;
-    int DMXTextLabelPosY = 150;
     int CustomDevicesTextLabelPosY = 360; 
+    int rfEducationButtonPosY = CustomDevicesTextLabelPosY + 87;
     int warningTextLabelPosY = gui_generalInformationsHeight - 2*textfieldHeight - 2*spacingRow;
     int panelConfigBangPosY = nbrOfPanelsTextFieldPosY + toggleHeight + spacingRow;
     int panelConfigBangSize = 15;
@@ -844,6 +853,7 @@ public class ControlFrame extends PApplet {
     //                                    .setSize(12)
     //                                    ;
     
+
     int offsetY = CustomDevicesTextLabelPosY;
     cp5.addTextlabel("Custom devices Info")
        .setText("CUSTOM DEVICES : DEVICE NUMBER")
@@ -937,6 +947,54 @@ public class ControlFrame extends PApplet {
                          ;
     add_RackLight.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
 
+
+    performRFChannelEducation = cp5.addToggle("Perform RF Channel Education")
+                                   .setValue(0)
+                                   .setCaptionLabel("Educate RF")
+                                   .setPosition(leftOffset, rfEducationButtonPosY)
+                                   .setSize(toggleWidth, 4*toggleHeight)
+                                   .setColorBackground(color(110,0,0))
+                                   .setColorForeground(color(150,0,0))
+                                   .setColorActive(color(190,0,0))
+                                   .moveTo(hardwareInfo)
+                                   ;
+    performRFChannelEducation.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    performRFChannelEducation.getCaptionLabel().setSize(12);
+
+    performRFChannelScan = cp5.addToggle("Perform RF Channel Scan")
+                                   .setValue(0)
+                                   .setCaptionLabel("Scan Channels")
+                                   .setPosition(leftOffset, rfEducationButtonPosY + 4*toggleHeight + 3)
+                                   .setSize(toggleWidth, 4*toggleHeight)
+                                   .setColorBackground(color(110,0,0))
+                                   .setColorForeground(color(150,0,0))
+                                   .setColorActive(color(190,0,0))
+                                   .moveTo(hardwareInfo)
+                                   ;
+    performRFChannelScan.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    performRFChannelScan.getCaptionLabel().setSize(12);
+
+    offsetY = rfEducationButtonPosY;
+    gui_rfChannelPanelTextfields = new ArrayList<controlP5.Textfield>();
+    for (int i=0; i<outputDevices.length; i++) {
+      //CustomDevice_RackLight rackLight = CustomDeviceList_RackLights.get(i);
+      String fieldValue  = str(RF_Channel_List[i]);
+      Textfield gui_rfChannelPanelText = cp5.addTextfield("RF Channel Panel " + i);
+      gui_rfChannelPanelText.setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
+                            .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
+                            .setValue(fieldValue)
+                            .setFont(minimlFont)
+                            .setCaptionLabel("RF Ch Panel " + (i+1) + " :    ")
+                            .setAutoClear(false)
+                            .moveTo(hardwareInfo)
+                            .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
+                            ;
+      gui_rfChannelPanelTextfields.add(gui_rfChannelPanelText);
+      offsetY += textfieldHeight + spacingRow;
+    }
+
+
+
     //Hidden label which appears only when changes requiring a restart are needed
     resetExpectedTextLabel = cp5.addTextlabel("Reset Expected")
                                 .setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nCRITICAL PARAMETERS HAVE BEEN CHANGED")
@@ -1001,7 +1059,8 @@ public class ControlFrame extends PApplet {
                                   "PANEL ANIMATION BANK 3\n" +
                                   "PANEL ANIMATION BANK 4\n" +
                                   "PANEL IMAGE BANK 1\n" +
-                                  "ACTIVATE PANEL EFFECT\n" +
+                                  "ACTIVATE PANEL EFFECT 1\n" +
+                                  "ACTIVATE PANEL EFFECT 2\n" +
                                   "DMX STROBES\n" +
                                   "PAR - SET COLOR\n" +
                                   "PAR - SET LIGHT STYLE\n" +
@@ -1065,7 +1124,8 @@ public class ControlFrame extends PApplet {
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK3                      + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK3                     ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK4                      + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK4                     ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_IMAGE_BANK1                          + " | " + getStringFromNoteInt(PITCH_LOAD_IMAGE_BANK1                         ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DISPLAY_EFFECT                            + " | " + getStringFromNoteInt(PITCH_DISPLAY_EFFECT                           ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DISPLAY_EFFECT_1                          + " | " + getStringFromNoteInt(PITCH_DISPLAY_EFFECT_1                         ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DISPLAY_EFFECT_2                          + " | " + getStringFromNoteInt(PITCH_DISPLAY_EFFECT_2                         ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_STROBE                      + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_STROBE                     ) + "\n" +
                                   
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_PAR_SET_COLOR               + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR_SET_COLOR              ) + "\n" +
@@ -1785,7 +1845,7 @@ public class ControlFrame extends PApplet {
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
                                                                 .setItemsPerRow(9)
-                                                                .setSpacingColumn(spacingColumn)
+                                                                .setSpacingColumn(spacingColumn - 22)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
                                                                 .setColorActive(color(160,0,0))
@@ -1809,12 +1869,11 @@ public class ControlFrame extends PApplet {
                                                                 .addItem("CTO ",           16)
                                                                 .setGroup(DMXAnimations_Color_animListGroup)
                                                                 ;
-    
     DMXMovingHeadAnimations_Rhythm_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Rhythm")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
                                                                 .setItemsPerRow(9)
-                                                                .setSpacingColumn(spacingColumn-15)
+                                                                .setSpacingColumn(spacingColumn-23)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
                                                                 .setColorActive(color(160,0,0))
@@ -2590,6 +2649,13 @@ public class ControlFrame extends PApplet {
     addEffectBang("34 - General Red Random Flicker", 34);
     addEffectBang("35 - Light Blue Filter", 35);
     addEffectBang("36 - Panels Off", 36);
+    addEffectBang("37 - Only extreme left panel", 37);
+    addEffectBang("38 - Only center left panel", 38);
+    addEffectBang("39 - Only center panel", 39);
+    addEffectBang("40 - Only center right panel", 40);
+    addEffectBang("41 - Only extreme right panel", 41);
+    addEffectBang("42 - Kill center panel", 42);
+
   }
   
   void addEffectBang(String name, int i) {
@@ -2640,7 +2706,7 @@ public class ControlFrame extends PApplet {
     int messageBoxInputFieldHeight = 14;
     
     GUIMessageBox = cp5.addGroup("messageBox",messageBoxPosX,messageBoxPosY,messageBoxWidth);
-    GUIMessageBox.setBackgroundColor(color(0,200));
+    GUIMessageBox.setBackgroundColor(color(0,230));
     GUIMessageBox.hideBar();
     
     // add a TextLabel to the messageBox.
@@ -2687,7 +2753,7 @@ public class ControlFrame extends PApplet {
     b2.getCaptionLabel().getStyle().marginTop = 0;
     b2.getCaptionLabel().getStyle().marginLeft = 22;
   }
-  
+
 
   void buttonOK_LEDTube(int theValue) {
     GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_LEDTube")).getText();
@@ -2751,6 +2817,113 @@ public class ControlFrame extends PApplet {
     resetExpectedTextLabel.setVisible(true);
     createConfigFile();
   }
+
+  // Special message box for the RF Scan function
+  void createRFScanMessageBox(String[] explanationText) {
+    // create a group to store the messageBox elements
+    int singleRectWidth = 4;
+    int messageBoxWidth = singleRectWidth*rfScan_nbRfCh;
+    int messageBoxPosX = width/2 - messageBoxWidth/2;
+    int messageBoxPosY = height/5;
+    int messageBoxInputFieldWidth = 410;
+    int messageBoxInputFieldHeight = 14;
+    
+    RFScanMessageBox = cp5.addGroup("RF Scan message box",messageBoxPosX,messageBoxPosY,messageBoxWidth);
+    RFScanMessageBox.setBackgroundColor(color(0,230));
+    RFScanMessageBox.hideBar();
+    
+    // add a TextLabel to the messageBox.
+    int nbLines=0;
+    for (nbLines=0; nbLines<explanationText.length; nbLines++) {
+      Textlabel txt = cp5.addTextlabel("RFScan input label " + nbLines, explanationText[nbLines], 20, 10 + nbLines*10);
+      txt.moveTo(RFScanMessageBox);
+    }
+    
+    int marginY = (nbLines-1)*10;
+    RFScanMessageBox.setBackgroundHeight(75 + marginY);
+
+    controlP5.Button b1 = cp5.addButton("buttonOK_rfScan",0,50,35 + marginY,130,24);
+    b1.moveTo(RFScanMessageBox);
+    b1.setColorBackground(color(40));
+    b1.setColorActive(color(20));
+    // by default setValue would trigger function buttonOK, 
+    // therefore we disable the broadcasting before setting
+    // the value and enable broadcasting again afterwards.
+    // same applies to the cancel button below.
+    b1.setBroadcast(false); 
+    b1.setValue(1);
+    b1.setBroadcast(true);
+    b1.setCaptionLabel("Automatic Ch Config");
+    // centering of a label needs to be done manually with marginTop and marginLeft
+    b1.getCaptionLabel().getStyle().marginTop = 0;
+    b1.getCaptionLabel().getStyle().marginLeft = 0;
+    
+    // add the Cancel button to the messageBox. 
+    controlP5.Button b2 = cp5.addButton("buttonCancel_rfScan",0,300,35 + marginY,130,24);
+    b2.moveTo(RFScanMessageBox);
+    b2.setBroadcast(false);
+    b2.setValue(0);
+    b2.setBroadcast(true);
+    b2.setCaptionLabel("Cancel");
+    b2.setColorBackground(color(40));
+    b2.setColorActive(color(20));
+    // centering of a label needs to be done manually with marginTop and marginLeft
+    b2.getCaptionLabel().getStyle().marginTop = 0;
+    b2.getCaptionLabel().getStyle().marginRight = 22;
+  }
+
+  void buttonOK_rfScan(int theValue) {
+    manageRFChannelScan(false);
+    RFScanMessageBox.hide();
+    performRFChannelScan.setValue(0);
+
+    // Use the acquired data to set the new channels, and start an education
+    rfChannelScanFinalize();
+  }
+
+  void buttonCancel_rfScan(int theValue) {
+    //GUIMessageBoxResult = theValue;
+    manageRFChannelScan(false);
+    RFScanMessageBox.hide();
+    performRFChannelScan.setValue(0);
+  }
+
+  void rfChannelScan_updateGUIDisplay() {
+
+    int messageBoxWidth  = width/2;
+    int messageBoxPosX   = width/2 - messageBoxWidth/2;
+    int messageBoxPosY   = height/5;
+    int singleRectWidth  = 4;
+    int singleRectHeight = 15;
+    int barWidth         = rfScan_nbRfCh * singleRectWidth;
+    int offsetX          = width/2 - barWidth/2;
+    int offsetY          = messageBoxPosY + 85;
+
+
+    // For drawing purposes, get the Scan array's max value
+    int maxRfInterferenceValue = 0;
+    for (int i=0; i<rfScan_nbRfCh; i++) {
+      if (rfChannelCarrierCpt[i] > maxRfInterferenceValue) {
+        maxRfInterferenceValue = rfChannelCarrierCpt[i];
+      }
+    }
+
+    for (int i=0; i<rfScan_nbRfCh; i++) {
+
+      if (rfChannelCarrierCpt[i] == 0) {
+        fill(170,255,170,255);
+      }
+      else {
+        fill(255, map(rfChannelCarrierCpt[i], 0, maxRfInterferenceValue, 255, 0), 0,255);
+      }
+      
+      noStroke();
+      rect(offsetX + i*singleRectWidth, offsetY, singleRectWidth, singleRectHeight);
+    }
+  }
+  
+
+
   
   // TBIL To delete
   // //Parse strings like "(2,3,5)", to return {2,3,5}
@@ -2858,7 +3031,40 @@ public class ControlFrame extends PApplet {
         createConfigFile();
       }
       
-      
+      /////////////////////////
+      // RF Channel education
+      else if (theEvent.getName() == "Perform RF Channel Education") {
+        // Stop any ongoing RF Scan is an education is requested
+        if (performRFChannelScan.getState()) {
+          manageRFChannelScan(false);
+          performRFChannelScan.setState(false);
+          RFScanMessageBox.hide();
+        }
+
+        manageRFChannelEducation(performRFChannelEducation.getState());
+      }
+
+      else if (theEvent.getName() == "Perform RF Channel Scan") {
+        // Stop any ongoing RF Education is a scan is requested
+        if (performRFChannelEducation.getState()) {
+          manageRFChannelEducation(false);
+          performRFChannelEducation.setState(false);
+        }
+
+        if (performRFChannelScan.getState()) {
+          String [] explanation = {"Scan the RF pollution of the current environment",
+                                   "RF output is temporarily disabled for all panels"};
+
+          createRFScanMessageBox(explanation);
+        }
+        else {
+          RFScanMessageBox.hide();
+        }
+
+        manageRFChannelScan(performRFChannelScan.getState());
+      }
+
+
       /////////////////////////
       // Custom devices
       
@@ -3340,6 +3546,16 @@ public class ControlFrame extends PApplet {
         int effectNumber = int(eventNameSplit[3]);
         activateAdditionalEffect(effectNumber);
       }
+
+      else if (theEvent.getName().contains("RF Channel Panel")) {
+        String[] eventNameSplit = split(theEvent.getName(), " ");
+        int panelIdx = int(eventNameSplit[3]);
+        int chVal = min(Integer.parseInt(cp5.getController(theEvent.getName()).getStringValue()), 125);   // The maximum available channel is 125, do not go above
+        RF_Channel_List[panelIdx] = chVal;
+        //activateAdditionalEffect(effectNumber);
+        createConfigFile();
+      }
+
     }
   }
   

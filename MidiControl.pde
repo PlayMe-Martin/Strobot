@@ -64,7 +64,10 @@ final int PITCH_DISABLE_MAN_INPUT                         = 111;
 final int PITCH_CUSTOM_DEVICE_BANK1                       = 118;
 final int PITCH_CUSTOM_DEVICE_BANK2                       = 119;
 final int PITCH_CUSTOM_DEVICE_BANK3                       = 120;
-final int PITCH_DISPLAY_EFFECT                            = 121;
+final int PITCH_DISPLAY_EFFECT_1                          = 121;
+final int PITCH_DISPLAY_EFFECT_2                          = 96;
+
+
 final int PITCH_LOAD_ANIMATION_BANK1                      = 123;
 final int PITCH_LOAD_ANIMATION_BANK2                      = 124;
 final int PITCH_LOAD_ANIMATION_BANK3                      = 125;
@@ -227,7 +230,8 @@ void processMidiInfo_semiAutoMode(int pitch, int velocity) {
     case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(velocity);break;                              // Load an animation for the custom devices
     case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(velocity);break;                              // 
     case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(velocity);break;                              // 
-    case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(velocity);break;                                // 
+    case PITCH_DISPLAY_EFFECT_1:                            activateAdditionalEffect(velocity);break;                                // 
+    case PITCH_DISPLAY_EFFECT_2:                            activateAdditionalEffect2(velocity);break;                               // 
     case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   loadTempAnimation1(velocity);break;                                      // Load a temporary animation using the LED panels
     case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   loadTempAnimation2(velocity);break;                                      // 
     case PITCH_LOAD_ANIMATION_BANK3_TEMP:                   loadTempAnimation3(velocity);break;                                      // 
@@ -579,7 +583,7 @@ void setAutomaticModeOn() {
 void activateAdditionalEffect(int velocity) {
   effectToBeDrawn = true;
   currentEffectNumber = velocity;
-  initSpecificEffectParams();
+  initSpecificEffectParams1();
   effectNumberToDeactivateEffects = velocity;
 }
 
@@ -587,6 +591,16 @@ void deactivateAdditionalEffect(int velocity) {
   effectToBeDrawn = false;
 }
 
+void activateAdditionalEffect2(int velocity) {
+  effect2ToBeDrawn = true;
+  currentEffect2Number = velocity;
+  initSpecificEffectParams2();
+  effectNumber2ToDeactivateEffects = velocity;
+}
+
+void deactivateAdditionalEffect2(int velocity) {
+  effect2ToBeDrawn = false;
+}
 
 void loadDMXAnimation_movingHead_initDirection(int velocity) {
   dmxAnimationNumber_movingHead_initDirection = velocity;
@@ -880,7 +894,8 @@ void noteOff(int channel, int pitch, int velocity, long timestamp, String bus_na
         case PITCH_LOAD_ANIMATION_BANK3_TEMP:                   unloadAnimation();break;                                    //D7
         case PITCH_LOAD_ANIMATION_BANK4_TEMP:                   unloadAnimation();break;                                    //D#7
         
-        case PITCH_DISPLAY_EFFECT:                              deactivateAdditionalEffect(velocity);break;                 //C9    - Reset the effect
+        case PITCH_DISPLAY_EFFECT_1:                            deactivateAdditionalEffect(velocity);break;                 //C9    - Reset the effect
+        case PITCH_DISPLAY_EFFECT_2:                            deactivateAdditionalEffect2(velocity);break;                //
         default: break;
       }
     }

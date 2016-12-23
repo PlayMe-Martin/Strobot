@@ -130,6 +130,7 @@ int[][] transformedBuffersLEDPanels;
 
 //Output objects
 Tpm2[] outputDevices;
+Tpm2 rfScanDevice;
 ArrayList<String> registeredDevices;
 
 //Resize objects : allows buffer resize, slow or fast
@@ -346,6 +347,7 @@ void draw()
     //     println("Exception while trying to read - " + e);
     //   }
     // }
+    
 
     //Execute the draw function for the animation corresponding to animationnumber
     //The specific setup is executed once, upon reception of an MIDI message changing the animation
@@ -362,7 +364,8 @@ void draw()
           }
           else {
             specific_draw();
-            draw_effects();
+            draw_effects1();
+            draw_effects2();
           }
           //Draw the post-treatment effects
           actionControlled_postSpecificDraw();
@@ -370,12 +373,14 @@ void draw()
         //No additional user input is allowed, execute specific draw the regular way
         else {
           specific_draw();
-          draw_effects();
+          draw_effects1();
+          draw_effects2();
         }
       }
       else {
         automaticSequencer.performAutomaticActions();
-        draw_effects();
+        draw_effects1();
+        draw_effects2();
       }
       
       //DMX animations - set to true when receiving the corresponding MIDI message, or when the general AUTOMATIC mode is on
@@ -403,11 +408,18 @@ void draw()
   getNewTransformedBuffersLEDPanels();
   
   //Send actual data - when changing live the setting regarding the number of panels (using the GUI), this is set to false
-  if (debug_without_panels == false) {
+  if (!debug_without_panels) {
     
-    //Update each device (only those registered during init though)
-    for (int i=0; i<outputDevices.length; i++) { 
-      outputDevices[i].update();
+    // Only send the data to the panels if no education is requested
+    if (!rfChannelEducation_requested && !rfChannelScan_requested) {
+      //Update each device (only those registered during init though)
+      for (int i=0; i<outputDevices.length; i++) { 
+        outputDevices[i].update();
+      }
+    }
+
+    if (rfChannelScan_requested) {
+      rfChannelScanProcess();
     }
     
   }

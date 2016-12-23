@@ -5688,7 +5688,7 @@ void draw_whitenoisecrescendo() {
     }
   }
   if (whitenoisecrescendo_brightness < 255) {
-    whitenoisecrescendo_brightness += 3;
+    whitenoisecrescendo_brightness += 2;
   }
 }
 

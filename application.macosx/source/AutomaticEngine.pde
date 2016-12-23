@@ -267,7 +267,8 @@ class PlayMeSequencer {
         case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(actionValue);break;
         case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(actionValue);break;
         case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(actionValue);break;
-        case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(actionValue);break;
+        case PITCH_DISPLAY_EFFECT_1:                            activateAdditionalEffect(actionValue);break;
+        case PITCH_DISPLAY_EFFECT_2:                            activateAdditionalEffect2(actionValue);break;
         case PITCH_LOAD_ANIMATION_BANK1:                        loadAnimation1(actionValue);break;
         case PITCH_LOAD_ANIMATION_BANK2:                        loadAnimation2(actionValue);break;
         case PITCH_LOAD_ANIMATION_BANK3:                        loadAnimation3(actionValue);break;
@@ -285,7 +286,8 @@ class PlayMeSequencer {
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
-        case PITCH_DISPLAY_EFFECT:                              deactivateAdditionalEffect(actionValue);break;
+        case PITCH_DISPLAY_EFFECT_1:                            deactivateAdditionalEffect(actionValue);break;
+        case PITCH_DISPLAY_EFFECT_2:                            deactivateAdditionalEffect2(actionValue);break;
         default: break;
       }
     }

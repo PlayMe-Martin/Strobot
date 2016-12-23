@@ -211,6 +211,7 @@ int[][] transformedBuffersLEDPanels;
 
 //Output objects
 Tpm2[] outputDevices;
+Tpm2 rfScanDevice;
 ArrayList<String> registeredDevices;
 
 //Resize objects : allows buffer resize, slow or fast
@@ -427,6 +428,7 @@ public void draw()
     //     println("Exception while trying to read - " + e);
     //   }
     // }
+    
 
     //Execute the draw function for the animation corresponding to animationnumber
     //The specific setup is executed once, upon reception of an MIDI message changing the animation
@@ -443,7 +445,8 @@ public void draw()
           }
           else {
             specific_draw();
-            draw_effects();
+            draw_effects1();
+            draw_effects2();
           }
           //Draw the post-treatment effects
           actionControlled_postSpecificDraw();
@@ -451,12 +454,14 @@ public void draw()
         //No additional user input is allowed, execute specific draw the regular way
         else {
           specific_draw();
-          draw_effects();
+          draw_effects1();
+          draw_effects2();
         }
       }
       else {
         automaticSequencer.performAutomaticActions();
-        draw_effects();
+        draw_effects1();
+        draw_effects2();
       }
       
       //DMX animations - set to true when receiving the corresponding MIDI message, or when the general AUTOMATIC mode is on
@@ -484,11 +489,18 @@ public void draw()
   getNewTransformedBuffersLEDPanels();
   
   //Send actual data - when changing live the setting regarding the number of panels (using the GUI), this is set to false
-  if (debug_without_panels == false) {
+  if (!debug_without_panels) {
     
-    //Update each device (only those registered during init though)
-    for (int i=0; i<outputDevices.length; i++) { 
-      outputDevices[i].update();
+    // Only send the data to the panels if no education is requested
+    if (!rfChannelEducation_requested && !rfChannelScan_requested) {
+      //Update each device (only those registered during init though)
+      for (int i=0; i<outputDevices.length; i++) { 
+        outputDevices[i].update();
+      }
+    }
+
+    if (rfChannelScan_requested) {
+      rfChannelScanProcess();
     }
     
   }
@@ -2519,7 +2531,7 @@ ArrayList hypnopendulum_pends;
 float[] hypnopendulum_lengths = new float[pendulum_n];
 float hypnopendulum_g = 9.8f;
 float hypnopendulum_fadein = 0;
-float hypnopendulum_fadeinSpeed = 0.05f;
+float hypnopendulum_fadeinSpeed = 0.1f;
 
 //Mugen parameters
 float mugen_xamp, mugen_yamp, mugen_x, mugen_y, mugen_px, mugen_py;
@@ -3548,8 +3560,8 @@ public PImage getimage(int imagenumber)
     case 11: temp = getConfigSpecificImage("Degeneration/06.png");break;
     case 12: temp = getConfigSpecificImage("Degeneration/07.png");break;
     case 13: temp = getConfigSpecificImage("Degeneration/08.png");break;
-    case 14: temp = getConfigSpecificImage("DTL/04.02. You.png");break;
-    case 15: temp = getConfigSpecificImage("DTL/04.03. Want.png");break;
+    case 14: temp = getConfigSpecificImage("XI.png");break;
+    case 15: temp = getConfigSpecificImage("XI2.png");break;
     case 16: temp = getConfigSpecificImage("DTL/04.04. Me.png");break;
     case 17: temp = getConfigSpecificImage("DTL/04.05. To.png");break;
     case 18: temp = getConfigSpecificImage("DTL/05.01. An.png");break;
@@ -9101,7 +9113,7 @@ public void draw_whitenoisecrescendo() {
     }
   }
   if (whitenoisecrescendo_brightness < 255) {
-    whitenoisecrescendo_brightness += 3;
+    whitenoisecrescendo_brightness += 2;
   }
 }
 
@@ -23759,7 +23771,8 @@ class PlayMeSequencer {
         case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(actionValue);break;
         case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(actionValue);break;
         case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(actionValue);break;
-        case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(actionValue);break;
+        case PITCH_DISPLAY_EFFECT_1:                            activateAdditionalEffect(actionValue);break;
+        case PITCH_DISPLAY_EFFECT_2:                            activateAdditionalEffect2(actionValue);break;
         case PITCH_LOAD_ANIMATION_BANK1:                        loadAnimation1(actionValue);break;
         case PITCH_LOAD_ANIMATION_BANK2:                        loadAnimation2(actionValue);break;
         case PITCH_LOAD_ANIMATION_BANK3:                        loadAnimation3(actionValue);break;
@@ -23777,7 +23790,8 @@ class PlayMeSequencer {
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE:   break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1:   unloadDMXAnimation_movingHead(); break;
         case PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2:   unloadDMXAnimation_movingHead(); break;
-        case PITCH_DISPLAY_EFFECT:                              deactivateAdditionalEffect(actionValue);break;
+        case PITCH_DISPLAY_EFFECT_1:                            deactivateAdditionalEffect(actionValue);break;
+        case PITCH_DISPLAY_EFFECT_2:                            deactivateAdditionalEffect2(actionValue);break;
         default: break;
       }
     }
@@ -24314,10 +24328,9 @@ public void createConfigFile() {
 }
 
 public void printLEDPanelMicrocontrollerConfiguration() {
-  //TBIL to be modified
-  // for (String microcontroller: TEENSY_SERIAL_PORT_LIST_5) {
-  //   configFile_write.println("Microcontroller|LEDPanels:" + microcontroller);
-  // }
+  for (int panelIdx=0; panelIdx < RF_Channel_List.length; panelIdx++) {
+    configFile_write.println("RF Channel|LED Panel " + panelIdx + ":" + RF_Channel_List[panelIdx]);
+  }
 }
 
 public void printCustomDevicesConfiguration() {
@@ -24426,19 +24439,10 @@ public void parseConfigurationFile(String line) {
       else if (lineSplit[0].contains("Microcontroller|CustomDevices")) {
         CUSTOMDEVICES_MICROCONTROLLER_NAME = lineSplit[1];
       }
-      // TBIL to be deleted - or modified ?
-      // else if (lineSplit[0].contains("Microcontroller|LEDPanels")) {
-      //   if (numberOfLEDPanelMicrocontrollersFoundInConf < 5) {
-      //     TEENSY_SERIAL_PORT_LIST_5[numberOfLEDPanelMicrocontrollersFoundInConf] = lineSplit[1];
-      //   }
-      //   else {
-      //     outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
-      //     outputLog.println("Too many microcontrollers for the panels found registered inside the configuration file !");
-      //     outputLog.println("!!!!!!!!!!!!!!! WARNING !!!!!!!!!!!!!!!");
-      //   }
-      //   numberOfLEDPanelMicrocontrollersFoundInConf += 1;
-      // }
-
+      else if (lineSplit[0].contains("RF Channel|LED Panel")) {
+        int panelIdx = PApplet.parseInt(lineSplit[0].substring(lineSplit[0].length() - 1,lineSplit[0].length()));
+        RF_Channel_List[panelIdx] = convertStringToInt(lineSplit[1]);
+      }
       else if (lineSplit[0].contains("Debug|ActivatePHPGeneration")) {
         output_PHP = getBooleanFromString(lineSplit[1]);
       }
@@ -31063,7 +31067,7 @@ class DMX_MovingHead {
     this.invertedPan = invertedPan;
     this.invertedTilt = invertedTilt;
     this.floorFixture = floorFixture;
-    println("devID: " + deviceID+ " addr: " + this.dmxStartAddr);
+
     // Init
     movingHead = getFixtureFromName(name);
     if (movingHead.isValidFixture() == false) {
@@ -40332,9 +40336,17 @@ final float lightBlue_reductionFactor_red = 0.4f;
 final float lightBlue_reductionFactor_green = 0.4f;
 
 //General effect switcher
-public void draw_effects() {
-  if (effectToBeDrawn == true) {
-    switch(currentEffectNumber) {   
+public void draw_effects1(){
+  draw_effects(currentEffectNumber, effectToBeDrawn);
+}
+
+public void draw_effects2(){
+  draw_effects(currentEffect2Number, effect2ToBeDrawn);
+}
+
+public void draw_effects(int effectNb, boolean drawEnabled) {
+  if (drawEnabled == true) {
+    switch(effectNb) {   
       case 1:   draw_classicglitcherEffect();break;
       case 2:   draw_rgbGlitcherEffect();break;
       case 3:   draw_180RotateEffect();break;
@@ -40371,13 +40383,27 @@ public void draw_effects() {
       case 34:  draw_randomRedPanelFlicker();break;
       case 35:  draw_lightBlueFilter(); break;
       case 36:  draw_panelsOff(); break;
+      case 37:  draw_onlyExtremeLeftPanel(); break;
+      case 38:  draw_onlyCenterLeftPanel(); break;
+      case 39:  draw_onlyCenterPanel(); break;
+      case 40:  draw_onlyCenterRightPanel(); break;
+      case 41:  draw_onlyExtremeRightPanel(); break;
+      case 42:  draw_killCenterPanel(); break;
       default: break;
     }
   }
 }
 
-public void initSpecificEffectParams() {
-  switch(currentEffectNumber) {
+public void initSpecificEffectParams1() {
+  initSpecificEffectParams(currentEffectNumber);
+}
+
+public void initSpecificEffectParams2() {
+  initSpecificEffectParams(currentEffect2Number);
+}
+
+public void initSpecificEffectParams(int effectNb) {
+  switch(effectNb) {
     case 24: fadeout_counter         = 0; break;
     case 25: fadein_counter          = 0; break;
     case 26: fadeout_counter         = 0; break;
@@ -40697,7 +40723,7 @@ public void draw_invertFilterEffect() {
   filter(INVERT);
 }
 
-public void draw_onlyLeftEffect() {
+public void draw_onlyRightEffect() {
   pushStyle();
   noStroke();
   fill(0);
@@ -40705,7 +40731,7 @@ public void draw_onlyLeftEffect() {
   popStyle();
 }
 
-public void draw_onlyRightEffect() {
+public void draw_onlyLeftEffect() {
   pushStyle();
   noStroke();
   fill(0);
@@ -40852,6 +40878,58 @@ public void draw_panelsOff() {
   resetMatrix();
   popStyle();
   popMatrix();
+}
+
+
+public void draw_onlyExtremeLeftPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect(width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS - 1)*width/NUMBER_OF_PANELS,height);
+  popStyle();
+}
+
+public void draw_onlyCenterLeftPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect(0,0,(NUMBER_OF_PANELS - 4)*width/NUMBER_OF_PANELS,height);
+  rect(2*width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS - 2)*width/NUMBER_OF_PANELS,height);
+  popStyle();
+}
+
+public void draw_onlyCenterPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect(0,0,(NUMBER_OF_PANELS - 3)*width/NUMBER_OF_PANELS,height);
+  rect( (NUMBER_OF_PANELS/2 + 1) *width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS - 3)*width/NUMBER_OF_PANELS,height);
+  popStyle();
+}
+
+public void draw_onlyCenterRightPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect(0,0,(NUMBER_OF_PANELS - 2)*width/NUMBER_OF_PANELS,height);
+  rect((NUMBER_OF_PANELS - 1)*width/NUMBER_OF_PANELS,0,(NUMBER_OF_PANELS - 4)*width/NUMBER_OF_PANELS,height);
+  popStyle();
+}
+
+public void draw_onlyExtremeRightPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect(0,0,(NUMBER_OF_PANELS - 1)*width/NUMBER_OF_PANELS,height);
+  popStyle();
+}
+
+public void draw_killCenterPanel() {
+  pushStyle();
+  noStroke();
+  fill(0);
+  rect( (NUMBER_OF_PANELS/2) *width/NUMBER_OF_PANELS,0,width/NUMBER_OF_PANELS,height);
+  popStyle();
 }
 
 //////////////////////////////////////////////////////////////
@@ -41845,6 +41923,8 @@ public class ControlFrame extends PApplet {
   // controlP5.Button add_DMXFixture;
   // controlP5.Button remove_DMXFixture;
   //controlP5.Button add_BackStrobo;
+  controlP5.Toggle performRFChannelEducation;
+  controlP5.Toggle performRFChannelScan;
  
   controlP5.CheckBox LEDPanelAnimations_animationListCheckBox;
   controlP5.CheckBox CustomDeviceAnimations_animationListCheckBox;
@@ -41894,9 +41974,12 @@ public class ControlFrame extends PApplet {
   controlP5.Textarea DMXParAnimations_LightStyle_currentAnimationDescription;
   controlP5.Textarea DMXParAnimations_Animations_currentAnimationDescription;
   
+  ArrayList<controlP5.Textfield> gui_rfChannelPanelTextfields;
+
   Group effectsInfo;
   
   ControlGroup GUIMessageBox;
+  ControlGroup RFScanMessageBox;
   int GUIMessageBoxResult = -1;
   String GUIMessageBoxString = "";
   
@@ -41947,6 +42030,10 @@ public class ControlFrame extends PApplet {
     
     if (gui_activateAudioMonitoring) {
       draw_audioMonitoring(gui_audioMonitoringGroupOffsetX + gui_spacing, gui_audioMonitoringGroupBaseHeight + 4*gui_spacing, 10);
+    }
+
+    if (rfChannelScan_requested) {
+      rfChannelScan_updateGUIDisplay();
     }
   }
   
@@ -42013,8 +42100,8 @@ public class ControlFrame extends PApplet {
     int accordionWidth    = width - (gui_simulatorPosX + gui_simulatorWidth + 2*gui_spacing);
     
     int nbrOfPanelsTextFieldPosY = gui_spacing + 0*spacingRow;
-    int DMXTextLabelPosY = 150;
     int CustomDevicesTextLabelPosY = 360; 
+    int rfEducationButtonPosY = CustomDevicesTextLabelPosY + 87;
     int warningTextLabelPosY = gui_generalInformationsHeight - 2*textfieldHeight - 2*spacingRow;
     int panelConfigBangPosY = nbrOfPanelsTextFieldPosY + toggleHeight + spacingRow;
     int panelConfigBangSize = 15;
@@ -42359,6 +42446,7 @@ public class ControlFrame extends PApplet {
     //                                    .setSize(12)
     //                                    ;
     
+
     int offsetY = CustomDevicesTextLabelPosY;
     cp5.addTextlabel("Custom devices Info")
        .setText("CUSTOM DEVICES : DEVICE NUMBER")
@@ -42452,6 +42540,54 @@ public class ControlFrame extends PApplet {
                          ;
     add_RackLight.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
 
+
+    performRFChannelEducation = cp5.addToggle("Perform RF Channel Education")
+                                   .setValue(0)
+                                   .setCaptionLabel("Educate RF")
+                                   .setPosition(leftOffset, rfEducationButtonPosY)
+                                   .setSize(toggleWidth, 4*toggleHeight)
+                                   .setColorBackground(color(110,0,0))
+                                   .setColorForeground(color(150,0,0))
+                                   .setColorActive(color(190,0,0))
+                                   .moveTo(hardwareInfo)
+                                   ;
+    performRFChannelEducation.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    performRFChannelEducation.getCaptionLabel().setSize(12);
+
+    performRFChannelScan = cp5.addToggle("Perform RF Channel Scan")
+                                   .setValue(0)
+                                   .setCaptionLabel("Scan Channels")
+                                   .setPosition(leftOffset, rfEducationButtonPosY + 4*toggleHeight + 3)
+                                   .setSize(toggleWidth, 4*toggleHeight)
+                                   .setColorBackground(color(110,0,0))
+                                   .setColorForeground(color(150,0,0))
+                                   .setColorActive(color(190,0,0))
+                                   .moveTo(hardwareInfo)
+                                   ;
+    performRFChannelScan.getCaptionLabel().align(ControlP5.CENTER, ControlP5.CENTER);
+    performRFChannelScan.getCaptionLabel().setSize(12);
+
+    offsetY = rfEducationButtonPosY;
+    gui_rfChannelPanelTextfields = new ArrayList<controlP5.Textfield>();
+    for (int i=0; i<outputDevices.length; i++) {
+      //CustomDevice_RackLight rackLight = CustomDeviceList_RackLights.get(i);
+      String fieldValue  = str(RF_Channel_List[i]);
+      Textfield gui_rfChannelPanelText = cp5.addTextfield("RF Channel Panel " + i);
+      gui_rfChannelPanelText.setPosition(accordionWidth - bigTextfieldWidth - leftOffset, offsetY)
+                            .setSize(bigTextfieldWidth - 2*textfieldHeight - spacingRow,textfieldHeight)
+                            .setValue(fieldValue)
+                            .setFont(minimlFont)
+                            .setCaptionLabel("RF Ch Panel " + (i+1) + " :    ")
+                            .setAutoClear(false)
+                            .moveTo(hardwareInfo)
+                            .getCaptionLabel().align(ControlP5.LEFT_OUTSIDE, ControlP5.CENTER)
+                            ;
+      gui_rfChannelPanelTextfields.add(gui_rfChannelPanelText);
+      offsetY += textfieldHeight + spacingRow;
+    }
+
+
+
     //Hidden label which appears only when changes requiring a restart are needed
     resetExpectedTextLabel = cp5.addTextlabel("Reset Expected")
                                 .setText("PLEASE RESET THE APP BEFORE MAKING FURTHER CHANGES\nCRITICAL PARAMETERS HAVE BEEN CHANGED")
@@ -42516,7 +42652,8 @@ public class ControlFrame extends PApplet {
                                   "PANEL ANIMATION BANK 3\n" +
                                   "PANEL ANIMATION BANK 4\n" +
                                   "PANEL IMAGE BANK 1\n" +
-                                  "ACTIVATE PANEL EFFECT\n" +
+                                  "ACTIVATE PANEL EFFECT 1\n" +
+                                  "ACTIVATE PANEL EFFECT 2\n" +
                                   "DMX STROBES\n" +
                                   "PAR - SET COLOR\n" +
                                   "PAR - SET LIGHT STYLE\n" +
@@ -42580,7 +42717,8 @@ public class ControlFrame extends PApplet {
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK3                      + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK3                     ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_ANIMATION_BANK4                      + " | " + getStringFromNoteInt(PITCH_LOAD_ANIMATION_BANK4                     ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_LOAD_IMAGE_BANK1                          + " | " + getStringFromNoteInt(PITCH_LOAD_IMAGE_BANK1                         ) + "\n" +
-                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DISPLAY_EFFECT                            + " | " + getStringFromNoteInt(PITCH_DISPLAY_EFFECT                           ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DISPLAY_EFFECT_1                          + " | " + getStringFromNoteInt(PITCH_DISPLAY_EFFECT_1                         ) + "\n" +
+                                  "INPUT MIDI (VAL | NOTE) : " + PITCH_DISPLAY_EFFECT_2                          + " | " + getStringFromNoteInt(PITCH_DISPLAY_EFFECT_2                         ) + "\n" +
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_STROBE                      + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_STROBE                     ) + "\n" +
                                   
                                   "INPUT MIDI (VAL | NOTE) : " + PITCH_DMX_ANIMATION_PAR_SET_COLOR               + " | " + getStringFromNoteInt(PITCH_DMX_ANIMATION_PAR_SET_COLOR              ) + "\n" +
@@ -43300,7 +43438,7 @@ public class ControlFrame extends PApplet {
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
                                                                 .setItemsPerRow(9)
-                                                                .setSpacingColumn(spacingColumn)
+                                                                .setSpacingColumn(spacingColumn - 22)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
                                                                 .setColorActive(color(160,0,0))
@@ -43324,12 +43462,11 @@ public class ControlFrame extends PApplet {
                                                                 .addItem("CTO ",           16)
                                                                 .setGroup(DMXAnimations_Color_animListGroup)
                                                                 ;
-    
     DMXMovingHeadAnimations_Rhythm_animationListCheckBox = cp5.addCheckBox("Attributes - DMX Moving Head animations - Set Rhythm")
                                                                 .setPosition(leftOffset,toggleHeight)
                                                                 .setSize(toggleWidth,toggleHeight)
                                                                 .setItemsPerRow(9)
-                                                                .setSpacingColumn(spacingColumn-15)
+                                                                .setSpacingColumn(spacingColumn-23)
                                                                 .setSpacingRow(spacingRow)
                                                                 .setColorForeground(color(120,0,0))
                                                                 .setColorActive(color(160,0,0))
@@ -44105,6 +44242,13 @@ public class ControlFrame extends PApplet {
     addEffectBang("34 - General Red Random Flicker", 34);
     addEffectBang("35 - Light Blue Filter", 35);
     addEffectBang("36 - Panels Off", 36);
+    addEffectBang("37 - Only extreme left panel", 37);
+    addEffectBang("38 - Only center left panel", 38);
+    addEffectBang("39 - Only center panel", 39);
+    addEffectBang("40 - Only center right panel", 40);
+    addEffectBang("41 - Only extreme right panel", 41);
+    addEffectBang("42 - Kill center panel", 42);
+
   }
   
   public void addEffectBang(String name, int i) {
@@ -44155,7 +44299,7 @@ public class ControlFrame extends PApplet {
     int messageBoxInputFieldHeight = 14;
     
     GUIMessageBox = cp5.addGroup("messageBox",messageBoxPosX,messageBoxPosY,messageBoxWidth);
-    GUIMessageBox.setBackgroundColor(color(0,200));
+    GUIMessageBox.setBackgroundColor(color(0,230));
     GUIMessageBox.hideBar();
     
     // add a TextLabel to the messageBox.
@@ -44202,7 +44346,7 @@ public class ControlFrame extends PApplet {
     b2.getCaptionLabel().getStyle().marginTop = 0;
     b2.getCaptionLabel().getStyle().marginLeft = 22;
   }
-  
+
 
   public void buttonOK_LEDTube(int theValue) {
     GUIMessageBoxString = ((Textfield)cp5.getController("inputbox_LEDTube")).getText();
@@ -44266,6 +44410,113 @@ public class ControlFrame extends PApplet {
     resetExpectedTextLabel.setVisible(true);
     createConfigFile();
   }
+
+  // Special message box for the RF Scan function
+  public void createRFScanMessageBox(String[] explanationText) {
+    // create a group to store the messageBox elements
+    int singleRectWidth = 4;
+    int messageBoxWidth = singleRectWidth*rfScan_nbRfCh;
+    int messageBoxPosX = width/2 - messageBoxWidth/2;
+    int messageBoxPosY = height/5;
+    int messageBoxInputFieldWidth = 410;
+    int messageBoxInputFieldHeight = 14;
+    
+    RFScanMessageBox = cp5.addGroup("RF Scan message box",messageBoxPosX,messageBoxPosY,messageBoxWidth);
+    RFScanMessageBox.setBackgroundColor(color(0,230));
+    RFScanMessageBox.hideBar();
+    
+    // add a TextLabel to the messageBox.
+    int nbLines=0;
+    for (nbLines=0; nbLines<explanationText.length; nbLines++) {
+      Textlabel txt = cp5.addTextlabel("RFScan input label " + nbLines, explanationText[nbLines], 20, 10 + nbLines*10);
+      txt.moveTo(RFScanMessageBox);
+    }
+    
+    int marginY = (nbLines-1)*10;
+    RFScanMessageBox.setBackgroundHeight(75 + marginY);
+
+    controlP5.Button b1 = cp5.addButton("buttonOK_rfScan",0,50,35 + marginY,130,24);
+    b1.moveTo(RFScanMessageBox);
+    b1.setColorBackground(color(40));
+    b1.setColorActive(color(20));
+    // by default setValue would trigger function buttonOK, 
+    // therefore we disable the broadcasting before setting
+    // the value and enable broadcasting again afterwards.
+    // same applies to the cancel button below.
+    b1.setBroadcast(false); 
+    b1.setValue(1);
+    b1.setBroadcast(true);
+    b1.setCaptionLabel("Automatic Ch Config");
+    // centering of a label needs to be done manually with marginTop and marginLeft
+    b1.getCaptionLabel().getStyle().marginTop = 0;
+    b1.getCaptionLabel().getStyle().marginLeft = 0;
+    
+    // add the Cancel button to the messageBox. 
+    controlP5.Button b2 = cp5.addButton("buttonCancel_rfScan",0,300,35 + marginY,130,24);
+    b2.moveTo(RFScanMessageBox);
+    b2.setBroadcast(false);
+    b2.setValue(0);
+    b2.setBroadcast(true);
+    b2.setCaptionLabel("Cancel");
+    b2.setColorBackground(color(40));
+    b2.setColorActive(color(20));
+    // centering of a label needs to be done manually with marginTop and marginLeft
+    b2.getCaptionLabel().getStyle().marginTop = 0;
+    b2.getCaptionLabel().getStyle().marginRight = 22;
+  }
+
+  public void buttonOK_rfScan(int theValue) {
+    manageRFChannelScan(false);
+    RFScanMessageBox.hide();
+    performRFChannelScan.setValue(0);
+
+    // Use the acquired data to set the new channels, and start an education
+    rfChannelScanFinalize();
+  }
+
+  public void buttonCancel_rfScan(int theValue) {
+    //GUIMessageBoxResult = theValue;
+    manageRFChannelScan(false);
+    RFScanMessageBox.hide();
+    performRFChannelScan.setValue(0);
+  }
+
+  public void rfChannelScan_updateGUIDisplay() {
+
+    int messageBoxWidth  = width/2;
+    int messageBoxPosX   = width/2 - messageBoxWidth/2;
+    int messageBoxPosY   = height/5;
+    int singleRectWidth  = 4;
+    int singleRectHeight = 15;
+    int barWidth         = rfScan_nbRfCh * singleRectWidth;
+    int offsetX          = width/2 - barWidth/2;
+    int offsetY          = messageBoxPosY + 85;
+
+
+    // For drawing purposes, get the Scan array's max value
+    int maxRfInterferenceValue = 0;
+    for (int i=0; i<rfScan_nbRfCh; i++) {
+      if (rfChannelCarrierCpt[i] > maxRfInterferenceValue) {
+        maxRfInterferenceValue = rfChannelCarrierCpt[i];
+      }
+    }
+
+    for (int i=0; i<rfScan_nbRfCh; i++) {
+
+      if (rfChannelCarrierCpt[i] == 0) {
+        fill(170,255,170,255);
+      }
+      else {
+        fill(255, map(rfChannelCarrierCpt[i], 0, maxRfInterferenceValue, 255, 0), 0,255);
+      }
+      
+      noStroke();
+      rect(offsetX + i*singleRectWidth, offsetY, singleRectWidth, singleRectHeight);
+    }
+  }
+  
+
+
   
   // TBIL To delete
   // //Parse strings like "(2,3,5)", to return {2,3,5}
@@ -44373,7 +44624,40 @@ public class ControlFrame extends PApplet {
         createConfigFile();
       }
       
-      
+      /////////////////////////
+      // RF Channel education
+      else if (theEvent.getName() == "Perform RF Channel Education") {
+        // Stop any ongoing RF Scan is an education is requested
+        if (performRFChannelScan.getState()) {
+          manageRFChannelScan(false);
+          performRFChannelScan.setState(false);
+          RFScanMessageBox.hide();
+        }
+
+        manageRFChannelEducation(performRFChannelEducation.getState());
+      }
+
+      else if (theEvent.getName() == "Perform RF Channel Scan") {
+        // Stop any ongoing RF Education is a scan is requested
+        if (performRFChannelEducation.getState()) {
+          manageRFChannelEducation(false);
+          performRFChannelEducation.setState(false);
+        }
+
+        if (performRFChannelScan.getState()) {
+          String [] explanation = {"Scan the RF pollution of the current environment",
+                                   "RF output is temporarily disabled for all panels"};
+
+          createRFScanMessageBox(explanation);
+        }
+        else {
+          RFScanMessageBox.hide();
+        }
+
+        manageRFChannelScan(performRFChannelScan.getState());
+      }
+
+
       /////////////////////////
       // Custom devices
       
@@ -44855,6 +45139,16 @@ public class ControlFrame extends PApplet {
         int effectNumber = PApplet.parseInt(eventNameSplit[3]);
         activateAdditionalEffect(effectNumber);
       }
+
+      else if (theEvent.getName().contains("RF Channel Panel")) {
+        String[] eventNameSplit = split(theEvent.getName(), " ");
+        int panelIdx = PApplet.parseInt(eventNameSplit[3]);
+        int chVal = min(Integer.parseInt(cp5.getController(theEvent.getName()).getStringValue()), 125);   // The maximum available channel is 125, do not go above
+        RF_Channel_List[panelIdx] = chVal;
+        //activateAdditionalEffect(effectNumber);
+        createConfigFile();
+      }
+
     }
   }
   
@@ -46252,7 +46546,10 @@ final int PITCH_DISABLE_MAN_INPUT                         = 111;
 final int PITCH_CUSTOM_DEVICE_BANK1                       = 118;
 final int PITCH_CUSTOM_DEVICE_BANK2                       = 119;
 final int PITCH_CUSTOM_DEVICE_BANK3                       = 120;
-final int PITCH_DISPLAY_EFFECT                            = 121;
+final int PITCH_DISPLAY_EFFECT_1                          = 121;
+final int PITCH_DISPLAY_EFFECT_2                          = 96;
+
+
 final int PITCH_LOAD_ANIMATION_BANK1                      = 123;
 final int PITCH_LOAD_ANIMATION_BANK2                      = 124;
 final int PITCH_LOAD_ANIMATION_BANK3                      = 125;
@@ -46415,7 +46712,8 @@ public void processMidiInfo_semiAutoMode(int pitch, int velocity) {
     case PITCH_CUSTOM_DEVICE_BANK1:                         loadCustomDeviceAnimation1(velocity);break;                              // Load an animation for the custom devices
     case PITCH_CUSTOM_DEVICE_BANK2:                         loadCustomDeviceAnimation2(velocity);break;                              // 
     case PITCH_CUSTOM_DEVICE_BANK3:                         loadCustomDeviceAnimation3(velocity);break;                              // 
-    case PITCH_DISPLAY_EFFECT:                              activateAdditionalEffect(velocity);break;                                // 
+    case PITCH_DISPLAY_EFFECT_1:                            activateAdditionalEffect(velocity);break;                                // 
+    case PITCH_DISPLAY_EFFECT_2:                            activateAdditionalEffect2(velocity);break;                               // 
     case PITCH_LOAD_ANIMATION_BANK1_TEMP:                   loadTempAnimation1(velocity);break;                                      // Load a temporary animation using the LED panels
     case PITCH_LOAD_ANIMATION_BANK2_TEMP:                   loadTempAnimation2(velocity);break;                                      // 
     case PITCH_LOAD_ANIMATION_BANK3_TEMP:                   loadTempAnimation3(velocity);break;                                      // 
@@ -46767,7 +47065,7 @@ public void setAutomaticModeOn() {
 public void activateAdditionalEffect(int velocity) {
   effectToBeDrawn = true;
   currentEffectNumber = velocity;
-  initSpecificEffectParams();
+  initSpecificEffectParams1();
   effectNumberToDeactivateEffects = velocity;
 }
 
@@ -46775,6 +47073,16 @@ public void deactivateAdditionalEffect(int velocity) {
   effectToBeDrawn = false;
 }
 
+public void activateAdditionalEffect2(int velocity) {
+  effect2ToBeDrawn = true;
+  currentEffect2Number = velocity;
+  initSpecificEffectParams2();
+  effectNumber2ToDeactivateEffects = velocity;
+}
+
+public void deactivateAdditionalEffect2(int velocity) {
+  effect2ToBeDrawn = false;
+}
 
 public void loadDMXAnimation_movingHead_initDirection(int velocity) {
   dmxAnimationNumber_movingHead_initDirection = velocity;
@@ -47068,7 +47376,8 @@ public void noteOff(int channel, int pitch, int velocity, long timestamp, String
         case PITCH_LOAD_ANIMATION_BANK3_TEMP:                   unloadAnimation();break;                                    //D7
         case PITCH_LOAD_ANIMATION_BANK4_TEMP:                   unloadAnimation();break;                                    //D#7
         
-        case PITCH_DISPLAY_EFFECT:                              deactivateAdditionalEffect(velocity);break;                 //C9    - Reset the effect
+        case PITCH_DISPLAY_EFFECT_1:                            deactivateAdditionalEffect(velocity);break;                 //C9    - Reset the effect
+        case PITCH_DISPLAY_EFFECT_2:                            deactivateAdditionalEffect2(velocity);break;                //
         default: break;
       }
     }
@@ -47650,7 +47959,7 @@ final float ONE_BAR_LENGTH = 384.0f;      //Length of 1 bar, in MIDI ticks - in 
 final int[] AVAILABLE_NOTE_OFF = {PITCH_DMX_ANIMATION_STROBE, PITCH_DMX_ANIMATION_PAR_SET_COLOR, PITCH_DMX_ANIMATION_PAR_SET_LIGHT_STYLE, PITCH_DMX_ANIMATION_PAR_SET_ANIMATION,
                                   PITCH_DMX_ANIMATION_MOVING_HEAD_INIT_DIRECTION, PITCH_DMX_ANIMATION_MOVING_HEAD_SET_COLOR, PITCH_DMX_ANIMATION_MOVING_HEAD_SET_LIGHT_STYLE, 
                                   PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_1, PITCH_DMX_ANIMATION_MOVING_HEAD_SET_ANIMATION_2,
-                                  PITCH_DISPLAY_EFFECT};
+                                  PITCH_DISPLAY_EFFECT_1, PITCH_DISPLAY_EFFECT_2};
 
 
 ArrayList<MidiSequence> MidiSequences_White_DefaultIntensity;
@@ -47927,6 +48236,13 @@ class MidiAction {
 String TPM2 = "TPM2";
 String NULL = "NULL";
 
+
+// Special command types
+final byte CMD_START_RF_EDUCATION = (byte) 0xB3;
+final byte CMD_STOP_RF_EDUCATION  = (byte) 0xA4;
+final byte CMD_START_RF_SCAN      = (byte) 0x9A;
+final byte CMD_STOP_RF_SCAN       = (byte) 0xD5;
+
 public abstract class Output {
 
   // The outputDevice - as a string, for example "TPM2"
@@ -48161,7 +48477,6 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
                 
                 System.arraycopy(rgbBuffer, 510*currentUniverse, tmp, 0, l);
                 tpm2.sendFrame(createImagePayload(currentUniverse, totalUniverse, tmp));
-                                                        
                 currentUniverse++;
             }
         }
@@ -48229,6 +48544,82 @@ public class Tpm2 extends OnePanelResolutionAwareOutput {
       }      
     }
 
+    public String readOutputData() {
+      String inBuffer = "";
+      while (tpm2.port.available() > 0) {
+        inBuffer = tpm2.port.readString();   
+        if (inBuffer != null) {
+          return inBuffer;
+        }
+        else {
+          return "";
+        }
+      }
+      return inBuffer;
+    }
+
+
+    // Send a command to change the RF transmitter's base frequency (only available on wireless-based TPM2 devices)
+    public void sendRFChannelEducationStartCommand() {
+      byte[] rfDataBuffer = new byte[RF_RX_Teensy_List.size() + 1];
+      rfDataBuffer[0] = CMD_START_RF_EDUCATION;
+      for (int i=0; i<RF_RX_Teensy_List.size(); i++) {
+        rfDataBuffer[i+1] = PApplet.parseByte(RF_Channel_List[i]);
+      }
+      
+      try {
+        tpm2.sendFrame(createCmdPayload(rfDataBuffer));
+      }
+      catch(Exception e) {
+        println("Exception while trying to send a Start Educ cmd to output device #" + panelNumber);
+      }
+    }
+
+    public void sendRFChannelEducationStopCommand() {
+      byte[] rfDataBuffer = new byte[RF_RX_Teensy_List.size() + 1];
+      rfDataBuffer[0] = CMD_STOP_RF_EDUCATION;
+      for (int i=0; i<RF_RX_Teensy_List.size(); i++) {
+        rfDataBuffer[i+1] = PApplet.parseByte(RF_Channel_List[i]);
+      }
+      
+      try {
+        tpm2.sendFrame(createCmdPayload(rfDataBuffer));
+      }
+      catch(Exception e) {
+        println("Exception while trying to send a Stop Educ cmd to output device #" + panelNumber);
+      }
+    }
+
+    // Send a command to start scanning the current environment's RF activity, in order to select available channels: to that order, the usual RF devices are expected to stop all activity
+    public void sendRFChannelScanStartCommand() {
+      byte[] rfDataBuffer = new byte[8];
+      rfDataBuffer[0] = CMD_START_RF_SCAN;
+      for (int i=1;i<8;i++) {
+        rfDataBuffer[i] = 0;
+      }
+      
+      try {
+        tpm2.sendFrame(createCmdPayload(rfDataBuffer));
+      }
+      catch(Exception e) {
+        println("Exception while trying to send a Start Educ cmd to output device #" + panelNumber);
+      }
+    }
+
+    public void sendRFChannelScanStopCommand() {
+      byte[] rfDataBuffer = new byte[8];
+      rfDataBuffer[0] = CMD_STOP_RF_SCAN;
+      for (int i=1;i<8;i++) {
+        rfDataBuffer[i] = 0;
+      }
+      
+      try {
+        tpm2.sendFrame(createCmdPayload(rfDataBuffer));
+      }
+      catch(Exception e) {
+        println("Exception while trying to send a Stop Educ cmd to output device #" + panelNumber);
+      }
+    }    
 }
 
 //////////////////////////////////////////////////////////////
@@ -48275,22 +48666,19 @@ final static int PANEL_RESOLUTION_X = 8;        //Resolution for each individual
 final static int PANEL_RESOLUTION_Y = 16;       //Resolution for each individual panel - height 
 final static String LED_COLOR_FORMAT = "RGB";   //LED color arrangement
 
-
-//Define the serial ports for the microcontrollers
-//String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "/dev/tty.usbmodem11331", "/dev/tty.usbmodem17031"};
-//All the devices in the 3 panel configuration need to be nonstatic : we don't know what panels we will be taking
-//String DMX_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
 String DMX_UNIVERSE_1_MICROCONTROLLER_NAME = "/dev/tty.usbmodem12341";
 String DMX_UNIVERSE_2_MICROCONTROLLER_NAME = "/dev/tty.usbmodem1862841";
 String CUSTOMDEVICES_MICROCONTROLLER_NAME  = "/dev/tty.usbserial-A961L7NJ";
+String RF_SCANNER_MICROCONTROLLER_NAME     = "/dev/tty.usbmodem1869971";
 
-String[] TEENSY_SERIAL_PORT_LIST_3 = {"NONSTATIC", "NONSTATIC", "NONSTATIC"};
-String[] TEENSY_SERIAL_PORT_LIST_5 = {"/dev/tty.usbmodem113361", "/dev/tty.usbmodem479061", "/dev/tty.usbmodem479101", "/dev/tty.usbmodem707701", "/dev/tty.usbmodem814421"}; // 707701 to add
+Hashtable RF_TX_Teensy_List;                          // The following hashtables contain the different microcontrollers used by Strobot
+Hashtable Panel_Main_Teensy_List;                     // Either the RF ones - used by default -, the main panel LED controllers, when there is a direct connection to the
+Hashtable Panel_Backup_Teensy_List;                   // panel, or the backup ones - which are usually disconnected, but which may be reconnected should any hazard fry the main Teensys
+Hashtable RF_RX_Teensy_List;                          // This last one only exists for reference purpose - it is not used per se, but might as well know what are the RX Teensys
+int[]     RF_Channel_List = {104, 28, 60, 89, 119};   // This array contains the default RF channels used by the panels, updated when the configuration file is read // Do not use channel 96, as it is used by the LED tubes
 
-Hashtable RF_TX_Teensy_List;                // The following hashtables contain the different microcontrollers used by Strobot
-Hashtable Panel_Main_Teensy_List;           // Either the RF ones - used by default -, the main panel LED controllers, when there is a direct connection to the
-Hashtable Panel_Backup_Teensy_List;         // panel, or the backup ones - which are usually disconnected, but which may be reconnected should any hazard fry the main Teensys
-Hashtable RF_RX_Teensy_List;                // This last one only exists for reference purpose - it is not used per se, but might as well know what are the RX Teensys
+final int RFCHANNEL_LED_TUBES = 96;                   // Channel used by the LED tubes, hard-coded in the firmware. It is important for the panels not to use this channel
+final int RFCHANNEL_EDUCATION = 124;                  // Channel used during the panel RF education process
 
 // All the microcontrollers used by Strobot are recognized as usb devices - either usbmodem, or usbserial, and as such the following string can matched against their name
 final static String MICROCONTROLLER_NAME_PATTERN = "/dev/tty.usb";
@@ -48322,10 +48710,19 @@ final int[] MANUAL_MAPPING = {127, 126, 125, 124, 123, 122, 121, 120,
                                16,  17,  18,  19,  20,  21,  22,  23,
                                15,  14,  13,  12,  11,  10,   9,   8,
                                 0,   1,   2,   3,   4,   5,   6,   7};
-
-
+       
 //Used to change on the fly the panel order (LED remapping), using MIDI commands
 int[] screen_order_configuration = new int [NUMBER_OF_PANELS];
+
+//For the wireless RF output, control the RF channel education and scan
+boolean rfChannelEducation_requested = false;
+boolean rfChannelScan_requested      = false;
+int[] rfChannelCarrierCpt;
+final int rfScan_nbRfCh              = 126;
+final int rfScan_headerSize          = 2;
+final int rfScan_header1             = 0xFF;
+final int rfScan_header2             = 0xDD;
+
 
 public void detectPanelOutputs() {
 
@@ -48342,6 +48739,7 @@ public void detectPanelOutputs() {
   RF_TX_Teensy_List.put(2, "/dev/tty.usbmodem1846011");
   RF_TX_Teensy_List.put(3, "/dev/tty.usbmodem1870121");
   RF_TX_Teensy_List.put(4, "/dev/tty.usbmodem1847751");
+  //RF_TX_Teensy_List.put(4, "/dev/tty.usbmodem1847750");
 
   Panel_Main_Teensy_List.put(0, "/dev/tty.usbmodem1870061");
   Panel_Main_Teensy_List.put(1, "/dev/tty.usbmodem1870171");
@@ -48361,6 +48759,7 @@ public void detectPanelOutputs() {
   RF_RX_Teensy_List.put(3, "/dev/tty.usbmodem1847011");
   RF_RX_Teensy_List.put(4, "/dev/tty.usbmodem1845951");
 
+  
 
   // First, check all the connected microcontrollers, create a list containing all the devices
   // All the microcontrollers used by Strobot have one thing in common
@@ -48425,26 +48824,10 @@ public void detectPanelOutputs() {
   if (chosenMicrocontrollers.size() == 0) {
     outputLog.println("--- Found no microcontroller which can be used as an output device (as defined in the configuration) ---");
   }
-  // else if (chosenMicrocontrollers.size() == 3) {
-  //   NUMBER_OF_PANELS = 3;
-  //   outputLog.println("--- Found 3 microcontrollers usable as output - entering 3-panel mode ---");
-  // }
-  // else if (chosenMicrocontrollers.size() == 5) {
-  //   NUMBER_OF_PANELS = 5;
-  //   outputLog.println("--- Found 5 microcontrollers usable as output - using the regular 5 panel mode ---");
-  // }
+
     else {
       outputLog.println("--- Found " + chosenMicrocontrollers.size() + " microcontrollers usable as an output device ---");
     }
-
-
-  // A voir ce qu'on fait avec ca - utilisable du cote de la conf
-  // if (NUMBER_OF_PANELS == 3) {
-  //   TEENSY_SERIAL_PORT_LIST_3 = devicesToParse;
-  // }
-  // else if (NUMBER_OF_PANELS == 5) {
-  //   TEENSY_SERIAL_PORT_LIST_5 = devicesToParse;
-  // }
   
   
   // Finally, initialize the actual output objects with the associated output device
@@ -48460,120 +48843,6 @@ public void detectPanelOutputs() {
     outputDevices[i] = new Tpm2(i, serialPort);
   }
 
-
-
-  // devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
-  // if (NUMBER_OF_PANELS == 3) {
-  //   devicesToParse = TEENSY_SERIAL_PORT_LIST_3;
-  // }
-  // else if (NUMBER_OF_PANELS == 5) {
-  //   devicesToParse = TEENSY_SERIAL_PORT_LIST_5;
-  // }
-  // IntList nonstaticDeviceArrayNumber = new IntList();  
-  // ArrayList<String> candidateDevices = new ArrayList<String>();
-  // registeredDevices = new ArrayList<String>();
-  // if (DMX_MICROCONTROLLER_NAME.equals("NONSTATIC") == false) {
-  //   registeredDevices.add(DMX_MICROCONTROLLER_NAME);
-  // }
-  // for (int i = 0; i < devicesToParse.length; i++) {
-  //   if (devicesToParse[i].equals("NONSTATIC") == false) {
-  //     registeredDevices.add(devicesToParse[i]);
-  //   }
-  //   else {
-  //     nonstaticDeviceArrayNumber.append(i);
-  //   }
-  // }
-  // if (nonstaticDeviceArrayNumber.size() == 0) {
-  //   outputLog.println("All USB serial devices are defined statically, no guesswork is needed"); 
-  // }
-  // else {
-  //   outputLog.println(nonstaticDeviceArrayNumber.size() + " non static USB serial device configured, trying to guess the mystery Teensy...");
-  // }
-  
-  // //Find out which microcontrollers of the configuration list are defined as non-static
-  // for (int i = 0; i < devicesToParse.length; i++) {
-  //   if (devicesToParse[i].equals("NONSTATIC") == true) {
-  //     nonstaticDeviceArrayNumber.append(i);
-  //   }
-  // }  
-  
-  // boolean nameExceptionFound = false;
-  // if (nonstaticDeviceArrayNumber.size() >= 1) {
-  //   String rootName = "/dev/tty.usbmodem";
-  //   for (int i =0; i < nonstaticDeviceArrayNumber.size();i++) {
-  //     for (String portName: Serial.list()) {
-
-  //       if (portName.contains(rootName) == true) {
-  //         for (String registeredDevice: registeredDevices) {
-
-  //           if (registeredDevice.contains(portName.substring(5, portName.length())) == false || portName.equals("/dev/tty.usbmodem1")) {
-  //             boolean newCandidate = true;
-  //             for (int j = 0; j<candidateDevices.size();j++) {
-  //               for (String registered: registeredDevices) {
-  //                 if (portName.contains(registered) || registered.contains(portName)) {
-  //                   newCandidate = false;
-  //                 }
-  //                 if (portName.equals("/dev/tty.usbmodem1")) {
-  //                   newCandidate = true;
-  //                 }
-  //               }
-  //               if (candidateDevices.get(j).equals(portName)) {
-  //                 newCandidate = false;
-  //               }
-  //             }
-  //             if (newCandidate) {
-  //               if (portName.equals("/dev/tty.usbmodem1")) {
-  //                 if (nameExceptionFound == false) {
-  //                   outputLog.println("--- Found possible candidate for the non static device : " + portName);
-  //                   candidateDevices.add(portName);
-  //                   nameExceptionFound = true;
-  //                 }
-  //               }
-  //               else { 
-  //                 outputLog.println("--- Found possible candidate for the non static device : " + portName);
-  //                 candidateDevices.add(portName);
-  //               }
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-  // for (int i = 0; i<candidateDevices.size();i++) {
-  //   registeredDevices.add(candidateDevices.get(i));
-  // }
-  // for (int i = 0; i<candidateDevices.size();i++) {
-  //   devicesToParse[nonstaticDeviceArrayNumber.get(i)] = candidateDevices.get(i);
-  // }
-  
-
-  
-  // for (int i = 0; i<devicesToParse.length;i++) {
-  //   if (devicesToParse[i].contains("NONSTATIC")) {
-  //       outputLog.println("!!!!! -------------------------------------- !!!!!");
-  //       outputLog.println("!!!!! Error - Among the serial devices registered by the OS, couldn't find a possible candidate for non static device number " + i + ", the corresponding panel will not be initialised");
-  //       outputLog.println("!!!!! For information, the only available serial devices are :");
-  //       for (String portName: Serial.list()) { 
-  //           outputLog.println("!!!!! --- " + portName);
-  //       }
-  //       outputLog.println("!!!!! -------------------------------------- !!!!!");
-  //   }
-  // }
-  
-  // if (NUMBER_OF_PANELS == 3) {
-  //   TEENSY_SERIAL_PORT_LIST_3 = devicesToParse;
-  // }
-  // else if (NUMBER_OF_PANELS == 5) {
-  //   TEENSY_SERIAL_PORT_LIST_5 = devicesToParse;
-  // }
-  
-  
-  // //Initialize the output objects
-  // outputDevices = new Tpm2[NUMBER_OF_PANELS];
-  // for (int i=0; i<NUMBER_OF_PANELS; i++) {
-  //   outputDevices[i] = new Tpm2(i);
-  // }
   
   //Map the output objects to their respective panel
   for (int i=0; i<outputDevices.length; i++) {
@@ -48581,6 +48850,123 @@ public void detectPanelOutputs() {
     outputLog.println("Microcontroller init - device " + outputDevices[i].serialPort + " is affected to output #" + outputDevices[i].panelNumber);
   }
 
+
+  // Additional microcontroller which may be available: RF channel scanner
+  rfScanDevice = new Tpm2(0, RF_SCANNER_MICROCONTROLLER_NAME);
+
+}
+
+public void manageRFChannelEducation(boolean request) {
+  rfChannelEducation_requested = request;
+  if (rfChannelEducation_requested) {
+    startRfChannelEducation();
+  }
+  else {
+    stopRfChannelEducation();
+  }
+}
+
+public void startRfChannelEducation() {
+  for (int i=0; i<outputDevices.length; i++) { 
+    outputDevices[i].sendRFChannelEducationStartCommand();
+  }
+}
+
+public void stopRfChannelEducation() {
+  for (int i=0; i<outputDevices.length; i++) { 
+    outputDevices[i].sendRFChannelEducationStopCommand();
+  }
+}
+
+
+
+public void manageRFChannelScan(boolean request) {
+  rfChannelScan_requested = request;
+  if (rfChannelScan_requested) {
+    startRfChannelScan();
+  }
+  else {
+    stopRfChannelScan();
+  }
+}
+
+public void startRfChannelScan() {
+  rfChannelCarrierCpt = new int[rfScan_nbRfCh];
+  for (int i=0; i<rfScan_nbRfCh; i++) {
+    rfChannelCarrierCpt[i] = 0;
+  }
+
+  for (int i=0; i<outputDevices.length; i++) { 
+    outputDevices[i].sendRFChannelScanStartCommand();     // All output microcontrollers will temporarily stop sending messages and power off the antenna
+  }
+  rfScanDevice.sendRFChannelScanStartCommand();
+}
+
+public void stopRfChannelScan() {
+  for (int i=0; i<outputDevices.length; i++) { 
+    outputDevices[i].sendRFChannelScanStopCommand();      // The other way around: power on the antenna, and go back in nominal mode
+  }
+  rfScanDevice.sendRFChannelScanStopCommand();
+}
+
+
+public void rfChannelScanProcess() {
+  try {
+      String rdBytes = rfScanDevice.readOutputData();
+      if (!rdBytes.equals("")) {
+        String[] rdBytesSplit = split(rdBytes, " ");
+        if (PApplet.parseInt(rdBytesSplit[0]) == rfScan_header1 && PApplet.parseInt(rdBytesSplit[1]) == rfScan_header2) {
+          for (int i=0; i<rfScan_nbRfCh; i++) {
+            rfChannelCarrierCpt[i] += PApplet.parseInt(rdBytesSplit[i + rfScan_headerSize]);
+          }
+        }
+      }
+    }
+    catch (Exception e) {
+      println("Exception while trying to read - " + e);
+    }
+}
+
+public void rfChannelScanFinalize() {
+  IntList rfChannels_forbiddenValues = new IntList();
+  rfChannels_forbiddenValues.append(0);                        // The very first channels are a bit tricky: they are the most likely to be used by a random RF equipment / wifi 
+  rfChannels_forbiddenValues.append(1);                        // If someone creates a Wifi network on the spot, there is a fair chance that it'll be on the default channel 0
+  rfChannels_forbiddenValues.append(2);                        // whose frequency also corresponds to the first NRF24 channels
+  rfChannels_forbiddenValues.append(3);
+  rfChannels_forbiddenValues.append(4);
+  rfChannels_forbiddenValues.append(5);
+  rfChannels_forbiddenValues.append(6);
+  rfChannels_forbiddenValues.append(7);
+  rfChannels_forbiddenValues.append(8);
+  rfChannels_forbiddenValues.append(9);
+  rfChannels_forbiddenValues.append(10);
+  rfChannels_forbiddenValues.append(RFCHANNEL_LED_TUBES - 2);  // Avoid any interference with the LED tubes
+  rfChannels_forbiddenValues.append(RFCHANNEL_LED_TUBES - 1);
+  rfChannels_forbiddenValues.append(RFCHANNEL_LED_TUBES);
+  rfChannels_forbiddenValues.append(RFCHANNEL_LED_TUBES + 1);
+  rfChannels_forbiddenValues.append(RFCHANNEL_LED_TUBES + 2);
+  rfChannels_forbiddenValues.append(RFCHANNEL_EDUCATION - 1);  // Do not use the channel used by the education process
+  rfChannels_forbiddenValues.append(RFCHANNEL_EDUCATION);
+  rfChannels_forbiddenValues.append(RFCHANNEL_EDUCATION + 1);
+
+  IntList rfChannels_availableChannels = new IntList();
+  for (int i=0; i<rfScan_nbRfCh; i++) {
+    if ((!rfChannels_forbiddenValues.hasValue(i)) && rfChannelCarrierCpt[i] == 0) {
+      rfChannels_availableChannels.append(i);
+    }
+  }
+
+  // Now, choose the most distant values among the available frequencies
+  for (int i=0; i< RF_TX_Teensy_List.size(); i++ ) {
+
+    RF_Channel_List[i] = rfChannels_availableChannels.get(i*(rfChannels_availableChannels.size() - 1) / (RF_TX_Teensy_List.size() - 1));
+    auxControlFrame.gui_rfChannelPanelTextfields.get(i).setValue(str(RF_Channel_List[i]));
+  }
+  createConfigFile();
+
+  // And finally, start an education
+  manageRFChannelEducation(true);
+  auxControlFrame.performRFChannelEducation.setState(true);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -50906,6 +51292,9 @@ int whiteNoisePowerManualMode            = 0;
 boolean effectToBeDrawn = false;
 int currentEffectNumber = -1;
 int effectNumberToDeactivateEffects = -1;
+boolean effect2ToBeDrawn = false;
+int currentEffect2Number = -1;
+int effectNumber2ToDeactivateEffects = -1;
 
 public void actionControlled_preSpecificDraw() {
   if (authorizeGeneralManualMode == true) {
