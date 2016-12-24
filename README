@@ -12,6 +12,10 @@ The code inside this was not written to be publicly released as some kind of big
 certain degree of freedom was taken with coding rules, but hey it works. Some of the code is currently undergoing a 
 rewrite to comply with everyone's sense of esthetics
 
+// What can I control with it
+Mainly DMX and homebrew equipment
+The LED panels use a custom protocol (to be detailed), same goes for the LED tubes
+
 // How do I use it ?
 Connect all the different devices you want to use : Teensy 3 microcontrollers for the LED panels, Teensy 2 for 
 the DMX output, Arduino Nano for the custom wireless devices...
