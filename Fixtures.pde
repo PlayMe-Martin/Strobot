@@ -65,19 +65,19 @@ void readFixtureFiles() {
       String fullDirectoryPath = dataPath("") + "/Fixtures/" + directoryToParse;
 
       File dir = new File(fullDirectoryPath);
-      String[] children = dir.list();
-      
-      for (String child : children) {
-        // Only check for XML files, disregard OSX's Finder cookie
-        if (child.contains(".xml")) {
-          outputLog.println("Found a DMX fixture description file: " + fullDirectoryPath + "/" + child);
-          parseFixtureXML(fullDirectoryPath + "/" + child);
+      if (dir.list().length>0) {
+        String[] children = dir.list();
+        for (String child : children) {
+          // Only check for XML files, disregard OSX's Finder cookie
+          if (child.contains(".xml")) {
+            outputLog.println("Found a DMX fixture description file: " + fullDirectoryPath + "/" + child);
+            parseFixtureXML(fullDirectoryPath + "/" + child);
+          }
         }
       }
     }
     catch (Exception e) {
-      outputLog.println("Exception while parsing fixture XMLs : " + e);
-      println("Exception while parsing fixture XMLs : " + e);
+      outputLog.println("Exception while parsing fixture XMLs : " + e + " - " + dataPath("") + "/Fixtures/" + directoryToParse);
     }
   }
 }
